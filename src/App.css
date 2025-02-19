@@ -36,3 +36,130 @@
     transform: rotate(360deg);
   }
 }
+.App {
+  text-align: center;
+}
+
+.App-logo {
+  height: 40vmin;
+  pointer-events: none;
+}
+
+@media (prefers-reduced-motion: no-preference) {
+  .App-logo {
+    animation: App-logo-spin infinite 20s linear;
+  }
+}
+
+.App-header {
+  background-color: #282c34;
+  min-height: 100vh;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  font-size: calc(10px + 2vmin);
+  color: white;
+}
+
+.App-link {
+  color: #61dafb;
+}
+
+.datagrid-style {
+  padding: 5px;
+  font-family: Montserrat-Regular;
+  font-weight: bold;
+}
+
+/* .datagrid-header .MuiDataGrid-columnHeaders {
+  background-color: #EDE7F6;
+  font-size: 30px;
+  font-weight: bolder !important;
+} */
+
+.datagrid-style .MuiDataGrid-columnHeaders {
+  padding: 0;
+  margin: 0;
+  background-color: #E6E6FA;
+  text-transform: uppercase;
+  max-height: 10px;
+}
+
+.datagrid-style .MuiDataGrid-columnHeaderTitle {
+  font-weight: bold;
+  font-size: 12px;
+}
+
+/* styles.css */
+.login-background {
+  background-image: url('/src/assets/purple.jpg');
+  background-size: cover;
+  background-position: center;
+}
+
+
+
+@keyframes App-logo-spin {
+  from {
+    transform: rotate(0deg);
+  }
+  to {
+    transform: rotate(360deg);
+  }
+}
+
+.swal2-container {
+  z-index: 9999; 
+}
+
+
+.slide-in-text {
+  
+  font-size: 2em;
+  opacity: 0;
+  transform: translateX(-100%);
+  animation: slide-in 2s forwards;
+}
+
+@keyframes slide-in {
+  to {
+      opacity: 1;
+      transform: translateX(0);
+  }
+}
+/* ------------------------  */
+@keyframes flash {
+  0%, 100% { opacity: 1; }
+  50% { opacity: 0; }
+}
+
+.flash-animation {
+  text-shadow: 4px 4px 4px rgb(8, 8, 24);
+  animation: flash 4s ;
+}
+
+
+/* ------------------ */
+/* styles.css */
+@keyframes fadeIn {
+  from {
+    opacity: 0;
+  }
+  to {
+    opacity: 1;
+  }
+}
+
+@keyframes slideInFromRight {
+  from {
+    transform: translateX(100%);
+    opacity: 0;
+  }
+  to {
+    transform: translateX(0);
+    opacity: 1;
+  }
+}
+
+ 

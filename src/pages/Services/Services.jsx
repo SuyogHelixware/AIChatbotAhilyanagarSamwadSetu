@@ -1,3 +1,5 @@
+//==================service provider setting in edit case===============
+//=============main====================
 //======================================Services=========================
 import CloseIcon from "@mui/icons-material/Close";
 import DeleteForeverIcon from "@mui/icons-material/DeleteForever";
@@ -22,7 +24,7 @@ import {
   TextField,
   Typography,
 } from "@mui/material";
-import { DataGrid } from "@mui/x-data-grid";
+import { DataGrid, GridToolbar } from "@mui/x-data-grid";
 import axios from "axios";
 import React, { useEffect, useState } from "react";
 import Swal from "sweetalert2";
@@ -48,28 +50,34 @@ const PostNatal = () => {
   const [data, setData] = useState([]);
   const [Departments, setDepartments] = useState([]);
   const [formData, setFormData] = useState({
+    Id: null,
     ServiceNameEN: "",
     ServiceNameMR: "",
     DocLink: "",
     ApplyLink: "",
-    DocumentTypeIds: [],
+    // DocumentTypeIds: [],
+    Documents: [],
+    ServicesProvider: [],
     DeptId: "",
-   
     Status: 1,
   });
 
   const [docTypes, setDocTypes] = useState([]);
   const [serviceProviders, setServiceProviders] = useState([]); // State for Service Providers
   const [searchQuery, setSearchQuery] = useState("");
+  const [searchText, setSearchText] = React.useState(""); // ✅ Search input state
+
   const [openDocTypeDialog, setOpenDocTypeDialog] = useState(false);
   const [openDocDialog, setOpenDocDialog] = useState(false);
   const [openServiceProviderDialog, setOpenServiceProviderDialog] =
     useState(false); // Modal for Service Provider
-  const [newDocType, setNewDocType] = useState({ english: "", marathi: "" });
+  const [docType, setdocType] = useState({ english: "", marathi: "" });
   const [newDocument, setNewDocument] = useState({ english: "", marathi: "" });
   const [editing, setEditing] = useState(false);
-
+  const [totalRows, setTotalRows] = React.useState("");
+  const [currentPage, setCurrentPage] = React.useState(0);
   const [newServiceProvider, setNewServiceProvider] = useState({
+    Id: "",
     serviceName: "",
     timeLimit: "",
     designatedOfficer: "",
@@ -80,11 +88,12 @@ const PostNatal = () => {
   const [selectedDocType, setSelectedDocType] = useState(null);
   const [editingDocType, setEditingDocType] = useState(null);
   const [selectedDocIndex, setSelectedDocIndex] = useState(null);
-  const [editServiceProvider, setEditServiceProvider] = useState(null); // State to hold the row being edited
+  const [loading, setLoading] = React.useState(false);
+  const limit = 20; // Fixed page size
+
   const theme = useTheme();
 
   const handleDelete = async (id) => {
-   
     Swal.fire({
       text: "Are you sure you want to delete?",
       icon: "warning",
@@ -95,9 +104,7 @@ const PostNatal = () => {
     }).then((result) => {
       if (result.isConfirmed) {
         axios
-          .delete(`${BASE_URL}DepartmentSer/${id}`, {
-          
-          })
+          .delete(`${BASE_URL}DepartmentSer/${id}`, {})
           .then((response) => {
             if (response.data.success === true) {
               setLoaderOpen(false);
@@ -144,7 +151,10 @@ const PostNatal = () => {
       sortable: false,
       renderCell: (params) => (
         <strong>
-          <IconButton color="primary" onClick={() => handleClick(params.row)}>
+          <IconButton
+            color="primary"
+            onClick={() => handleEditClick(params.row)}
+          >
             <EditNoteIcon />
           </IconButton>
           <Button
@@ -239,8 +249,53 @@ const PostNatal = () => {
     ...buttonStyles,
     backgroundColor: "red",
   };
-   // Function to delete a Document Type
-   const handleDeleteDocType = (index) => {
+
+  const getAllDeptServData = async (page = 0, searchText = "") => {
+    try {
+      console.log("Calling API with Page:", page); // ✅ Debugging line
+      console.log("Search Text:", searchText);
+
+      setLoading(true);
+      // const token = await getApiToken();
+
+      let apiUrl = `${BASE_URL}DepartmentSer/ByPage/${page}/${limit}`;
+
+      if (searchText) {
+        apiUrl = `${BASE_URL}DepartmentSer/ByPage/search/${searchText}/${page}/${limit}`;
+      }
+
+      console.log("Final API URL:", apiUrl); // ✅ Check if correct URL is formed
+
+      const response = await axios.get(apiUrl, {
+        // headers: {
+        //   "Content-Type": "application/json",
+        //   Authorization: token,
+        // },
+      });
+
+      console.log("API Response:", response.data);
+
+      if (response.data && response.data.values) {
+        setData(
+          response.data.values.map((item, index) => ({
+            ...item,
+            id: page * limit + index + 1, // ✅ Ensures SR.NO continues across pages
+          }))
+        );
+        setTotalRows(response.data.count);
+
+        if (searchText) {
+          setTotalRows(response.data.count);
+        }
+      }
+    } catch (error) {
+      console.error("Error fetching data:", error);
+    } finally {
+      setLoading(false);
+    }
+  };
+  // Function to delete a Document Type
+  const handleDeleteDocType = (index) => {
     setDocTypes(docTypes.filter((_, i) => i !== index));
   };
   // Function to delete a Document
@@ -269,30 +324,54 @@ const PostNatal = () => {
     clearFormData();
     setOpen(false);
   };
-
-  const handleSaveServiceProvider = () => {
-    if (editing) {
-      const updatedProviders = serviceProviders.map((provider) =>
-        provider.id === selectedServiceProvider.id
-          ? newServiceProvider
-          : provider
-      );
-      setServiceProviders(updatedProviders);
-    } else {
-      const newProvider = {
-        ...newServiceProvider,
-        id: serviceProviders.length + 1,
-      };
-      setServiceProviders([...serviceProviders, newProvider]);
+  const fetchDepartments = async () => {
+    try {
+      const response = await axios.get(`${BASE_URL}Department/All`);
+      const departmentList = response.data.values; // Store the response in a variable
+      setDepartments(departmentList); // Update state with fetched data
+      console.log("Fetched Departments:", departmentList); // Log fetched data
+    } catch (error) {
+      console.error("Error fetching departments:", error);
     }
-    setOpenServiceProviderDialog(false);
   };
+
+  useEffect(() => {
+    fetchDepartments();
+  }, []);
+
+  const clearFormData = () => {
+    // Reset your form data
+    setFormData({
+      ServiceNameEN: "",
+      ServiceNameMR: "",
+      DocLink: "",
+      ApplyLink: "",
+      DeptId: "",
+      Status: 1,
+      docTypes: [], // Reset the docTypes array
+      serviceProviders: [], // Reset the serviceProviders array
+    });
+
+    // Clear the docTypes and serviceProviders states as well
+    setDocTypes([]); // Clear the docTypes state
+    setServiceProviders([]); // Clear the serviceProviders state
+  };
+
+  // const getAllDeptServData = async () => {
+  //   // const token = await getApiToken();
+  //   axios.get(`${BASE_URL}DepartmentSer/All`, {}).then((response) => {
+  //     setData(response.data.values);
+  //   });
+  // };
+  useEffect(() => {
+    getAllDeptServData();
+  }, []);
 
   // Function to add a new Document Type
   const handleAddDocType = () => {
-    if (newDocType.english.trim() && newDocType.marathi.trim()) {
-      setDocTypes([...docTypes, { ...newDocType, documents: [] }]);
-      setNewDocType({ english: "", marathi: "" });
+    if (docType.english.trim() && docType.marathi.trim()) {
+      setDocTypes([...docTypes, { ...docType, documents: [] }]);
+      setdocType({ english: "", marathi: "" });
       setOpenDocTypeDialog(false);
     }
   };
@@ -314,7 +393,6 @@ const PostNatal = () => {
       setOpenDocDialog(false);
     }
   };
-  
 
   // Filtered Document Types based on search
   const filteredDocTypes = docTypes.filter(
@@ -326,103 +404,126 @@ const PostNatal = () => {
   // Function to open the edit modal for a Document Type
   const handleEditDocType = (index) => {
     setEditingDocType(index);
-    setNewDocType({ ...docTypes[index] });
+    setdocType({ ...docTypes[index] });
     setOpenDocTypeDialog(true);
   };
 
   // Function to update Document Type after editing
   const handleUpdateDocType = () => {
-    if (newDocType.english.trim() && newDocType.marathi.trim()) {
-      const updatedDocTypes = docTypes.map((docType, index) =>
+    if (docType.english.trim() && docType.marathi.trim()) {
+      const updatedDocTypes = docTypes.map((item, index) =>
         index === editingDocType
-          ? {
-              ...docType,
-              english: newDocType.english,
-              marathi: newDocType.marathi,
-            }
-          : docType
+          ? { ...item, english: docType.english, marathi: docType.marathi }
+          : item
       );
       setDocTypes(updatedDocTypes);
       setOpenDocTypeDialog(false);
       setEditingDocType(null);
-      setNewDocType({ english: "", marathi: "" });
-    }
-  }; 
-
-  // Function to handle edit modal for Service Provider
-  const handleEditServiceProvider = (index) => {
-    setEditServiceProvider({ ...serviceProviders[index], index });
-    setOpenServiceProviderDialog(true);
-  };
-
-
-  // Function to handle delete of Service Provider
-  const handleDeleteServiceProvider = (index) => {
-    setServiceProviders(serviceProviders.filter((_, i) => i !== index));
-  };
-  const fetchDepartments = async () => {
-    try {
-      const response = await axios.get(`${BASE_URL}Department/All`);
-      const departmentList = response.data.values; // Store the response in a variable
-      setDepartments(departmentList); // Update state with fetched data
-      console.log("Fetched Departments:", departmentList); // Log fetched data
-    } catch (error) {
-      console.error("Error fetching departments:", error);
+      setdocType({ english: "", marathi: "" });
     }
   };
 
-  useEffect(() => {
-    fetchDepartments();
-  }, []);
-
-  const clearFormData = () => {
-    setFormData({
-      ServiceNameEN: "",
-      ServiceNameMR: "",
-      DocLink: "",
-      ApplyLink: "",
-      DeptId: "",
-      Status: 1,
+  const handleSaveServiceProvider = () => {
+    if (editing) {
+      // Update existing row
+      const updatedProviders = serviceProviders.map((provider) =>
+        provider.srNo === selectedServiceProvider.srNo
+          ? { ...provider, ...newServiceProvider }
+          : provider
+      );
+      setServiceProviders(updatedProviders);
+    } else {
+      // Generate a new row with unique srNo for DataGrid and Id as null for backend
+      const newProvider = {
+        ...newServiceProvider,
+        srNo: serviceProviders.length ? Math.max(...serviceProviders.map(sp => sp.srNo || 0)) + 1 : 1, // Unique srNo for DataGrid
+        Id: null, // Ensure new row sends `null` to backend
+      };
+      setServiceProviders([...serviceProviders, newProvider]);
+    }
+  
+    // Reset state
+    setOpenServiceProviderDialog(false);
+    setEditing(false);
+    setNewServiceProvider({
+      Id: "",
+      serviceName: "",
+      timeLimit: "",
+      designatedOfficer: "",
+      firstAppellateOfficer: "",
+      secondAppellateOfficer: "",
     });
   };
-
-
-  const getAllDeptServData = async () => {
-    // const token = await getApiToken();
-    axios
-      .get(`${BASE_URL}DepartmentSer/All`, {
-      })
-      .then((response) => {
-        setData(response.data.values);
-      });
+  
+  
+  // Function to handle edit modal for Service Provider
+  const handleEditServiceProvider = (id) => {
+    const providerToEdit = serviceProviders.find((sp) => sp.Id === id);
+    if (providerToEdit) {
+      setSelectedServiceProvider(providerToEdit);
+      setNewServiceProvider({ ...providerToEdit }); // Copy data for editing
+      setEditing(true);
+      setOpenServiceProviderDialog(true);
+    }
   };
+  ;
 
-  useEffect(() => {
-    getAllDeptServData();
-  }, []);
+  // Function to handle delete of Service Provider
+  const handleDeleteServiceProvider = (id) => {
+    setServiceProviders((prevProviders) =>
+      prevProviders.filter((sp) => sp.Id !== id)
+    );
+  };
+  
 
-
+  const validateForm = () => {
+    const { ServiceNameEN, DocLink, DeptId } = formData;
+    return ServiceNameEN && DocLink && DeptId;
+  };
   const handleSave = async () => {
     try {
-      // Find the department object based on selected DeptId
       const selectedDept = Departments.find(
         (dept) => dept.Id === formData.DeptId
       );
 
+      // Ensure Documents are structured correctly
+      const formattedDocuments = docTypes.map((docType) => ({
+        Id: docType.Id || null,
+        DocTypeEN: docType.english,
+        DocTypeMR: docType.marathi,
+        Status: 1, // Default active
+        // SerId: formData.SerId || null,
+        Documents: docType.documents.map((doc) => ({
+          Id: doc.Id || null,
+          DocNameEN: doc.english,
+          DocNameMR: doc.marathi,
+        })),
+      }));
+
+      // Ensure ServicesProvider is structured correctly
+      const formattedServiceProviders = serviceProviders.map((sp) => ({
+        Id: sp.Id || null,
+        ServiceName: sp.serviceName,
+        TimeLimitDays: sp.timeLimit,
+        DesignatedOfficer: sp.designatedOfficer,
+        FirstAppellateOfficer: sp.firstAppellateOfficer,
+        SecondAppellateOfficer: sp.secondAppellateOfficer,
+        Lang: "EN", // Assuming language is always English
+        // SerId: sp.SerId ,
+        Status: 1, // Default active
+      }));
+
       const formattedData = {
         ...formData,
-        DeptId: formData.DeptId, // Keep the ID for backend
-        DeptNameEN: selectedDept ? selectedDept.DeptNameEN : "", // Store name for frontend display
+        DeptId: formData.DeptId,
+        DeptNameEN: selectedDept ? selectedDept.DeptNameEN : "",
+        Documents: formattedDocuments,
+        ServicesProvider: formattedServiceProviders,
       };
 
-      setLoaderOpen(true);
-
       if (SaveUpdateButton === "SAVE") {
-        // **Save (POST) Request**
-        handleParentDialogClose();
         axios
-          .post(`${BASE_URL}DepartmentSer/`, formattedData, {
-          })
+          .post(`${BASE_URL}DepartmentSer/`, formattedData)
           .then((response) => {
             setLoaderOpen(false);
             if (response.data.success) {
@@ -431,68 +532,44 @@ const PostNatal = () => {
                 position: "center",
                 icon: "success",
                 toast: true,
-                title: "Service Saved Successfully",
+                title: "Service added successfully",
                 showConfirmButton: false,
                 timer: 1500,
               });
-              const newPostData = response.data.values;
-              setData((prevData) => [...prevData, newPostData]);
+
               handleParentDialogClose();
             } else {
               Swal.fire({
-                position: "center",
                 icon: "error",
-                toast: true,
                 title: "Failed to save Service",
                 text: response.data.message,
-                showConfirmButton: false,
-                timer: 1500,
               });
             }
           })
-          .catch((error) => {
-            setLoaderOpen(false);
-            Swal.fire({
-              icon: "error",
-              toast: true,
-              title: "Error saving Service",
-              text: error.message,
-              showConfirmButton: true,
-            });
-          });
+          .catch((error) => handleApiError(error));
       } else {
-        // **Update (PUT) Request**
         if (!formData.Id) {
           setLoaderOpen(false);
           Swal.fire({
-            position: "center",
             icon: "error",
-            toast: true,
             title: "Update Failed",
             text: "Invalid Service ID",
-            showConfirmButton: true,
           });
           return;
         }
 
-        setLoaderOpen(false);
         const result = await Swal.fire({
           text: "Do you want to Update...?",
           icon: "warning",
           showCancelButton: true,
-          confirmButtonColor: "#3085d6",
-          cancelButtonColor: "#d33",
           confirmButtonText: "Yes, Update it!",
         });
+        document.querySelector(".swal2-container").style.zIndex = "99999";
 
         if (!result.isConfirmed) return;
 
-        setLoaderOpen(true);
-
         axios
-          .put(`${BASE_URL}DepartmentSer/${formData.Id}`, formattedData, {
-            
-          })
+          .put(`${BASE_URL}DepartmentSer/${formData.Id}`, formattedData)
           .then((response) => {
             setLoaderOpen(false);
             if (response.data.success) {
@@ -502,46 +579,35 @@ const PostNatal = () => {
                 position: "center",
                 icon: "success",
                 toast: true,
-                title: "Service Updated Successfully",
+                title: "Service Updated successfully",
                 showConfirmButton: false,
                 timer: 1500,
               });
+
               handleParentDialogClose();
             } else {
               Swal.fire({
-                position: "center",
                 icon: "error",
-                toast: true,
                 title: "Failed to update Service",
                 text: response.data.message,
-                showConfirmButton: false,
-                timer: 1500,
               });
             }
           })
-          .catch((error) => {
-            setLoaderOpen(false);
-            Swal.fire({
-              icon: "error",
-              toast: true,
-              title: "Error updating Service",
-              text: error.message,
-              showConfirmButton: true,
-            });
-          });
+          .catch((error) => handleApiError(error));
       }
     } catch (error) {
-      setLoaderOpen(false);
-      console.error("Error:", error);
-      Swal.fire({
-        position: "center",
-        icon: "error",
-        toast: true,
-        title: "Failed",
-        text: error.message || "Something went wrong",
-        showConfirmButton: true,
-      });
+      handleApiError(error);
     }
+  };
+
+  const handleApiError = (error) => {
+    setLoaderOpen(false);
+    console.error("Error:", error);
+    Swal.fire({
+      icon: "error",
+      title: "Failed",
+      text: error.message || "Something went wrong",
+    });
   };
 
   const handleInputChange = (e) => {
@@ -551,18 +617,63 @@ const PostNatal = () => {
       [name]: value,
     }));
   };
+  useEffect(() => {
+    console.log("Updated Service Providers:", serviceProviders);
+  }, [serviceProviders]);
 
-  const handleClick = (row) => {
+  const handleEditClick = (row) => {
+    console.log("Selected Row:", row);
     setSaveUpdateButton("UPDATE");
-    setOpen(true);
+
+    // Set form data for the modal
     setFormData({
-      ...row,
-     
+      Id: row.Id,
+      ServiceNameEN: row.ServiceNameEN,
+      ServiceNameMR: row.ServiceNameMR,
+      DocLink: row.DocLink,
+      ApplyLink: row.ApplyLink,
+      DeptId: row.DeptId,
+      Status: row.Status,
     });
+
+    // Set service providers to state
+    if (row.ServicesProvider) {
+      const formattedProviders = row.ServicesProvider.map((sp) => ({
+        // id: sp.Id || "",
+        Id: sp.Id || "",
+        SerId: sp.SerId || "",
+        serviceName: sp.ServiceName,
+        timeLimit: sp.TimeLimitDays,
+        designatedOfficer: sp.DesignatedOfficer,
+        firstAppellateOfficer: sp.FirstAppellateOfficer,
+        secondAppellateOfficer: sp.SecondAppellateOfficer,
+      }));
+      setServiceProviders(formattedProviders);
+    } else {
+      setServiceProviders([]); // Ensure it's cleared if empty
+    }
+
+    // Set Document Types and Documents
+    if (row.Documents) {
+      const formattedDocTypes = row.Documents.map((docType) => ({
+        Id: docType.Id || null,
+        english: docType.DocTypeEN,
+        marathi: docType.DocTypeMR,
+        documents: docType.Documents
+          ? docType.Documents.map((doc) => ({
+              Id: doc.Id || 0,
+              english: doc.DocNameEN,
+              marathi: doc.DocNameMR,
+            }))
+          : [],
+      }));
+      setDocTypes(formattedDocTypes);
+    } else {
+      setDocTypes([]); // Ensure it's cleared if empty
+    }
+
+    setOpen(true); // Open modal
   };
-
-
-
 
   return (
     <>
@@ -629,30 +740,54 @@ const PostNatal = () => {
         </Button>
       </Grid>
 
-      <Grid container item height={500} lg={12} component={Paper}>
+      <Grid container item lg={12} component={Paper}>
         <DataGrid
           className="datagrid-style"
-          rows={data.map((data, id) => ({ ...data, id: id + 1 }))}
-          // rowHeight={70}
-          getRowId={(row) => row.Id}
+          rows={data}
           columns={columns}
+          autoHeight
+          pagination
+          paginationMode="server"
+          rowCount={totalRows}
+          pageSizeOptions={[limit]}
+          paginationModel={{ page: currentPage, pageSize: limit }}
+          onPaginationModelChange={(newModel) => {
+            console.log("New Pagination Model:", newModel);
+            setCurrentPage(newModel.page);
+            getAllDeptServData(newModel.page, searchText);
+          }}
+          loading={loading}
           initialState={{
-            pagination: {
-              paginationModel: {
-                pageSize: 100,
+            pagination: { paginationModel: { pageSize: 20 } },
+
+            filter: {
+              filterModel: {
+                items: [],
+
+                quickFilterValues: [], // Default empty
               },
             },
           }}
-          pageSizeOptions={[100]}
-          sx={{
-            "& .MuiDataGrid-columnHeaders": {
-              backgroundColor: (theme) => theme.palette.custome.datagridcolor,
-            },
-            "& .MuiDataGrid-row:hover": {
-              boxShadow: "0px 4px 20px rgba(0, 0, 0.2, 0.2)",
+          disableColumnFilter
+          disableColumnSelector
+          disableDensitySelector
+          slots={{ toolbar: GridToolbar }} // Enables search & export
+          slotProps={{
+            toolbar: {
+              showQuickFilter: true,
+
+              quickFilterProps: { debounceMs: 500 },
             },
           }}
+          onFilterModelChange={(model) => {
+            const quickFilterValue = model.quickFilterValues?.[0] || "";
+            setSearchText(quickFilterValue);
+            setCurrentPage(0); // ✅ Always reset to first page when searching
+            getAllDeptServData(0, quickFilterValue);
+          }}
+          getRowId={(row) => row.Id} // Ensure unique row ID from database
         />
+       
       </Grid>
 
       <Dialog
@@ -726,7 +861,7 @@ const PostNatal = () => {
                 />
               </Grid>
               {/* --------------------------------------------- */}
-              <Grid item xs={12} sm={4} width={200}></Grid>
+              {/* <Grid item xs={12} sm={4} width={200}></Grid> */}
               {/* --------------------------------------------- */}
               <Grid item xs={12} sm={4}>
                 <InputDescriptionField
@@ -742,33 +877,6 @@ const PostNatal = () => {
                 />
               </Grid>
               <Grid item xs={12} sm={4}>
-                <InputTextField
-                  size="small"
-                  fullWidth
-                  id="DocLink"
-                  label="Document Link"
-                  name="DocLink"
-                  multiline
-                  rows={2}
-                  value={formData.DocLink}
-                  onChange={handleInputChange}
-                />
-              </Grid>
-              <Grid item xs={12} sm={4} width={200}></Grid>
-              <Grid item xs={12} sm={4}>
-                <InputTextField
-                  size="small"
-                  fullWidth
-                  id="ApplyLink"
-                  label="Apply Link"
-                  name="ApplyLink"
-                  multiline
-                  rows={2}
-                  value={formData.ApplyLink}
-                  onChange={handleInputChange}
-                />
-              </Grid>
-              <Grid item xs={12} sm={4}>
                 <FormControl size="small" sx={{ width: "220px" }}>
                   <InputLabel id="department-label">
                     Select Department
@@ -779,6 +887,7 @@ const PostNatal = () => {
                     name="DeptId"
                     value={formData.DeptId}
                     onChange={handleInputChange}
+                    label="Select Department"
                     MenuProps={{
                       PaperProps: { style: { maxHeight: 150, maxWidth: 400 } },
                     }}
@@ -795,50 +904,76 @@ const PostNatal = () => {
                   </Select>
                 </FormControl>
               </Grid>
-              <Grid item xs={12} sm={4} width={200}></Grid>
+              <Grid item xs={12} sm={4}>
+                <InputTextField
+                  size="small"
+                  fullWidth
+                  id="DocLink"
+                  label="Document Link"
+                  name="DocLink"
+                  multiline
+                  rows={2}
+                  value={formData.DocLink}
+                  onChange={handleInputChange}
+                />
+              </Grid>
+              {/* <Grid item xs={12} sm={4} width={200}></Grid> */}
+              <Grid item xs={12} sm={4}>
+                <InputTextField
+                  size="small"
+                  fullWidth
+                  id="ApplyLink"
+                  label="Apply Link"
+                  name="ApplyLink"
+                  multiline
+                  rows={2}
+                  value={formData.ApplyLink}
+                  onChange={handleInputChange}
+                />
+              </Grid>
+
+              {/* <Grid item xs={12} sm={4} width={200}></Grid> */}
               <Grid item xs={12} sm={4} textAlign={"center"}>
                 <CheckboxInputs
-                  checked={data.Status === 1}
+                  checked={formData.Status === 1} // Ensure it's checked by default
                   label="Active"
                   id="Status"
                   onChange={(event) =>
                     handleInputChange({
                       target: {
                         name: "Status",
-                        id: "Status",
-                        value: event.target.checked ? 1 : 0,
+                        value: event.target.checked ? 1 : 0, // Ensure value is set properly
                       },
                     })
                   }
-                  value={data.Status}
+                  value={formData.Status}
                   name="Status"
                 />
               </Grid>
             </Grid>
           </Paper>
-            <Paper
-        elevation={3}
-        sx={{
-          width: "100%",
-          padding: 1,
-          marginTop: 3,
-          textAlign: "center",
-          display: "inline-block",
-        }}
-      >
-        <div
-          style={{
-            padding: "6px",
-            width: "100%",
-            maxWidth: "1350px",
-            // margin: "0 auto",
-            // marginTop: "2%",
-          }}
-        >
-          {/* Search Bar */}
-          <Grid container spacing={2} sx={{ mb: 2 }}>
-            <Grid item xs={12} sm={12}>
-              {/* <TextField
+          <Paper
+            elevation={3}
+            sx={{
+              width: "100%",
+              // padding: 1,
+              marginTop: 3,
+              // textAlign: "center",
+              // display: "inline-block",
+            }}
+          >
+            <div
+              style={{
+                padding: "16px",
+                // width: "100%",
+                maxWidth: "1850px",
+                // margin: "0 auto",
+                // marginTop: "2%",
+              }}
+            >
+              {/* Search Bar */}
+              <Grid container spacing={2} sx={{ mb: 2 }}>
+                {/* <TextField
           fullWidth
           placeholder="Search Document Type..."
           value={searchQuery}
@@ -851,420 +986,518 @@ const PostNatal = () => {
             ),
           }}
         /> */}
-            </Grid>
+                {/* </Grid> */}
 
-            {/* Add Document Type Button */}
-            <Grid item xs={12} sm={3}>
-              <Button
-                variant="contained"
-                startIcon={<AddCircleIcon />}
-                onClick={() => setOpenDocTypeDialog(true)}
-                fullWidth
-              >
-                Add Document Type
-              </Button>
-            </Grid>
-          </Grid>
+                {/* Add Document Type Button */}
+                <Grid item xs={12} sm={3}>
+                  <Button
+                    // variant="contained"
+                    sx={{
+                      p: 1,
+                      color: "white",
+                      backgroundColor: "#5C5CFF",
+                      boxShadow: 5,
+                      "&:hover": {
+                        backgroundColor: "#E6E6FA",
+                        border: "1px solid #5C5CFF",
+                        color: "#5C5CFF",
+                      },
+                      "& .MuiButton-label": {
+                        display: "flex",
+                        alignItems: "center",
+                      },
+                      "& .MuiSvgIcon-root": {
+                        marginRight: "10px",
+                      },
+                    }}
+                    // startIcon={<AddCircleIcon />}
+                    onClick={() => setOpenDocTypeDialog(true)}
+                    // fullWidth
+                  >
+                    Add Document Type
+                  </Button>
+                </Grid>
+              </Grid>
 
-          {/* Scrollable List */}
-          {/* <Paper sx={{ maxHeight: 600, overflowY: "auto", p: 1 }}> */}
-          {filteredDocTypes.length === 0 ? (
-            <Typography textAlign="center" color="textSecondary">
-              No Document Types Found
-            </Typography>
-          ) : (
-            <List>
-              {filteredDocTypes.map((docType, index) => (
-                <Accordion key={index} sx={{ marginBottom: "8px", width: "100%" }}>
-                  <AccordionSummary expandIcon={<ExpandMoreIcon />}>
-                    <Grid container spacing={2} style={{ width: "100%" }}>
-                      {/* Left side for Document Type names (English & Marathi) */}
-                      <Grid item xs={12} sm={8}>
-                        <Grid container spacing={2}>
-                          <Grid item xs={6}>
-                            <Typography variant="h6">
-                              {docType.english}
-                            </Typography>
+              {/* Scrollable List */}
+              {/* <Paper sx={{ maxHeight: 600, overflowY: "auto", p: 1 }}> */}
+              {filteredDocTypes.length === 0 ? (
+                <Typography textAlign="center" color="textSecondary">
+                  No Document Types Found
+                </Typography>
+              ) : (
+                <List>
+                  {filteredDocTypes.map((docType, index) => (
+                    <Accordion
+                      key={index}
+                      sx={{
+                        marginBottom: "8px",
+                        width: "100%",
+                        maxWidth: "1400vw",
+                      }}
+                    >
+                      <AccordionSummary expandIcon={<ExpandMoreIcon />}>
+                        <Grid container spacing={2} style={{ width: "100%" }}>
+                          {/* Left side for Document Type names (English & Marathi) */}
+                          <Grid item xs={12} sm={8}>
+                            <Grid container spacing={2}>
+                              <Grid item xs={6}>
+                                <Typography variant="h6">
+                                  {docType.english}
+                                </Typography>
+                              </Grid>
+                              <Grid item xs={6}>
+                                <Typography
+                                  variant="subtitle1"
+                                  color="textSecondary"
+                                >
+                                  {docType.marathi}
+                                </Typography>
+                              </Grid>
+                            </Grid>
                           </Grid>
-                          <Grid item xs={6}>
-                            <Typography
-                              variant="subtitle1"
-                              color="textSecondary"
+
+                          {/* Right side for Edit/Delete Icons and Add Document Button */}
+                          <Grid item xs={12} sm={4}>
+                            <Grid
+                              container
+                              spacing={1}
+                              alignItems="center"
+                              justifyContent="flex-end"
                             >
-                              {docType.marathi}
-                            </Typography>
+                              <Grid item>
+                                <IconButton
+                                  onClick={() => handleDeleteDocType(index)}
+                                >
+                                  <DeleteIcon color="error" />
+                                </IconButton>
+                              </Grid>
+                              <Grid item>
+                                <IconButton
+                                  color="primary"
+                                  onClick={() => handleEditDocType(index)}
+                                >
+                                  <EditNoteIcon />
+                                </IconButton>
+                              </Grid>
+                              <Grid item>
+                                <Button
+                                  variant="outlined"
+                                  onClick={() => {
+                                    setSelectedDocType(index);
+                                    setOpenDocDialog(true);
+                                  }}
+                                >
+                                  Add Document
+                                </Button>
+                              </Grid>
+                            </Grid>
                           </Grid>
                         </Grid>
-                      </Grid>
-
-                      {/* Right side for Edit/Delete Icons and Add Document Button */}
-                      <Grid item xs={12} sm={4}>
-                        <Grid
-                          container
-                          spacing={1}
-                          alignItems="center"
-                          justifyContent="flex-end"
-                        >
-                          <Grid item>
-                            <IconButton
-                              onClick={() => handleDeleteDocType(index)}
-                            >
-                              <DeleteIcon color="error" />
-                            </IconButton>
-                          </Grid>
-                          <Grid item>
-                            <IconButton
-                              color="primary"
-                              onClick={() => handleEditDocType(index)}
-                            >
-                              <EditNoteIcon />
-                            </IconButton>
-                          </Grid>
-                          <Grid item>
-                            <Button
-                              variant="outlined"
-                              size="small"
-                              startIcon={<AddCircleIcon />}
-                              onClick={() => {
-                                setSelectedDocType(index);
-                                setOpenDocDialog(true);
+                      </AccordionSummary>
+                      <AccordionDetails>
+                        {/* Documents List */}
+                        {docType.documents.length === 0 ? (
+                          <Typography color="textSecondary">
+                            No Documents
+                          </Typography>
+                        ) : (
+                          <div style={{ width: "100%" }}>
+                            <DataGrid
+                              rows={docType.documents.map((doc, index) => ({
+                                id: index, // Unique ID for each row
+                                english: doc.english,
+                                marathi: doc.marathi,
+                              }))}
+                              className="datagrid-style"
+                              sx={{
+                                "& .MuiDataGrid-columnHeaders": {
+                                  backgroundColor: (theme) =>
+                                    theme.palette.custome.datagridcolor,
+                                },
+                                "& .MuiDataGrid-row:hover": {
+                                  boxShadow:
+                                    "0px 4px 20px rgba(0, 0, 0.2, 0.2)",
+                                },
                               }}
-                            >
-                              Add Document
-                            </Button>
-                          </Grid>
-                        </Grid>
-                      </Grid>
-                    </Grid>
-                  </AccordionSummary>
-                  <AccordionDetails>
-                    {/* Documents List */}
-                    {docType.documents.length === 0 ? (
-                      <Typography color="textSecondary">
-                        No Documents
-                      </Typography>
-                    ) : (
-                      <div style={{ width: "100%" }}>
-                        <DataGrid
-                          rows={docType.documents.map((doc, index) => ({
-                            id: index, // Unique ID for each row
-                            english: doc.english,
-                            marathi: doc.marathi,
-                          }))}
-                          className="datagrid-style"
-                          sx={{
-                            "& .MuiDataGrid-columnHeaders": {
-                              backgroundColor: (theme) =>
-                                theme.palette.custome.datagridcolor,
-                            },
-                            "& .MuiDataGrid-row:hover": {
-                              boxShadow: "0px 4px 20px rgba(0, 0, 0.2, 0.2)",
-                            },
-                          }}
-                          columns={[
-                            {
-                              field: "english",
-                              headerName: "Document (English)",
-                              flex: 1,
-                            },
-                            {
-                              field: "marathi",
-                              headerName: "Document (Marathi)",
-                              flex: 1,
-                            },
-                            {
-                              field: "actions",
-                              headerName: "Actions",
-                              width: 150,
-                              renderCell: (params) => (
-                                <>
-                                  <IconButton
-                                    onClick={() => {
-                                      setSelectedDocType(index);
-                                      setSelectedDocIndex(params.row.id);
-                                      setNewDocument({
-                                        english: params.row.english,
-                                        marathi: params.row.marathi,
-                                      });
-                                      setOpenDocDialog(true);
-                                    }}
-                                  >
-                                    <EditNoteIcon color="primary" />
-                                  </IconButton>
-                                  <IconButton
-                                    onClick={() =>
-                                      handleDeleteDocument(index, params.row.id)
-                                    }
-                                  >
-                                    <DeleteIcon color="error" />
-                                  </IconButton>
-                                </>
-                              ),
-                            },
-                          ]}
-                          hideFooter
-                          pageSize={5} // You can customize the number of rows per page
-                          rowsPerPageOptions={[5, 10, 20]}
-                        />
+                              columns={[
+                                {
+                                  field: "english",
+                                  headerName: "Document (English)",
+                                  flex: 1,
+                                },
+                                {
+                                  field: "marathi",
+                                  headerName: "Document (Marathi)",
+                                  flex: 1,
+                                },
+                                {
+                                  field: "actions",
+                                  headerName: "Actions",
+                                  width: 150,
+                                  renderCell: (params) => (
+                                    <>
+                                      <IconButton
+                                        onClick={() => {
+                                          setSelectedDocType(index);
+                                          setSelectedDocIndex(params.row.id);
+                                          setNewDocument({
+                                            english: params.row.english,
+                                            marathi: params.row.marathi,
+                                          });
+                                          setOpenDocDialog(true);
+                                        }}
+                                      >
+                                        <EditNoteIcon color="primary" />
+                                      </IconButton>
+                                      <IconButton
+                                        onClick={() =>
+                                          handleDeleteDocument(
+                                            index,
+                                            params.row.id
+                                          )
+                                        }
+                                      >
+                                        <DeleteIcon color="error" />
+                                      </IconButton>
+                                    </>
+                                  ),
+                                },
+                              ]}
+                              hideFooter
+                              pageSize={5} // You can customize the number of rows per page
+                              rowsPerPageOptions={[5, 10, 20]}
+                            />
+                          </div>
+                        )}
+                      </AccordionDetails>
+                    </Accordion>
+                  ))}
+                </List>
+              )}
+              {/* </Paper> */}
+
+              {/* Add / Edit Document Type Dialog */}
+              <Dialog
+                open={openDocTypeDialog}
+                onClose={() => setOpenDocTypeDialog(false)}
+              >
+                <DialogTitle>
+                  {editingDocType !== null
+                    ? "Edit Document Type"
+                    : "Add Document Type"}
+                </DialogTitle>
+                <DialogContent>
+                  <TextField
+                    fullWidth
+                    name="DocTypeEN"
+                    label="Document Type (English)"
+                    value={docType.english}
+                    onChange={(e) =>
+                      setdocType({ ...docType, english: e.target.value })
+                    }
+                    sx={{ mt: 2 }}
+                  />
+                  <TextField
+                    fullWidth
+                    name="DocTypeMR"
+                    label="Document Type (Marathi)"
+                    value={docType.marathi}
+                    onChange={(e) =>
+                      setdocType({ ...docType, marathi: e.target.value })
+                    }
+                    sx={{ mt: 2 }}
+                  />
+                </DialogContent>
+                <DialogActions>
+                  <Button onClick={() => setOpenDocTypeDialog(false)}>
+                    Cancel
+                  </Button>
+                  <Button
+                    sx={{
+                      p: 1,
+                      color: "white",
+                      backgroundColor: "#5C5CFF",
+                      boxShadow: 5,
+                      "&:hover": {
+                        backgroundColor: "#E6E6FA",
+                        border: "1px solid #5C5CFF",
+                        color: "#5C5CFF",
+                      },
+                      "& .MuiButton-label": {
+                        display: "flex",
+                        alignItems: "center",
+                      },
+                      "& .MuiSvgIcon-root": {
+                        marginRight: "10px",
+                      },
+                    }}
+                    onClick={
+                      editingDocType !== null
+                        ? handleUpdateDocType
+                        : handleAddDocType
+                    }
+                    variant="contained"
+                  >
+                    {editingDocType !== null ? "Update" : "Add"}
+                  </Button>
+                </DialogActions>
+              </Dialog>
+
+              {/* Add Document Dialog */}
+              <Dialog
+                open={openDocDialog}
+                onClose={() => setOpenDocDialog(false)}
+              >
+                <DialogTitle>Add Document</DialogTitle>
+                <DialogContent>
+                  <TextField
+                    fullWidth
+                    label="Document Name (English)"
+                    name="DocNameEN"
+                    value={newDocument.english}
+                    onChange={(e) =>
+                      setNewDocument({
+                        ...newDocument,
+                        english: e.target.value,
+                      })
+                    }
+                    sx={{ mt: 2 }}
+                  />
+                  <TextField
+                    fullWidth
+                    name="DocNameMR"
+                    label="Document Name (Marathi)"
+                    value={newDocument.marathi}
+                    onChange={(e) =>
+                      setNewDocument({
+                        ...newDocument,
+                        marathi: e.target.value,
+                      })
+                    }
+                    sx={{ mt: 2 }}
+                  />
+                </DialogContent>
+                <DialogActions>
+                  <Button onClick={() => setOpenDocDialog(false)}>
+                    Cancel
+                  </Button>
+                  <Button
+                    onClick={handleAddOrUpdateDocument}
+                    variant="contained"
+                    sx={{
+                      p: 1,
+                      color: "white",
+                      backgroundColor: "#5C5CFF",
+                      boxShadow: 5,
+                      "&:hover": {
+                        backgroundColor: "#E6E6FA",
+                        border: "1px solid #5C5CFF",
+                        color: "#5C5CFF",
+                      },
+                      "& .MuiButton-label": {
+                        display: "flex",
+                        alignItems: "center",
+                      },
+                      "& .MuiSvgIcon-root": {
+                        marginRight: "10px",
+                      },
+                    }}
+                  >
+                    {selectedDocIndex !== null ? "Update" : "Add"}
+                  </Button>
+                </DialogActions>
+              </Dialog>
+            </div>
+          </Paper>
+          <Paper elevation={3} sx={{ width: "100%", marginTop: 3 }}>
+            <div style={{ padding: "16px", maxWidth: "1850px" }}>
+              {/* Add Service Provider Button */}
+              <Grid container spacing={2} sx={{ mb: 2 }}>
+                <Grid item xs={12} sm={3}>
+                  <Button
+                    sx={{
+                      p: 1,
+                      color: "white",
+                      backgroundColor: "#5C5CFF",
+                      boxShadow: 5,
+                      "&:hover": {
+                        backgroundColor: "#E6E6FA",
+                        border: "1px solid #5C5CFF",
+                        color: "#5C5CFF",
+                      },
+                    }}
+                    onClick={handleOpenServiceProviderDialog}
+                  >
+                    Add Service Provider
+                  </Button>
+                </Grid>
+              </Grid>
+
+              {/* DataGrid */}
+              <DataGrid
+                rows={serviceProviders.map((sp, index) => ({
+                  ...sp,
+                  // Id: sp.Id || index + 1, // Assign unique ID if missing
+                  srNo: index + 1, // Ensure srNo updates dynamically
+                }))}
+                getRowId={(row) => row.srNo} // Ensure DataGrid uses correct row ID
+                columns={[
+                  { field: "srNo", headerName: "Sr. No.", flex: 0.5 },
+                  { field: "serviceName", headerName: "Service Name", flex: 1 },
+                  { field: "timeLimit", headerName: "Time Limit", flex: 1 },
+                  {
+                    field: "designatedOfficer",
+                    headerName: "Designated Officer",
+                    flex: 1,
+                  },
+                  {
+                    field: "firstAppellateOfficer",
+                    headerName: "First Appellate Officer",
+                    flex: 1,
+                  },
+                  {
+                    field: "secondAppellateOfficer",
+                    headerName: "Second Appellate Officer",
+                    flex: 1,
+                  },
+                  {
+                    field: "actions",
+                    headerName: "Actions",
+                    renderCell: (params) => (
+                      <div>
+                        <IconButton
+                          color="primary"
+                          onClick={() =>
+                            handleEditServiceProvider(params.row.Id)
+                          }
+                        >
+                          <EditNoteIcon />
+                        </IconButton>
+                        <IconButton
+                          color="error"
+                          onClick={() =>
+                            handleDeleteServiceProvider(params.row.Id)
+                          }
+                        >
+                          <DeleteIcon />
+                        </IconButton>
                       </div>
-                    )}
-                  </AccordionDetails>
-                </Accordion>
-              ))}
-            </List>
-          )}
-          {/* </Paper> */}
+                    ),
+                  },
+                ]}
+                sx={{
+                  "& .MuiDataGrid-columnHeaders": {
+                    backgroundColor: (theme) =>
+                      theme.palette.custome.datagridcolor,
+                  },
+                  "& .MuiDataGrid-row:hover": {
+                    boxShadow: "0px 4px 20px rgba(0, 0, 0.2, 0.2)",
+                  },
+                }}
+                hideFooter
+              />
 
-          {/* Add / Edit Document Type Dialog */}
-          <Dialog
-            open={openDocTypeDialog}
-            onClose={() => setOpenDocTypeDialog(false)}
-          >
-            <DialogTitle>
-              {editingDocType !== null
-                ? "Edit Document Type"
-                : "Add Document Type"}
-            </DialogTitle>
-            <DialogContent>
-              <TextField
-                fullWidth
-                label="Document Type (English)"
-                value={newDocType.english}
-                onChange={(e) =>
-                  setNewDocType({ ...newDocType, english: e.target.value })
-                }
-                sx={{ mt: 2 }}
-              />
-              <TextField
-                fullWidth
-                label="Document Type (Marathi)"
-                value={newDocType.marathi}
-                onChange={(e) =>
-                  setNewDocType({ ...newDocType, marathi: e.target.value })
-                }
-                sx={{ mt: 2 }}
-              />
-            </DialogContent>
-            <DialogActions>
-              <Button onClick={() => setOpenDocTypeDialog(false)}>
-                Cancel
-              </Button>
-              <Button
-                onClick={
-                  editingDocType !== null
-                    ? handleUpdateDocType
-                    : handleAddDocType
-                }
-                variant="contained"
+              {/* Dialog for Add/Edit */}
+              <Dialog
+                open={openServiceProviderDialog}
+                onClose={() => setOpenServiceProviderDialog(false)}
               >
-                {editingDocType !== null ? "Update" : "Add"}
-              </Button>
-            </DialogActions>
-          </Dialog>
+                <DialogTitle>
+                  {editing ? "Update Service Provider" : "Add Service Provider"}
+                </DialogTitle>
+                <DialogContent>
+                  <TextField
+                    fullWidth
+                    label="Service Name"
+                    value={newServiceProvider.serviceName}
+                    onChange={(e) =>
+                      setNewServiceProvider({
+                        ...newServiceProvider,
+                        serviceName: e.target.value,
+                      })
+                    }
+                    sx={{ mt: 2 }}
+                  />
+                  <TextField
+                    fullWidth
+                    label="Time Limit"
+                    value={newServiceProvider.timeLimit}
+                    onChange={(e) =>
+                      setNewServiceProvider({
+                        ...newServiceProvider,
+                        timeLimit: e.target.value,
+                      })
+                    }
+                    sx={{ mt: 2 }}
+                  />
+                  <TextField
+                    fullWidth
+                    label="Designated Officer"
+                    value={newServiceProvider.designatedOfficer}
+                    onChange={(e) =>
+                      setNewServiceProvider({
+                        ...newServiceProvider,
+                        designatedOfficer: e.target.value,
+                      })
+                    }
+                    sx={{ mt: 2 }}
+                  />
+                  <TextField
+                    fullWidth
+                    label="First Appellate Officer"
+                    value={newServiceProvider.firstAppellateOfficer}
+                    onChange={(e) =>
+                      setNewServiceProvider({
+                        ...newServiceProvider,
+                        firstAppellateOfficer: e.target.value,
+                      })
+                    }
+                    sx={{ mt: 2 }}
+                  />
+                  <TextField
+                    fullWidth
+                    label="Second Appellate Officer"
+                    value={newServiceProvider.secondAppellateOfficer}
+                    onChange={(e) =>
+                      setNewServiceProvider({
+                        ...newServiceProvider,
+                        secondAppellateOfficer: e.target.value,
+                      })
+                    }
+                    sx={{ mt: 2 }}
+                  />
+                </DialogContent>
+                <DialogActions>
+                  <Button onClick={() => setOpenServiceProviderDialog(false)}>
+                    Cancel
+                  </Button>
+                  <Button
+                    onClick={handleSaveServiceProvider}
+                    variant="contained"
+                    sx={{ p: 1, color: "white", backgroundColor: "#5C5CFF" }}
+                  >
+                    {editing ? "Update" : "Save"}
+                  </Button>
+                </DialogActions>
+              </Dialog>
+            </div>
+          </Paper>
 
-          {/* Add Document Dialog */}
-          <Dialog open={openDocDialog} onClose={() => setOpenDocDialog(false)}>
-            <DialogTitle>Add Document</DialogTitle>
-            <DialogContent>
-              <TextField
-                fullWidth
-                label="Document Name (English)"
-                value={newDocument.english}
-                onChange={(e) =>
-                  setNewDocument({ ...newDocument, english: e.target.value })
-                }
-                sx={{ mt: 2 }}
-              />
-              <TextField
-                fullWidth
-                label="Document Name (Marathi)"
-                value={newDocument.marathi}
-                onChange={(e) =>
-                  setNewDocument({ ...newDocument, marathi: e.target.value })
-                }
-                sx={{ mt: 2 }}
-              />
-            </DialogContent>
-            <DialogActions>
-              <Button onClick={() => setOpenDocDialog(false)}>Cancel</Button>
-              <Button onClick={handleAddOrUpdateDocument} variant="contained">
-                {selectedDocIndex !== null ? "Update" : "Add"}
-              </Button>
-            </DialogActions>
-          </Dialog>
-        </div>
-      </Paper>
-      <Paper elevation={3} sx={{ width: "100%", marginTop: 3 }}>
-        <div style={{ padding: "16px", maxWidth: "1850px" }}>
-          {/* Add Service Provider Section */}
-          <Grid container spacing={2} sx={{ mb: 2 }}>
-            <Grid item xs={12} sm={3}>
-              <Button
-                variant="contained"
-                startIcon={<AddCircleIcon />}
-                onClick={handleOpenServiceProviderDialog}
-                fullWidth
-              >
-                Add Service Provider
-              </Button>
-            </Grid>
-          </Grid>
-
-          {/* Service Providers DataGrid */}
-          <DataGrid
-            rows={serviceProviders.map((sp) => ({
-              id: sp.id,
-              srNo: sp.id,
-              serviceName: sp.serviceName,
-              timeLimit: sp.timeLimit,
-              designatedOfficer: sp.designatedOfficer,
-              firstAppellateOfficer: sp.firstAppellateOfficer,
-              secondAppellateOfficer: sp.secondAppellateOfficer,
-            }))}
-            hideFooter
-            sx={{ height: "40vh" }}
-            columns={[
-              { field: "srNo", headerName: "Sr. No.", flex: 0.5 },
-              { field: "serviceName", headerName: "Service Name", flex: 1 },
-              { field: "timeLimit", headerName: "Time Limit", flex: 1 },
-              {
-                field: "designatedOfficer",
-                headerName: "Designated Officer",
-                flex: 1,
-              },
-              {
-                field: "firstAppellateOfficer",
-                headerName: "First Appellate Officer",
-                flex: 1,
-              },
-              {
-                field: "secondAppellateOfficer",
-                headerName: "Second Appellate Officer",
-                flex: 1,
-              },
-              {
-                field: "actions",
-                headerName: "Actions",
-                sortable: false,
-                renderCell: (params) => (
-                  <div>
-                    <IconButton
-                      color="primary"
-                      onClick={() => handleEditServiceProvider(params.row)}
-                    >
-                      <EditNoteIcon />
-                    </IconButton>
-                    <IconButton
-                      color="error"
-                      onClick={() => handleDeleteServiceProvider(params.row.id)}
-                    >
-                      <DeleteIcon />
-                    </IconButton>
-                  </div>
-                ),
-                flex: 0.5,
-              },
-            ]}
-            pageSize={5}
-            rowsPerPageOptions={[5, 10, 20]}
-          />
-
-          {/* Add / Edit Service Provider Dialog */}
-          <Dialog
-            open={openServiceProviderDialog}
-            onClose={() => setOpenServiceProviderDialog(false)}
-          >
-            <DialogTitle>
-              {editing ? "Update Service Provider" : "Add Service Provider"}
-            </DialogTitle>
-            <DialogContent>
-              <TextField
-                fullWidth
-                label="Service Name"
-                value={newServiceProvider.serviceName}
-                onChange={(e) =>
-                  setNewServiceProvider({
-                    ...newServiceProvider,
-                    serviceName: e.target.value,
-                  })
-                }
-                sx={{ mt: 2 }}
-              />
-              <TextField
-                fullWidth
-                label="Time Limit"
-                value={newServiceProvider.timeLimit}
-                onChange={(e) =>
-                  setNewServiceProvider({
-                    ...newServiceProvider,
-                    timeLimit: e.target.value,
-                  })
-                }
-                sx={{ mt: 2 }}
-              />
-              <TextField
-                fullWidth
-                label="Designated Officer"
-                value={newServiceProvider.designatedOfficer}
-                onChange={(e) =>
-                  setNewServiceProvider({
-                    ...newServiceProvider,
-                    designatedOfficer: e.target.value,
-                  })
-                }
-                sx={{ mt: 2 }}
-              />
-              <TextField
-                fullWidth
-                label="First Appellate Officer"
-                value={newServiceProvider.firstAppellateOfficer}
-                onChange={(e) =>
-                  setNewServiceProvider({
-                    ...newServiceProvider,
-                    firstAppellateOfficer: e.target.value,
-                  })
-                }
-                sx={{ mt: 2 }}
-              />
-              <TextField
-                fullWidth
-                label="Second Appellate Officer"
-                value={newServiceProvider.secondAppellateOfficer}
-                onChange={(e) =>
-                  setNewServiceProvider({
-                    ...newServiceProvider,
-                    secondAppellateOfficer: e.target.value,
-                  })
-                }
-                sx={{ mt: 2 }}
-              />
-            </DialogContent>
-            <DialogActions>
-              <Button onClick={() => setOpenServiceProviderDialog(false)}>
-                Cancel
-              </Button>
-              <Button onClick={handleSaveServiceProvider} variant="contained">
-                {editing ? "Update" : "Save"}
-              </Button>
-            </DialogActions>
-          </Dialog>
-        </div>
-      </Paper>
-
-          <DialogActions>
+          <DialogActions sx={{ position: "sticky", bottom: 0, padding: 2 }}>
+            {/* Clear Button - Positioned to the bottom-left */}
             <Button
               sx={{
                 p: 1,
                 px: 4,
                 color: "white",
-                backgroundColor: "#5C5CFF",
-
+                backgroundColor: "#5C5CFF", // Keep the original color
                 boxShadow: 5,
-                position: "fixed",
+                position: "absolute",
                 bottom: 10,
-                right: 10,
+                left: 10,
                 "&:hover": {
-                  backgroundColor: "#E6E6FA",
+                  backgroundColor: "#E6E6FA", // Lighter hover effect
                   border: "1px solid #5C5CFF",
                   color: "#5C5CFF",
                 },
@@ -1276,15 +1509,43 @@ const PostNatal = () => {
                   marginRight: "10px",
                 },
               }}
-              onClick={handleSave}
-              // disabled={!validateForm()}
+              onClick={clearFormData}
+            >
+              Clear
+            </Button>
+
+            {/* Save/Update Button - Positioned to the bottom-right */}
+            <Button
+              sx={{
+                p: 1,
+                px: 4,
+                color: "white",
+                backgroundColor: "#5C5CFF", // Keep the original color
+                boxShadow: 5,
+                position: "absolute",
+                bottom: 10,
+                right: 10,
+                "&:hover": {
+                  backgroundColor: "#E6E6FA", // Lighter hover effect
+                  border: "1px solid #5C5CFF",
+                  color: "#5C5CFF",
+                },
+                "& .MuiButton-label": {
+                  display: "flex",
+                  alignItems: "center",
+                },
+                "& .MuiSvgIcon-root": {
+                  marginRight: "10px",
+                },
+              }}
+              disabled={!validateForm()}
+              onClick={handleSave} // Handle save action
             >
               {SaveUpdateButton}
             </Button>
           </DialogActions>
         </DialogContent>
       </Dialog>
-    
     </>
   );
 };

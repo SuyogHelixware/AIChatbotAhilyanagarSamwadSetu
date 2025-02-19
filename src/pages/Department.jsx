@@ -3,7 +3,12 @@ import AddIcon from "@mui/icons-material/Add";
 import DeleteForeverIcon from "@mui/icons-material/DeleteForever";
 import EditNoteIcon from "@mui/icons-material/EditNote";
 import CloseIcon from "@mui/icons-material/Close";
-import { GridToolbarQuickFilter, GridToolbarContainer } from "@mui/x-data-grid";
+import {
+  GridToolbarQuickFilter,
+  GridToolbarContainer,
+  GridToolbar,
+  GridToolbarExport,
+} from "@mui/x-data-grid";
 
 import {
   Box,
@@ -34,8 +39,8 @@ const Department = () => {
   const [imgData, setImgData] = React.useState([]);
   const [on, setOn] = React.useState(false);
   const [SaveUpdateButton, setSaveUpdateButton] = React.useState("UPDATE");
-  const [totalRows, setTotalRows] = React.useState(0);
-  const [currentPage, setCurrentPage] = React.useState(1);
+  const [totalRows, setTotalRows] = React.useState("");
+  const [currentPage, setCurrentPage] = React.useState(0);
   const [loading, setLoading] = React.useState(false);
   const [searchText, setSearchText] = React.useState(""); // ✅ Search input state
   const limit = 20; // Fixed page size
@@ -44,19 +49,32 @@ const Department = () => {
     DeptNameEN: "",
     DeptNameMR: "",
     Id: "",
+    Status: 1,
   });
 
-
-  function CustomToolbar() {
+  const CustomToolbar = () => {
     return (
-      <GridToolbarContainer>
-        <GridToolbarQuickFilter />
+      <GridToolbarContainer
+        sx={{
+          display: "flex",
+          justifyContent: "space-between", // Aligns Quick Filter left & Export right
+          padding: "8px",
+        }}
+      >
+        {/* Quick Filter (Left) */}
+        <GridToolbarQuickFilter
+          debounceMs={500}
+          sx={{ flexGrow: 1, maxWidth: "300px" }} // Ensures proper spacing
+        />
+
+        {/* Export Button (Right) */}
+        <GridToolbarExport />
       </GridToolbarContainer>
     );
-  }
+  };
   const clearFormData = () => {
     setData({
-      Id: "",
+      // Id: "",
       DeptNameEN: "",
       DeptNameMR: "",
       Status: 1,
@@ -81,7 +99,7 @@ const Department = () => {
     setSaveUpdateButton("SAVE");
     setOn(true);
     clearFormData();
-    setData({ Name: "", DeptNameEN: "", DeptNameMR: "", Id: "" });
+    setData({ Name: "", DeptNameEN: "", DeptNameMR: "", Id: "", Status: 1});
   };
 
   const onChangeHandler = (event) => {
@@ -103,26 +121,26 @@ const Department = () => {
   };
   const handleSubmitForm = async () => {
     try {
-      const token = await getApiToken(); 
-  
+      const token = await getApiToken();
+
       const requiredFields = ["DeptNameEN", "DeptNameMR"];
       const emptyRequiredFields = requiredFields.filter(
         (field) => !data[field]?.trim()
       );
-  
+
       if (emptyRequiredFields.length > 0) {
         validationAlert("Please fill in all required fields");
         return;
       }
-  
+
       const payload = {
         DeptNameEN: data.DeptNameEN,
         DeptNameMR: data.DeptNameMR,
-        Status: data.Status === true || data.Status === 1 ? 1 : 0, // Ensure only 1 or 0 is sent
+        Status: data.Status // Ensure only 1 or 0 is sent
       };
-      console.log(payload)
+      console.log(payload);
       let response;
-  
+
       if (SaveUpdateButton === "SAVE") {
         setLoaderOpen(true);
         response = await axios.post(`${BASE_URL}Department`, payload, {
@@ -143,29 +161,29 @@ const Department = () => {
           });
           return;
         }
-  
+
         const result = await Swal.fire({
-            text: "Do you want to Update...?",
-            icon: "warning",
-            showCancelButton: true,
-            confirmButtonColor: "#3085d6",
-            cancelButtonColor: "#d33",
-            confirmButtonText: "Yes, Update it!",
-            // customClass: {
-            //   popup: "swal-popup", // Custom class for overriding styles
-            // },
-            // didOpen: () => {
-            //   document.querySelector(".swal-popup").style.zIndex = "2000"; // Ensure Swal is above the modal
-            // },
-          });
-          
-  
+          text: "Do you want to Update...?",
+          icon: "warning",
+          showCancelButton: true,
+          confirmButtonColor: "#3085d6",
+          cancelButtonColor: "#d33",
+          confirmButtonText: "Yes, Update it!",
+          didOpen: () => {
+            // Ensure SweetAlert is on top
+            const swalPopup = document.querySelector(".swal2-popup");
+            if (swalPopup) {
+              swalPopup.style.zIndex = "25000";
+            }
+          },
+        });
+
         if (!result.isConfirmed) {
-          return; 
+          return;
         }
-  
-        setLoaderOpen(true); 
-  
+
+        setLoaderOpen(true);
+
         response = await axios.put(
           `${BASE_URL}Department/${data.Id}`,
           payload,
@@ -177,9 +195,9 @@ const Department = () => {
           }
         );
       }
-  
+
       setLoaderOpen(false);
-  
+
       if (response.data.success) {
         Swal.fire({
           position: "center",
@@ -187,8 +205,8 @@ const Department = () => {
           toast: true,
           title:
             SaveUpdateButton === "SAVE"
-              ? "Post Added Successfully"
-              : "Post Updated Successfully",
+              ? "Department Added Successfully"
+              : "Department Updated Successfully",
           showConfirmButton: false,
           timer: 1500,
         });
@@ -200,7 +218,7 @@ const Department = () => {
     } catch (error) {
       setLoaderOpen(false);
       console.error("Submit Error:", error);
-  
+
       if (error.message !== "Update cancelled") {
         Swal.fire({
           position: "center",
@@ -213,7 +231,6 @@ const Department = () => {
       }
     }
   };
-  
 
   const fetchTotalRecords = async () => {
     try {
@@ -226,7 +243,7 @@ const Department = () => {
       });
 
       if (response.data && response.data.values) {
-        setTotalRows(response.data.values.length);
+        setTotalRows(response.data.count);
         console.log("Total records fetched:", response.data.values.length);
       }
     } catch (error) {
@@ -236,6 +253,9 @@ const Department = () => {
 
   const getAllImgList = async (page = 0, searchText = "") => {
     try {
+      console.log("Calling API with Page:", page); // ✅ Debugging line
+      console.log("Search Text:", searchText);
+
       setLoading(true);
       const token = await getApiToken();
 
@@ -244,6 +264,8 @@ const Department = () => {
       if (searchText) {
         apiUrl = `${BASE_URL}Department/ByPage/search/${searchText}/${page}/${limit}`;
       }
+
+      console.log("Final API URL:", apiUrl); // ✅ Check if correct URL is formed
 
       const response = await axios.get(apiUrl, {
         headers: {
@@ -258,15 +280,13 @@ const Department = () => {
         setImgData(
           response.data.values.map((item, index) => ({
             ...item,
-            id: index + 1,
+            id: page * limit + index + 1, // ✅ Ensures SR.NO continues across pages
           }))
         );
+        setTotalRows(response.data.count);
 
         if (searchText) {
-          setTotalRows(response.data.count || response.data.values.length);
-          console.log(totalRows)
-        } else {
-          fetchTotalRecords(); // Fetch total rows when not searching
+          setTotalRows(response.data.count);
         }
       }
     } catch (error) {
@@ -278,17 +298,16 @@ const Department = () => {
 
   React.useEffect(() => {
     if (!searchText) {
-      fetchTotalRecords(); // ✅ Fetch total count only when NOT searching
+      // fetchTotalRecords();
     }
-  
+
     const handler = setTimeout(() => {
       getAllImgList(currentPage, searchText);
     }, 300);
-  
+
     return () => clearTimeout(handler);
   }, [searchText, currentPage]);
-  
- 
+
   const handleDelete = async (rowData) => {
     const token = await getApiToken();
     Swal.fire({
@@ -372,7 +391,13 @@ const Department = () => {
       ),
     },
 
-    { field: "id", headerName: "SR.NO", width: 90, sortable: true },
+    {
+      field: "id",
+      headerName: "Sr.No",
+      width: 100,
+      sortable: true,
+    },
+
     {
       field: "DeptNameEN",
       headerName: "Department Name",
@@ -435,7 +460,7 @@ const Department = () => {
       DeptNameEN: rowData.DeptNameEN,
       DeptNameMR: rowData.DeptNameMR,
       Id: rowData.Id,
-      Status: rowData.Status === true || rowData.Status === 1 ? 1 : 0, // Normalize the value
+      Status: rowData.Status
     });
   };
 
@@ -456,7 +481,7 @@ const Department = () => {
         sx={{
           backdropFilter: "blur(5px)",
           backgroundColor: "rgba(0, 0, 0, 0.3)",
-          // zIndex: 1200, 
+          // zIndex: 1200,
         }}
       >
         <Paper
@@ -553,24 +578,22 @@ const Department = () => {
               />
             </Grid>
 
-            <Grid item md={3} sm={3} xs={12} textAlign={"left"} ml={3}>
-              <CheckboxInputs
-                checked={data.Status === 1}
-                label="Active"
-                id="Status"
-                onChange={(event) =>
-                  onchangeHandler({
-                    target: {
-                      name: "Status",
-                      id: "Status",
-                      value: event.target.checked ? 1 : 0,
-                    },
-                  })
-                }
-                value={data.Status}
-                name="Status"
-              />
-            </Grid>
+            <Grid item xs={12} sm={4} textAlign={"center"}>
+                           <CheckboxInputs
+                             checked={data.Status === 1} // Ensure it's checked by default
+                             label="Active"
+                             id="Status"
+                             onChange={(event) =>
+                               onchangeHandler({
+                                 target: {
+                                   name: "Status",
+                                   value: event.target.checked ? 1 : 0, // Ensure value is set properly
+                                 },
+                               })
+                             }
+                             value={data.Status}
+                             name="Status"
+                           /></Grid>
 
             <Grid item xs={12} md={12} textAlign={"end"}>
               <Button
@@ -673,53 +696,52 @@ const Department = () => {
           </Button>
         </Grid>
       </Grid>
-      <Paper
-        sx={{
-          marginTop: 3,
-          display: "flex",
-          flexDirection: "column",
-          alignItems: "center",
+      <DataGrid
+        className="datagrid-style"
+        rows={imgData}
+        columns={columns}
+        autoHeight
+        pagination
+        paginationMode="server"
+        rowCount={totalRows}
+        pageSizeOptions={[limit]}
+        paginationModel={{ page: currentPage, pageSize: limit }}
+        onPaginationModelChange={(newModel) => {
+          console.log("New Pagination Model:", newModel);
+          setCurrentPage(newModel.page);
+          getAllImgList(newModel.page, searchText);
         }}
-        elevation={7}
-      >
-        <Box sx={{  width: "100%", elevation: 4 }}>
-        <DataGrid
-  className="datagrid-style"
-  rows={imgData}
-  columns={columns}
-  autoHeight
-  pagination
-  paginationMode="server"
-  rowCount={totalRows}
-  pageSizeOptions={[limit]}
-  paginationModel={{ page: currentPage, pageSize: limit }}
-  onPaginationModelChange={(newModel) => {
-    setCurrentPage(newModel.page);
-    getAllImgList(newModel.page, searchText);
-  }}
-  loading={loading}
-  slots={{ toolbar: CustomToolbar }}
-  filterMode="server"
-  onFilterModelChange={(model) => {
-    const quickFilterValue = model.quickFilterValues?.[0] || "";
-    setSearchText(quickFilterValue);
-    setCurrentPage(0);
-    getAllImgList(0, quickFilterValue); 
-  }}
-  sx={{
-    height: "20vh",
-    "& .MuiDataGrid-columnHeaders": {
-      backgroundColor: (theme) => theme.palette.custome.datagridcolor,
-    },
-    "& .MuiDataGrid-row:hover": {
-      boxShadow: "0px 4px 20px rgba(0, 0.2, 0.2, 0.2)",
-    },
-  }}
-/>
+        loading={loading}
+        initialState={{
+          pagination: { paginationModel: { pageSize: 8 } },
 
-        </Box>
-      </Paper>
-      ;
+          filter: {
+            filterModel: {
+              items: [],
+
+              quickFilterValues: [], // Default empty
+            },
+          },
+        }}
+        disableColumnFilter
+        disableColumnSelector
+        disableDensitySelector
+        slots={{ toolbar: GridToolbar }} // Enables search & export
+        slotProps={{
+          toolbar: {
+            showQuickFilter: true,
+
+            quickFilterProps: { debounceMs: 500 },
+          },
+        }}
+        onFilterModelChange={(model) => {
+          const quickFilterValue = model.quickFilterValues?.[0] || "";
+          setSearchText(quickFilterValue);
+          setCurrentPage(0); // ✅ Always reset to first page when searching
+          getAllImgList(0, quickFilterValue);
+        }}
+        getRowId={(row) => row.Id} // Ensure unique row ID from database
+      />
     </>
   );
 };

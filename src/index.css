@@ -11,3 +11,53 @@ code {
   font-family: source-code-pro, Menlo, Monaco, Consolas, 'Courier New',
     monospace;
 }
+.swal2-container {
+  z-index: 25000 !important;
+}
+body {
+  margin: 0;
+  font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', 'Roboto', 'Oxygen',
+    'Ubuntu', 'Cantarell', 'Fira Sans', 'Droid Sans', 'Helvetica Neue',
+    sans-serif;
+  -webkit-font-smoothing: antialiased;
+  -moz-osx-font-smoothing: grayscale;
+}
+
+code {
+  font-family: source-code-pro, Menlo, Monaco, Consolas, 'Courier New',
+    monospace;
+}
+
+.orp-loader-container {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  height: 100vh;
+  background-color: #fff; /* Dark background for the off-road theme */
+  color: black;
+  text-align: center;
+  font-family: "Arial", sans-serif;
+}
+
+
+.orp-subtext {
+  background-size: cover;
+  background-position: center;width: 50%; height: 100%;  
+   animation: flicker 2.5s infinite alternate ease-in-out;
+
+}
+
+
+/* Flickering text effect for "Off Road Performance" */
+@keyframes flicker {
+  0%,
+  100% {
+    opacity: 0.4;
+  }
+  50% {
+    opacity: 1;
+  }
+}
+
+
