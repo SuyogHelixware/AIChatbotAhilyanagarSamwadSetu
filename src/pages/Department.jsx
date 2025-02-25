@@ -1,29 +1,10 @@
-//=================Added Pagination============
 import AddIcon from "@mui/icons-material/Add";
 import DeleteForeverIcon from "@mui/icons-material/DeleteForever";
 import EditNoteIcon from "@mui/icons-material/EditNote";
 import CloseIcon from "@mui/icons-material/Close";
+import { GridToolbar } from "@mui/x-data-grid";
 import {
-  GridToolbarQuickFilter,
-  GridToolbarContainer,
-  GridToolbar,
-  GridToolbarExport,
-} from "@mui/x-data-grid";
-
-import {
-  Box,
-  Button,
-  debounce,
-  FormControl,
-  Grid,
-  IconButton,
-  InputLabel,
-  MenuItem,
-  Modal,
-  Paper,
-  Select,
-  TextField,
-  Typography,
+  Button, Checkbox, FormControlLabel, Grid, IconButton, Modal, Paper, TextField, Typography,
 } from "@mui/material";
 import { DataGrid } from "@mui/x-data-grid";
 import axios from "axios";
@@ -32,81 +13,50 @@ import Swal from "sweetalert2";
 import { BASE_URL } from "../Constant";
 import Loader from "../components/Loader";
 import { CheckboxInputs } from "../components/Component";
-import SearchInputField from "../components/SearchInputField";
+import { debounce } from "lodash"; // Debouncing helper function
+import { Controller, useForm } from "react-hook-form"; // Importing React Hook Form
 
 const Department = () => {
   const [loaderOpen, setLoaderOpen] = React.useState(false);
   const [imgData, setImgData] = React.useState([]);
   const [on, setOn] = React.useState(false);
   const [SaveUpdateButton, setSaveUpdateButton] = React.useState("UPDATE");
+  const [ClearUpdateButton, setClearUpdateButton] = React.useState("RESET");
   const [totalRows, setTotalRows] = React.useState("");
   const [currentPage, setCurrentPage] = React.useState(0);
   const [loading, setLoading] = React.useState(false);
-  const [searchText, setSearchText] = React.useState(""); // ✅ Search input state
+  const [searchText, setSearchText] = React.useState("");
   const limit = 20; // Fixed page size
+  const originalDataRef = React.useRef(null);
 
-  const [data, setData] = React.useState({
-    DeptNameEN: "",
-    DeptNameMR: "",
-    Id: "",
-    Status: 1,
-  });
-
-  const CustomToolbar = () => {
-    return (
-      <GridToolbarContainer
-        sx={{
-          display: "flex",
-          justifyContent: "space-between", // Aligns Quick Filter left & Export right
-          padding: "8px",
-        }}
-      >
-        {/* Quick Filter (Left) */}
-        <GridToolbarQuickFilter
-          debounceMs={500}
-          sx={{ flexGrow: 1, maxWidth: "300px" }} // Ensures proper spacing
-        />
-
-        {/* Export Button (Right) */}
-        <GridToolbarExport />
-      </GridToolbarContainer>
-    );
-  };
-  const clearFormData = () => {
-    setData({
-      // Id: "",
+  // React Hook Form initialization
+  const { register, handleSubmit, control, setValue, reset, formState: { errors } } = useForm({
+    defaultValues: {
       DeptNameEN: "",
       DeptNameMR: "",
-      Status: 1,
-    });
-  };
-
-  // ========================
-  const getApiToken = async () => {
-    const data = sessionStorage.getItem("userData");
-    if (data !== null) {
-      const fetchedData = JSON.parse(data);
-      return fetchedData.Token;
+      Status: 1, // Default to checked (1)
+    },
+  });
+  const clearFormData = () => {
+    if (ClearUpdateButton === "CLEAR") {
+      reset({
+        DeptNameEN: "",
+        DeptNameMR: "",
+        Status: 1,
+      });
+    }
+    if (ClearUpdateButton === "RESET") {
+      reset(originalDataRef.current);
     }
   };
-  // ========================
 
-  const handleClose = () => {
-    setOn(false);
-  };
+  const handleClose = () => setOn(false);
 
   const handleOnSave = () => {
     setSaveUpdateButton("SAVE");
+    setClearUpdateButton("CLEAR");
     setOn(true);
     clearFormData();
-    setData({ Name: "", DeptNameEN: "", DeptNameMR: "", Id: "", Status: 1});
-  };
-
-  const onChangeHandler = (event) => {
-    setData({
-      ...data,
-      [event.target.name]: event.target.value,
-    });
   };
 
   const validationAlert = (message) => {
@@ -119,13 +69,12 @@ const Department = () => {
       timer: 1500,
     });
   };
-  const handleSubmitForm = async () => {
-    try {
-      const token = await getApiToken();
 
+  const handleSubmitForm = async (formData) => {
+    try {
       const requiredFields = ["DeptNameEN", "DeptNameMR"];
       const emptyRequiredFields = requiredFields.filter(
-        (field) => !data[field]?.trim()
+        (field) => !formData[field]?.trim()
       );
 
       if (emptyRequiredFields.length > 0) {
@@ -134,23 +83,18 @@ const Department = () => {
       }
 
       const payload = {
-        DeptNameEN: data.DeptNameEN,
-        DeptNameMR: data.DeptNameMR,
-        Status: data.Status // Ensure only 1 or 0 is sent
+        Id: null || formData.Id,
+        DeptNameEN: formData.DeptNameEN,
+        DeptNameMR: formData.DeptNameMR,
+        Status: formData.Status,
       };
-      console.log(payload);
       let response;
 
       if (SaveUpdateButton === "SAVE") {
         setLoaderOpen(true);
-        response = await axios.post(`${BASE_URL}Department`, payload, {
-          headers: {
-            "Content-Type": "application/json",
-            Authorization: token,
-          },
-        });
+        response = await axios.post(`${BASE_URL}Department`, payload);
       } else {
-        if (!data.Id) {
+        if (!formData.Id) {
           Swal.fire({
             position: "center",
             icon: "error",
@@ -169,13 +113,6 @@ const Department = () => {
           confirmButtonColor: "#3085d6",
           cancelButtonColor: "#d33",
           confirmButtonText: "Yes, Update it!",
-          didOpen: () => {
-            // Ensure SweetAlert is on top
-            const swalPopup = document.querySelector(".swal2-popup");
-            if (swalPopup) {
-              swalPopup.style.zIndex = "25000";
-            }
-          },
         });
 
         if (!result.isConfirmed) {
@@ -183,17 +120,7 @@ const Department = () => {
         }
 
         setLoaderOpen(true);
-
-        response = await axios.put(
-          `${BASE_URL}Department/${data.Id}`,
-          payload,
-          {
-            headers: {
-              "Content-Type": "application/json",
-              Authorization: token,
-            },
-          }
-        );
+        response = await axios.put(`${BASE_URL}Department/${formData.Id}`, payload);
       }
 
       setLoaderOpen(false);
@@ -203,91 +130,47 @@ const Department = () => {
           position: "center",
           icon: "success",
           toast: true,
-          title:
-            SaveUpdateButton === "SAVE"
-              ? "Department Added Successfully"
-              : "Department Updated Successfully",
+          title: SaveUpdateButton === "SAVE"
+            ? "Department Added Successfully"
+            : "Department Updated Successfully",
           showConfirmButton: false,
           timer: 1500,
         });
         handleClose();
-        getAllImgList();
+        getAllImgList(currentPage, searchText);
       } else {
         throw new Error(response.data.message || "Unexpected error");
       }
     } catch (error) {
       setLoaderOpen(false);
-      console.error("Submit Error:", error);
-
-      if (error.message !== "Update cancelled") {
-        Swal.fire({
-          position: "center",
-          icon: "error",
-          toast: true,
-          title: "Failed",
-          text: error.message || "Something went wrong",
-          showConfirmButton: true,
-        });
-      }
-    }
-  };
-
-  const fetchTotalRecords = async () => {
-    try {
-      const token = await getApiToken();
-      const response = await axios.get(`${BASE_URL}Department/All`, {
-        headers: {
-          "Content-Type": "application/json",
-          Authorization: token,
-        },
+      Swal.fire({
+        position: "center",
+        icon: "error",
+        toast: true,
+        title: "Failed",
+        text: error.message || "Something went wrong",
+        showConfirmButton: true,
       });
-
-      if (response.data && response.data.values) {
-        setTotalRows(response.data.count);
-        console.log("Total records fetched:", response.data.values.length);
-      }
-    } catch (error) {
-      console.error("Error fetching total records:", error);
     }
   };
 
   const getAllImgList = async (page = 0, searchText = "") => {
     try {
-      console.log("Calling API with Page:", page); // ✅ Debugging line
-      console.log("Search Text:", searchText);
-
       setLoading(true);
-      const token = await getApiToken();
-
       let apiUrl = `${BASE_URL}Department/ByPage/${page}/${limit}`;
-
       if (searchText) {
         apiUrl = `${BASE_URL}Department/ByPage/search/${searchText}/${page}/${limit}`;
       }
 
-      console.log("Final API URL:", apiUrl); // ✅ Check if correct URL is formed
-
-      const response = await axios.get(apiUrl, {
-        headers: {
-          "Content-Type": "application/json",
-          Authorization: token,
-        },
-      });
-
-      console.log("API Response:", response.data);
-
+      const response = await axios.get(apiUrl);
       if (response.data && response.data.values) {
         setImgData(
           response.data.values.map((item, index) => ({
             ...item,
-            id: page * limit + index + 1, // ✅ Ensures SR.NO continues across pages
+            id: page * limit + index + 1,
           }))
         );
         setTotalRows(response.data.count);
-
-        if (searchText) {
-          setTotalRows(response.data.count);
-        }
       }
     } catch (error) {
       console.error("Error fetching data:", error);
@@ -296,20 +179,19 @@ const Department = () => {
     }
   };
 
-  React.useEffect(() => {
-    if (!searchText) {
-      // fetchTotalRecords();
-    }
-
-    const handler = setTimeout(() => {
+  // Debounced search function
+  const debouncedSearch = React.useMemo(
+    () => debounce((searchText) => {
       getAllImgList(currentPage, searchText);
-    }, 300);
+    }, 500), [currentPage]
+  );
 
-    return () => clearTimeout(handler);
-  }, [searchText, currentPage]);
+  React.useEffect(() => {
+    debouncedSearch(searchText);
+    return () => debouncedSearch.cancel(); // Cancel the debounced search when component unmounts
+  }, [searchText]);
 
   const handleDelete = async (rowData) => {
-    const token = await getApiToken();
     Swal.fire({
       text: "Are you sure you want to delete?",
       icon: "warning",
@@ -317,54 +199,43 @@ const Department = () => {
       confirmButtonColor: "#d33",
       cancelButtonColor: "#3085d6",
       confirmButtonText: "Yes, delete it!",
-    }).then((result) => {
+    }).then(async (result) => {
       if (result.isConfirmed) {
         setLoaderOpen(true);
-        axios
-          .delete(`${BASE_URL}Department/${rowData.Id}`, {
-            headers: {
-              "Content-Type": "application/json",
-              Authorization: token,
-            },
-          })
-          .then((response) => {
-            setLoaderOpen(false);
-
-            console.log("Delete API Response:", response.data);
-
-            if (response.data && response.data.success === true) {
-              Swal.fire({
-                position: "center",
-                icon: "success",
-                toast: true,
-                title: "Department deleted successfully",
-                showConfirmButton: false,
-                timer: 1500,
-              });
-
-              getAllImgList();
-            } else {
-              Swal.fire({
-                position: "center",
-                icon: "error",
-                toast: true,
-                title: "Failed",
-                text: `Unexpected response: ${JSON.stringify(response.data)}`,
-                showConfirmButton: true,
-              });
-            }
-          })
-          .catch((error) => {
-            setLoaderOpen(false);
+        try {
+          const response = await axios.delete(`${BASE_URL}Department/${rowData.Id}`);
+          setLoaderOpen(false);
+          if (response.data && response.data.success) {
+            Swal.fire({
+              position: "center",
+              icon: "success",
+              toast: true,
+              title: "Department deleted successfully",
+              showConfirmButton: false,
+              timer: 1500,
+            });
+            getAllImgList(currentPage, searchText);
+          } else {
             Swal.fire({
               position: "center",
               icon: "error",
               toast: true,
               title: "Failed",
-              text: error.message || "Something went wrong",
+              text: `Unexpected response: ${JSON.stringify(response.data)}`,
               showConfirmButton: true,
             });
+          }
+        } catch (error) {
+          setLoaderOpen(false);
+          Swal.fire({
+            position: "center",
+            icon: "error",
+            toast: true,
+            title: "Failed",
+            text: error.message || "Something went wrong",
+            showConfirmButton: true,
           });
+        }
       }
     });
   };
@@ -380,51 +251,25 @@ const Department = () => {
           <IconButton color="primary" onClick={() => handleUpdate(params.row)}>
             <EditNoteIcon />
           </IconButton>
-          <Button
-            size="medium"
-            sx={{ color: "red" }}
-            onClick={() => handleDelete(params.row)}
-          >
+          <Button size="medium" sx={{ color: "red" }} onClick={() => handleDelete(params.row)}>
             <DeleteForeverIcon />
           </Button>
         </strong>
       ),
     },
-
-    {
-      field: "id",
-      headerName: "Sr.No",
-      width: 100,
-      sortable: true,
-    },
-
-    {
-      field: "DeptNameEN",
-      headerName: "Department Name",
-      width: 250,
-      sortable: false,
-    },
-    {
-      field: "DeptNameMR",
-      headerName: "Department Name Marathi",
-      width: 250,
-      sortable: false,
-    },
-
+    { field: "id", headerName: "Sr.No", width: 100, sortable: true },
+    { field: "DeptNameEN", headerName: "Department Name", width: 500, sortable: false },
+    { field: "DeptNameMR", headerName: "Department Name Marathi", width: 500, sortable: false },
     {
       field: "Status",
       headerName: "Status",
-      width: 100,
+      width: 200,
       sortable: false,
-      valueGetter: (params) =>
-        params.row.Status === 1 ? "Active" : "Inactive",
+      valueGetter: (params) => (params.row.Status === 1 ? "Active" : "Inactive"),
       renderCell: (params) => {
         const isActive = params.row.Status === 1;
         return (
-          <button
-            style={isActive ? activeButtonStyle : inactiveButtonStyle}
-            disabled
-          >
+          <button style={isActive ? activeButtonStyle : inactiveButtonStyle} disabled>
             {isActive ? "Active" : "Inactive"}
           </button>
         );
@@ -452,255 +297,255 @@ const Department = () => {
     backgroundColor: "#dc3545",
   };
 
-  const handleUpdate = (rowData) => {
-    console.log("Clicked Row Data:", rowData);
+  const handleUpdate = async (rowData) => {
     setSaveUpdateButton("UPDATE");
+    setClearUpdateButton("RESET");
     setOn(true);
-    setData({
-      DeptNameEN: rowData.DeptNameEN,
-      DeptNameMR: rowData.DeptNameMR,
-      Id: rowData.Id,
-      Status: rowData.Status
-    });
+    try {
+      setLoading(true);
+      const apiUrl = `${BASE_URL}Department/ById/${rowData.Id}`;
+      const response = await axios.get(apiUrl);
+      if (response.data && response.data.values) {
+        const department = response.data.values;
+        originalDataRef.current = department;
+        setValue("Id", department.Id)
+        setValue("DeptNameEN", department.DeptNameEN);
+        setValue("DeptNameMR", department.DeptNameMR);
+        setValue("Status", department.Status);
+      }
+    } catch (error) {
+      console.error("Error fetching department data:", error);
+    } finally {
+      setLoading(false);
+    }
   };
 
-  const onchangeHandler = (event) => {
-    const { name, value } = event.target;
-
-    setData({
-      ...data,
-      [name]: value,
-    });
-  };
   return (
     <>
-      {loaderOpen && <Loader open={loaderOpen} />}
-      <Modal
-        open={on}
-        onClose={handleClose}
+    {loaderOpen && <Loader open={loaderOpen} />}
+    <Modal
+      open={on}
+      onClose={handleClose}
+      sx={{
+        backdropFilter: "blur(5px)",
+        backgroundColor: "rgba(0, 0, 0, 0.3)",
+        // zIndex: 1200,
+      }}
+    >
+      <Paper
+        elevation={10}
         sx={{
-          backdropFilter: "blur(5px)",
-          backgroundColor: "rgba(0, 0, 0, 0.3)",
-          // zIndex: 1200,
+          width: "90%",
+          maxWidth: 400,
+          // bgcolor: "#E6E6FA",
+          position: "absolute",
+          top: "50%",
+          left: "50%",
+          transform: "translate(-50%, -50%)",
+          justifyContent: "center",
         }}
       >
-        <Paper
-          elevation={10}
-          sx={{
-            width: "90%",
-            maxWidth: 400,
-            // bgcolor: "#E6E6FA",
-            position: "absolute",
-            top: "50%",
-            left: "50%",
-            transform: "translate(-50%, -50%)",
-            justifyContent: "center",
-          }}
-        >
-          <Grid
-            container
-            item
-            xs={12}
-            spacing={4}
-            display={"flex"}
-            flexDirection={"column"}
-            padding={3}
-            justifyContent={"center"}
-          >
-            <Grid
-              item
-              xs={12}
-              display="flex"
-              justifyContent="space-between"
-              alignItems="center"
-            >
-              <Typography fontWeight="bold">Add Department</Typography>
-              <IconButton onClick={handleClose}>
-                <CloseIcon />
-              </IconButton>
-            </Grid>
-
-            {/* <Grid item xs={12}>
-              <FormControl
-                sx={{ width: "110px" }}
-                size="small"
-                disabled={SaveUpdateButton === "SAVE"}
-              >
-                <InputLabel id="demo-select-large-Choose-Lang">
-                  Select Lang
-                </InputLabel>
-
-                <Select
-                  id="Category"
-                  label="Category"
-                  name="Category"
-                  onChange={onChangeHandler}
-                  value={data.Category}
-                  disabled={SaveUpdateButton === "SAVE"}
-                >
-                  <MenuItem key="en" value="en">
-                    English
-                  </MenuItem>
-                  <MenuItem key="mr" value="mr">
-                    Marathi
-                  </MenuItem>
-                </Select>
-              </FormControl>
-            </Grid> */}
-
-            <Grid item xs={12}>
-              <TextField
-                size="small"
-                spacing={"5"}
-                fullWidth
-                id="DeptNameEN"
-                label="Department Name English"
-                name="DeptNameEN"
-                value={data.DeptNameEN || ""}
-                onChange={onChangeHandler}
-                autoFocus
-                style={{ borderRadius: 10, width: "100%" }}
-              />
-            </Grid>
-
-            <Grid item xs={12}>
-              <TextField
-                size="small"
-                spacing={"5"}
-                fullWidth
-                id="DeptNameMR"
-                label="Department Name Marathi"
-                name="DeptNameMR"
-                value={data.DeptNameMR || ""}
-                onChange={onChangeHandler}
-                autoFocus
-                style={{ borderRadius: 10, width: "100%" }}
-              />
-            </Grid>
-
-            <Grid item xs={12} sm={4} textAlign={"center"}>
-                           <CheckboxInputs
-                             checked={data.Status === 1} // Ensure it's checked by default
-                             label="Active"
-                             id="Status"
-                             onChange={(event) =>
-                               onchangeHandler({
-                                 target: {
-                                   name: "Status",
-                                   value: event.target.checked ? 1 : 0, // Ensure value is set properly
-                                 },
-                               })
-                             }
-                             value={data.Status}
-                             name="Status"
-                           /></Grid>
-
-            <Grid item xs={12} md={12} textAlign={"end"}>
-              <Button
-                type="submit"
-                size="small"
-                onClick={handleSubmitForm}
-                sx={{
-                  marginTop: 1,
-                  p: 1,
-                  width: 80,
-                  color: "white",
-                  boxShadow: 5,
-                  backgroundColor: "#5C5CFF",
-                  "&:hover": {
-                    backgroundColor: "#E6E6FA",
-                    border: "1px solid #5C5CFF",
-                    color: "#5C5CFF",
-                  },
-                }}
-              >
-                {SaveUpdateButton}
-              </Button>
-            </Grid>
-            <Grid />
-          </Grid>
-        </Paper>
-      </Modal>
-      <Grid
-        container
-        md={12}
-        lg={12}
-        component={Paper}
-        textAlign={"center"}
-        sx={{
-          width: "100%",
-          px: 5,
-          display: "flex",
-          flexDirection: "row",
-          alignItems: "center",
-          justifyContent: "space-between",
-          mb: 2,
-        }}
-        elevation={4}
-      >
-        <Typography
-          className="slide-in-text"
-          width={"100%"}
-          textAlign="center"
-          textTransform="uppercase"
-          fontWeight="bold"
-          // color={"#5C5CFF"}
-          padding={1}
-          noWrap
-        >
-          Manage Department
-        </Typography>
-      </Grid>
-      <Grid container spacing={2} marginBottom={1}>
-        <Grid item xs={12} md={8} lg={8}>
-          {/* <SearchInputField
-            value={searchText}
-            onChange={(e) => setSearchText(e.target.value)}
-            onClickClear={() => setSearchText("")}
-          /> */}
-        </Grid>
-
         <Grid
+          container
           item
           xs={12}
-          md={4}
-          lg={4}
-          display="flex"
-          justifyContent={{ xs: "center", md: "flex-end" }}
+          spacing={4}
+          display={"flex"}
+          flexDirection={"column"}
+          padding={3}
+          justifyContent={"center"}
+          marginBottom={"14px"}
+          onSubmit={handleSubmit(handleSubmitForm)}
+          component={"form"}
         >
-          <Button
-            onClick={handleOnSave}
-            type="text"
-            size="medium"
-            sx={{
-              pr: 2,
-              color: "white",
-              backgroundColor: "#5C5CFF",
-              boxShadow: 5,
-              "&:hover": {
-                backgroundColor: "#E6E6FA",
-                border: "1px solid #5C5CFF",
-                color: "#5C5CFF",
-              },
-              "& .MuiButton-label": {
-                display: "flex",
-                alignItems: "center",
-              },
-              "& .MuiSvgIcon-root": {
-                marginRight: "10px",
-              },
-            }}
+          <Grid item xs={12}    sx={{ display: "flex", justifyContent: "space-between" }}>
+            <Typography fontWeight="bold" textAlign={"center"}>
+              Add Department
+            </Typography>
+            <IconButton onClick={handleClose}>
+              <CloseIcon />
+            </IconButton>
+          </Grid>
+          {/* <form onSubmit={handleSubmit(handleSubmitForm)}> */}
+
+          <Grid item xs={12}>
+          <TextField
+                  label="Department Name (English)"
+                  fullWidth
+                  {...register("DeptNameEN", { required: "This field is required" })}
+                  error={!!errors.DeptNameEN}
+                  helperText={errors.DeptNameEN?.message}
+                />
+          </Grid>
+
+          <Grid item xs={12}>
+          <TextField
+                  label="Department Name (Marathi)"
+                  fullWidth
+                  {...register("DeptNameMR", { required: "This field is required" })}
+                  error={!!errors.DeptNameMR}
+                  helperText={errors.DeptNameMR?.message}
+                />
+          </Grid>
+
+          <Grid item xs={12} sm={4} textAlign={"center"}>
+          <Controller
+                  name="Status"
+                  control={control}
+                  defaultValue={1} // Default to checked (1)
+                  render={({ field }) => (
+                    <FormControlLabel
+                      control={
+                        <Checkbox
+                          {...field}
+                          checked={field.value === 1}
+                          onChange={(e) => field.onChange(e.target.checked ? 1 : 0)}
+                        />
+                      }
+                      label="Active"
+                    />
+                  )}
+                />
+          </Grid>
+          <Grid item xs={12} sm={4} textAlign={"center"}></Grid>
+
+          <Grid
+            item
+            xs={12}
+            md={12}
+            display="flex"
+            justifyContent="space-between"
+            alignItems="center"
+            sx={{ position: "absolute", bottom: 10, left: 10, right: 10, mt:"10px" }}
           >
-            <AddIcon />
-            Add Department
-          </Button>
+            <Button
+              size="small"
+              onClick={() => clearFormData()} // Cancel button functionality
+              sx={{
+                p: 1,
+                width: 80,
+                color: "rgb(0, 90, 91)",
+                background: "transparent",
+                border: "1px solid rgb(0, 90, 91)",
+                borderRadius: "8px",
+                transition: "all 0.2s ease-in-out",
+                "&:hover": {
+                  background: "rgba(0, 90, 91, 0.1)",
+                  transform: "translateY(2px)",
+                },
+              }}
+            >
+              {ClearUpdateButton}
+            </Button>
+            <Button
+              type="submit"
+              size="small"
+              // onClick={handleSubmitForm}
+              sx={{
+                marginTop: 1,
+                p: 1,
+                width: 80,
+                color: "white",
+                background:
+                  "linear-gradient(to right, rgb(0, 90, 91), rgb(22, 149, 153))",
+                boxShadow: 5,
+               "&:hover": {
+                      transform: "translateY(2px)",
+                      boxShadow: "0 2px 4px rgba(0, 90, 91, 0.2)",
+                    },
+              }}
+            >
+              {SaveUpdateButton}
+            </Button>
+          </Grid>
+          {/* </form> */}
+          <Grid />
         </Grid>
-      </Grid>
+      </Paper>
+    </Modal>
+    <Grid
+      container
+      md={12}
+      lg={12}
+      component={Paper}
+      textAlign={"center"}
+      sx={{
+        width: "100%",
+        px: 5,
+        display: "flex",
+        flexDirection: "row",
+        alignItems: "center",
+        justifyContent: "space-between",
+        mb: 2,
+      }}
+      elevation={4}
+    >
+      <Typography
+        className="slide-in-text"
+        width={"100%"}
+        textAlign="center"
+        textTransform="uppercase"
+        fontWeight="bold"
+        // color={"#5C5CFF"}
+        padding={1}
+        noWrap
+      >
+        Manage Department
+      </Typography>
+    </Grid>
+    <Grid container spacing={2} marginBottom={1} justifyContent="flex-end">
+  <Grid
+    item
+    xs={12}
+    md={4}
+    lg={4}
+  >
+    <Button
+      onClick={handleOnSave}
+      type="text"
+      size="medium"
+      sx={{
+        pr: 2,
+        color: "white",
+        background:
+          "linear-gradient(to right, rgb(0, 90, 91), rgb(22, 149, 153))",
+        borderRadius: "8px",
+        transition: "all 0.2s ease-in-out",
+        boxShadow: "0 4px 8px rgba(0, 90, 91, 0.3)",
+        "&:hover": {
+          transform: "translateY(2px)",
+          boxShadow: "0 2px 4px rgba(0, 90, 91, 0.2)",
+        },
+        "& .MuiButton-label": {
+          display: "flex",
+          alignItems: "center",
+        },
+        "& .MuiSvgIcon-root": {
+          marginRight: "10px",
+        },
+      }}
+    >
+      <AddIcon />
+      Add Department
+    </Button>
+  </Grid>
+</Grid>
+    <Grid container item lg={12} component={Paper} sx={{ height: "80vh", width: "100%" }}>
       <DataGrid
         className="datagrid-style"
+        sx={{
+          height: "100%", // Set height in percentage
+          minHeight: "500px",
+          "& .MuiDataGrid-columnHeaders": {
+            backgroundColor: (theme) => theme.palette.custome.datagridcolor,
+          },
+          "& .MuiDataGrid-row:hover": {
+            boxShadow: "0px 4px 20px rgba(0, 0, 0.2, 0.2)",
+          },
+        }}
         rows={imgData}
         columns={columns}
-        autoHeight
+        // autoHeight
         pagination
         paginationMode="server"
         rowCount={totalRows}
@@ -742,7 +587,8 @@ const Department = () => {
         }}
         getRowId={(row) => row.Id} // Ensure unique row ID from database
       />
-    </>
+    </Grid>
+  </>
   );
 };
 

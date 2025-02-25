@@ -1,6 +1,3 @@
-//==================service provider setting in edit case===============
-//=============main====================
-//======================================Services=========================
 import CloseIcon from "@mui/icons-material/Close";
 import DeleteForeverIcon from "@mui/icons-material/DeleteForever";
 import EditNoteIcon from "@mui/icons-material/EditNote";
@@ -13,20 +10,16 @@ import {
   DialogActions,
   DialogContent,
   DialogTitle,
-  FormControl,
   Grid,
   IconButton,
-  InputLabel,
   List,
-  MenuItem,
   Paper,
-  Select,
   TextField,
   Typography,
 } from "@mui/material";
 import { DataGrid, GridToolbar } from "@mui/x-data-grid";
 import axios from "axios";
-import React, { useEffect, useState } from "react";
+import React, { useEffect, useRef, useState } from "react";
 import Swal from "sweetalert2";
 import { BASE_URL } from "../../Constant";
 import InputTextField, {
@@ -36,14 +29,11 @@ import InputTextField, {
 import Loader from "../../components/Loader";
 // import ServiceDocType from "./ServicesDocType";
 import ExpandMoreIcon from "@mui/icons-material/ExpandMore";
-import AddCircleIcon from "@mui/icons-material/AddCircle";
 import DeleteIcon from "@mui/icons-material/Delete";
 import { useTheme } from "@emotion/react";
-// import PostNatalExercise from "./PostNatalExercise";
-// import PostNatalMedication from "./PostNatalMedication";
-// import PostNatalPrecaution from "./PostNatalPrecaution";
-// import PostNatalVaccination from "./PostNatalVaccination";
-const PostNatal = () => {
+import Autocomplete from "@mui/material/Autocomplete";
+
+const OnlineServices = () => {
   const [loaderOpen, setLoaderOpen] = useState(false);
   const [SaveUpdateButton, setSaveUpdateButton] = useState("UPDATE");
   const [open, setOpen] = useState(false);
@@ -61,12 +51,11 @@ const PostNatal = () => {
     DeptId: "",
     Status: 1,
   });
-
+  const [selectedDocTypeIndex, setSelectedDocTypeIndex] = React.useState(null);
   const [docTypes, setDocTypes] = useState([]);
   const [serviceProviders, setServiceProviders] = useState([]); // State for Service Providers
   const [searchQuery, setSearchQuery] = useState("");
   const [searchText, setSearchText] = React.useState(""); // ✅ Search input state
-
   const [openDocTypeDialog, setOpenDocTypeDialog] = useState(false);
   const [openDocDialog, setOpenDocDialog] = useState(false);
   const [openServiceProviderDialog, setOpenServiceProviderDialog] =
@@ -90,59 +79,11 @@ const PostNatal = () => {
   const [selectedDocIndex, setSelectedDocIndex] = useState(null);
   const [loading, setLoading] = React.useState(false);
   const limit = 20; // Fixed page size
-
-  const theme = useTheme();
-
-  const handleDelete = async (id) => {
-    Swal.fire({
-      text: "Are you sure you want to delete?",
-      icon: "warning",
-      showCancelButton: true,
-      confirmButtonColor: "#d33",
-      cancelButtonColor: "#3085d6",
-      confirmButtonText: "Yes, delete it!",
-    }).then((result) => {
-      if (result.isConfirmed) {
-        axios
-          .delete(`${BASE_URL}DepartmentSer/${id}`, {})
-          .then((response) => {
-            if (response.data.success === true) {
-              setLoaderOpen(false);
-              setData(data.filter((user) => user.Id !== id));
-              Swal.fire({
-                position: "center",
-                icon: "success",
-                toast: true,
-                title: "Service deleted Successfully",
-                showConfirmButton: false,
-                timer: 1500,
-              });
-            } else {
-              setLoaderOpen(false);
-              Swal.fire({
-                icon: "error",
-                toast: true,
-                title: "Failed",
-                text: "Failed to Delete Service",
-                showConfirmButton: true,
-              });
-            }
-          })
-          .catch((error) => {
-            setLoaderOpen(false);
-            Swal.fire({
-              icon: "error",
-              toast: true,
-              title: "Failed",
-              text: error,
-              showConfirmButton: true,
-            });
-          });
-      }
-      setLoaderOpen(false);
-    });
-  };
-
+  const [ClearUpdateButton, setClearUpdateButton] = React.useState("CLEAR");
+  const [ClearDocTypeButton, setClearDocTypeButton] = React.useState("RESET");
+  const originalDataRef = React.useRef(null);
+  const [saveDocTypeButton, setSaveDocTypeButton] = useState("SAVE");
+  const selectedDocTypeIndexRef = useRef(null);
   const columns = [
     {
       field: "actions",
@@ -152,7 +93,12 @@ const PostNatal = () => {
       renderCell: (params) => (
         <strong>
           <IconButton
-            color="primary"
+            sx={{
+              color: "rgb(0, 90, 91)", // Apply color to the icon
+              "&:hover": {
+                backgroundColor: "rgba(0, 90, 91, 0.1)", // Optional hover effect
+              },
+            }}
             onClick={() => handleEditClick(params.row)}
           >
             <EditNoteIcon />
@@ -249,6 +195,56 @@ const PostNatal = () => {
     ...buttonStyles,
     backgroundColor: "red",
   };
+  const handleDelete = async (id) => {
+    Swal.fire({
+      text: "Are you sure you want to delete?",
+      icon: "warning",
+      showCancelButton: true,
+      confirmButtonColor: "#d33",
+      cancelButtonColor: "#3085d6",
+      confirmButtonText: "Yes, delete it!",
+    }).then((result) => {
+      if (result.isConfirmed) {
+        axios
+          .delete(`${BASE_URL}DepartmentSer/${id}`, {})
+          .then((response) => {
+            if (response.data.success === true) {
+              setLoaderOpen(false);
+              getAllDeptServData(currentPage, searchText);
+              setData(data.filter((user) => user.Id !== id));
+              Swal.fire({
+                position: "center",
+                icon: "success",
+                toast: true,
+                title: "Service deleted Successfully",
+                showConfirmButton: false,
+                timer: 1500,
+              });
+            } else {
+              setLoaderOpen(false);
+              Swal.fire({
+                icon: "error",
+                toast: true,
+                title: "Failed",
+                text: "Failed to Delete Service",
+                showConfirmButton: true,
+              });
+            }
+          })
+          .catch((error) => {
+            setLoaderOpen(false);
+            Swal.fire({
+              icon: "error",
+              toast: true,
+              title: "Failed",
+              text: error,
+              showConfirmButton: true,
+            });
+          });
+      }
+      setLoaderOpen(false);
+    });
+  };
 
   const getAllDeptServData = async (page = 0, searchText = "") => {
     try {
@@ -290,21 +286,19 @@ const PostNatal = () => {
       }
     } catch (error) {
       console.error("Error fetching data:", error);
+      Swal.fire({
+        icon: "error",
+        toast: true,
+        title: "Failed",
+        text: error,
+        showConfirmButton: true,
+      });
     } finally {
       setLoading(false);
     }
   };
-  // Function to delete a Document Type
-  const handleDeleteDocType = (index) => {
-    setDocTypes(docTypes.filter((_, i) => i !== index));
-  };
-  // Function to delete a Document
-  const handleDeleteDocument = (docTypeIndex, docIndex) => {
-    const updatedDocTypes = [...docTypes];
-    updatedDocTypes[docTypeIndex].documents.splice(docIndex, 1);
-    setDocTypes(updatedDocTypes);
-  };
   const handleOpenServiceProviderDialog = () => {
+    // clearFormData();
     setSelectedServiceProvider(null); // Clear selected service provider
     setNewServiceProvider({
       serviceName: "",
@@ -317,10 +311,18 @@ const PostNatal = () => {
     setOpenServiceProviderDialog(true);
   };
   const handleParentDialogOpen = () => {
-    setOpen(true);
     setSaveUpdateButton("SAVE");
+    setClearUpdateButton("CLEAR"); // ✅ Ensure it's set to "CLEAR"
+
+    setTimeout(() => {
+      // ✅ Delay to ensure state updates
+      clearFormData();
+      setOpen(true);
+    }, 50);
   };
   const handleParentDialogClose = () => {
+    setClearUpdateButton("CLEAR");
+    setSaveUpdateButton("SAVE");
     clearFormData();
     setOpen(false);
   };
@@ -332,6 +334,13 @@ const PostNatal = () => {
       console.log("Fetched Departments:", departmentList); // Log fetched data
     } catch (error) {
       console.error("Error fetching departments:", error);
+      Swal.fire({
+        icon: "error",
+        toast: true,
+        title: "Failed",
+        text: error,
+        showConfirmButton: true,
+      });
     }
   };
 
@@ -339,43 +348,95 @@ const PostNatal = () => {
     fetchDepartments();
   }, []);
 
-  const clearFormData = () => {
-    // Reset your form data
-    setFormData({
-      ServiceNameEN: "",
-      ServiceNameMR: "",
-      DocLink: "",
-      ApplyLink: "",
-      DeptId: "",
-      Status: 1,
-      docTypes: [], // Reset the docTypes array
-      serviceProviders: [], // Reset the serviceProviders array
-    });
-
-    // Clear the docTypes and serviceProviders states as well
-    setDocTypes([]); // Clear the docTypes state
-    setServiceProviders([]); // Clear the serviceProviders state
+  const clearDocTypeForm = () => {
+    if (ClearDocTypeButton === "CLEAR") {
+      setdocType({ english: "", marathi: "" });
+    }
   };
+  const clearDocument = () => {
+    setNewDocument({ DocNameEN: "", DocTypeMR: "" });
+  };
+  const clearFormData = () => {
+    console.log("ClearUpdateButton value:", ClearUpdateButton);
+    if (ClearUpdateButton === "CLEAR") {
+      setFormData({
+        ServiceNameEN: "",
+        ServiceNameMR: "",
+        DocLink: "",
+        ApplyLink: "",
+        DeptId: "",
+        Status: 1,
+        docTypes: [],
+        serviceProviders: [],
+      });
+      setDocTypes([]);
+      setServiceProviders([]);
+      return;
+    }
 
-  // const getAllDeptServData = async () => {
-  //   // const token = await getApiToken();
-  //   axios.get(`${BASE_URL}DepartmentSer/All`, {}).then((response) => {
-  //     setData(response.data.values);
-  //   });
-  // };
+    if (ClearUpdateButton === "RESET" && originalDataRef.current) {
+      const {
+        Id,
+        ServiceNameEN,
+        ServiceNameMR,
+        DocLink,
+        ApplyLink,
+        DeptId,
+        Status,
+        ServicesProvider,
+        Documents,
+      } = originalDataRef.current;
+
+      setFormData({
+        Id,
+        ServiceNameEN,
+        ServiceNameMR,
+        DocLink,
+        ApplyLink,
+        DeptId,
+        Status,
+      });
+
+      setServiceProviders(
+        ServicesProvider?.map(
+          ({
+            Id,
+            SerId,
+            ServiceName,
+            TimeLimitDays,
+            DesignatedOfficer,
+            FirstAppellateOfficer,
+            SecondAppellateOfficer,
+          }) => ({
+            Id: Id || "",
+            SerId: SerId || "",
+            serviceName: ServiceName,
+            timeLimit: TimeLimitDays,
+            designatedOfficer: DesignatedOfficer,
+            firstAppellateOfficer: FirstAppellateOfficer,
+            secondAppellateOfficer: SecondAppellateOfficer,
+          })
+        ) || []
+      );
+
+      setDocTypes(
+        Documents?.map(({ Id, DocTypeEN, DocTypeMR, Documents }) => ({
+          Id: Id || null,
+          english: DocTypeEN,
+          marathi: DocTypeMR,
+          documents:
+            Documents?.map(({ Id, DocNameEN, DocNameMR }) => ({
+              Id: Id || 0,
+              english: DocNameEN,
+              marathi: DocNameMR,
+            })) || [],
+        })) || []
+      );
+    }
+  };
   useEffect(() => {
     getAllDeptServData();
   }, []);
-
-  // Function to add a new Document Type
-  const handleAddDocType = () => {
-    if (docType.english.trim() && docType.marathi.trim()) {
-      setDocTypes([...docTypes, { ...docType, documents: [] }]);
-      setdocType({ english: "", marathi: "" });
-      setOpenDocTypeDialog(false);
-    }
-  };
-
   const handleAddOrUpdateDocument = () => {
     if (newDocument.english.trim() && newDocument.marathi.trim()) {
       const updatedDocTypes = [...docTypes];
@@ -393,36 +454,56 @@ const PostNatal = () => {
       setOpenDocDialog(false);
     }
   };
-
+  const handleDeleteDocument = (docTypeIndex, docIndex) => {
+    const updatedDocTypes = [...docTypes];
+    updatedDocTypes[docTypeIndex].documents.splice(docIndex, 1);
+    setDocTypes(updatedDocTypes);
+  };
   // Filtered Document Types based on search
   const filteredDocTypes = docTypes.filter(
     (docType) =>
       docType.english.toLowerCase().includes(searchQuery.toLowerCase()) ||
       docType.marathi.toLowerCase().includes(searchQuery.toLowerCase())
   );
-
   // Function to open the edit modal for a Document Type
   const handleEditDocType = (index) => {
-    setEditingDocType(index);
-    setdocType({ ...docTypes[index] });
+    selectedDocTypeIndexRef.current = index;
+    setSelectedDocTypeIndex(index);            // Store the index
+    setdocType({ ...docTypes[index] });         // Populate the form with the selected Document Type
+    setClearDocTypeButton("RESET");
+    setSaveDocTypeButton("UPDATE");
     setOpenDocTypeDialog(true);
   };
-
-  // Function to update Document Type after editing
-  const handleUpdateDocType = () => {
-    if (docType.english.trim() && docType.marathi.trim()) {
-      const updatedDocTypes = docTypes.map((item, index) =>
-        index === editingDocType
-          ? { ...item, english: docType.english, marathi: docType.marathi }
-          : item
-      );
-      setDocTypes(updatedDocTypes);
-      setOpenDocTypeDialog(false);
-      setEditingDocType(null);
-      setdocType({ english: "", marathi: "" });
+  const handleResetDocType = () => {
+    if (selectedDocTypeIndexRef.current !== null) {
+      // Revert to the original data from the docTypes array
+      setdocType({ ...docTypes[selectedDocTypeIndexRef.current] });
     }
   };
-
+  
+  const handleSaveOrUpdateDocType = () => {
+    if (docType.english.trim() && docType.marathi.trim()) {
+      if (saveDocTypeButton === "UPDATE") {
+        // Update the existing Document Type using the stored index
+        const updatedDocTypes = [...docTypes];
+        if (selectedDocTypeIndex !== null) {
+          updatedDocTypes[selectedDocTypeIndex] = { ...docType };
+          setDocTypes(updatedDocTypes);
+        }
+      } else {
+        // Save new Document Type
+        setDocTypes([...docTypes, { ...docType, documents: [] }]);
+      }
+      setOpenDocTypeDialog(false);
+      setdocType({ english: "", marathi: "" });
+      setClearDocTypeButton("CLEAR");
+      setSaveDocTypeButton("SAVE");
+      setSelectedDocTypeIndex(null); // Reset the selected index after updating
+    }
+  };
+    const handleDeleteDocType = (index) => {
+    setDocTypes(docTypes.filter((_, i) => i !== index));
+  };
   const handleSaveServiceProvider = () => {
     if (editing) {
       // Update existing row
@@ -436,12 +517,14 @@ const PostNatal = () => {
       // Generate a new row with unique srNo for DataGrid and Id as null for backend
       const newProvider = {
         ...newServiceProvider,
-        srNo: serviceProviders.length ? Math.max(...serviceProviders.map(sp => sp.srNo || 0)) + 1 : 1, // Unique srNo for DataGrid
+        srNo: serviceProviders.length
+          ? Math.max(...serviceProviders.map((sp) => sp.srNo || 0)) + 1
+          : 1, // Unique srNo for DataGrid
         Id: null, // Ensure new row sends `null` to backend
       };
       setServiceProviders([...serviceProviders, newProvider]);
     }
-  
+
     // Reset state
     setOpenServiceProviderDialog(false);
     setEditing(false);
@@ -454,33 +537,37 @@ const PostNatal = () => {
       secondAppellateOfficer: "",
     });
   };
-  
-  
-  // Function to handle edit modal for Service Provider
-  const handleEditServiceProvider = (id) => {
-    const providerToEdit = serviceProviders.find((sp) => sp.Id === id);
+  const handleEditServiceProvider = (identifier) => {
+    const providerToEdit = serviceProviders.find(
+      (sp) => sp.Id === identifier || sp.srNo === identifier
+    );
+
     if (providerToEdit) {
       setSelectedServiceProvider(providerToEdit);
-      setNewServiceProvider({ ...providerToEdit }); // Copy data for editing
+      setNewServiceProvider({ ...providerToEdit });
       setEditing(true);
       setOpenServiceProviderDialog(true);
+    } else {
+      console.error("Provider not found for identifier:", identifier);
     }
   };
-  ;
-
   // Function to handle delete of Service Provider
-  const handleDeleteServiceProvider = (id) => {
-    setServiceProviders((prevProviders) =>
-      prevProviders.filter((sp) => sp.Id !== id)
+  const handleDeleteServiceProvider = (identifier) => {
+    setServiceProviders(
+      (prevProviders) =>
+        prevProviders
+          .filter((sp) => sp.Id !== identifier && sp.srNo !== identifier)
+          .map((sp, index) => ({ ...sp, srNo: index + 1 })) // Reassign `srNo`
     );
   };
-  
 
   const validateForm = () => {
     const { ServiceNameEN, DocLink, DeptId } = formData;
     return ServiceNameEN && DocLink && DeptId;
   };
   const handleSave = async () => {
+    setClearUpdateButton("CLEAR");
+
     try {
       const selectedDept = Departments.find(
         (dept) => dept.Id === formData.DeptId
@@ -527,7 +614,7 @@ const PostNatal = () => {
           .then((response) => {
             setLoaderOpen(false);
             if (response.data.success) {
-              getAllDeptServData();
+              getAllDeptServData(currentPage, searchText);
               Swal.fire({
                 position: "center",
                 icon: "success",
@@ -536,8 +623,8 @@ const PostNatal = () => {
                 showConfirmButton: false,
                 timer: 1500,
               });
-
-              handleParentDialogClose();
+              getAllDeptServData(currentPage, searchText);
+              handleParentDialogClose(false);
             } else {
               Swal.fire({
                 icon: "error",
@@ -574,7 +661,7 @@ const PostNatal = () => {
             setLoaderOpen(false);
             if (response.data.success) {
               clearFormData();
-              getAllDeptServData();
+              getAllDeptServData(currentPage, searchText);
               Swal.fire({
                 position: "center",
                 icon: "success",
@@ -583,8 +670,8 @@ const PostNatal = () => {
                 showConfirmButton: false,
                 timer: 1500,
               });
-
-              handleParentDialogClose();
+              getAllDeptServData(currentPage, searchText);
+              handleParentDialogClose(false);
             } else {
               Swal.fire({
                 icon: "error",
@@ -621,58 +708,91 @@ const PostNatal = () => {
     console.log("Updated Service Providers:", serviceProviders);
   }, [serviceProviders]);
 
-  const handleEditClick = (row) => {
+  const handleEditClick = async (row) => {
     console.log("Selected Row:", row);
     setSaveUpdateButton("UPDATE");
+    setClearUpdateButton("RESET");
 
-    // Set form data for the modal
-    setFormData({
-      Id: row.Id,
-      ServiceNameEN: row.ServiceNameEN,
-      ServiceNameMR: row.ServiceNameMR,
-      DocLink: row.DocLink,
-      ApplyLink: row.ApplyLink,
-      DeptId: row.DeptId,
-      Status: row.Status,
-    });
+    try {
+      setLoading(true);
+      // const token = await getApiToken(); // Get authentication token
 
-    // Set service providers to state
-    if (row.ServicesProvider) {
-      const formattedProviders = row.ServicesProvider.map((sp) => ({
-        // id: sp.Id || "",
-        Id: sp.Id || "",
-        SerId: sp.SerId || "",
-        serviceName: sp.ServiceName,
-        timeLimit: sp.TimeLimitDays,
-        designatedOfficer: sp.DesignatedOfficer,
-        firstAppellateOfficer: sp.FirstAppellateOfficer,
-        secondAppellateOfficer: sp.SecondAppellateOfficer,
-      }));
-      setServiceProviders(formattedProviders);
-    } else {
-      setServiceProviders([]); // Ensure it's cleared if empty
+      const apiUrl = `${BASE_URL}DepartmentSer/ById/${row.Id}`;
+      console.log("Fetching API URL:", apiUrl);
+
+      const response = await axios.get(apiUrl, {
+        // headers: {
+        //   "Content-Type": "application/json",
+        //   Authorization: token,
+        // },
+      });
+
+      console.log("API Response:", response.data);
+
+      if (response.data) {
+        const data = response.data.values;
+        originalDataRef.current = JSON.parse(JSON.stringify(data));
+
+        // Set form data for the modal
+        setFormData({
+          Id: data.Id,
+          ServiceNameEN: data.ServiceNameEN,
+          ServiceNameMR: data.ServiceNameMR,
+          DocLink: data.DocLink,
+          ApplyLink: data.ApplyLink,
+          DeptId: data.DeptId,
+          Status: data.Status,
+        });
+
+        // Set service providers to state
+        if (data.ServicesProvider) {
+          const formattedProviders = data.ServicesProvider.map((sp) => ({
+            Id: sp.Id || "",
+            SerId: sp.SerId || "",
+            serviceName: sp.ServiceName,
+            timeLimit: sp.TimeLimitDays,
+            designatedOfficer: sp.DesignatedOfficer,
+            firstAppellateOfficer: sp.FirstAppellateOfficer,
+            secondAppellateOfficer: sp.SecondAppellateOfficer,
+          }));
+          setServiceProviders(formattedProviders);
+        } else {
+          setServiceProviders([]); // Ensure it's cleared if empty
+        }
+
+        // Set Document Types and Documents
+        if (data.Documents) {
+          const formattedDocTypes = data.Documents.map((docType) => ({
+            Id: docType.Id || null,
+            english: docType.DocTypeEN,
+            marathi: docType.DocTypeMR,
+            documents: docType.Documents
+              ? docType.Documents.map((doc) => ({
+                  Id: doc.Id || 0,
+                  english: doc.DocNameEN,
+                  marathi: doc.DocNameMR,
+                }))
+              : [],
+          }));
+          setDocTypes(formattedDocTypes);
+        } else {
+          setDocTypes([]); // Ensure it's cleared if empty
+        }
+        // originalDataRef.current = data;
+        setOpen(true); // Open modal
+      }
+    } catch (error) {
+      console.error("Error fetching department service data:", error);
+      Swal.fire({
+        icon: "error",
+        toast: true,
+        title: "Failed",
+        text: error,
+        showConfirmButton: true,
+      });
+    } finally {
+      setLoading(false);
     }
-
-    // Set Document Types and Documents
-    if (row.Documents) {
-      const formattedDocTypes = row.Documents.map((docType) => ({
-        Id: docType.Id || null,
-        english: docType.DocTypeEN,
-        marathi: docType.DocTypeMR,
-        documents: docType.Documents
-          ? docType.Documents.map((doc) => ({
-              Id: doc.Id || 0,
-              english: doc.DocNameEN,
-              marathi: doc.DocNameMR,
-            }))
-          : [],
-      }));
-      setDocTypes(formattedDocTypes);
-    } else {
-      setDocTypes([]); // Ensure it's cleared if empty
-    }
-
-    setOpen(true); // Open modal
   };
 
   return (
@@ -707,7 +827,7 @@ const PostNatal = () => {
           padding={1}
           noWrap
         >
-          Services
+          Manage Services
         </Typography>
       </Grid>
 
@@ -720,12 +840,14 @@ const PostNatal = () => {
             pr: 2,
             mb: 2,
             color: "white",
-            backgroundColor: "#5C5CFF",
-            boxShadow: 5,
+            background:
+              "linear-gradient(to right, rgb(0, 90, 91), rgb(22, 149, 153))",
+            borderRadius: "8px",
+            transition: "all 0.2s ease-in-out",
+            boxShadow: "0 4px 8px rgba(0, 90, 91, 0.3)",
             "&:hover": {
-              backgroundColor: "#E6E6FA",
-              border: "1px solid #5C5CFF",
-              color: "#5C5CFF",
+              transform: "translateY(2px)",
+              boxShadow: "0 2px 4px rgba(0, 90, 91, 0.2)",
             },
             "& .MuiButton-label": {
               display: "flex",
@@ -740,12 +862,28 @@ const PostNatal = () => {
         </Button>
       </Grid>
 
-      <Grid container item lg={12} component={Paper}>
+      <Grid
+        container
+        item
+        lg={12}
+        component={Paper}
+        sx={{ height: "80vh", width: "100%" }}
+      >
         <DataGrid
           className="datagrid-style"
+          sx={{
+            height: "90%", // Set height in percentage
+            minHeight: "500px",
+
+            "& .MuiDataGrid-columnHeaders": {
+              backgroundColor: (theme) => theme.palette.custome.datagridcolor,
+            },
+            "& .MuiDataGrid-row:hover": {
+              boxShadow: "0px 4px 20px rgba(0, 0, 0.2, 0.2)",
+            },
+          }}
           rows={data}
           columns={columns}
-          autoHeight
           pagination
           paginationMode="server"
           rowCount={totalRows}
@@ -787,7 +925,6 @@ const PostNatal = () => {
           }}
           getRowId={(row) => row.Id} // Ensure unique row ID from database
         />
-       
       </Grid>
 
       <Dialog
@@ -803,8 +940,9 @@ const PostNatal = () => {
         <DialogTitle
           sx={{
             color: "white",
-            backgroundColor: (theme) =>
-              theme.palette.customAppbar?.appbarcolor || "#5C5CFF",
+            background: (theme) =>
+              theme.palette.customAppbar?.appbarcolor ||
+              "linear-gradient(to right, rgb(0, 90, 91), rgb(22, 149, 153))",
           }}
         >
           <b>Services</b>
@@ -876,33 +1014,39 @@ const PostNatal = () => {
                   onChange={handleInputChange}
                 />
               </Grid>
-              <Grid item xs={12} sm={4}>
-                <FormControl size="small" sx={{ width: "220px" }}>
-                  <InputLabel id="department-label">
-                    Select Department
-                  </InputLabel>
-                  <Select
-                    id="DeptId"
-                    labelId="department-label"
-                    name="DeptId"
-                    value={formData.DeptId}
-                    onChange={handleInputChange}
-                    label="Select Department"
-                    MenuProps={{
-                      PaperProps: { style: { maxHeight: 150, maxWidth: 400 } },
-                    }}
-                  >
-                    {Departments.length > 0 ? (
-                      Departments.map((dept) => (
-                        <MenuItem key={dept.Id} value={dept.Id}>
-                          {dept.DeptNameEN}
-                        </MenuItem>
-                      ))
-                    ) : (
-                      <MenuItem disabled>No departments available</MenuItem>
-                    )}
-                  </Select>
-                </FormControl>
+              <Grid
+                item
+                xs={12}
+                sm={4}
+                sx={{
+                  display: "flex",
+                  justifyContent: "center",
+                  alignItems: "center",
+                }}
+              >
+                <Autocomplete
+                  size="small"
+                  options={Departments}
+                  getOptionLabel={(option) => option.DeptNameEN} // Display department name
+                  value={
+                    Departments.find((dept) => dept.Id === formData.DeptId) ||
+                    null
+                  } // Set selected value
+                  onChange={(event, newValue) => {
+                    setFormData((prev) => ({
+                      ...prev,
+                      DeptId: newValue ? newValue.Id : "", // Store selected department Id
+                    }));
+                  }}
+                  sx={{ width: "220px" }} // Reduced width
+                  renderInput={(params) => (
+                    <TextField
+                      {...params}
+                      label="Select Department"
+                      fullWidth
+                    />
+                  )}
+                />
               </Grid>
               <Grid item xs={12} sm={4}>
                 <InputTextField
@@ -973,34 +1117,22 @@ const PostNatal = () => {
             >
               {/* Search Bar */}
               <Grid container spacing={2} sx={{ mb: 2 }}>
-                {/* <TextField
-          fullWidth
-          placeholder="Search Document Type..."
-          value={searchQuery}
-          onChange={(e) => setSearchQuery(e.target.value)}
-          InputProps={{
-            startAdornment: (
-              <InputAdornment position="start">
-                <SearchIcon />
-              </InputAdornment>
-            ),
-          }}
-        /> */}
-                {/* </Grid> */}
-
                 {/* Add Document Type Button */}
                 <Grid item xs={12} sm={3}>
                   <Button
                     // variant="contained"
+
                     sx={{
                       p: 1,
                       color: "white",
-                      backgroundColor: "#5C5CFF",
-                      boxShadow: 5,
+                      background:
+                        "linear-gradient(to right, rgb(0, 90, 91), rgb(22, 149, 153))",
+                      borderRadius: "8px",
+                      transition: "all 0.2s ease-in-out",
+                      boxShadow: "0 4px 8px rgba(0, 90, 91, 0.3)",
                       "&:hover": {
-                        backgroundColor: "#E6E6FA",
-                        border: "1px solid #5C5CFF",
-                        color: "#5C5CFF",
+                        transform: "translateY(2px)",
+                        boxShadow: "0 2px 4px rgba(0, 90, 91, 0.2)",
                       },
                       "& .MuiButton-label": {
                         display: "flex",
@@ -1011,7 +1143,10 @@ const PostNatal = () => {
                       },
                     }}
                     // startIcon={<AddCircleIcon />}
-                    onClick={() => setOpenDocTypeDialog(true)}
+                    onClick={() => {
+                      setOpenDocTypeDialog(true);
+                      clearDocTypeForm();
+                    }}
                     // fullWidth
                   >
                     Add Document Type
@@ -1074,7 +1209,12 @@ const PostNatal = () => {
                               </Grid>
                               <Grid item>
                                 <IconButton
-                                  color="primary"
+                                  sx={{
+                                    color: "rgb(0, 90, 91)", // Apply color to the icon
+                                    "&:hover": {
+                                      backgroundColor: "rgba(0, 90, 91, 0.1)", // Optional hover effect
+                                    },
+                                  }}
                                   onClick={() => handleEditDocType(index)}
                                 >
                                   <EditNoteIcon />
@@ -1083,9 +1223,23 @@ const PostNatal = () => {
                               <Grid item>
                                 <Button
                                   variant="outlined"
+                                  sx={{
+                                    p: 1,
+                                    color: "rgb(0, 90, 91)",
+                                    background: "transparent",
+                                    border: "1px solid rgb(0, 90, 91)",
+                                    borderRadius: "8px",
+                                    transition: "all 0.2s ease-in-out",
+                                    "&:hover": {
+                                      background: "rgba(0, 90, 91, 0.1)",
+                                      transform: "translateY(2px)",
+                                    },
+                                  }}
                                   onClick={() => {
                                     setSelectedDocType(index);
                                     setOpenDocDialog(true);
+                                    clearDocument();
+                                    setSelectedDocIndex(null); // Reset to avoid lingering "Update" state
                                   }}
                                 >
                                   Add Document
@@ -1147,8 +1301,23 @@ const PostNatal = () => {
                                           });
                                           setOpenDocDialog(true);
                                         }}
+                                        sx={{
+                                          color: "rgb(0, 90, 91)", // Apply color to the icon
+                                          "&:hover": {
+                                            backgroundColor:
+                                              "rgba(0, 90, 91, 0.1)", // Optional hover effect
+                                          },
+                                        }}
                                       >
-                                        <EditNoteIcon color="primary" />
+                                        <EditNoteIcon
+                                          sx={{
+                                            color: "rgb(0, 90, 91)", // Apply color to the icon
+                                            "&:hover": {
+                                              backgroundColor:
+                                                "rgba(0, 90, 91, 0.1)", // Optional hover effect
+                                            },
+                                          }}
+                                        />
                                       </IconButton>
                                       <IconButton
                                         onClick={() =>
@@ -1182,11 +1351,17 @@ const PostNatal = () => {
                 open={openDocTypeDialog}
                 onClose={() => setOpenDocTypeDialog(false)}
               >
-                <DialogTitle>
+                <DialogTitle
+                  sx={{ display: "flex", justifyContent: "space-between" }}
+                >
                   {editingDocType !== null
                     ? "Edit Document Type"
                     : "Add Document Type"}
+                  <IconButton onClick={() => setOpenDocTypeDialog(false)}>
+                    <CloseIcon />
+                  </IconButton>
                 </DialogTitle>
+
                 <DialogContent>
                   <TextField
                     fullWidth
@@ -1209,20 +1384,38 @@ const PostNatal = () => {
                     sx={{ mt: 2 }}
                   />
                 </DialogContent>
-                <DialogActions>
-                  <Button onClick={() => setOpenDocTypeDialog(false)}>
-                    Cancel
+                <DialogActions
+                  sx={{ display: "flex", justifyContent: "space-between" }}
+                >
+                  <Button
+                    sx={{
+                      p: 1,
+                      color: "rgb(0, 90, 91)",
+                      background: "transparent",
+                      border: "1px solid rgb(0, 90, 91)",
+                      borderRadius: "8px",
+                      transition: "all 0.2s ease-in-out",
+                      "&:hover": {
+                        background: "rgba(0, 90, 91, 0.1)",
+                        transform: "translateY(2px)",
+                      },
+                    }}
+                    onClick={handleResetDocType}
+                    >
+                    {ClearDocTypeButton}
                   </Button>
                   <Button
                     sx={{
                       p: 1,
                       color: "white",
-                      backgroundColor: "#5C5CFF",
-                      boxShadow: 5,
+                      background:
+                        "linear-gradient(to right, rgb(0, 90, 91), rgb(22, 149, 153))",
+                      borderRadius: "8px",
+                      transition: "all 0.2s ease-in-out",
+                      boxShadow: "0 4px 8px rgba(0, 90, 91, 0.3)",
                       "&:hover": {
-                        backgroundColor: "#E6E6FA",
-                        border: "1px solid #5C5CFF",
-                        color: "#5C5CFF",
+                        transform: "translateY(2px)",
+                        boxShadow: "0 2px 4px rgba(0, 90, 91, 0.2)",
                       },
                       "& .MuiButton-label": {
                         display: "flex",
@@ -1232,14 +1425,10 @@ const PostNatal = () => {
                         marginRight: "10px",
                       },
                     }}
-                    onClick={
-                      editingDocType !== null
-                        ? handleUpdateDocType
-                        : handleAddDocType
-                    }
+                    onClick={handleSaveOrUpdateDocType}
                     variant="contained"
                   >
-                    {editingDocType !== null ? "Update" : "Add"}
+                    {saveDocTypeButton}
                   </Button>
                 </DialogActions>
               </Dialog>
@@ -1249,7 +1438,9 @@ const PostNatal = () => {
                 open={openDocDialog}
                 onClose={() => setOpenDocDialog(false)}
               >
-                <DialogTitle>Add Document</DialogTitle>
+                <DialogTitle sx={{ textAlign: "center" }}>
+                  Add Document
+                </DialogTitle>
                 <DialogContent>
                   <TextField
                     fullWidth
@@ -1278,8 +1469,24 @@ const PostNatal = () => {
                     sx={{ mt: 2 }}
                   />
                 </DialogContent>
-                <DialogActions>
-                  <Button onClick={() => setOpenDocDialog(false)}>
+                <DialogActions
+                  sx={{ display: "flex", justifyContent: "space-between" }}
+                >
+                  <Button
+                    onClick={() => setOpenDocDialog()}
+                    sx={{
+                      p: 1,
+                      color: "rgb(0, 90, 91)",
+                      background: "transparent",
+                      border: "1px solid rgb(0, 90, 91)",
+                      borderRadius: "8px",
+                      transition: "all 0.2s ease-in-out",
+                      "&:hover": {
+                        background: "rgba(0, 90, 91, 0.1)",
+                        transform: "translateY(2px)",
+                      },
+                    }}
+                  >
                     Cancel
                   </Button>
                   <Button
@@ -1288,12 +1495,14 @@ const PostNatal = () => {
                     sx={{
                       p: 1,
                       color: "white",
-                      backgroundColor: "#5C5CFF",
-                      boxShadow: 5,
+                      background:
+                        "linear-gradient(to right, rgb(0, 90, 91), rgb(22, 149, 153))",
+                      borderRadius: "8px",
+                      transition: "all 0.2s ease-in-out",
+                      boxShadow: "0 4px 8px rgba(0, 90, 91, 0.3)",
                       "&:hover": {
-                        backgroundColor: "#E6E6FA",
-                        border: "1px solid #5C5CFF",
-                        color: "#5C5CFF",
+                        transform: "translateY(2px)",
+                        boxShadow: "0 2px 4px rgba(0, 90, 91, 0.2)",
                       },
                       "& .MuiButton-label": {
                         display: "flex",
@@ -1319,12 +1528,14 @@ const PostNatal = () => {
                     sx={{
                       p: 1,
                       color: "white",
-                      backgroundColor: "#5C5CFF",
-                      boxShadow: 5,
+                      background:
+                        "linear-gradient(to right, rgb(0, 90, 91), rgb(22, 149, 153))",
+                      borderRadius: "8px",
+                      transition: "all 0.2s ease-in-out",
+                      boxShadow: "0 4px 8px rgba(0, 90, 91, 0.3)",
                       "&:hover": {
-                        backgroundColor: "#E6E6FA",
-                        border: "1px solid #5C5CFF",
-                        color: "#5C5CFF",
+                        transform: "translateY(2px)",
+                        boxShadow: "0 2px 4px rgba(0, 90, 91, 0.2)",
                       },
                     }}
                     onClick={handleOpenServiceProviderDialog}
@@ -1338,10 +1549,10 @@ const PostNatal = () => {
               <DataGrid
                 rows={serviceProviders.map((sp, index) => ({
                   ...sp,
-                  // Id: sp.Id || index + 1, // Assign unique ID if missing
-                  srNo: index + 1, // Ensure srNo updates dynamically
+                  srNo: index + 1, // Always assign a fresh serial number
                 }))}
-                getRowId={(row) => row.srNo} // Ensure DataGrid uses correct row ID
+                hideFooter
+                getRowId={(row) => row.Id || row.srNo} // Hybrid key: use Id, fallback to srNo
                 columns={[
                   { field: "srNo", headerName: "Sr. No.", flex: 0.5 },
                   { field: "serviceName", headerName: "Service Name", flex: 1 },
@@ -1367,17 +1578,27 @@ const PostNatal = () => {
                     renderCell: (params) => (
                       <div>
                         <IconButton
-                          color="primary"
+                          color="rgb(0, 90, 91)"
                           onClick={() =>
-                            handleEditServiceProvider(params.row.Id)
+                            handleEditServiceProvider(
+                              params.row.Id || params.row.srNo
+                            )
                           }
+                          sx={{
+                            color: "rgb(0, 90, 91)",
+                            "&:hover": {
+                              backgroundColor: "rgba(0, 90, 91, 0.1)",
+                            },
+                          }}
                         >
                           <EditNoteIcon />
                         </IconButton>
                         <IconButton
                           color="error"
                           onClick={() =>
-                            handleDeleteServiceProvider(params.row.Id)
+                            handleDeleteServiceProvider(
+                              params.row.Id || params.row.srNo
+                            )
                           }
                         >
                           <DeleteIcon />
@@ -1386,16 +1607,6 @@ const PostNatal = () => {
                     ),
                   },
                 ]}
-                sx={{
-                  "& .MuiDataGrid-columnHeaders": {
-                    backgroundColor: (theme) =>
-                      theme.palette.custome.datagridcolor,
-                  },
-                  "& .MuiDataGrid-row:hover": {
-                    boxShadow: "0px 4px 20px rgba(0, 0, 0.2, 0.2)",
-                  },
-                }}
-                hideFooter
               />
 
               {/* Dialog for Add/Edit */}
@@ -1468,14 +1679,42 @@ const PostNatal = () => {
                     sx={{ mt: 2 }}
                   />
                 </DialogContent>
-                <DialogActions>
-                  <Button onClick={() => setOpenServiceProviderDialog(false)}>
+                <DialogActions
+                  sx={{ display: "flex", justifyContent: "space-between" }}
+                >
+                  <Button
+                    sx={{
+                      p: 1,
+                      color: "rgb(0, 90, 91)",
+                      background: "transparent",
+                      border: "1px solid rgb(0, 90, 91)",
+                      borderRadius: "8px",
+                      transition: "all 0.2s ease-in-out",
+                      "&:hover": {
+                        background: "rgba(0, 90, 91, 0.1)",
+                        transform: "translateY(2px)",
+                      },
+                    }}
+                    onClick={() => setOpenServiceProviderDialog(false)}
+                  >
                     Cancel
                   </Button>
                   <Button
                     onClick={handleSaveServiceProvider}
                     variant="contained"
-                    sx={{ p: 1, color: "white", backgroundColor: "#5C5CFF" }}
+                    sx={{
+                      p: 1,
+                      color: "white",
+                      background:
+                        "linear-gradient(to right, rgb(0, 90, 91), rgb(22, 149, 153))",
+                      borderRadius: "8px",
+                      transition: "all 0.2s ease-in-out",
+                      boxShadow: "0 4px 8px rgba(0, 90, 91, 0.3)",
+                      "&:hover": {
+                        transform: "translateY(2px)",
+                        boxShadow: "0 2px 4px rgba(0, 90, 91, 0.2)",
+                      },
+                    }}
                   >
                     {editing ? "Update" : "Save"}
                   </Button>
@@ -1491,15 +1730,15 @@ const PostNatal = () => {
                 p: 1,
                 px: 4,
                 color: "white",
-                backgroundColor: "#5C5CFF", // Keep the original color
+                background:
+                  "linear-gradient(to right, rgb(0, 90, 91), rgb(22, 149, 153))",
                 boxShadow: 5,
                 position: "absolute",
                 bottom: 10,
                 left: 10,
                 "&:hover": {
-                  backgroundColor: "#E6E6FA", // Lighter hover effect
-                  border: "1px solid #5C5CFF",
-                  color: "#5C5CFF",
+                  transform: "translateY(2px)",
+                  boxShadow: "0 2px 4px rgba(0, 90, 91, 0.2)",
                 },
                 "& .MuiButton-label": {
                   display: "flex",
@@ -1511,7 +1750,7 @@ const PostNatal = () => {
               }}
               onClick={clearFormData}
             >
-              Clear
+              {ClearUpdateButton}
             </Button>
 
             {/* Save/Update Button - Positioned to the bottom-right */}
@@ -1520,15 +1759,15 @@ const PostNatal = () => {
                 p: 1,
                 px: 4,
                 color: "white",
-                backgroundColor: "#5C5CFF", // Keep the original color
+                background:
+                  "linear-gradient(to right, rgb(0, 90, 91), rgb(22, 149, 153))",
                 boxShadow: 5,
                 position: "absolute",
                 bottom: 10,
                 right: 10,
                 "&:hover": {
-                  backgroundColor: "#E6E6FA", // Lighter hover effect
-                  border: "1px solid #5C5CFF",
-                  color: "#5C5CFF",
+                  transform: "translateY(2px)",
+                  boxShadow: "0 2px 4px rgba(0, 90, 91, 0.2)",
                 },
                 "& .MuiButton-label": {
                   display: "flex",
@@ -1549,4 +1788,4 @@ const PostNatal = () => {
     </>
   );
 };
-export default PostNatal;
+export default OnlineServices;

@@ -1,3 +1,5 @@
+import React, { useEffect } from "react";
+import { Controller, useForm } from "react-hook-form"; // import useForm
 import AccountCircleOutlinedIcon from "@mui/icons-material/AccountCircleOutlined";
 import AddIcon from "@mui/icons-material/Add";
 import CloseIcon from "@mui/icons-material/Close";
@@ -8,6 +10,8 @@ import PhotoLibraryIcon from "@mui/icons-material/PhotoLibrary";
 import {
   Badge,
   Button,
+  Checkbox,
+  FormControlLabel,
   Grid,
   IconButton,
   Modal,
@@ -15,30 +19,36 @@ import {
 } from "@mui/material";
 import Box from "@mui/material/Box";
 import Paper from "@mui/material/Paper";
-import { DataGrid } from "@mui/x-data-grid";
+import { DataGrid, GridToolbar } from "@mui/x-data-grid";
 import axios from "axios";
 import dayjs from "dayjs";
-import * as React from "react";
-import { useEffect } from "react";
 import Swal from "sweetalert2";
 import avatar from "../../src/assets/avtar.png";
 import {
   BASE_URL,
   Bunny_Image_URL,
   Bunny_Storage_Access_Key,
-  Bunny_Storage_URL,
 } from "../Constant";
 import InputTextField, {
   CheckboxInputs,
-//   DatePickerField,
+  DatePickerField,
+  //   DatePickerField,
   InputPasswordField,
-  InputSelectField,
 } from "../components/Component";
 import Loader from "../components/Loader";
 import CameraAltOutlinedIcon from "@mui/icons-material/CameraAltOutlined";
 import { useTheme } from "@mui/material/styles";
 
 export default function ManageUsers() {
+  const {
+    register,
+    control,
+    handleSubmit,
+    setValue,
+    getValues,
+    reset,
+    formState: { errors },
+  } = useForm();
   const [loaderOpen, setLoaderOpen] = React.useState(false);
   const [userData, setUserData] = React.useState([]);
   const [SaveUpdateButton, setSaveUpdateButton] = React.useState("UPDATE");
@@ -47,36 +57,23 @@ export default function ManageUsers() {
   const [showPassword, setShowPassword] = React.useState(false);
   const [Image, setImage] = React.useState("");
   const [open, setOpen] = React.useState(false);
+  const [totalRows, setTotalRows] = React.useState("");
+  const limit = 20; // Fixed page size
+  const [loading, setLoading] = React.useState(false);
+  const [currentPage, setCurrentPage] = React.useState(0);
+  const [searchText, setSearchText] = React.useState(""); // ✅ Search input state
+  const [ClearUpdateButton, setClearUpdateButton] = React.useState("RESET");
+  const originalDataRef = React.useRef(null);
 
-   // ========================
-   const getApiToken = async () => {
-    const data = sessionStorage.getItem('userData');
-    if (data !== null) {
-      const fetchedData = JSON.parse(data);
-      return fetchedData.Token;
-    }
-  };
-  // ========================
+  const theme = useTheme();
 
-  const handleClickShowPassword = () => {
-    setShowPassword(!showPassword);
-  };
-  const handleMouseDownPassword = (event) => {
-    event.preventDefault();
-  };
-  // const [selectedTags, setSelectedTags] = React.useState([]);
-  const handleImageUploadAndClose = (event) => {
-    handleImageUpload(event);
-    handleProfileClose();
-  };
+  const handleClickShowPassword = () => setShowPassword(!showPassword);
 
   const handleImageUpload = (event) => {
     const file = event.target.files[0];
     if (file && file.type.startsWith("image/")) {
       const reader = new FileReader();
-      reader.onload = () => {
-        setImage(reader.result);
-      };
+      reader.onload = () => setImage(reader.result);
       reader.readAsDataURL(file);
       setUploadedImg(file);
     } else {
@@ -91,192 +88,91 @@ export default function ManageUsers() {
     }
   };
 
-  const [data, setData] = React.useState({
-    id: "",
-    password: "",
-    Firstname: "",
-    Middlename: "",
-    Lastname: "",
-    DOB: dayjs(undefined),
-    Phone: "",
-    Address: "",
-    BloodGroup: "",
-    Status: 1,
-    Email: "",
-    Avatar: "",
-  });
-
   const clearFormData = () => {
-    setData({
-      id: "",
-      password: "",
-      Firstname: "",
-      Middlename: "",
-      Lastname: "",
-      DOB: dayjs(undefined),
-      Phone: "",
-      Address: "",
-      BloodGroup: "",
-      Status: 1,
-      Email: "",
-      Avatar: "",
-    });
-    setImage("");
-  };
+    console.log("ClearUpdateButton: ", ClearUpdateButton); // To debug
 
-  // const onchangeHandler = (event) => {
-  //   if (event.target.name === "password") {
-  //     const password = event.target.value;
-  //     if (password.length > 16) {
-  //       validationAlert("password must be at most 16 characters long.");
-  //       return;
-  //     }
-  //   }
-
-  //   if (event.target.name === "Phone") {
-  //     const phone = event.target.value;
-  //     if (phone.length > 10) {
-  //       validationAlert("Phone number must be exactly 10 digits long.");
-  //       return;
-  //     } else if (phone.includes("e")) {
-  //       validationAlert("Please enter valid number");
-  //       return;
-  //     }
-  //   }
-
-  //   if (data === "Email") {
-  //     if (!data) {
-  //       validationAlert("Email is required");
-  //       return;
-  //     }
-
-  //     const emailPattern = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
-  //     if (!emailPattern.test(data)) {
-  //       validationAlert("Please enter a valid email address");
-  //       return;
-  //     }
-  //   }
-  //   setData({
-  //     ...data,
-  //     [event.target.name]: event.target.value,
-  //   });
-  // };
-
-  const onchangeHandler = (event) => {
-    
-    const { name, value } = event.target;
-
-    if (name === "password") {
-      if (value.length > 16) {
-        validationAlert("password must be at most 16 characters long.");
-        return;
+    if (ClearUpdateButton === "CLEAR") {
+      // Reset to default values (empty or initial state)
+      reset({
+        Id: "",
+        Password: "",
+        FirstName: "",
+        Username: "",
+        LastName: "",
+        DOB: dayjs(), // Set DOB to a valid dayjs object
+        Phone: "",
+        Status: 1,
+        Email: "",
+        Avatar: "",
+      });
+      setImage(""); // Clear the image
+    } else if (ClearUpdateButton === "RESET") {
+      // Reset to the original data
+      if (originalDataRef.current) {
+        const resetData = {
+          ...originalDataRef.current,
+          // Ensure DOB is always a valid dayjs object
+          DOB: originalDataRef.current.DOB
+            ? dayjs(originalDataRef.current.DOB)
+            : dayjs(),
+        };
+        reset(resetData);
+        setImage(
+          resetData.Avatar
+            ? `${Bunny_Image_URL}/Users/${resetData.Id}/${resetData.Avatar}`
+            : ""
+        );
+      } else {
+        console.error("Original data is not available!");
       }
     }
-
-    if (name === "Phone") {
-      if (value.length > 10) {
-        validationAlert("Phone number must be exactly 10 digits long.");
-        return;
-      } else if (value.includes("e")) {
-        validationAlert("Please enter a valid number");
-        return;
-      }
-    }
-
-    setData({
-      ...data,
-      [name]: value,
-    });
   };
 
   const handleClose = () => {
+    setClearUpdateButton("CLEAR");
     setOn(false);
+    clearFormData();
   };
+
   const handleProfileClose = () => {
     setOpen(false);
   };
-  ///////////////////////////////////////
-  const handleProfile = async () => {
-    const token = await getApiToken();
-    const saveObj = {
-      Avatar: "",
-    };
-    // console.log(saveObj);
 
-    Swal.fire({
-      text: "Are you sure you want to remove?",
-      icon: "warning",
-      showCancelButton: true,
-      confirmButtonColor: "#d33",
-      cancelButtonColor: "#3085d6",
-      confirmButtonText: "Yes, Remove it!",
-    }).then(async (result) => {
-      if (result.isConfirmed) {
-        const response = await axios.patch(
-          `${BASE_URL}Users/${data._id}`,
-          saveObj,
-          {
-            headers: {
-              'Content-Type': 'application/json',
-              Authorization: token,
-            },
-          }
-        );
-
-        if (response.data.status) {
-          await axios
-            .request({
-              method: "DELETE",
-              maxBodyLength: Infinity,
-              url: `${Bunny_Storage_URL}/Users/${data._id}/${data.Avatar}`,
-              headers: {
-                AccessKey: Bunny_Storage_Access_Key,
-              },
-            })
-            .then((response) => {
-              if (response.data.HttpCode === 200) {
-                console.log(response);
-                setUploadedImg("");
-
-                Swal.fire({
-                  position: "center",
-                  icon: "success",
-                  title: "Profile Remove successfully",
-                  showConfirmButton: false,
-                  timer: 1500,
-                  toast: true,
-                });
-                handleProfileClose();
-                handleClose();
-                getUserData();
-                setImage("");
-              } else {
-                Swal.fire({
-                  icon: "error",
-                  toast: true,
-                  title: "Failed",
-                  text: "Failed to Remove profile",
-                  showConfirmButton: true,
-                });
-              }
-            });
-        }
-      }
-    });
-  };
-
-  //declare var for icon
-  const theme = useTheme();
-  /////////////////////////
-  const handleClick = (row) => {
+  const handleClick = async (row) => {
     setSaveUpdateButton("UPDATE");
+    setClearUpdateButton("RESET");
     setOn(true);
-    setData(row);
-    setImage(
-      row.Avatar !== ""
-        ? `${Bunny_Image_URL}/Users/${row._id}/${row.Avatar}`
-        : ""
-    );
+
+    try {
+      setLoading(true);
+      const apiUrl = `${BASE_URL}Users/ById/${row.Id}`;
+      console.log("Fetching API URL:", apiUrl);
+
+      const response = await axios.get(apiUrl);
+
+      if (response.data) {
+        const data = response.data.values;
+        originalDataRef.current = data;
+        setValue("Id", data.Id);
+        setValue("FirstName", data.FirstName);
+        setValue("Username", data.Username);
+        setValue("LastName", data.LastName);
+        setValue("DOB", dayjs(data.DOB));
+        setValue("Phone", data.Phone);
+        setValue("Email", data.Email);
+        setValue("Status", data.Status);
+        setValue("Avatar", data.Avatar);
+        setImage(
+          data.Avatar
+            ? `${Bunny_Image_URL}/Users/${data.Id}/${data.Avatar}`
+            : ""
+        );
+      }
+    } catch (error) {
+      console.error("Error fetching user data:", error);
+    } finally {
+      setLoading(false);
+    }
   };
 
   const handleUploadProfile = () => {
@@ -284,12 +180,13 @@ export default function ManageUsers() {
   };
 
   const handleOnSave = () => {
-    setSaveUpdateButton("SAVE");
-    setOn(true);
+    setSaveUpdateButton("ADD");
+    setClearUpdateButton("CLEAR");
     clearFormData();
+    setOn(true);
   };
-  const deluser = async(id) => {
-    const token = await getApiToken();
+
+  const deluser = async (id) => {
     setLoaderOpen(true);
     Swal.fire({
       text: "Are you sure you want to delete?",
@@ -301,16 +198,11 @@ export default function ManageUsers() {
     }).then((result) => {
       if (result.isConfirmed) {
         axios
-          .delete(`${BASE_URL}Users/${id}`,{
-            headers: {
-              'Content-Type': 'application/json',
-              Authorization: token,
-            },
-          })
+          .delete(`${BASE_URL}Users/${id}`)
           .then((response) => {
-            if (response.data.status) {
+            if (response.data.success === true) {
               setLoaderOpen(false);
-              setUserData(userData.filter((user) => user._id !== id));
+              setUserData(userData.filter((user) => user.Id !== id));
               Swal.fire({
                 position: "center",
                 icon: "success",
@@ -344,6 +236,7 @@ export default function ManageUsers() {
       setLoaderOpen(false);
     });
   };
+
   const validationAlert = (message) => {
     Swal.fire({
       position: "center",
@@ -354,37 +247,34 @@ export default function ManageUsers() {
       timer: 1500,
     });
   };
-  const updateUser = async (id) => {
-    const token = await getApiToken();
-    const requiredFields = [
-      "Firstname",
-      "Lastname",
-      "Phone",
-      "DOB",
-      "BloodGroup",
-      "Email",
-    ];
+
+  const updateUser = async () => {
+    alert();
+    const requiredFields = ["FirstName", "LastName", "Phone", "DOB", "Email"];
     const emptyRequiredFields = requiredFields.filter(
-      (field) => !data[field] || !String(data[field]).trim()
+      (field) => !getValues(field) || !String(getValues(field)).trim()
     );
 
-    const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(data.Email);
+    const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(getValues("Email"));
 
     if (emptyRequiredFields.length > 0) {
       validationAlert("Please fill in all required fields");
       return;
-    } else if (!isValidPhoneNumber(data.Phone)) {
+    } else if (!isValidPhoneNumber(getValues("Phone"))) {
       validationAlert("Please enter a valid 10-digit phone number.");
       return;
+    } else if (!isValidUsername(getValues("Username"))) {
+      validationAlert("Please enter minimum 4 letters Username.");
+      return;
     } else if (
-      !/^(?=.*\d)(?=.*[a-z])(?=.*[A-Z]).{8,16}$/.test(data.password) &&
-      SaveUpdateButton === "SAVE"
+      !/^(?=.*\d)(?=.*[a-z])(?=.*[A-Z]).{8,16}$/.test(getValues("Password")) &&
+      SaveUpdateButton === "ADD"
     ) {
       validationAlert(
-        "password must contain at least one numeric digit, one alphabet, and one capital letter, @ Not allow..."
+        "Password must contain at least one numeric digit, one alphabet, and one capital letter, @ Not allow..."
       );
       return;
-    } else if (data.Email.length > 0 && !emailRegex) {
+    } else if (getValues("Email").length > 0 && !emailRegex) {
       validationAlert("Please enter a valid email address.");
       return;
     }
@@ -393,60 +283,50 @@ export default function ManageUsers() {
 
     const filename = new Date().getTime() + "_" + uploadedImg.name;
     const saveObj = {
-      Firstname: data.Firstname,
-      Middlename: data.Middlename,
-      Lastname: data.Lastname,
-      DOB: data.DOB,
-      Password: data.password,
-      Phone: data.Phone,
-      Email: data.Email,
-      Address: data.Address,
-      BloodGroup: data.BloodGroup,
+      FirstName: getValues("FirstName"),
+      Username: getValues("Username"),
+      LastName: getValues("LastName"),
+      DOB: getValues("DOB"),
+      Password: getValues("Password"),
+      Phone: getValues("Phone"),
+      Email: getValues("Email"),
       UserType: "P",
       Avatar: uploadedImg !== "" ? filename : "",
-      Status: data.Status,
+      Status: getValues("Status"),
     };
-    // console.log(saveObj);
+
     const UpdateObj = {
-      Firstname: data.Firstname,
-      Middlename: data.Middlename,
-      Lastname: data.Lastname,
-      DOB: data.DOB,
-      Phone: data.Phone,
-      Email: data.Email,
-      Address: data.Address,
-      BloodGroup: data.BloodGroup,
-      Status: data.Status,
-      // UserType: "P",
-      Avatar: uploadedImg === "" ? data.Avatar : filename,
+      Id: getValues("Id"),
+      FirstName: getValues("FirstName"),
+      Username: getValues("Username"),
+      LastName: getValues("LastName"),
+      DOB: getValues("DOB") || 0,
+      Phone: getValues("Phone"),
+      Email: getValues("Email"),
+      Status: getValues("Status"),
+      Avatar: uploadedImg === "" ? getValues("Avatar") : filename,
     };
 
     setLoaderOpen(true);
-    if (data.password !== "" || data.password !== undefined) {
-      saveObj.Password = data.password;
-      UpdateObj.Password = data.password;
+    if (getValues("Password") !== "" || getValues("Password") !== undefined) {
+      saveObj.Password = getValues("Password");
+      UpdateObj.Password = getValues("Password");
     }
 
-    if (SaveUpdateButton === "SAVE") {
-      const response = await axios.post(`${BASE_URL}Users`, saveObj,{
-        headers: {
-          'Content-Type': 'application/json',
-          Authorization: token,
-        },
-     });
-      if (response.data.status) {
+    if (SaveUpdateButton === "ADD") {
+      const response = await axios.post(`${BASE_URL}Users`, saveObj);
+      if (response.data.success === true) {
         if (uploadedImg !== "") {
           const res = await axios.request({
             method: "PUT",
             maxBodyLength: Infinity,
-            url: `${Bunny_Storage_URL}/Users/${response.data.values._id}/${filename}`,
             headers: {
               "Content-Type": "image/jpeg",
               AccessKey: Bunny_Storage_Access_Key,
             },
             data: uploadedImg,
           });
-          if (res.data.HttpCode === 201) {
+          if (response.data.success === true) {
             setLoaderOpen(false);
             Swal.fire({
               position: "center",
@@ -457,7 +337,7 @@ export default function ManageUsers() {
               timer: 1500,
             });
             handleClose();
-            getUserData();
+            getUserData(currentPage, searchText);
             setUploadedImg("");
           } else {
             setLoaderOpen(false);
@@ -469,12 +349,12 @@ export default function ManageUsers() {
             position: "center",
             icon: "success",
             toast: true,
-            title: "User Added and Image Uploaded Successfully",
+            title: "User Added Successfully",
             showConfirmButton: false,
             timer: 1500,
           });
           handleClose();
-          getUserData();
+          getUserData(currentPage, searchText);
           setUploadedImg("");
         }
       } else {
@@ -499,21 +379,14 @@ export default function ManageUsers() {
 
       if (result.isConfirmed) {
         try {
-          const response = await axios.patch(
-            `${BASE_URL}Users/${data._id}`,
-            UpdateObj,
-            {
-              headers: {
-                'Content-Type': 'application/json',
-                Authorization: token,
-              },
-            }
+          const response = await axios.put(
+            `${BASE_URL}Users/${getValues("Id")}`,
+            UpdateObj
           );
           if (response.data.status && uploadedImg !== "") {
             const res = await axios.request({
               method: "PUT",
               maxBodyLength: Infinity,
-              url: `${Bunny_Storage_URL}/Users/${data._id}/${filename}`,
               headers: {
                 "Content-Type": "image/jpeg",
                 AccessKey: Bunny_Storage_Access_Key,
@@ -522,11 +395,10 @@ export default function ManageUsers() {
             });
 
             if (res.data.HttpCode === 201) {
-              if (data.Avatar !== "") {
+              if (getValues("Avatar") !== "") {
                 await axios.request({
                   method: "DELETE",
                   maxBodyLength: Infinity,
-                  url: `${Bunny_Storage_URL}/Users/${data._id}/${data.Avatar}`,
                   headers: {
                     AccessKey: Bunny_Storage_Access_Key,
                   },
@@ -542,7 +414,7 @@ export default function ManageUsers() {
                 timer: 1500,
               });
               handleClose();
-              getUserData();
+              getUserData(currentPage, searchText);
               setUploadedImg("");
             } else {
               setLoaderOpen(false);
@@ -559,7 +431,7 @@ export default function ManageUsers() {
               timer: 1500,
             });
             handleClose();
-            getUserData();
+            getUserData(currentPage, searchText);
             setUploadedImg("");
           }
         } catch (error) {
@@ -598,6 +470,42 @@ export default function ManageUsers() {
     return phoneRegex.test(phoneNumber);
   };
 
+  const isValidUsername = (username) => {
+    const usernameRegex = /^.{4,}$/;
+    return usernameRegex.test(username);
+  };
+
+  const getUserData = async (page = 0, searchText = "") => {
+    try {
+      let apiUrl = `${BASE_URL}Users/ByPage/${page}/${limit}`;
+
+      if (searchText) {
+        apiUrl = `${BASE_URL}Users/ByPage/search/${searchText}/${page}/${limit}`;
+      }
+      const response = await axios.get(apiUrl);
+
+      if (response.data && response.data.values) {
+        setUserData(
+          response.data.values.map((item, index) => ({
+            ...item,
+            id: page * limit + index + 1,
+          }))
+        );
+        setTotalRows(response.data.count);
+
+        if (searchText) {
+          setTotalRows(response.data.count);
+        }
+      }
+    } catch (error) {
+      console.error("Error fetching data:", error);
+    }
+  };
+
+  useEffect(() => {
+    getUserData(currentPage, searchText);
+  }, [currentPage]);
+
   const columns = [
     {
       field: "Action",
@@ -609,11 +517,11 @@ export default function ManageUsers() {
           <IconButton
             onClick={() => handleClick(params.row)}
             sx={{
-              "& .MuiButtonBase-root,": {
-                padding: 0,
+              color: "rgb(0, 90, 91)", // Apply color to the icon
+              "&:hover": {
+                backgroundColor: "rgba(0, 90, 91, 0.1)", // Optional hover effect
               },
             }}
-            color="primary"
           >
             <EditNoteIcon />
           </IconButton>
@@ -624,7 +532,7 @@ export default function ManageUsers() {
                 marginLeft: 3,
               },
             }}
-            onClick={() => deluser(params.row._id)}
+            onClick={() => deluser(params.row.Id)}
             color="primary"
           >
             <DeleteForeverIcon style={{ color: "red" }} />
@@ -634,20 +542,21 @@ export default function ManageUsers() {
     },
     { field: "id", headerName: "SR.No", width: 90, sortable: true },
     {
-      field: "Firstname",
+      field: "FirstName",
       headerName: "First Name",
       width: 150,
       sortable: false,
     },
+
     {
-      field: "Middlename",
-      headerName: "Middle Name",
+      field: "LastName",
+      headerName: "Last Name",
       width: 150,
       sortable: false,
     },
     {
-      field: "Lastname",
-      headerName: "Last Name",
+      field: "Username",
+      headerName: "Username",
       width: 150,
       sortable: false,
     },
@@ -666,34 +575,12 @@ export default function ManageUsers() {
     },
 
     {
-      field: "Address",
-      headerName: "Address",
-      width: 150,
-      sortable: false,
-    },
-   
-    {
       field: "Email",
       headerName: "Email",
       width: 170,
       sortable: false,
     },
 
-    {
-      field: "BloodGroup",
-      headerName: "Blood Group",
-      width: 100,
-      sortable: false,
-      renderCell: (params) => {
-        const bloodGroup = params.row.BloodGroup;
-        const color = badgeColors[bloodGroup] || "#6c757d"; // Default gray if no match
-        return (
-          <span style={{ ...badgeStyles, backgroundColor: color, width: 35 }}>
-            {bloodGroup}
-          </span>
-        );
-      },
-    },
     {
       field: "Status",
       headerName: "Status",
@@ -724,7 +611,7 @@ export default function ManageUsers() {
           src={
             params.row.Avatar === ""
               ? avatar
-              : `${Bunny_Image_URL}/Users/${params.row._id}/${params.row.Avatar}`
+              : `${Bunny_Image_URL}/Users/${params.row.Id}/${params.row.Avatar}`
           }
           alt="avatar"
           style={{
@@ -737,27 +624,6 @@ export default function ManageUsers() {
       ),
     },
   ];
-
-  const badgeStyles = {
-    borderRadius: "12px",
-    padding: "2px 6px",
-    fontSize: "12px",
-    width: "12",
-    color: "#fff",
-    display: "inline-block",
-    textAlign: "center",
-  };
-
-  const badgeColors = {
-    "A+": "#007bff", // Blue for A+
-    "A-": "#0056b3", // Darker Blue for A-
-    "B+": "#28a745", // Green for B+
-    "B-": "#1e7e34", // Darker Green for B-
-    "AB+": "#ffc107", // Yellow for AB+
-    "AB-": "#e0a800", // Darker Yellow for AB-
-    "O+": "#dc3545", // Red for O+
-    "O-": "#c82333", // Darker Red for O-
-  };
 
   const buttonStyles = {
     border: "none",
@@ -778,37 +644,23 @@ export default function ManageUsers() {
     ...buttonStyles,
     backgroundColor: "#dc3545",
   };
-
-  const getUserData = async() => {
-    const token = await getApiToken();
-    axios.get(`${BASE_URL}Users/`,{
-      headers: {
-        'Content-Type': 'application/json',
-        Authorization: token,
-      },
-    }).then((response) => {
-      setUserData(response.data.values.flat());
-    });
-  };
-
-  useEffect(() => {
-    getUserData();
-  },[]);
-
   return (
     <>
       {loaderOpen && <Loader open={loaderOpen} />}
-      <Modal open={on} onClose={handleClose}
-      sx={{
-        backdropFilter: "blur(5px)",
-        backgroundColor: "rgba(0, 0, 0, 0.3)",
-      }}>
+      <Modal
+        open={on}
+        onClose={handleClose}
+        sx={{
+          backdropFilter: "blur(5px)",
+          backgroundColor: "rgba(0, 0, 0, 0.3)",
+        }}
+      >
         <Paper
           elevation={10}
           sx={{
             width: "90%",
             maxWidth: 600,
-            height: 500,
+            height: 450,
             // bgcolor: "#E6E6FA",
             position: "absolute",
             top: "50%",
@@ -825,18 +677,13 @@ export default function ManageUsers() {
             scrollbarWidth: "none",
           }}
         >
-          <IconButton
-            sx={{
-              position: "absolute",
-              top: 8,
-              right: 8,
-              // color: "black",
-            }}
-            onClick={handleClose}
+          <Grid
+            container
+            rowSpacing={2.2}
+            columnSpacing={2}
+            component={"form"}
+            onSubmit={handleSubmit(updateUser)}
           >
-            <CloseIcon />
-          </IconButton>
-          <Grid container rowSpacing={2.2} columnSpacing={2}>
             <Grid
               container
               item
@@ -845,26 +692,6 @@ export default function ManageUsers() {
               alignItems="flex-end"
               style={{ position: "relative" }}
             >
-              {/* <Badge
-                overlap="circular"
-                anchorOrigin={{ vertical: "bottom", horizontal: "right" }}
-                onClick={handleUploadProfile}
-              >
-                <CameraAltOutlinedIcon/>
-
-                <img
-                  src={Image || avatar}
-                  alt="Upload"
-                  height={70}
-                  width={70}
-                  style={{
-                    display: "block",
-                    borderRadius: "50%",
-                    cursor: "pointer",
-                    
-                  }}
-                />
-              </Badge> */}
               <Badge
                 overlap="circular"
                 anchorOrigin={{ vertical: "bottom", horizontal: "right" }}
@@ -897,166 +724,198 @@ export default function ManageUsers() {
                 />
               </Badge>
             </Grid>
+            <IconButton
+              sx={{
+                position: "absolute",
+                top: 8,
+                right: 8,
+              }}
+              onClick={() => {
+                setOn(false);
+                setClearUpdateButton("CLEAR");
+                clearFormData();
+                console.log(ClearUpdateButton);
+              }}
+            >
+              <CloseIcon />
+            </IconButton>
+            <Grid item md={6} sm={6} xs={12}>
+              <Controller
+                name="FirstName"
+                control={control}
+                defaultValue=""
+                render={({ field }) => (
+                  <InputTextField
+                    {...field}
+                    label="First Name"
+                    id="FirstName"
+                    className="custom-required-field"
+                  />
+                )}
+              />
+            </Grid>
 
             <Grid item md={6} sm={6} xs={12}>
-              <InputTextField
-                label="First Name"
-                id="Firstname"
-                type="text"
-                onChange={onchangeHandler}
-                value={data.Firstname}
-                name="Firstname"
-                className="custom-required-field"
-
-                // onChange={(event) => {
-                //   const value = event.target.value;
-                //   const validValue = value.replace(/[^a-zA-Z]/g, '');
-
-                //   setData({
-                //     ...data,
-                //     Firstname: validValue,
-                //   });
-                // }}
+              <Controller
+                name="LastName"
+                control={control}
+                defaultValue=""
+                render={({ field }) => (
+                  <InputTextField {...field} label="Last Name" id="LastName" />
+                )}
               />
             </Grid>
             <Grid item md={6} sm={6} xs={12}>
-              <InputTextField
-                label="Middle Name"
-                id="Middlename"
-                onChange={onchangeHandler}
-                value={data.Middlename}
-                name="Middlename"
-              />
-            </Grid>
-
-            <Grid item md={6} sm={6} xs={12}>
-              <InputTextField
-                label="Last Name"
-                id="Lastname"
-                onChange={onchangeHandler}
-                value={data.Lastname}
-                name="Lastname"
+              <Controller
+                name="Username"
+                control={control}
+                defaultValue=""
+                render={({ field }) => (
+                  <InputTextField
+                    {...field}
+                    label="Username"
+                    id="Username"
+                    disabled={ClearUpdateButton === "RESET"}
+                  />
+                )}
               />
             </Grid>
             <Grid item md={6} sm={6} xs={12}>
-              <InputPasswordField
-                label="password"
-                id="password"
-                onChange={onchangeHandler}
-                value={data.password}
-                name="password"
-                type={showPassword ? "text" : "password"}
-                showPassword={showPassword}
-                onClick={handleClickShowPassword}
-                onMouseDown={handleMouseDownPassword}
+              <Controller
+                name="Password"
+                control={control}
+                defaultValue=""
+                render={({ field }) => (
+                  <InputPasswordField
+                    {...field}
+                    label="Password"
+                    id="Password"
+                    type={showPassword ? "text" : "Password"}
+                    showPassword={showPassword}
+                    onClick={handleClickShowPassword}
+                    // onMouseDown={handleMouseDownPassword}
+                  />
+                )}
               />
-
               <Typography fontSize={"small"} color={"red"}>
-                Leave blank to current password here
+                Leave blank to current Password here
               </Typography>
             </Grid>
             <Grid item md={6} sm={6} xs={12}>
-              <InputTextField
-                label="Phone No"
-                id="Phone"
-                onChange={onchangeHandler}
-                type="number"
-                value={data.Phone}
+              <Controller
+                name="DOB"
+                control={control}
+                defaultValue={dayjs()}
+                render={({ field }) => (
+                  <DatePickerField
+                    {...field}
+                    id="DOB"
+                    label="DOB"
+                    maxDate={dayjs(undefined)}
+                  />
+                )}
+              />
+            </Grid>
+            <Grid item md={6} sm={6} xs={12}>
+              <Controller
                 name="Phone"
+                control={control}
+                defaultValue=""
+                render={({ field }) => (
+                  <InputTextField
+                    {...field}
+                    label="Phone No"
+                    id="Phone"
+                    type="number"
+                  />
+                )}
               />
             </Grid>
             <Grid item md={6} sm={6} xs={12}>
-              <InputTextField
-                label="Address"
-                id="Address"
-                onChange={onchangeHandler}
-                value={data.Address}
-                name="Address"
-              />
-            </Grid>
-            <Grid item md={6} sm={6} xs={12}>
-              <InputTextField
-                label="Email ID"
+              <Controller
                 name="Email"
-                id="Email"
-                onChange={onchangeHandler}
-                type="email"
-                required
-                value={data.Email}
-                className="custom-required-field"
-              />
-            </Grid>
-
-            {/* <Grid item md={6} sm={6} xs={12}>
-              <DatePickerField
-                id="DOB"
-                label="DOB"
-                value={dayjs(data.DOB)}
-                maxDate={dayjs(undefined)}
-                onChange={(date) =>
-                  onchangeHandler({
-                    target: {
-                      name: "DOB",
-                      value: dayjs(date),
-                    },
-                  })
-                }
-              />
-            </Grid> */}
-
-            <Grid item md={6} sm={6} xs={12}>
-              <InputSelectField
-                id="BloodGroup"
-                label="Blood Group"
-                onChange={onchangeHandler}
-                value={data.BloodGroup}
-                data={[
-                  { key: "A+", value: "A+" },
-                  { key: "A-", value: "A-" },
-                  { key: "B+", value: "B+" },
-                  { key: "B-", value: "B-" },
-                  { key: "O+", value: "O+" },
-                  { key: "O-", value: "O-" },
-                  { key: "AB+", value: "AB+" },
-                  { key: "AB-", value: "AB-" },
-                ]}
+                control={control}
+                defaultValue=""
+                render={({ field }) => (
+                  <InputTextField
+                    {...field}
+                    label="Email ID"
+                    id="Email"
+                    type="email"
+                    required
+                    className="custom-required-field"
+                  />
+                )}
               />
             </Grid>
             <Grid item md={3} sm={3} xs={12} textAlign={"left"} ml={3}>
-              <CheckboxInputs
-                checked={data.Status}
-                label="Active"
-                id="Status"
-                onChange={(event) =>
-                  onchangeHandler({
-                    target: {
-                      name: "Status",
-                      id: "Status",
-                      value: event.target.checked,
-                    },
-                  })
-                }
-                value={data.Status}
+              <Controller
                 name="Status"
+                control={control}
+                defaultValue={1} // Default to checked (1)
+                render={({ field }) => (
+                  <FormControlLabel
+                    control={
+                      <Checkbox
+                        {...field}
+                        checked={field.value === 1}
+                        onChange={(e) =>
+                          field.onChange(e.target.checked ? 1 : 0)
+                        }
+                      />
+                    }
+                    label="Active"
+                  />
+                )}
               />
             </Grid>
 
-            <Grid item xs={12} textAlign={"end"}>
+            <Grid
+              item
+              xs={12}
+              display="flex"
+              justifyContent="space-between"
+              alignItems="center"
+              sx={{ position: "absolute", bottom: 10, left: 10, right: 10 }}
+            >
+              {/* Cancel Button (Left) */}
+              <Button
+                size="small"
+                onClick={() => clearFormData()} // Cancel button functionality
+                sx={{
+                  p: 1,
+                  width: 80,
+                  color: "rgb(0, 90, 91)",
+                  background: "transparent",
+                  border: "1px solid rgb(0, 90, 91)",
+                  borderRadius: "8px",
+                  transition: "all 0.2s ease-in-out",
+                  "&:hover": {
+                    background: "rgba(0, 90, 91, 0.1)",
+                    transform: "translateY(2px)",
+                  },
+                }}
+              >
+                {ClearUpdateButton}
+              </Button>
+
+              {/* Save/Update Button (Right) */}
               <Button
                 type="submit"
                 size="small"
-                onClick={() => updateUser(data._id)}
+                // onClick={() => updateUser(data.Id)}
                 sx={{
-                  marginTop: 1,
                   p: 1,
                   width: 80,
                   color: "white",
+                  background:
+                    "linear-gradient(to right, rgb(0, 90, 91), rgb(22, 149, 153))",
                   boxShadow: 5,
-                  backgroundColor: "#5C5CFF",
+                  borderRadius: "8px",
+                  transition: "all 0.2s ease-in-out",
                   "&:hover": {
-                    backgroundColor: "#E6E6FA",
-                    border: "1px solid #5C5CFF",
-                    color: "#5C5CFF",
+                    transform: "translateY(2px)",
+                    boxShadow: "0 2px 4px rgba(0, 90, 91, 0.2)",
                   },
                 }}
               >
@@ -1112,7 +971,7 @@ export default function ManageUsers() {
                 style={{ display: "none" }}
                 id="contained-button-file"
                 type="file"
-                onChange={handleImageUploadAndClose}
+                // onChange={handleImageUploadAndClose}
               />
               <label htmlFor="contained-button-file">
                 <Button
@@ -1129,7 +988,7 @@ export default function ManageUsers() {
                 variant="contained"
                 color="error"
                 startIcon={<DeleteIcon />}
-                onClick={handleProfile}
+                // onClick={handleProfile}
                 disabled={!Image}
               >
                 Remove Current Profile
@@ -1179,12 +1038,14 @@ export default function ManageUsers() {
           sx={{
             pr: 2,
             color: "white",
-            backgroundColor: "#5C5CFF",
-            boxShadow: 5,
+            background:
+              "linear-gradient(to right, rgb(0, 90, 91), rgb(22, 149, 153))",
+            borderRadius: "8px",
+            transition: "all 0.2s ease-in-out",
+            boxShadow: "0 4px 8px rgba(0, 90, 91, 0.3)",
             "&:hover": {
-              backgroundColor: "#E6E6FA",
-              border: "1px solid #5C5CFF",
-              color: "#5C5CFF",
+              transform: "translateY(2px)",
+              boxShadow: "0 2px 4px rgba(0, 90, 91, 0.2)",
             },
             "& .MuiButton-label": {
               display: "flex",
@@ -1213,23 +1074,54 @@ export default function ManageUsers() {
           <DataGrid
             className="datagrid-style"
             rowHeight={70}
-            getRowId={(row) => row._id}
+            getRowId={(row) => row.Id}
             rows={userData.map((data, id) => ({ ...data, id: id + 1 }))}
             columns={columns}
+            pagination
+            paginationMode="server"
+            rowCount={totalRows}
+            pageSizeOptions={[limit]}
+            paginationModel={{ page: currentPage, pageSize: limit }}
+            onPaginationModelChange={(newModel) => {
+              console.log("New Pagination Model:", newModel);
+              setCurrentPage(newModel.page);
+              getUserData(newModel.page, searchText);
+            }}
+            loading={loading}
             initialState={{
-              pagination: {
-                paginationModel: {
-                  pageSize: 10,
+              pagination: { paginationModel: { pageSize: 8 } },
+
+              filter: {
+                filterModel: {
+                  items: [],
+
+                  quickFilterValues: [], // Default empty
                 },
               },
             }}
-            pageSizeOptions={[5]}
+            disableColumnFilter
+            disableColumnSelector
+            disableDensitySelector
+            slots={{ toolbar: GridToolbar }} // Enables search & export
+            slotProps={{
+              toolbar: {
+                showQuickFilter: true,
+
+                quickFilterProps: { debounceMs: 500 },
+              },
+            }}
+            onFilterModelChange={(model) => {
+              const quickFilterValue = model.quickFilterValues?.[0] || "";
+              setSearchText(quickFilterValue);
+              setCurrentPage(0); // ✅ Always reset to first page when searching
+              getUserData(0, quickFilterValue);
+            }}
             sx={{
               "& .MuiDataGrid-columnHeaders": {
                 backgroundColor: (theme) => theme.palette.custome.datagridcolor,
               },
-                "& .MuiDataGrid-row:hover": {
-                boxShadow: "0px 4px 20px rgba(0, 0, 0.2, 0.2)", 
+              "& .MuiDataGrid-row:hover": {
+                boxShadow: "0px 4px 20px rgba(0, 0, 0.2, 0.2)",
               },
             }}
           />

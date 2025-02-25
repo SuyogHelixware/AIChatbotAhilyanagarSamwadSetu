@@ -123,7 +123,7 @@ export default function Home() {
                 ]}
                 margin={{ top: 10, bottom: 30, left: 40, right: 10 }}
                 height={280}
-                colors={["#5C5CFF", "#9CD8C4"]}
+                colors={["#005A5B", "#9CD8C4"]}
               />
             </Paper>
           </Grid>
@@ -155,7 +155,7 @@ export default function Home() {
                   },
                 ]}
                 height={280}
-                colors={["#708CFF", "#5D3FD3", "#9CD8C4"]}
+                colors={["#005A5B", "#338687 ", "#9CD8C4"]}
               />
             </Paper>
           </Grid>
@@ -168,7 +168,7 @@ export default function Home() {
                 ]}
                 xAxis={[{ data: xLabels, scaleType: "band" }]}
                 height={280}
-                colors={["#9CD8C4", "#5D3FD3"]}
+                colors={["#9CD8C4", "#005A5B"]}
               />
             </Paper>
           </Grid>

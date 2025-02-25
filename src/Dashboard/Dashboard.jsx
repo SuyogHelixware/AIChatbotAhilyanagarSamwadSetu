@@ -16,20 +16,17 @@ import LocalOfferIcon from "@mui/icons-material/LocalOffer";
 import ManageAccountsIcon from "@mui/icons-material/ManageAccounts";
 import MenuIcon from "@mui/icons-material/Menu";
 import ModeNightIcon from "@mui/icons-material/ModeNight";
-import MonitorHeartIcon from "@mui/icons-material/MonitorHeart";
-import NewspaperIcon from "@mui/icons-material/Newspaper";
-import NoFoodIcon from "@mui/icons-material/NoFood";
-import NoteAltIcon from "@mui/icons-material/NoteAlt";
-import PostAddIcon from "@mui/icons-material/PostAdd";
-import QuizIcon from "@mui/icons-material/Quiz";
-import RemoveIcon from "@mui/icons-material/Remove";
+import { MdMiscellaneousServices } from "react-icons/md";
+
 import SettingsIcon from "@mui/icons-material/Settings";
 import SubscriptionsIcon from "@mui/icons-material/Subscriptions";
 import TodayIcon from "@mui/icons-material/Today";
 import VaccinesIcon from "@mui/icons-material/Vaccines";
 import VideoSettingsIcon from "@mui/icons-material/VideoSettings";
 import WorkHistoryIcon from "@mui/icons-material/WorkHistory";
-import FeaturedPlayListOutlinedIcon from '@mui/icons-material/FeaturedPlayListOutlined';
+import FeaturedPlayListOutlinedIcon from "@mui/icons-material/FeaturedPlayListOutlined";
+import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
+import { faBuilding } from "@fortawesome/free-solid-svg-icons";
 
 import {
   Avatar,
@@ -55,7 +52,7 @@ import Typography from "@mui/material/Typography";
 import { styled, useTheme } from "@mui/material/styles";
 import * as React from "react";
 import { Link, Outlet, useLocation, useNavigate } from "react-router-dom";
-import logo from "../../src/assets/logo.png";
+import logo from "../assets/ApaleSarkar.png";
 import "../Dashboard/Dashboard.css";
 // import avatar from "../assets/avtar.png";
 import { Bunny_Image_URL } from "../Constant";
@@ -105,7 +102,7 @@ const AppBar = styled(MuiAppBar, {
   shouldForwardProp: (prop) => prop !== "open",
 })(({ theme, open }) => ({
   zIndex: theme.zIndex.drawer + 1,
-  backgroundColor: "#5C5CFF",
+  background: "linear-gradient(to right, rgb(0, 90, 91), rgb(22, 149, 153))",
   transition: theme.transitions.create(["width", "margin"], {
     easing: theme.transitions.easing.sharp,
     duration: theme.transitions.duration.leavingScreen,
@@ -181,7 +178,7 @@ export default function Dashboard() {
   const [loading, setLoading] = React.useState(true);
   const [themestatus, setThemeStatus] = useState(() => {
     const CurrentTheme = localStorage.getItem("Theme");
-    return CurrentTheme === "dark" ? false : true; 
+    return CurrentTheme === "dark" ? false : true;
   });
   // const [drawerOpen, setDrawerOpen] = React.useState(false);
   const [userData, setUserData] = React.useState({
@@ -231,43 +228,38 @@ export default function Dashboard() {
     }
   }, [isMobile]);
 
+  //Use for Theme Storage
+  React.useEffect(() => {
+    const CurrentTheme = localStorage.getItem("Theme");
 
+    if (CurrentTheme === "dark") {
+      setThemeStatus(false);
+      DarkMode(); // Apply dark mode immediately
+    } else {
+      setThemeStatus(true);
+      LightMode(); // Apply light mode immediately
+    }
+  }, [DarkMode, LightMode]);
 
-//Use for Theme Storage
-React.useEffect(() => {
-  const CurrentTheme = localStorage.getItem("Theme");
+  React.useEffect(() => {
+    const timer = setTimeout(() => {
+      setLoading(false);
+    }, 1000);
 
-  if (CurrentTheme === "dark") {
-    setThemeStatus(false);
-    DarkMode(); // Apply dark mode immediately
-  } else {
-    setThemeStatus(true);
-    LightMode(); // Apply light mode immediately
-  }
+    return () => clearTimeout(timer);
+  }, [DarkMode, LightMode]);
 
-}, [DarkMode, LightMode]);
-
-React.useEffect(() => {
-  const timer = setTimeout(() => {
-    setLoading(false);  
-  }, 1000); 
-
-  return () => clearTimeout(timer);
-}, [DarkMode, LightMode]); 
-
-const themechange = () => {
-  if (themestatus) {
-    localStorage.setItem("Theme", "dark");
-    DarkMode();
-    setThemeStatus(false);
-  } else {
-    localStorage.setItem("Theme", "light");
-    LightMode();
-    setThemeStatus(true);
-  }
-};
-
-
+  const themechange = () => {
+    if (themestatus) {
+      localStorage.setItem("Theme", "dark");
+      DarkMode();
+      setThemeStatus(false);
+    } else {
+      localStorage.setItem("Theme", "light");
+      LightMode();
+      setThemeStatus(true);
+    }
+  };
 
   const location = useLocation();
 
@@ -316,9 +308,6 @@ const themechange = () => {
   //   }
   // };
 
-  
- 
-
   const actions = [
     {
       icon: (
@@ -341,385 +330,439 @@ const themechange = () => {
         </IconButton>
       ),
       name: "Screen",
-
     },
   ];
-  
+
   return (
     <>
- {loading ? (
+      {loading ? (
         <LoginPageLoader />
       ) : (
-    <Box
-      sx={{
-        display: "flex",
-        //  backgroundColor: "#F5F6FA",
-        backgroundColor: (theme) => theme.palette.background.default,
-      }}
-    >
-      <CssBaseline />
-      <Modal open={on} onClose={handleClose}>
-        <Paper elevation={10} sx={{ ...style, width: 300 }}>
-          <center>
-            <Grid
-              container
-              item
-              height={"100%"}
-              width={"100%"}
-              justifyContent={"center"}
-              alignItems="center"
-              position="relative"
+        <Box
+          sx={{
+            display: "flex",
+            //  backgroundColor: "#F5F6FA",
+            backgroundColor: (theme) => theme.palette.background.default,
+          }}
+        >
+          <CssBaseline />
+          <Modal open={on} onClose={handleClose}>
+            <Paper elevation={10} sx={{ ...style, width: 300 }}>
+              <center>
+                <Grid
+                  container
+                  item
+                  height={"100%"}
+                  width={"100%"}
+                  justifyContent={"center"}
+                  alignItems="center"
+                  position="relative"
+                >
+                  <Avatar
+                    alt="Avatar"
+                    src={`${Bunny_Image_URL}/Users/${userData._id}/${userData.Avatar}`}
+                    sx={{
+                      width: 80,
+                      height: 80,
+                      position: "absolute",
+                      top: "calc(28% - 50px)",
+                      left: "50%",
+                      transform: "translateX(-50%)",
+                      zIndex: 1,
+                      border: "1px solid black",
+                    }}
+                  />
+                  <Grid
+                    item
+                    height={100}
+                    width={"100%"}
+                    style={{
+                      backgroundColor: "#5C5CFF",
+                      background:
+                        "linear-gradient(to right, rgb(0, 90, 91), rgb(22, 149, 153))",
+                    }}
+                  />
+                  <Paper
+                    style={{
+                      width: "270px",
+                      marginTop: -40,
+                      borderRadius: 10,
+                      position: "relative",
+                      marginLeft: 15,
+                      marginRight: 15,
+                      zIndex: 0,
+                    }}
+                  >
+                    <Grid
+                      paddingTop={7}
+                      display={"flex"}
+                      flexDirection={"column"}
+                      alignItems={"center"}
+                    >
+                      <MenuItem sx={{ fontSize: 13 }}>
+                        <b>Name : {userData.Name}</b>
+                      </MenuItem>
+                      <MenuItem sx={{ fontSize: 13, paddingTop: 0 }}>
+                        <b>Mob :</b> {userData.Phone}
+                      </MenuItem>
+
+                      <MenuItem sx={{ fontSize: 13, paddingTop: 0 }}>
+                        <b>Address :</b> {userData.Address}
+                      </MenuItem>
+                    </Grid>
+
+                    <Grid
+                      display={"flex"}
+                      flexDirection={"column"}
+                      alignItems={"center"}
+                      paddingBottom={2}
+                    >
+                      <Button
+                        onClick={() => {
+                          Navigate("/");
+                        }}
+                        sx={{
+                          boxShadow: 9,
+                          borderRadius: 10,
+                          backgroundColor: "#70b2d9",
+
+                          background:
+                            "linear-gradient(to right, rgb(0, 90, 91), rgb(22, 149, 153))",
+
+                          color: "white",
+                          fontSize: 10,
+                          fontWeight: "bold",
+                        }}
+                      >
+                        Log Out
+                      </Button>
+                    </Grid>
+                  </Paper>
+                </Grid>
+              </center>
+            </Paper>
+          </Modal>
+
+          <AppBar position="fixed" open={open}>
+            <Toolbar
+              sx={{
+                width: "100vw",
+                backgroundColor: (theme) =>
+                  theme.palette.customAppbar?.appbarcolor || "defaultColor",
+                boxShadow: "0px 5px 7px rgba(0, 0, 0, 0.1)",
+                elevation: 8,
+                display: "flex",
+              }}
             >
-              <Avatar
-                alt="Avatar"
-                src={`${Bunny_Image_URL}/Users/${userData._id}/${userData.Avatar}`}
+              <IconButton
+                color="inherit"
+                aria-label="open drawer"
+                onClick={handleDrawerOpen}
+                edge="start"
                 sx={{
-                  width: 80,
-                  height: 80,
-                  position: "absolute",
-                  top: "calc(28% - 50px)",
-                  left: "50%",
-                  transform: "translateX(-50%)",
-                  zIndex: 1,
-                  border: "1px solid black",
-                }}
-              />
-              <Grid
-                item
-                height={100}
-                width={"100%"}
-                style={{
-                  backgroundColor: "#5C5CFF",
-                  backgroundImage:
-                    "linear-gradient(360deg, #647DEE 0%, #7F53AC 74%)",
-                }}
-              />
-              <Paper
-                style={{
-                  width: "270px",
-                  marginTop: -40,
-                  borderRadius: 10,
-                  position: "relative",
-                  marginLeft: 15,
-                  marginRight: 15,
-                  zIndex: 0,
+                  marginRight: 5,
+                  color: "white",
                 }}
               >
-                <Grid
-                  paddingTop={7}
-                  display={"flex"}
-                  flexDirection={"column"}
-                  alignItems={"center"}
+                <MenuIcon />
+              </IconButton>
+              <Typography
+                variant="h6"
+                noWrap
+                component="div"
+                textAlign="center"
+                width="100%"
+                className="flash-animation"
+                sx={{ elevation: 6, color: "white" }}
+              ></Typography>
+
+              <Tooltip title={userData.Name}>
+                <IconButton
+                  size="small"
+                  aria-controls={menuId}
+                  aria-haspopup="true"
+                  onClick={handleOn}
+                  color="inherit"
                 >
-                  <MenuItem sx={{ fontSize: 13 }}>
-                    <b>Name : {userData.Name}</b>
-                  </MenuItem>
-                  <MenuItem sx={{ fontSize: 13, paddingTop: 0 }}>
-                    <b>Mob :</b> {userData.Phone}
-                  </MenuItem>
-
-                  <MenuItem sx={{ fontSize: 13, paddingTop: 0 }}>
-                    <b>Address :</b> {userData.Address}
-                  </MenuItem>
-                </Grid>
-
-                <Grid
-                  display={"flex"}
-                  flexDirection={"column"}
-                  alignItems={"center"}
-                  paddingBottom={2}
-                >
-                  <Button
-                    onClick={() => {
-                      Navigate("/");
-                    }}
-                    sx={{
-                      boxShadow: 9,
-                      borderRadius: 10,
-                      backgroundColor: "#70b2d9",
-
-                      backgroundImage:
-                        "linear-gradient(180deg, #647DEE 0%, #7F53AC 180%)",
-
-                      color: "white",
-                      fontSize: 10,
-                      fontWeight: "bold",
-                    }}
-                  >
-                    Log Out
-                   </Button>
-                </Grid>
-              </Paper>
-            </Grid>
-          </center>
-        </Paper>
-      </Modal>
-        
-      <AppBar position="fixed" open={open}>
-        <Toolbar
-          sx={{
-            width: "100vw",
-            backgroundColor: (theme) =>
-              theme.palette.customAppbar?.appbarcolor || "defaultColor",
-            boxShadow: "0px 5px 7px rgba(0, 0, 0, 0.1)",
-            elevation: 8,
-            display: "flex",
-          }}
-        >
-          <IconButton
-            color="inherit"
-            aria-label="open drawer"
-            onClick={handleDrawerOpen}
-            edge="start"
-            sx={{
-              marginRight: 5,
-              color: "white",
-            }}
-          >
-            <MenuIcon />
-          </IconButton>
-          <Typography
-            variant="h6"
-            noWrap
-            component="div"
-            textAlign="center"
-            width="100%"
-            className="flash-animation"
-            sx={{ elevation: 6, color: "white" }}
-          >
-            
-          </Typography>
-
-                  <Tooltip title={userData.Name}>
-            <IconButton
-              size="small"
-              aria-controls={menuId}
-              aria-haspopup="true"
-              onClick={handleOn}
-              color="inherit"
+                  <Avatar
+                    src={
+                      `${Bunny_Image_URL}/Users/${userData._id}/${userData.Avatar}` || (
+                        <AccountCircle />
+                      )
+                    }
+                  />
+                </IconButton>
+              </Tooltip>
+            </Toolbar>
+          </AppBar>
+          <Drawer variant="permanent" open={open} PaperProps={{ elevation: 7 }}>
+            <DrawerHeader>
+              <IconButton>
+                {theme.direction === "rtl" ? (
+                  <ChevronRightIcon />
+                ) : (
+                  <ChevronLeftIcon />
+                )}
+              </IconButton>
+            </DrawerHeader>
+            <Grid
+              style={{
+                height: 90,
+                // backgroundColor: "white",
+              }}
             >
-              <Avatar
-                src={
-                  `${Bunny_Image_URL}/Users/${userData._id}/${userData.Avatar}` || (
-                    <AccountCircle />
-                  )
-                }
+              <img
+                src={logo}
+                alt="logo"
+                style={{
+                  maxWidth: "100%",
+                  maxHeight: "100%",
+                  objectFit: "contain",
+                  paddingTop: 10,
+                  // borderRadius:30,
+                }}
               />
-            </IconButton>
-          </Tooltip>
-        </Toolbar>
-      </AppBar>
-      <Drawer variant="permanent" open={open} PaperProps={{ elevation: 7 }}>
-        <DrawerHeader>
-          <IconButton>
-            {theme.direction === "rtl" ? (
-              <ChevronRightIcon />
-            ) : (
-              <ChevronLeftIcon />
-            )}
-          </IconButton>
-        </DrawerHeader>
-        <Grid
-          style={{
-            height: 90,
-            // backgroundColor: "white",
-          }}
-        >
-          <img
-            src={logo}
-            alt="logo"
-            style={{
-              maxWidth: "100%",
-              maxHeight: "100%",
-              objectFit: "contain",
-              paddingTop: 10,
-              // borderRadius:30,
-            }}
-          />
-        </Grid>
-        <Grid
-          sx={{
-            width: "100%",
-            // maxWidth: 340,
-            height: "100%",
-            // backgroundColor: "White",
-            overflow: "hidden",
-            "&:hover": {
-              overflowY: "auto",
-              scrollbarWidth: "thin",
-              scrollbarColor: "#888 transparent",
-            },
-          }}
-        >
-          <List
+            </Grid>
+            <Grid
+              sx={{
+                width: "100%",
+                // maxWidth: 340,
+                height: "100%",
+                // backgroundColor: "White",
+                overflow: "hidden",
+                "&:hover": {
+                  overflowY: "auto",
+                  scrollbarWidth: "thin",
+                  scrollbarColor: "#888 transparent",
+                },
+              }}
+            >
+              <List
+                sx={{
+                  width: "100%",
+                  maxWidth: 340,
+                  height: "100%",
+                  ...(open && {
+                    margin: "0 0",
+                  }),
+                }}
+                component="nav"
+                aria-labelledby="nested-list-subheader"
+              >
+                <div className="dashboard-menu">
+                  <Link to="home" className="link_style">
+                    <ListItemButton
+                      onClick={handleClickTransaction}
+                      selected={location.pathname === "/dashboard/home"}
+                      sx={{
+                        "&.Mui-selected": {
+                          background:
+                            "linear-gradient(to right, rgb(0, 90, 91), rgb(22, 149, 153))",
+                          borderRadius: 1,
+                          "& .MuiListItemIcon-root, & .MuiTypography-root": {
+                            color: "#FFFFFF",
+                          },
+                        },
+                        "& .MuiListItemText-primary": {
+                          color: theme.palette.text.primary,
+                        },
+                      }}
+                    >
+                      <ListItemIcon
+                        sx={{ minWidth: "33px", marginRight: "8px" }}
+                        onClick={handleDrawerOpen}
+                      >
+                        <DashboardIcon />
+                      </ListItemIcon>
+                      <ListItemText primary="Dashboard" />
+                    </ListItemButton>
+                  </Link>
+                  <Link to="manage-user" className="link_style">
+                    <ListItemButton
+                      onClick={handleClickTransaction}
+                      selected={location.pathname === "/dashboard/manage-user"}
+                      sx={{
+                        "&.Mui-selected": {
+                          background:
+                            "linear-gradient(to right, rgb(0, 90, 91), rgb(22, 149, 153))",
+                          borderRadius: 1,
+                          "& .MuiListItemIcon-root, & .MuiTypography-root": {
+                            color: "#FFFFFF",
+                          },
+                        },
+                        "& .MuiListItemText-primary": {
+                          color: theme.palette.text.primary,
+                        },
+                      }}
+                    >
+                      <ListItemIcon
+                        sx={{ minWidth: "33px", marginRight: "8px" }}
+                        onClick={handleDrawerOpen}
+                      >
+                        <ManageAccountsIcon />
+                      </ListItemIcon>
+                      <ListItemText primary="User" />
+                    </ListItemButton>
+                  </Link>
+                  <Link to="department" className="link_style">
+                    <ListItemButton
+                      onClick={handleClickTransaction}
+                      selected={location.pathname === "/dashboard/department"}
+                      sx={{
+                        "&.Mui-selected": {
+                          background:
+                            "linear-gradient(to right, rgb(0, 90, 91), rgb(22, 149, 153))",
+                          borderRadius: 1,
+                          "& .MuiListItemIcon-root, & .MuiTypography-root": {
+                            color: "#FFFFFF",
+                          },
+                        },
+                        "& .MuiListItemText-primary": {
+                          color: theme.palette.text.primary,
+                        },
+                      }}
+                    >
+                      <ListItemIcon
+                        sx={{ minWidth: "33px", marginRight: "8px" }}
+                        onClick={handleDrawerOpen}
+                      >
+                        <FontAwesomeIcon icon={faBuilding} />{" "}
+                      </ListItemIcon>
+                      <ListItemText primary="Department" />
+                    </ListItemButton>
+                  </Link>
+
+                  <Link to="Services" className="link_style">
+                    <ListItemButton
+                      onClick={handleClickTransaction}
+                      selected={location.pathname === "/dashboard/Services"}
+                      sx={{
+                        "&.Mui-selected": {
+                          background:
+                            "linear-gradient(to right, rgb(0, 90, 91), rgb(22, 149, 153))",
+                          borderRadius: 1,
+                          "& .MuiListItemIcon-root, & .MuiTypography-root": {
+                            color: "#FFFFFF",
+                          },
+                        },
+                        "& .MuiListItemText-primary": {
+                          color: theme.palette.text.primary,
+                        },
+                      }}
+                    >
+                      <ListItemIcon
+                        sx={{ minWidth: "33px", marginRight: "8px" }}
+                        onClick={handleDrawerOpen}
+                      >
+                        <TodayIcon />
+                      </ListItemIcon>
+                      <ListItemText primary="Online Services" />
+                    </ListItemButton>
+                  </Link>
+
+                  <Link to="OfflineServices" className="link_style">
+                    <ListItemButton
+                      onClick={handleClickTransaction}
+                      selected={
+                        location.pathname === "/dashboard/OfflineServices"
+                      }
+                      sx={{
+                        "&.Mui-selected": {
+                          background:
+                            "linear-gradient(to right, rgb(0, 90, 91), rgb(22, 149, 153))",
+                          borderRadius: 1,
+                          "& .MuiListItemIcon-root, & .MuiTypography-root": {
+                            color: "#FFFFFF",
+                          },
+                        },
+                        "& .MuiListItemText-primary": {
+                          color: theme.palette.text.primary,
+                        },
+                      }}
+                    >
+                      <ListItemIcon
+                        sx={{ minWidth: "33px", marginRight: "8px" }}
+                        onClick={handleDrawerOpen}
+                      >
+                        <MdMiscellaneousServices />
+                        </ListItemIcon>
+                      <ListItemText primary="Offline Services" />
+                    </ListItemButton>
+                  </Link>
+                </div>
+              </List>
+            </Grid>
+          </Drawer>
+          <Box
+            component="main"
             sx={{
-              width: "100%",
-              maxWidth: 340,
-              height: "100%",
-              ...(open && {
-                margin: "0 0",
+              flexGrow: 1,
+              p: 3,
+              ...(open && { width: `calc(100% - ${drawerWidth}px)` }),
+
+              ...(!open && {
+                width: theme.spacing(7),
+                [theme.breakpoints.up("sm")]: {
+                  width: theme.spacing(9),
+                },
               }),
             }}
-            component="nav"
-            aria-labelledby="nested-list-subheader"
           >
-            <div className="dashboard-menu">
-              <Link to="home" className="link_style">
-                <ListItemButton
-                  onClick={handleClickTransaction}
-                  selected={location.pathname === "/dashboard/home"}
-                  sx={{
-                    "&.Mui-selected": {
-                      backgroundColor: "#5C5CFF",
-                      borderRadius: 1,
-                      "& .MuiListItemIcon-root, & .MuiTypography-root": {
-                        color: "#FFFFFF",
+            <DrawerHeader />
+            <Grid
+              style={{
+                position: "fixed",
+                bottom: "55px",
+                right: "0px",
+                transform: "translateZ(4px)",
+                flexGrow: 1,
+                zIndex: 99,
+                background:
+                  "linear-gradient(to right, rgb(0, 90, 91), rgb(22, 149, 153))",
+              }}
+            >
+              <SpeedDial
+                ariaLabel="SpeedDial"
+                sx={{
+                  position: "absolute",
+                  bottom: 16,
+                  right: 16,
+                }}
+                icon={<RotatingIcon />}
+                FabProps={{
+                  sx: {
+                    background:
+                      "linear-gradient(to right, rgb(0, 90, 91), rgb(22, 149, 153))",
+                    color: "white", // Ensures the icon is visible
+                    "&:hover": {
+                      background:
+                        "linear-gradient(to right, rgb(0, 80, 81), rgb(20, 130, 135))", // Slightly darker on hover
+                    },
+                  },
+                }}
+              >
+                {actions.map((action) => (
+                  <SpeedDialAction
+                    key={action.name}
+                    icon={action.icon}
+                    tooltipTitle={action.name}
+                    sx={{
+                      background:
+                        "linear-gradient(to right, rgb(0, 90, 91), rgb(22, 149, 153))",
+                      color: "white",
+                      "&:hover": {
+                        background:
+                          "linear-gradient(to right, rgb(0, 80, 81), rgb(20, 130, 135))",
                       },
-                    },
-                    "& .MuiListItemText-primary": {
-                      color: theme.palette.text.primary,
-                    },
-                  }}
-                >
-                  <ListItemIcon
-                    sx={{ minWidth: "33px", marginRight: "8px" }}
-                    onClick={handleDrawerOpen}
-                  >
-                    <DashboardIcon />
-                  </ListItemIcon>
-                  <ListItemText primary="Dashboard" />
-                </ListItemButton>
-              </Link>
-              <Link to="manage-user" className="link_style">
-                <ListItemButton
-                  onClick={handleClickTransaction}
-                  selected={location.pathname === "/dashboard/manage-user"}
-                  sx={{
-                    "&.Mui-selected": {
-                      backgroundColor: "#5C5CFF",
-                      borderRadius: 1,
-                      "& .MuiListItemIcon-root, & .MuiTypography-root": {
-                        color: "#FFFFFF",
-                      },
-                    },
-                    "& .MuiListItemText-primary": {
-                      color: theme.palette.text.primary,
-                    },
-                  }}
-                >
-                  <ListItemIcon
-                    sx={{ minWidth: "33px", marginRight: "8px" }}
-                    onClick={handleDrawerOpen}
-                  >
-                    <ManageAccountsIcon />
-                  </ListItemIcon>
-                  <ListItemText primary="User" />
-                </ListItemButton>
-              </Link>
-              <Link to="department" className="link_style">
-                <ListItemButton
-                  onClick={handleClickTransaction}
-                  selected={location.pathname === "/dashboard/department"}
-                  sx={{
-                    "&.Mui-selected": {
-                      backgroundColor: "#5C5CFF",
-                      borderRadius: 1,
-                      "& .MuiListItemIcon-root, & .MuiTypography-root": {
-                        color: "#FFFFFF",
-                      },
-                    },
-                    "& .MuiListItemText-primary": {
-                      color: theme.palette.text.primary,
-                    },
-                  }}
-                >
-                  <ListItemIcon
-                    sx={{ minWidth: "33px", marginRight: "8px" }}
-                    onClick={handleDrawerOpen}
-                  >
-                    <ApprovalIcon />
-                  </ListItemIcon>
-                  <ListItemText primary="Department" />
-                </ListItemButton>
-              </Link>
+                    }}
+                  />
+                ))}
+              </SpeedDial>
+            </Grid>
 
-              <Link to="Services" className="link_style">
-                <ListItemButton
-                  onClick={handleClickTransaction}
-                  selected={location.pathname === "/dashboard/Services"}
-                  sx={{
-                    "&.Mui-selected": {
-                      backgroundColor: "#5C5CFF",
-                      borderRadius: 1,
-                      "& .MuiListItemIcon-root, & .MuiTypography-root": {
-                        color: "#FFFFFF",
-                      },
-                    },
-                    "& .MuiListItemText-primary": {
-                      color: theme.palette.text.primary,
-                    },
-                  }}
-                >
-                  <ListItemIcon
-                    sx={{ minWidth: "33px", marginRight: "8px" }}
-                    onClick={handleDrawerOpen}
-                  >
-                    <TodayIcon />
-                  </ListItemIcon>
-                  <ListItemText primary="Services" />
-                </ListItemButton>
-              </Link>
-
-             
-              
-            </div>
-          </List>
-        </Grid>
-      </Drawer>
-      <Box
-        component="main"
-        sx={{
-          flexGrow: 1,
-          p: 3,
-          ...(open && { width: `calc(100% - ${drawerWidth}px)` }),
-
-          ...(!open && {
-            width: theme.spacing(7),
-            [theme.breakpoints.up("sm")]: {
-              width: theme.spacing(9),
-            },
-          }),
-        }}
-      >
-        <DrawerHeader />
-        <Grid
-          style={{
-            position: "fixed",
-            bottom: "55px",
-            right: "0px",
-            transform: "translateZ(4px)",
-            flexGrow: 1,
-            zIndex: 99,
-          }}
-        >
-          <SpeedDial
-            ariaLabel="SpeedDial"
-            sx={{ position: "absolute", bottom: 16, right: 16 }}
-            icon={<RotatingIcon />}
-          >
-            {actions.map((action) => (
-              <SpeedDialAction
-                key={action.name}
-                icon={action.icon}
-                tooltipTitle={action.name}
-              />
-            ))}
-          </SpeedDial>
-        </Grid>
-
-        <Outlet />
-      </Box>
-    </Box>
+            <Outlet />
+          </Box>
+        </Box>
       )}
     </>
   );

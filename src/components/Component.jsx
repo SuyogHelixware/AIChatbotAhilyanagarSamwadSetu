@@ -13,14 +13,45 @@ import {
   TextField,
 } from "@mui/material";
 // import { DatePicker, LocalizationProvider } from "@mui/x-date-pickers";
-import { AdapterDayjs } from "@mui/x-date-pickers/AdapterDayjs";
+// import { AdapterDayjs } from "@mui/x-date-pickers/AdapterDayjs";
 import SearchIcon from "@mui/icons-material/Search";
 import Autocomplete from "@mui/material/Autocomplete";
 import axios from "axios";
-
+import { DatePicker, LocalizationProvider } from "@mui/x-date-pickers";
+import { AdapterDayjs } from "@mui/x-date-pickers/AdapterDayjs";
 import React from "react";
 import { Visibility, VisibilityOff } from "@mui/icons-material";
 
+export class DatePickerField extends React.Component {
+  render(props) {
+    return (
+      <>
+        <LocalizationProvider dateAdapter={AdapterDayjs}>
+          <DatePicker
+            disablePast={this.props.disablePast}
+            id={this.props.id}
+            name={this.props.id}
+            label={this.props.label}
+            value={this.props.value}
+            onChange={this.props.onChange}
+            format="YYYY-MM-DD"
+            disabled={this.props.disabled}
+            maxDate={this.props.maxDate}
+            slotProps={{
+              textField: {
+                size: "small",
+                // required: true,
+                // Check for small view and apply fullWidth accordingly
+                fullWidth: window.innerWidth < 400 ? true : false,
+              },
+            }}
+            sx={{ maxWidth: 220 }}
+          ></DatePicker>
+        </LocalizationProvider>
+      </>
+    );
+  }
+}
 export default class InputTextField extends React.Component {
   render(props) {
     return (
@@ -37,6 +68,22 @@ export default class InputTextField extends React.Component {
           sx={{ maxWidth: 220 }}
         />
       </>
+    );
+  }
+}
+export class InputTextField1 extends React.Component {
+  render() {
+    // Extract custom style and sx props if provided
+    const { sx, style, ...rest } = this.props;
+    return (
+      <TextField
+        {...rest}
+        fullWidth
+        // Merge passed sx with internal styles, ensuring full width is applied
+        sx={{ width: "100%", borderRadius: 10, ...sx }}
+        // Also forward any style prop if needed
+        style={style}
+      />
     );
   }
 }
@@ -137,7 +184,7 @@ export class InputSelectField extends React.Component {
           sx={{
             width: "100%",
             // minWidth:200,
-            maxWidth: 220,
+            // maxWidth: 220,
           }}
           disabled={this.props.disabled}
         >

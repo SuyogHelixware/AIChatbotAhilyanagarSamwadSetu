@@ -7,6 +7,7 @@ import ManageUser from "../pages/ManageUser"
 import Department from "../pages/Department"
 import Services from "../pages/Services/Services"
 import ServicesDocType from "../pages/Services/ServicesDocType"
+import OfflineServices from "../pages/OfflineServices";
 // import PNDiet from "../PostNatal/PostNatalDiet"
 // import PNExercise from "../PostNatal/PostNatalExercise"
 // import PNPrecaution from "../PostNatal/PostNatalPrecaution";
@@ -26,6 +27,7 @@ export default function Routing() {
             <Route path="department" element={<Department />} />
             <Route path="Services" element={<Services />} />
             <Route path="ServicesDocType" element={<ServicesDocType />} />
+            <Route path="OfflineServices" element={<OfflineServices />} />
           </Route>
         </Routes>
       </BrowserRouter>
