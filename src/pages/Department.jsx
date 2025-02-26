@@ -248,7 +248,12 @@ const Department = () => {
       sortable: false,
       renderCell: (params) => (
         <strong>
-          <IconButton color="primary" onClick={() => handleUpdate(params.row)}>
+          <IconButton color="primary"  sx={{
+              color: "rgb(0, 90, 91)", // Apply color to the icon
+              "&:hover": {
+                backgroundColor: "rgba(0, 90, 91, 0.1)", // Optional hover effect
+              },
+            }} onClick={() => handleUpdate(params.row)}>
             <EditNoteIcon />
           </IconButton>
           <Button size="medium" sx={{ color: "red" }} onClick={() => handleDelete(params.row)}>

@@ -20,8 +20,7 @@ import { MdMiscellaneousServices } from "react-icons/md";
 
 import SettingsIcon from "@mui/icons-material/Settings";
 import SubscriptionsIcon from "@mui/icons-material/Subscriptions";
-import TodayIcon from "@mui/icons-material/Today";
-import VaccinesIcon from "@mui/icons-material/Vaccines";
+import SmartphoneIcon from '@mui/icons-material/Smartphone';import VaccinesIcon from "@mui/icons-material/Vaccines";
 import VideoSettingsIcon from "@mui/icons-material/VideoSettings";
 import WorkHistoryIcon from "@mui/icons-material/WorkHistory";
 import FeaturedPlayListOutlinedIcon from "@mui/icons-material/FeaturedPlayListOutlined";
@@ -360,7 +359,7 @@ export default function Dashboard() {
                 >
                   <Avatar
                     alt="Avatar"
-                    src={`${Bunny_Image_URL}/Users/${userData._id}/${userData.Avatar}`}
+                    // src={`${Bunny_Image_URL}/Users/${userData._id}/${userData.Avatar}`}
                     sx={{
                       width: 80,
                       height: 80,
@@ -485,11 +484,12 @@ export default function Dashboard() {
                   color="inherit"
                 >
                   <Avatar
-                    src={
-                      `${Bunny_Image_URL}/Users/${userData._id}/${userData.Avatar}` || (
-                        <AccountCircle />
-                      )
-                    }
+                    // src={
+                    //   `${Bunny_Image_URL}/Users/${userData._id}/${userData.Avatar}` 
+                    //   || (
+                    //     <AccountCircle />
+                    //   )
+                    // }
                   />
                 </IconButton>
               </Tooltip>
@@ -654,7 +654,7 @@ export default function Dashboard() {
                         sx={{ minWidth: "33px", marginRight: "8px" }}
                         onClick={handleDrawerOpen}
                       >
-                        <TodayIcon />
+                        <SmartphoneIcon />
                       </ListItemIcon>
                       <ListItemText primary="Online Services" />
                     </ListItemButton>

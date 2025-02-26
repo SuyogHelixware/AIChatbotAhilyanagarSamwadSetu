@@ -1,3 +1,4 @@
+import { Controller, useForm } from "react-hook-form"; // Import useForm
 import AddIcon from "@mui/icons-material/Add";
 import DeleteForeverIcon from "@mui/icons-material/DeleteForever";
 import EditNoteIcon from "@mui/icons-material/EditNote";
@@ -7,11 +8,13 @@ import { GridToolbar } from "@mui/x-data-grid";
 import {
   Box,
   Button,
+  Checkbox,
   Dialog,
   DialogActions,
   DialogContent,
   DialogTitle,
   FormControl,
+  FormControlLabel,
   Grid,
   IconButton,
   Paper,
@@ -33,6 +36,41 @@ import InputTextField, {
 import DeleteIcon from "@mui/icons-material/Delete";
 
 const OfflineServices = () => {
+  const {
+    register,
+    control,
+    handleSubmit,
+    getValues,
+    reset,
+    setValue,
+    formState: { errors },
+  } = useForm({
+    defaultValues: {
+      Id: null,
+      ServicesEN: "",
+      ServicesMR: "",
+      DepartmentEN: "",
+      DepartmentMR: "",
+      SubDepartmentEN: "",
+      SubDepartmentMR: "",
+      TimeLimitEN: "",
+      TimeLimitMR: "",
+      DesignatedOfficerEN: "",
+      DesignatedOfficerMR: "",
+      FirstAppellateOfficerEN: "",
+      FirstAppellateOfficerMR: "",
+      SecondAppllateOfficerEN: "",
+      SecondAppllateOfficerMR: "",
+      AvailableOnPortalEN: "",
+      AvailableOnPortalMR: "",
+      PhoneNumbers: "",
+      Website: "",
+      OtherLink: "",
+      Address: [],
+      Email: [],
+    },
+  });
+
   const [loaderOpen, setLoaderOpen] = React.useState(false);
   const [on, setOn] = React.useState(false);
   const [SaveUpdateButton, setSaveUpdateButton] = React.useState("UPDATE");
@@ -41,89 +79,19 @@ const OfflineServices = () => {
   const [searchText, setSearchText] = React.useState("");
   const limit = 20; // Fixed page size
   const [rows, setRows] = React.useState([]);
-  const [addressList, setAddressList] = React.useState([]);
-  const [EmailList, setEmailList] = React.useState([]);
+  const [addressList, setAddressList] = React.useState(getValues("Address") || []);
+  const [EmailList, setEmailList] = React.useState(getValues("Email") || []);
   const [ClearUpdateButton, setClearUpdateButton] = React.useState("RESET");
   const [loading, setLoading] = React.useState(false);
-  const [data, setData] = React.useState({
-    Id: null,
-    ServicesEN: "",
-    ServicesMR: "",
-    DepartmentEN: "",
-    DepartmentMR: "",
-    SubDepartmentEN: "",
-    SubDepartmentMR: "",
-    TimeLimitEN: "",
-    TimeLimitMR: "",
-    DesignatedOfficerEN: "",
-    DesignatedOfficerMR: "",
-    FirstAppellateOfficerEN: "",
-    FirstAppellateOfficerMR: "",
-    SecondAppllateOfficerEN: "",
-    SecondAppllateOfficerMR: "",
-    AvailableOnPortalEN: "",
-    AvailableOnPortalMR: "",
-    PhoneNumbers: "",
-    Website: "",
-    OtherLink: "",
-    Address: [],
-    Email: [],
-  });
   const originalDataRef = React.useRef(null);
+  const debounceTimer = React.useRef(null);  // This will store the debounce timer
+  const idCounter = React.useRef(1); // Ensures unique IDs persist even after deletion
 
-  const handleAddAddress = () => {
-    const newRow = {
-      id: addressList.length + 1,
-      srNo: addressList.length + 1,
-      Address: "",
-      AddressLink: "",
-    };
-    setAddressList([...addressList, newRow]);
-  };
+  React.useEffect(() => {
+    console.log('Component re-rendered');
+  });
 
-  const handleAddressChange = (id, field, value) => {
-    setAddressList((prev) =>
-      prev.map((row) => (row.id === id ? { ...row, [field]: value } : row))
-    );
-  };
-
-  const handleDeleteAddress = (id) => {
-    const updatedList = addressList.filter((row) => row.id !== id);
-    const updatedWithSrNo = updatedList.map((row, index) => ({
-      ...row,
-      id: index + 1,
-    }));
-    setAddressList(updatedWithSrNo);
-  };
-
-  const handleAddEmail = () => {
-    const newRow = {
-      id: EmailList.length + 1, // Ensure new ID is unique
-      srNo: EmailList.length + 1, // Sr. No. is always sequential
-      Email: "", // Empty address field
-    };
-    setEmailList([...EmailList, newRow]); // Append row at the end
-  };
-  // Function to handle direct input changes inside the DataGrid
-  const handleEmailChange = (id, value) => {
-    setEmailList((prev) =>
-      prev.map((row) => (row.id === id ? { ...row, Email: value } : row))
-    );
-  };
-  // Function to delete an address row and update Sr. No.
-  const handleDeleteEmail = (id) => {
-    setEmailList((prevList) => {
-      // Filter out the deleted row
-      const updatedList = prevList.filter((row) => row.id !== id);
-
-      // Recalculate Sr. No. for all remaining rows
-      return updatedList.map((row, index) => ({
-        ...row,
-        id: index + 1, // Reset Sr. No. sequentially
-      }));
-    });
-  };
-
+  
   const validateForm = () => {
     const {
       DepartmentEN,
@@ -135,7 +103,7 @@ const OfflineServices = () => {
       SecondAppllateOfficerEN,
       AvailableOnPortalEN,
       Website,
-    } = data;
+    } = getValues();
     return (
       Website &&
       DepartmentEN &&
@@ -149,35 +117,116 @@ const OfflineServices = () => {
       Website
     );
   };
+
+
+
+  const handleAddAddress = () => {
+    setAddressList((prev) => [
+      ...prev,
+      {
+        id: prev.length + 1, // Always assigns sequential ID
+        srNo: prev.length + 1, // Keeps srNo consistent
+        Address: "",
+        AddressLink: "",
+      },
+    ]);
+  };
+  
+  const handleDeleteAddress = (id) => {
+    setAddressList((prev) =>
+      prev
+        .filter((row) => row.id !== id) // Remove the selected row
+        .map((row, index) => ({
+          ...row,
+          id: index + 1, // Reassign ID sequentially
+          srNo: index + 1, // Keep srNo sequential
+        }))
+    );
+  };
+  
+  
+// Debounce function
+const debounce = (func, delay) => {
+  let timeout;
+  return (...args) => {
+    clearTimeout(timeout);
+    timeout = setTimeout(() => func(...args), delay);
+  };
+};
+
+const handleAddressChange = React.useCallback(
+  debounce((id, field, value) => {
+    setAddressList((prev) =>
+      prev.map((row) => (row.id === id ? { ...row, [field]: value } : row))
+    );
+  }, 500), // You can adjust the debounce delay as needed (e.g., 500ms)
+  []
+);
+
+
+  // const handleDeleteAddress = (id) => {
+  //   const updatedList = addressList.filter((row) => row.id !== id);
+  //   const updatedWithSrNo = updatedList.map((row, index) => ({
+  //     ...row,
+  //     id: index + 1,
+  //   }));
+  //   setAddressList(updatedWithSrNo);
+  // };
+
+  const handleAddEmail = () => {
+    const newRow = {
+      id: EmailList.length + 1, // Ensure new ID is unique
+      srNo: EmailList.length + 1, // Sr. No. is always sequential
+      Email: "", // Empty address field
+    };
+    setEmailList([...EmailList, newRow]); // Append row at the end
+  };
+  // Function to handle direct input changes inside the DataGrid
+  const handleEmailChange = React.useCallback(
+    debounce((id, value) => {
+      setEmailList((prev) =>
+        prev.map((row) => (row.id === id ? { ...row, Email: value } : row))
+      );
+    }, 500), 
+    []
+  );
+  
+  const handleDeleteEmail = (id) => {
+    setEmailList((prevList) => {
+      const updatedList = prevList.filter((row) => row.id !== id);
+      return updatedList.map((row, index) => ({
+        ...row,
+        id: index + 1, 
+      }));
+    });
+  };
+
   const handleSave = async () => {
     setClearUpdateButton("CLEAR");
     try {
-      // const selectedDept = Departments.find(
-      //   (dept) => dept.Id === formData.DeptId
-      // );
+      const formattedEmail = EmailList.filter(
+        (item) => item.Email && item.Email.trim() !== ""
+      ) // Only include if Email is non-empty
+        .map((docType) => ({
+          Id: docType.Id || null,
+          Email: docType.Email,
+        }));
 
-      // Ensure Documents are structured correctly
-      const formattedEmail = EmailList
-      .filter(item => item.Email && item.Email.trim() !== "")  // Only include if Email is non-empty
-      .map(docType => ({
-        Id: docType.Id || null,
-        Email: docType.Email,
-      }));
-    
-    const formattedAddress = addressList
-      .filter(item => 
-        (item.Address && item.Address.trim() !== "") || 
-        (item.AddressLink && item.AddressLink.trim() !== "")
-      )  // Only include if either Address or AddressLink is non-empty
-      .map(sp => ({
-        Id: sp.Id || null,
-        Address: sp.Address,
-        AddressLink: sp.AddressLink,
-      }));
+      const formattedAddress = addressList
+        .filter(
+          (item) =>
+            (item.Address && item.Address.trim() !== "") ||
+            (item.AddressLink && item.AddressLink.trim() !== "")
+        ) // Only include if either Address or AddressLink is non-empty
+        .map((sp) => ({
+          Id: sp.Id || null,
+          Address: sp.Address,
+          AddressLink: sp.AddressLink,
+        }));
 
       const formattedData = {
-        ...data,
-        Id: data.Id || null,
+        ...getValues(),
+        Id: getValues().Id || null,
         Status: 1,
         Address: formattedAddress,
         Email: formattedEmail,
@@ -210,7 +259,7 @@ const OfflineServices = () => {
           });
         // .catch((error) => handleApiError(error));
       } else {
-        if (!data.Id) {
+        if (!getValues().Id) {
           setLoaderOpen(false);
           Swal.fire({
             icon: "error",
@@ -231,7 +280,10 @@ const OfflineServices = () => {
         if (!result.isConfirmed) return;
 
         axios
-          .put(`${BASE_URL}DepartmentNoticeSer/${data.Id}`, formattedData)
+          .put(
+            `${BASE_URL}DepartmentNoticeSer/${getValues().Id}`,
+            formattedData
+          )
           .then((response) => {
             setLoaderOpen(false);
             if (response.data.success === true) {
@@ -262,7 +314,8 @@ const OfflineServices = () => {
       handleApiError(error);
     }
   };
- const handleApiError = (error) => {
+
+  const handleApiError = (error) => {
     setLoaderOpen(false);
     console.error("Error:", error);
     Swal.fire({
@@ -271,6 +324,7 @@ const OfflineServices = () => {
       text: error.message || "Something went wrong",
     });
   };
+
   const getAllImgList = async (page = 0, searchText = "") => {
     try {
       setLoading(true);
@@ -351,7 +405,6 @@ const OfflineServices = () => {
           })
           .catch((error) => {
             handleApiError(error);
-
           });
       }
     });
@@ -370,28 +423,7 @@ const OfflineServices = () => {
         originalDataRef.current = JSON.parse(JSON.stringify(data));
 
         // Set the form fields with API response
-        setData({
-          Id: data.Id,
-          ServicesEN: data.ServicesEN,
-          ServicesMR: data.ServicesMR,
-          DepartmentEN: data.DepartmentEN,
-          DepartmentMR: data.DepartmentMR,
-          SubDepartmentEN: data.SubDepartmentEN,
-          SubDepartmentMR: data.SubDepartmentMR,
-          TimeLimitEN: data.TimeLimitEN,
-          TimeLimitMR: data.TimeLimitMR,
-          DesignatedOfficerEN: data.DesignatedOfficerEN,
-          DesignatedOfficerMR: data.DesignatedOfficerMR,
-          FirstAppellateOfficerEN: data.FirstAppellateOfficerEN,
-          FirstAppellateOfficerMR: data.FirstAppellateOfficerMR,
-          SecondAppllateOfficerEN: data.SecondAppllateOfficerEN,
-          SecondAppllateOfficerMR: data.SecondAppllateOfficerMR,
-          PhoneNumbers: data.PhoneNumbers,
-          Website: data.Website,
-          OtherLink: data.OtherLink,
-          AvailableOnPortalEN: data.AvailableOnPortalEN,
-          AvailableOnPortalMR: data.AvailableOnPortalMR,
-        });
+        reset(data); // Using reset from useForm
 
         // Handle Address List
         setAddressList(
@@ -423,27 +455,25 @@ const OfflineServices = () => {
     }
   };
 
-  const onchangeHandler = (event) => {
-    const { name, value } = event.target;
-
-    setData({
-      ...data,
-      [name]: value,
-    });
-  };
   const clearFormData = () => {
     if (ClearUpdateButton === "CLEAR") {
-      setData({ DepartmentEN: "", DeptNameMR: "", Status: 1 });
-      setAddressList([]);
-      setEmailList([]);
-      return;
+      // Clear all form data and reset form fields to default values
+      reset({ DepartmentEN: "", DeptNameMR: "", Status: 1 }); // Reset the form using react-hook-form's reset method
+      setAddressList([]); // Clear address list
+      setEmailList([]); // Clear email list
     }
-
+  
     if (ClearUpdateButton === "RESET" && originalDataRef.current) {
+      // Reset to original data if there's any data stored in originalDataRef
       const { Address, Email, ...restData } = originalDataRef.current;
-
-      setData(restData); // Set all form fields at once
-
+  
+      // Use reset() to set form values to original data
+      reset({
+        ...restData, // Reset form fields to the original data values
+        Status: restData.Status || 1, // Ensure Status field is correctly set
+      });
+  
+      // Set the AddressList and EmailList from the original data
       setAddressList(
         Address?.map((sp, index) => ({
           id: index + 1,
@@ -452,7 +482,7 @@ const OfflineServices = () => {
           AddressLink: sp.AddressLink,
         })) || []
       );
-
+  
       setEmailList(
         Email?.map((sp, index) => ({
           id: index + 1,
@@ -462,20 +492,22 @@ const OfflineServices = () => {
       );
     }
   };
-  // ========================
+  
+
   const handleClose = () => {
     setOn(false);
     setClearUpdateButton("CLEAR");
     clearFormData();
   };
+
   const handleOnSave = () => {
     setSaveUpdateButton("SAVE");
     setClearUpdateButton("CLEAR");
     setOn(true);
     clearFormData();
-    // setData({ Name: "", DepartmentEN: "", DeptNameMR: "", Id: "", Status: 1 });
   };
- const validationAlert = (message) => {
+
+  const validationAlert = (message) => {
     Swal.fire({
       position: "center",
       icon: "warning",
@@ -485,6 +517,7 @@ const OfflineServices = () => {
       timer: 1500,
     });
   };
+
   const onChangeHandler = (event) => {
     const { name, value } = event.target;
 
@@ -497,11 +530,9 @@ const OfflineServices = () => {
         return;
       }
     }
-    setData({
-      ...data,
-      [event.target.name]: event.target.value,
-    });
+    setValue(name, value); // Update field using react-hook-form's setValue
   };
+
   const yesNoOptions = [
     { key: "Yes", value: "Yes" },
     { key: "No", value: "No" },
@@ -652,13 +683,15 @@ const OfflineServices = () => {
       {loaderOpen && <Loader open={loaderOpen} />}
       <Dialog
         elevation={7}
-        component={Paper}
+        // component={Paper}
         boxShadow={20}
         open={on}
         onClose={handleClose}
         aria-labelledby="parent-dialog-title"
         aria-describedby="parent-dialog-description"
         fullScreen
+        onSubmit={handleSubmit(handleSave)} // Handle submit via react-hook-form
+        component={"form"}
       >
         <DialogTitle
           sx={{
@@ -711,294 +744,473 @@ const OfflineServices = () => {
           >
             <Grid container spacing={2} pt={3}>
               <Grid item xs={12} sm={4}>
-                <InputTextField1
-                  size="small"
-                  fullWidth
-                  id="ServicesEN"
-                  label="Service Name English"
+                <Controller
+                  control={control}
                   name="ServicesEN"
-                  value={data.ServicesEN || ""}
-                  onChange={onChangeHandler}
-                  autoFocus
-                  style={{ width: "100%", borderRadius: 10 }}
-                  // You can also pass sx if you want further customization
-                  sx={{ width: "100%" }}
+                  defaultValue=""
+                  rules={{ required: "Service Name is required" }}
+                  render={({ field }) => (
+                    <InputTextField1
+                      {...field}
+                      size="small"
+                      fullWidth
+                      label="Service Name English"
+                      id="ServicesEN"
+                      autoFocus
+                      sx={{ width: "100%", borderRadius: 10 }}
+                    />
+                  )}
                 />
+                {errors.ServicesEN && <p>{errors.ServicesEN.message}</p>}
               </Grid>
-
               <Grid item xs={12} sm={4}>
-                <InputTextField1
-                  size="small"
-                  spacing={"5"}
-                  fullWidth
-                  id="ServicesMR"
-                  label="Service Name Marathi"
+                <Controller
+                  control={control}
                   name="ServicesMR"
-                  value={data.ServicesMR || ""}
-                  onChange={onChangeHandler}
-                  autoFocus
-                  style={{ borderRadius: 10, width: "100%" }}
+                  defaultValue=""
+                  rules={{ required: "Service Name Marathi is required" }}
+                  render={({ field }) => (
+                    <InputTextField1
+                      {...field}
+                      size="small"
+                      fullWidth
+                      label="Service Name Marathi"
+                      id="ServicesMR"
+                      autoFocus
+                      style={{ borderRadius: 10, width: "100%" }}
+                    />
+                  )}
                 />
+                {errors.ServicesMR && <p>{errors.ServicesMR.message}</p>}
               </Grid>
+
+              {/* Department Name English */}
               <Grid item xs={12} sm={4}>
-                <InputTextField1
-                  size="small"
-                  spacing={"5"}
-                  fullWidth
-                  id="DepartmentEN"
-                  label="Department Name English"
+                <Controller
+                  control={control}
                   name="DepartmentEN"
-                  value={data.DepartmentEN || ""}
-                  onChange={onChangeHandler}
-                  autoFocus
-                  style={{ borderRadius: 10, width: "100%" }}
+                  defaultValue=""
+                  rules={{ required: "Department Name English is required" }}
+                  render={({ field }) => (
+                    <InputTextField1
+                      {...field}
+                      size="small"
+                      fullWidth
+                      label="Department Name English"
+                      id="DepartmentEN"
+                      autoFocus
+                      style={{ borderRadius: 10, width: "100%" }}
+                    />
+                  )}
                 />
+                {errors.DepartmentEN && <p>{errors.DepartmentEN.message}</p>}
               </Grid>
 
+              {/* Department Name Marathi */}
               <Grid item xs={12} sm={4}>
-                <InputTextField1
-                  size="small"
-                  spacing={"5"}
-                  fullWidth
-                  id="DepartmentMR"
-                  label="Department Name Marathi"
+                <Controller
+                  control={control}
                   name="DepartmentMR"
-                  value={data.DepartmentMR || ""}
-                  onChange={onChangeHandler}
-                  autoFocus
-                  style={{ borderRadius: 10, width: "100%" }}
+                  defaultValue=""
+                  rules={{ required: "Department Name Marathi is required" }}
+                  render={({ field }) => (
+                    <InputTextField1
+                      {...field}
+                      size="small"
+                      fullWidth
+                      label="Department Name Marathi"
+                      id="DepartmentMR"
+                      autoFocus
+                      style={{ borderRadius: 10, width: "100%" }}
+                    />
+                  )}
                 />
+                {errors.DepartmentMR && <p>{errors.DepartmentMR.message}</p>}
               </Grid>
+
+              {/* Sub Department Name English */}
               <Grid item xs={12} sm={4}>
-                <InputTextField1
-                  size="small"
-                  spacing={"5"}
-                  fullWidth
-                  id="SubDepartmentEN"
-                  label="Sub Department Name English"
+                <Controller
+                  control={control}
                   name="SubDepartmentEN"
-                  value={data.SubDepartmentEN || ""}
-                  onChange={onChangeHandler}
-                  autoFocus
-                  style={{ borderRadius: 10, width: "100%" }}
+                  defaultValue=""
+                  rules={{
+                    required: "Sub Department Name English is required",
+                  }}
+                  render={({ field }) => (
+                    <InputTextField1
+                      {...field}
+                      size="small"
+                      fullWidth
+                      label="Sub Department Name English"
+                      id="SubDepartmentEN"
+                      autoFocus
+                      style={{ borderRadius: 10, width: "100%" }}
+                    />
+                  )}
                 />
+                {errors.SubDepartmentEN && (
+                  <p>{errors.SubDepartmentEN.message}</p>
+                )}
               </Grid>
 
+              {/* Sub Department Name Marathi */}
               <Grid item xs={12} sm={4}>
-                <InputTextField1
-                  size="small"
-                  spacing={"5"}
-                  fullWidth
-                  id="SubDepartmentMR"
-                  label="Sub Department Name Marathi"
+                <Controller
+                  control={control}
                   name="SubDepartmentMR"
-                  value={data.SubDepartmentMR || ""}
-                  onChange={onChangeHandler}
-                  autoFocus
-                  style={{ borderRadius: 10, width: "100%" }}
+                  defaultValue=""
+                  rules={{
+                    required: "Sub Department Name Marathi is required",
+                  }}
+                  render={({ field }) => (
+                    <InputTextField1
+                      {...field}
+                      size="small"
+                      fullWidth
+                      label="Sub Department Name Marathi"
+                      id="SubDepartmentMR"
+                      autoFocus
+                      style={{ borderRadius: 10, width: "100%" }}
+                    />
+                  )}
                 />
+                {errors.SubDepartmentMR && (
+                  <p>{errors.SubDepartmentMR.message}</p>
+                )}
               </Grid>
+
+              {/* Time Limit Days EN */}
               <Grid item xs={12} sm={4}>
-                <InputTextField1
-                  size="small"
-                  spacing={"5"}
-                  fullWidth
-                  id="TimeLimitEN"
-                  label="Time Limit Days EN"
+                <Controller
+                  control={control}
                   name="TimeLimitEN"
-                  value={data.TimeLimitEN || ""}
-                  onChange={onChangeHandler}
-                  autoFocus
-                  style={{ borderRadius: 10, width: "100%" }}
+                  defaultValue=""
+                  rules={{ required: "Time Limit Days English is required" }}
+                  render={({ field }) => (
+                    <InputTextField1
+                      {...field}
+                      size="small"
+                      fullWidth
+                      label="Time Limit Days EN"
+                      id="TimeLimitEN"
+                      autoFocus
+                      style={{ borderRadius: 10, width: "100%" }}
+                    />
+                  )}
                 />
+                {errors.TimeLimitEN && <p>{errors.TimeLimitEN.message}</p>}
               </Grid>
+
+              {/* Time Limit Days MR */}
               <Grid item xs={12} sm={4}>
-                <InputTextField1
-                  size="small"
-                  spacing={"5"}
-                  fullWidth
-                  id="TimeLimitMR"
-                  label="Time Limit Days MR"
+                <Controller
+                  control={control}
                   name="TimeLimitMR"
-                  value={data.TimeLimitMR || ""}
-                  onChange={onChangeHandler}
-                  autoFocus
-                  style={{ borderRadius: 10, width: "100%" }}
+                  defaultValue=""
+                  rules={{ required: "Time Limit Days Marathi is required" }}
+                  render={({ field }) => (
+                    <InputTextField1
+                      {...field}
+                      size="small"
+                      fullWidth
+                      label="Time Limit Days MR"
+                      id="TimeLimitMR"
+                      autoFocus
+                      style={{ borderRadius: 10, width: "100%" }}
+                    />
+                  )}
                 />
+                {errors.TimeLimitMR && <p>{errors.TimeLimitMR.message}</p>}
               </Grid>
+
+              {/* Designated Officer English */}
               <Grid item xs={12} sm={4}>
-                <InputTextField1
-                  size="small"
-                  spacing={"5"}
-                  fullWidth
-                  id="DesignatedOfficerEN"
-                  label="Designate Officer (English)"
+                <Controller
+                  control={control}
                   name="DesignatedOfficerEN"
-                  value={data.DesignatedOfficerEN || ""}
-                  onChange={onChangeHandler}
-                  autoFocus
-                  style={{ borderRadius: 10, width: "100%" }}
+                  defaultValue=""
+                  rules={{
+                    required: "Designated Officer (English) is required",
+                  }}
+                  render={({ field }) => (
+                    <InputTextField1
+                      {...field}
+                      size="small"
+                      fullWidth
+                      label="Designated Officer (English)"
+                      id="DesignatedOfficerEN"
+                      autoFocus
+                      style={{ borderRadius: 10, width: "100%" }}
+                    />
+                  )}
                 />
+                {errors.DesignatedOfficerEN && (
+                  <p>{errors.DesignatedOfficerEN.message}</p>
+                )}
               </Grid>
+
+              {/* Designated Officer Marathi */}
               <Grid item xs={12} sm={4}>
-                <InputTextField1
-                  size="small"
-                  spacing={"5"}
-                  fullWidth
-                  id="DesignatedOfficerMR"
-                  label="Designate Officer (Marathi)"
+                <Controller
+                  control={control}
                   name="DesignatedOfficerMR"
-                  value={data.DesignatedOfficerMR || ""}
-                  onChange={onChangeHandler}
-                  autoFocus
-                  style={{ borderRadius: 10, width: "100%" }}
+                  defaultValue=""
+                  rules={{
+                    required: "Designated Officer (Marathi) is required",
+                  }}
+                  render={({ field }) => (
+                    <InputTextField1
+                      {...field}
+                      size="small"
+                      fullWidth
+                      label="Designated Officer (Marathi)"
+                      id="DesignatedOfficerMR"
+                      autoFocus
+                      style={{ borderRadius: 10, width: "100%" }}
+                    />
+                  )}
                 />
+                {errors.DesignatedOfficerMR && (
+                  <p>{errors.DesignatedOfficerMR.message}</p>
+                )}
               </Grid>
 
+              {/* First Appellate Officer English */}
               <Grid item xs={12} sm={4}>
-                <InputTextField1
-                  size="small"
-                  spacing={"5"}
-                  fullWidth
-                  id="FirstAppellateOfficerEN"
-                  label="First Applellate Officer (English)"
+                <Controller
+                  control={control}
                   name="FirstAppellateOfficerEN"
-                  value={data.FirstAppellateOfficerEN || ""}
-                  onChange={onChangeHandler}
-                  autoFocus
-                  style={{ borderRadius: 10, width: "100%" }}
+                  defaultValue=""
+                  rules={{
+                    required: "First Appellate Officer (English) is required",
+                  }}
+                  render={({ field }) => (
+                    <InputTextField1
+                      {...field}
+                      size="small"
+                      fullWidth
+                      label="First Appellate Officer (English)"
+                      id="FirstAppellateOfficerEN"
+                      autoFocus
+                      style={{ borderRadius: 10, width: "100%" }}
+                    />
+                  )}
                 />
+                {errors.FirstAppellateOfficerEN && (
+                  <p>{errors.FirstAppellateOfficerEN.message}</p>
+                )}
               </Grid>
+
+              {/* First Appellate Officer Marathi */}
               <Grid item xs={12} sm={4}>
-                <InputTextField1
-                  size="small"
-                  spacing={"5"}
-                  fullWidth
-                  id="FirstAppellateOfficerMR"
-                  label="First Applellate Officer (Marathi)"
+                <Controller
+                  control={control}
                   name="FirstAppellateOfficerMR"
-                  value={data.FirstAppellateOfficerMR || ""}
-                  onChange={onChangeHandler}
-                  autoFocus
-                  style={{ borderRadius: 10, width: "100%" }}
+                  defaultValue=""
+                  rules={{
+                    required: "First Appellate Officer (Marathi) is required",
+                  }}
+                  render={({ field }) => (
+                    <InputTextField1
+                      {...field}
+                      size="small"
+                      fullWidth
+                      label="First Appellate Officer (Marathi)"
+                      id="FirstAppellateOfficerMR"
+                      autoFocus
+                      style={{ borderRadius: 10, width: "100%" }}
+                    />
+                  )}
                 />
+                {errors.FirstAppellateOfficerMR && (
+                  <p>{errors.FirstAppellateOfficerMR.message}</p>
+                )}
               </Grid>
+
+              {/* Second Appellate Officer English */}
               <Grid item xs={12} sm={4}>
-                <InputTextField1
-                  size="small"
-                  spacing={"5"}
-                  fullWidth
-                  id="SecondAppllateOfficerEN"
-                  label="Second Appellate Officer (English)"
+                <Controller
+                  control={control}
                   name="SecondAppllateOfficerEN"
-                  value={data.SecondAppllateOfficerEN || ""}
-                  onChange={onChangeHandler}
-                  autoFocus
-                  style={{ borderRadius: 10, width: "100%" }}
+                  defaultValue=""
+                  rules={{
+                    required: "Second Appellate Officer (English) is required",
+                  }}
+                  render={({ field }) => (
+                    <InputTextField1
+                      {...field}
+                      size="small"
+                      fullWidth
+                      label="Second Appellate Officer (English)"
+                      id="SecondAppllateOfficerEN"
+                      autoFocus
+                      style={{ borderRadius: 10, width: "100%" }}
+                    />
+                  )}
+                />
+                {errors.SecondAppllateOfficerEN && (
+                  <p>{errors.SecondAppllateOfficerEN.message}</p>
+                )}
+              </Grid>
+
+              {/* Second Appellate Officer Marathi */}
+              <Grid item xs={12} sm={4}>
+                <Controller
+                  control={control}
+                  name="SecondAppllateOfficerMR"
+                  defaultValue=""
+                  rules={{
+                    required: "Second Appellate Officer (Marathi) is required",
+                  }}
+                  render={({ field }) => (
+                    <InputTextField1
+                      {...field}
+                      size="small"
+                      fullWidth
+                      label="Second Appellate Officer (Marathi)"
+                      id="SecondAppllateOfficerMR"
+                      autoFocus
+                      style={{ borderRadius: 10, width: "100%" }}
+                    />
+                  )}
+                />
+                {errors.SecondAppllateOfficerMR && (
+                  <p>{errors.SecondAppllateOfficerMR.message}</p>
+                )}
+              </Grid>
+
+              {/* Available On Portal English */}
+              <Grid item xs={12} sm={4}>
+                <Controller
+                  control={control}
+                  name="AvailableOnPortalEN"
+                  defaultValue="No"
+                  render={({ field }) => (
+                    <InputSelectField
+                      {...field}
+                      label="Available On Portal EN"
+                      name="AvailableOnPortalEN"
+                      data={yesNoOptions}
+                    />
+                  )}
                 />
               </Grid>
 
+              {/* Available On Portal Marathi */}
               <Grid item xs={12} sm={4}>
-                <InputTextField1
-                  size="small"
-                  spacing={"5"}
-                  fullWidth
-                  id="SecondAppllateOfficerMR"
-                  label="Second Applellate Officer"
-                  name="SecondAppllateOfficerMR"
-                  value={data.SecondAppllateOfficerMR || ""}
-                  onChange={onChangeHandler}
-                  autoFocus
-                  style={{ borderRadius: 10, width: "100%" }}
-                />
-              </Grid>
-              <Grid item xs={12} sm={4}>
-                <InputSelectField
-                  id="AvailableOnPortalEN"
-                  label="Available On Portal EN"
-                  name="AvailableOnPortalEN"
-                  value={data.AvailableOnPortalEN || "No"} // Defaults to "No" if no value provided
-                  onChange={onChangeHandler}
-                  data={yesNoOptions}
-                />
-              </Grid>
-              <Grid item xs={12} sm={4}>
-                <InputTextField1
-                  size="small"
-                  spacing={"5"}
-                  fullWidth
-                  id="AvailableOnPortalMR"
-                  label="Available On Portal MR"
+                <Controller
+                  control={control}
                   name="AvailableOnPortalMR"
-                  value={data.AvailableOnPortalMR || ""}
-                  onChange={onChangeHandler}
-                  autoFocus
-                  style={{ borderRadius: 10, width: "100%" }}
+                  defaultValue=""
+                  render={({ field }) => (
+                    <InputTextField1
+                      {...field}
+                      size="small"
+                      fullWidth
+                      label="Available On Portal MR"
+                      id="AvailableOnPortalMR"
+                      autoFocus
+                      style={{ borderRadius: 10, width: "100%" }}
+                    />
+                  )}
                 />
+                {errors.AvailableOnPortalMR && (
+                  <p>{errors.AvailableOnPortalMR.message}</p>
+                )}
               </Grid>
+
+              {/* Phone Numbers */}
               <Grid item xs={12} sm={4}>
-                <InputTextField1
-                  size="small"
-                  spacing={"5"}
-                  fullWidth
-                  type="number"
-                  id="PhoneNumbers"
-                  label="Phone Numbers"
+                <Controller
+                  control={control}
                   name="PhoneNumbers"
-                  value={data.PhoneNumbers || ""}
-                  onChange={onChangeHandler}
-                  autoFocus
-                  style={{ borderRadius: 10, width: "100%" }}
+                  defaultValue=""
+                  rules={{ required: "Phone Numbers are required" }}
+                  render={({ field }) => (
+                    <InputTextField1
+                      {...field}
+                      size="small"
+                      fullWidth
+                      type="number"
+                      label="Phone Numbers"
+                      id="PhoneNumbers"
+                      autoFocus
+                      style={{ borderRadius: 10, width: "100%" }}
+                    />
+                  )}
                 />
+                {errors.PhoneNumbers && <p>{errors.PhoneNumbers.message}</p>}
               </Grid>
+
+              {/* Website */}
               <Grid item xs={12} sm={4}>
-                <InputTextField1
-                  size="small"
-                  spacing={"5"}
-                  fullWidth
-                  id="Website"
-                  label="Website"
+                <Controller
+                  control={control}
                   name="Website"
-                  value={data.Website || ""}
-                  onChange={onChangeHandler}
-                  autoFocus
-                  style={{ borderRadius: 10, width: "100%" }}
+                  defaultValue=""
+                  rules={{ required: "Website is required" }}
+                  render={({ field }) => (
+                    <InputTextField1
+                      {...field}
+                      size="small"
+                      fullWidth
+                      label="Website"
+                      id="Website"
+                      autoFocus
+                      style={{ borderRadius: 10, width: "100%" }}
+                    />
+                  )}
                 />
+                {errors.Website && <p>{errors.Website.message}</p>}
               </Grid>
+
+              {/* Other Link */}
               <Grid item xs={12} sm={4}>
-                <InputTextField1
-                  size="small"
-                  spacing={"5"}
-                  fullWidth
-                  id="OtherLink"
-                  label="Other Link"
+                <Controller
+                  control={control}
                   name="OtherLink"
-                  value={data.OtherLink || ""}
-                  onChange={onChangeHandler}
-                  autoFocus
-                  style={{ borderRadius: 10, width: "100%" }}
+                  defaultValue=""
+                  rules={{ required: "Other Link is required" }}
+                  render={({ field }) => (
+                    <InputTextField1
+                      {...field}
+                      size="small"
+                      fullWidth
+                      label="Other Link"
+                      id="OtherLink"
+                      autoFocus
+                      style={{ borderRadius: 10, width: "100%" }}
+                    />
+                  )}
                 />
+                {errors.OtherLink && <p>{errors.OtherLink.message}</p>}
               </Grid>
+
+              {/* Status */}
               <Grid item xs={12} sm={4} textAlign={"center"}>
-                <CheckboxInputs
-                  checked={data.Status === 1} // Ensure it's checked by default
-                  label="Active"
-                  id="Status"
-                  onChange={(event) =>
-                    onchangeHandler({
-                      target: {
-                        name: "Status",
-                        value: event.target.checked ? 1 : 0, // Ensure value is set properly
-                      },
-                    })
-                  }
-                  value={data.Status}
+                <Controller
                   name="Status"
+                  control={control}
+                  defaultValue={1} // Default to checked (1)
+                  render={({ field }) => (
+                    <FormControlLabel
+                      control={
+                        <Checkbox
+                          {...field}
+                          checked={field.value === 1}
+                          onChange={(e) =>
+                            field.onChange(e.target.checked ? 1 : 0)
+                          }
+                        />
+                      }
+                      label="Active"
+                    />
+                  )}
                 />
               </Grid>
             </Grid>
           </Paper>
-
           <Paper elevation={3} sx={{ width: "100%", marginTop: 3 }}>
             <div style={{ padding: "16px", maxWidth: "1850px" }}>
               {/* Add Service Provider Button */}
@@ -1056,22 +1268,24 @@ const OfflineServices = () => {
                     headerName: "Address",
                     flex: 1,
                     renderCell: (params) => (
-                      <TextField
-                        fullWidth
-                        value={params.row.Address}
-                        onChange={(e) =>
-                          handleAddressChange(
-                            params.row.id,
-                            "Address",
-                            e.target.value
-                          )
-                        }
-                        onKeyDown={(e) => e.stopPropagation()} // Prevent interference
-                        sx={{
-                          "& .MuiOutlinedInput-root": {
-                            borderRadius: "4px",
-                          },
-                        }}
+                      <Controller
+                        control={control}
+                        name={`Address[${params.row.id - 1}].Address`}
+                        defaultValue={params.row.Address || ""}
+                        render={({ field }) => (
+                          <TextField
+                            {...field}
+                            fullWidth
+                            size="small"
+                            onChange={(e) => {
+                              field.onChange(e.target.value); // react-hook-form
+                              // Use debounced handler for address field
+                              handleAddressChange(params.row.id, "Address", e.target.value);
+                            }}
+                            onBlur={field.onBlur}
+                            onKeyDown={(e) => e.stopPropagation()} // Prevent interference
+                          />
+                        )}
                       />
                     ),
                   },
@@ -1080,26 +1294,27 @@ const OfflineServices = () => {
                     headerName: "Address Link",
                     flex: 1,
                     renderCell: (params) => (
-                      <TextField
-                        fullWidth
-                        value={params.row.AddressLink}
-                        onChange={(e) =>
-                          handleAddressChange(
-                            params.row.id,
-                            "AddressLink",
-                            e.target.value
-                          )
-                        }
-                        onKeyDown={(e) => {
-                          e.stopPropagation();
-                        }}
-                        sx={{
-                          padding: "4px 8px",
-                          borderRadius: "4px",
-                        }}
+                      <Controller
+                        control={control}
+                        name={`Address[${params.row.id - 1}].AddressLink`}
+                        defaultValue={params.row.AddressLink || ""}
+                        render={({ field }) => (
+                          <TextField
+                            {...field}
+                            fullWidth
+                            size="small"
+                            onChange={(e) => {
+                              field.onChange(e.target.value);
+                              handleAddressChange(params.row.id, "AddressLink", e.target.value);
+                            }}
+                            onBlur={field.onBlur}
+                            // onKeyDown={(e) => e.stopPropagation()} // Prevent interference
+                          />
+                        )}
                       />
                     ),
                   },
+                  
                   {
                     field: "actions",
                     headerName: "Actions",
@@ -1180,21 +1395,32 @@ const OfflineServices = () => {
                     headerName: "Email",
                     flex: 1,
                     renderCell: (params) => (
-                      <TextField
-                        fullWidth
-                        value={params.row.Email || ""}
-                        onChange={(e) =>
-                          handleEmailChange(params.row.id, e.target.value)
-                        }
-                        sx={{
-                          padding: "4px 8px",
-                          // border: "1px solid #ccc",
-                          borderRadius: "4px",
-                          // backgroundColor: "#fff",
-                        }}
-                      />
+                      <Controller
+  control={control}
+  name={`Email[${params.row.id - 1}].Email`} // Use array indexing for proper form management
+  defaultValue={params.row.Email || ""}
+  render={({ field }) => (
+    <TextField
+      {...field}
+      fullWidth
+      size="small"
+      onChange={(e) => {
+        field.onChange(e.target.value); // Updates react-hook-form state
+        handleEmailChange(params.row.id, e.target.value); // Updates custom state
+      }}
+      onBlur={field.onBlur} // Ensures validation triggers on blur
+      sx={{
+        padding: "4px 8px",
+        borderRadius: "4px",
+      }}
+      onKeyDown={(e) => e.stopPropagation()} 
+    />
+  )}
+/>
+
                     ),
                   },
+                  
                   {
                     field: "actions",
                     headerName: "Actions",
@@ -1211,47 +1437,10 @@ const OfflineServices = () => {
                 ]}
                 pageSize={5}
               />
-              {/* Dialog for Add/Edit */}
-              {/* <Dialog
-                open={openServiceProviderDialog}
-                onClose={() => setOpenServiceProviderDialog(false)}
-                maxWidth="sm"
-                fullWidth     
-                         >
-                <DialogTitle>
-                  {editing ? "Update Email" : "Add Email"}
-                </DialogTitle>
-                <DialogContent>
-                  <TextField
-                    multiline
-                    fullWidth
-                    label="Enter Email"
-                    value={newServiceProvider.serviceName}
-                    onChange={(e) =>
-                      setNewServiceProvider({
-                        ...newServiceProvider,
-                        serviceName: e.target.value,
-                      })
-                    }
-                    sx={{ mt: 2 }}
-                  />
-                 
-                </DialogContent>
-                <DialogActions>
-                  <Button onClick={() => setOpenServiceProviderDialog(false)}>
-                    Cancel
-                  </Button>
-                  <Button
-                    onClick={handleSaveServiceProvider}
-                    variant="contained"
-                    sx={{ p: 1, color: "white", backgroundColor: "#5C5CFF" }}
-                  >
-                    {editing ? "Update" : "Save"}
-                  </Button>
-                </DialogActions>
-              </Dialog> */}
+             
             </div>
           </Paper>
+		  
           <DialogActions sx={{ position: "sticky", bottom: 0, padding: 2 }}>
             {/* Clear Button - Positioned to the bottom-left */}
             <Button

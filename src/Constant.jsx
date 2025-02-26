@@ -9,8 +9,8 @@ export const Bunny_Stream_Access_Key =
 export const Bunny_Stream_URL =
   "https://video.bunnycdn.com/library/222011/videos";
  
-export const Bunny_Stream_GET_URL = "https://video.bunnycdn.com/embed";
+// export const Bunny_Stream_GET_URL = "https://video.bunnycdn.com/embed";
 
-export const Bunny_Image_URL = "https://theDreamMomPullZone1.b-cdn.net";
+// export const Bunny_Image_URL = "https://theDreamMomPullZone1.b-cdn.net";
 
-export const Bunny_Thumbnail_URL="https://vz-b51db09c-870.b-cdn.net";
+// export const Bunny_Thumbnail_URL="https://vz-b51db09c-870.b-cdn.net";

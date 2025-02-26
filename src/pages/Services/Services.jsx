@@ -6,10 +6,12 @@ import {
   AccordionDetails,
   AccordionSummary,
   Button,
+  Checkbox,
   Dialog,
   DialogActions,
   DialogContent,
   DialogTitle,
+  FormControlLabel,
   Grid,
   IconButton,
   List,
@@ -19,7 +21,7 @@ import {
 } from "@mui/material";
 import { DataGrid, GridToolbar } from "@mui/x-data-grid";
 import axios from "axios";
-import React, { useEffect, useRef, useState } from "react";
+import React, { useCallback, useEffect, useRef, useState } from "react";
 import Swal from "sweetalert2";
 import { BASE_URL } from "../../Constant";
 import InputTextField, {
@@ -27,11 +29,11 @@ import InputTextField, {
   InputDescriptionField,
 } from "../../components/Component";
 import Loader from "../../components/Loader";
-// import ServiceDocType from "./ServicesDocType";
 import ExpandMoreIcon from "@mui/icons-material/ExpandMore";
 import DeleteIcon from "@mui/icons-material/Delete";
 import { useTheme } from "@emotion/react";
 import Autocomplete from "@mui/material/Autocomplete";
+import { useForm, Controller } from "react-hook-form"; // import useForm and Controller
 
 const OnlineServices = () => {
   const [loaderOpen, setLoaderOpen] = useState(false);
@@ -39,32 +41,18 @@ const OnlineServices = () => {
   const [open, setOpen] = useState(false);
   const [data, setData] = useState([]);
   const [Departments, setDepartments] = useState([]);
-  const [formData, setFormData] = useState({
-    Id: null,
-    ServiceNameEN: "",
-    ServiceNameMR: "",
-    DocLink: "",
-    ApplyLink: "",
-    // DocumentTypeIds: [],
-    Documents: [],
-    ServicesProvider: [],
-    DeptId: "",
-    Status: 1,
-  });
-  const [selectedDocTypeIndex, setSelectedDocTypeIndex] = React.useState(null);
   const [docTypes, setDocTypes] = useState([]);
-  const [serviceProviders, setServiceProviders] = useState([]); // State for Service Providers
-  const [searchQuery, setSearchQuery] = useState("");
-  const [searchText, setSearchText] = React.useState(""); // ✅ Search input state
+  const [serviceProviders, setServiceProviders] = useState([]);
+  const [searchText, setSearchText] = useState("");
   const [openDocTypeDialog, setOpenDocTypeDialog] = useState(false);
   const [openDocDialog, setOpenDocDialog] = useState(false);
   const [openServiceProviderDialog, setOpenServiceProviderDialog] =
-    useState(false); // Modal for Service Provider
+    useState(false);
   const [docType, setdocType] = useState({ english: "", marathi: "" });
   const [newDocument, setNewDocument] = useState({ english: "", marathi: "" });
-  const [editing, setEditing] = useState(false);
-  const [totalRows, setTotalRows] = React.useState("");
-  const [currentPage, setCurrentPage] = React.useState(0);
+  const [ClearDocTypeButton, setClearDocTypeButton] = React.useState("RESET");
+  const [saveDocTypeButton, setSaveDocTypeButton] = useState("SAVE");
+
   const [newServiceProvider, setNewServiceProvider] = useState({
     Id: "",
     serviceName: "",
@@ -73,17 +61,542 @@ const OnlineServices = () => {
     firstAppellateOfficer: "",
     secondAppellateOfficer: "",
   });
-  const [selectedServiceProvider, setSelectedServiceProvider] = useState(null);
+  const [editing, setEditing] = useState(false);
+  const [selectedDocTypeIndex, setSelectedDocTypeIndex] = React.useState(null);
+  const [searchQuery, setSearchQuery] = useState("");
+  const [currentPage, setCurrentPage] = React.useState(0);
+  const [totalRows, setTotalRows] = React.useState("");
   const [selectedDocType, setSelectedDocType] = useState(null);
-  const [editingDocType, setEditingDocType] = useState(null);
   const [selectedDocIndex, setSelectedDocIndex] = useState(null);
-  const [loading, setLoading] = React.useState(false);
+  const [loading, setLoading] = useState(false);
+  const [ClearUpdateButton, setClearUpdateButton] = useState("CLEAR");
+  const originalDataRef = useRef(null);
+  const [editingDocType, setEditingDocType] = useState(null);
+  const [selectedServiceProvider, setSelectedServiceProvider] = useState(null);
   const limit = 20; // Fixed page size
-  const [ClearUpdateButton, setClearUpdateButton] = React.useState("CLEAR");
-  const [ClearDocTypeButton, setClearDocTypeButton] = React.useState("RESET");
-  const originalDataRef = React.useRef(null);
-  const [saveDocTypeButton, setSaveDocTypeButton] = useState("SAVE");
-  const selectedDocTypeIndexRef = useRef(null);
+  const docRef = useRef(newDocument); // Store latest input without re-rendering
+
+  const {
+    control,
+    handleSubmit,
+    setValue,
+    reset,
+    watch,
+    formState: { errors },
+  } = useForm({
+    defaultValues: {
+      ServiceNameEN: "",
+      ServiceNameMR: "",
+      DocLink: "",
+      ApplyLink: "",
+      DeptId: "",
+      Status: 1,
+      Documents: [],
+      ServicesProvider: [],
+    },
+  });
+  React.useEffect(() => {
+    console.log("Component re-rendered");
+  });
+  const debounce = (func, delay) => {
+    let timeout;
+    return (...args) => {
+      clearTimeout(timeout);
+      timeout = setTimeout(() => func(...args), delay);
+    };
+  };
+
+  const handleAddOrUpdateDocument = () => {
+    if (newDocument.english.trim() && newDocument.marathi.trim()) {
+      const updatedDocTypes = [...docTypes];
+      if (selectedDocIndex !== null) {
+        // Update existing document
+        updatedDocTypes[selectedDocType].documents[selectedDocIndex] =
+          newDocument;
+      } else {
+        // Add new document
+        updatedDocTypes[selectedDocType].documents.push(newDocument);
+      }
+      setDocTypes(updatedDocTypes);
+      setNewDocument({ english: "", marathi: "" });
+      setSelectedDocIndex(null);
+      setOpenDocDialog(false);
+    }
+  };
+  const handleDeleteDocument = (docTypeIndex, docIndex) => {
+    const updatedDocTypes = [...docTypes];
+    updatedDocTypes[docTypeIndex].documents.splice(docIndex, 1);
+    setDocTypes(updatedDocTypes);
+  };
+  // Filtered Document Types based on search
+  const filteredDocTypes = docTypes.filter(
+    (docType) =>
+      docType.english.toLowerCase().includes(searchQuery.toLowerCase()) ||
+      docType.marathi.toLowerCase().includes(searchQuery.toLowerCase())
+  );
+
+  // Function to open the edit modal for a Document Type
+  const handleEditDocType = (index) => {
+    // selectedDocTypeIndexRef.current = index;
+    setSelectedDocTypeIndex(index); // Store the index
+    setdocType({ ...docTypes[index] }); // Populate the form with the selected Document Type
+    setClearDocTypeButton("RESET");
+    setSaveDocTypeButton("UPDATE");
+    setOpenDocTypeDialog(true);
+  };
+  // const handleResetDocType = () => {
+  //   if (selectedDocTypeIndexRef.current !== null) {
+  //     // Revert to the original data from the docTypes array
+  //     setdocType({ ...docTypes[selectedDocTypeIndexRef.current] });
+  //   }
+  // };
+  const handleInputChange = useCallback(
+    debounce((field, value) => {
+      setNewServiceProvider((prev) => ({ ...prev, [field]: value }));
+    }, 300), // Adjust delay as needed (300ms recommended)
+    []
+  );
+  const handleDocTypeChange = useCallback(
+    debounce((field, value) => {
+      setdocType((prev) => ({ ...prev, [field]: value }));
+    }, 100), // Adjust debounce delay (300ms recommended)
+    []
+  );
+
+  const updateDocumentState = useCallback(
+    debounce(() => {
+      setNewDocument({ ...docRef.current });
+    }, 300), // Adjust delay as needed
+    []
+  );
+  const handleDocumentChange = (field, value) => {
+    docRef.current = { ...docRef.current, [field]: value }; // Store latest input without triggering re-render
+    updateDocumentState(); // Apply debounced update
+  };
+  const handleSaveOrUpdateDocType = () => {
+    if (docType.english.trim() && docType.marathi.trim()) {
+      if (saveDocTypeButton === "UPDATE") {
+        // Update the existing Document Type using the stored index
+        const updatedDocTypes = [...docTypes];
+        if (selectedDocTypeIndex !== null) {
+          updatedDocTypes[selectedDocTypeIndex] = { ...docType };
+          setDocTypes(updatedDocTypes);
+        }
+      } else {
+        // Save new Document Type
+        setDocTypes([...docTypes, { ...docType, documents: [] }]);
+      }
+      setOpenDocTypeDialog(false);
+      setdocType({ english: "", marathi: "" });
+      setClearDocTypeButton("CLEAR");
+      setSaveDocTypeButton("SAVE");
+      setSelectedDocTypeIndex(null); // Reset the selected index after updating
+    }
+  };
+  const handleDeleteDocType = (index) => {
+    setDocTypes(docTypes.filter((_, i) => i !== index));
+  };
+  const handleSaveServiceProvider = () => {
+    if (editing) {
+      // Update existing row
+      const updatedProviders = serviceProviders.map((provider) =>
+        provider.srNo === selectedServiceProvider.srNo
+          ? { ...provider, ...newServiceProvider }
+          : provider
+      );
+      setServiceProviders(updatedProviders);
+    } else {
+      // Generate a new row with unique srNo for DataGrid and Id as null for backend
+      const newProvider = {
+        ...newServiceProvider,
+        srNo: serviceProviders.length
+          ? Math.max(...serviceProviders.map((sp) => sp.srNo || 0)) + 1
+          : 1, // Unique srNo for DataGrid
+        Id: null, // Ensure new row sends `null` to backend
+      };
+      setServiceProviders([...serviceProviders, newProvider]);
+    }
+
+    // Reset state
+    setOpenServiceProviderDialog(false);
+    setEditing(false);
+    setNewServiceProvider({
+      Id: "",
+      serviceName: "",
+      timeLimit: "",
+      designatedOfficer: "",
+      firstAppellateOfficer: "",
+      secondAppellateOfficer: "",
+    });
+  };
+  const handleEditServiceProvider = (identifier) => {
+    const providerToEdit = serviceProviders.find(
+      (sp) => sp.Id === identifier || sp.srNo === identifier
+    );
+
+    if (providerToEdit) {
+      setSelectedServiceProvider(providerToEdit);
+      setNewServiceProvider({ ...providerToEdit });
+      setEditing(true);
+      setOpenServiceProviderDialog(true);
+    } else {
+      console.error("Provider not found for identifier:", identifier);
+    }
+  };
+  // Function to handle delete of Service Provider
+  const handleDeleteServiceProvider = (identifier) => {
+    setServiceProviders(
+      (prevProviders) =>
+        prevProviders
+          .filter((sp) => sp.Id !== identifier && sp.srNo !== identifier)
+          .map((sp, index) => ({ ...sp, srNo: index + 1 })) // Reassign `srNo`
+    );
+  };
+  const handleOpenServiceProviderDialog = () => {
+    // clearFormData();
+    setSelectedServiceProvider(null); // Clear selected service provider
+    setNewServiceProvider({
+      serviceName: "",
+      timeLimit: "",
+      designatedOfficer: "",
+      firstAppellateOfficer: "",
+      secondAppellateOfficer: "",
+    });
+    setEditing(false);
+    setOpenServiceProviderDialog(true);
+  };
+
+  const clearDocTypeForm = () => {
+    if (ClearDocTypeButton === "CLEAR") {
+      setdocType({ english: "", marathi: "" });
+    }
+  };
+  const clearDocument = () => {
+    setNewDocument({ DocNameEN: "", DocTypeMR: "" });
+  };
+  const handleDelete = async (id) => {
+    Swal.fire({
+      text: "Are you sure you want to delete?",
+      icon: "warning",
+      showCancelButton: true,
+      confirmButtonColor: "#d33",
+      cancelButtonColor: "#3085d6",
+      confirmButtonText: "Yes, delete it!",
+    }).then((result) => {
+      if (result.isConfirmed) {
+        axios
+          .delete(`${BASE_URL}DepartmentSer/${id}`, {})
+          .then((response) => {
+            if (response.data.success === true) {
+              setLoaderOpen(false);
+              getAllDeptServData();
+              setData(data.filter((user) => user.Id !== id));
+              Swal.fire({
+                position: "center",
+                icon: "success",
+                toast: true,
+                title: "Service deleted Successfully",
+                showConfirmButton: false,
+                timer: 1500,
+              });
+            } else {
+              setLoaderOpen(false);
+              Swal.fire({
+                icon: "error",
+                toast: true,
+                title: "Failed",
+                text: "Failed to Delete Service",
+                showConfirmButton: true,
+              });
+            }
+          })
+          .catch((error) => {
+            setLoaderOpen(false);
+            Swal.fire({
+              icon: "error",
+              toast: true,
+              title: "Failed",
+              text: error,
+              showConfirmButton: true,
+            });
+          });
+      }
+      setLoaderOpen(false);
+    });
+  };
+
+  const getAllDeptServData = async (page = 0, searchText = "") => {
+    try {
+      setLoading(true);
+      let apiUrl = `${BASE_URL}DepartmentSer/ByPage/${page}/${limit}`;
+      if (searchText) {
+        apiUrl = `${BASE_URL}DepartmentSer/ByPage/search/${searchText}/${page}/${limit}`;
+      }
+
+      const response = await axios.get(apiUrl);
+
+      if (response.data && response.data.values) {
+        setData(
+          response.data.values.map((item, index) => ({
+            ...item,
+            id: page * limit + index + 1,
+          }))
+        );
+        setTotalRows(response.data.count);
+      }
+    } catch (error) {
+      console.error("Error fetching data:", error);
+      Swal.fire({
+        icon: "error",
+        toast: true,
+        title: "Failed",
+        text: error,
+        showConfirmButton: true,
+      });
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  const fetchDepartments = async () => {
+    try {
+      const response = await axios.get(`${BASE_URL}Department/All`);
+      const departmentList = response.data.values;
+      setDepartments(departmentList);
+    } catch (error) {
+      console.error("Error fetching departments:", error);
+      Swal.fire({
+        icon: "error",
+        toast: true,
+        title: "Failed",
+        text: error,
+        showConfirmButton: true,
+      });
+    }
+  };
+
+  useEffect(() => {
+    fetchDepartments();
+  }, []);
+
+  useEffect(() => {
+    getAllDeptServData();
+  }, []);
+
+  const clearFormData = () => {
+    if (ClearUpdateButton === "CLEAR") {
+      reset();
+      setDocTypes([]);
+      setServiceProviders([]);
+      return;
+    }
+
+    if (ClearUpdateButton === "RESET" && originalDataRef.current) {
+      const {
+        Id,
+        ServiceNameEN,
+        ServiceNameMR,
+        DocLink,
+        ApplyLink,
+        DeptId,
+        Status,
+        ServicesProvider,
+        Documents,
+      } = originalDataRef.current;
+
+      reset({
+        ServiceNameEN,
+        ServiceNameMR,
+        DocLink,
+        ApplyLink,
+        DeptId,
+        Status,
+        Documents,
+        ServicesProvider,
+      });
+
+      setServiceProviders(ServicesProvider || []);
+      setDocTypes(Documents || []);
+    }
+  };
+  const handleParentDialogClose = () => {
+    setClearUpdateButton("CLEAR");
+    setSaveUpdateButton("SAVE");
+    clearFormData();
+    setOpen(false);
+  };
+  const handleSave = async () => {
+    try {
+      const selectedDept = Departments.find(
+        (dept) => dept.Id === watch("DeptId")
+      );
+
+      const formattedDocuments = docTypes.map((docType) => ({
+        Id: docType.Id || null,
+        DocTypeEN: docType.english,
+        DocTypeMR: docType.marathi,
+        Status: 1,
+        Documents: docType.documents.map((doc) => ({
+          Id: doc.Id || null,
+          DocNameEN: doc.english,
+          DocNameMR: doc.marathi,
+        })),
+      }));
+
+      const formattedServiceProviders = serviceProviders.map((sp) => ({
+        Id: sp.Id || null,
+        ServiceName: sp.serviceName,
+        TimeLimitDays: sp.timeLimit,
+        DesignatedOfficer: sp.designatedOfficer,
+        FirstAppellateOfficer: sp.firstAppellateOfficer,
+        SecondAppellateOfficer: sp.secondAppellateOfficer,
+        Lang: "EN",
+        Status: 1,
+      }));
+
+      const formattedData = {
+        ...watch(),
+        DeptId: watch("DeptId"),
+        DeptNameEN: selectedDept ? selectedDept.DeptNameEN : "",
+        Documents: formattedDocuments,
+        ServicesProvider: formattedServiceProviders,
+      };
+
+      if (SaveUpdateButton === "SAVE") {
+        axios
+          .post(`${BASE_URL}DepartmentSer/`, formattedData)
+          .then((response) => {
+            setLoaderOpen(false);
+            if (response.data.success) {
+              getAllDeptServData();
+              Swal.fire({
+                position: "center",
+                icon: "success",
+                toast: true,
+                title: "Service added successfully",
+                showConfirmButton: false,
+                timer: 1500,
+              });
+              handleParentDialogClose(false);
+            } else {
+              Swal.fire({
+                icon: "error",
+                title: "Failed to save Service",
+                text: response.data.message,
+              });
+            }
+          })
+          .catch((error) => handleApiError(error));
+      } else {
+        if (!watch("Id")) {
+          setLoaderOpen(false);
+          Swal.fire({
+            icon: "error",
+            title: "Update Failed",
+            text: "Invalid Service ID",
+          });
+          return;
+        }
+
+        const result = await Swal.fire({
+          text: "Do you want to Update...?",
+          icon: "warning",
+          showCancelButton: true,
+          confirmButtonText: "Yes, Update it!",
+        });
+
+        if (!result.isConfirmed) return;
+
+        axios
+          .put(`${BASE_URL}DepartmentSer/${watch("Id")}`, formattedData)
+          .then((response) => {
+            setLoaderOpen(false);
+            if (response.data.success) {
+              getAllDeptServData();
+              Swal.fire({
+                position: "center",
+                icon: "success",
+                toast: true,
+                title: "Service Updated successfully",
+                showConfirmButton: false,
+                timer: 1500,
+              });
+              handleParentDialogClose(false);
+            } else {
+              Swal.fire({
+                icon: "error",
+                title: "Failed to update Service",
+                text: response.data.message,
+              });
+            }
+          })
+          .catch((error) => handleApiError(error));
+      }
+    } catch (error) {
+      handleApiError(error);
+    }
+  };
+
+  const handleApiError = (error) => {
+    setLoaderOpen(false);
+    console.error("Error:", error);
+    Swal.fire({
+      icon: "error",
+      title: "Failed",
+      text: error.message || "Something went wrong",
+    });
+  };
+
+  const handleEditClick = async (row) => {
+    setSaveUpdateButton("UPDATE");
+    setClearUpdateButton("RESET");
+
+    try {
+      setLoading(true);
+      const apiUrl = `${BASE_URL}DepartmentSer/ById/${row.Id}`;
+      const response = await axios.get(apiUrl);
+
+      if (response.data) {
+        const data = response.data.values;
+        originalDataRef.current = JSON.parse(JSON.stringify(data));
+
+        reset({
+          Id: data.Id,
+          ServiceNameEN: data.ServiceNameEN,
+          ServiceNameMR: data.ServiceNameMR,
+          DocLink: data.DocLink,
+          ApplyLink: data.ApplyLink,
+          DeptId: data.DeptId,
+          Status: data.Status,
+        });
+
+        setServiceProviders(data.ServicesProvider || []);
+        setDocTypes(data.Documents || []);
+        setOpen(true);
+      }
+    } catch (error) {
+      console.error("Error fetching department service data:", error);
+      Swal.fire({
+        icon: "error",
+        toast: true,
+        title: "Failed",
+        text: error,
+        showConfirmButton: true,
+      });
+    } finally {
+      setLoading(false);
+    }
+  };
+  const handleParentDialogOpen = () => {
+    setSaveUpdateButton("SAVE");
+    setClearUpdateButton("CLEAR"); // ✅ Ensure it's set to "CLEAR"
+
+    setTimeout(() => {
+      // ✅ Delay to ensure state updates
+      clearFormData();
+      setOpen(true);
+    }, 50);
+  };
   const columns = [
     {
       field: "actions",
@@ -195,606 +708,6 @@ const OnlineServices = () => {
     ...buttonStyles,
     backgroundColor: "red",
   };
-  const handleDelete = async (id) => {
-    Swal.fire({
-      text: "Are you sure you want to delete?",
-      icon: "warning",
-      showCancelButton: true,
-      confirmButtonColor: "#d33",
-      cancelButtonColor: "#3085d6",
-      confirmButtonText: "Yes, delete it!",
-    }).then((result) => {
-      if (result.isConfirmed) {
-        axios
-          .delete(`${BASE_URL}DepartmentSer/${id}`, {})
-          .then((response) => {
-            if (response.data.success === true) {
-              setLoaderOpen(false);
-              getAllDeptServData(currentPage, searchText);
-              setData(data.filter((user) => user.Id !== id));
-              Swal.fire({
-                position: "center",
-                icon: "success",
-                toast: true,
-                title: "Service deleted Successfully",
-                showConfirmButton: false,
-                timer: 1500,
-              });
-            } else {
-              setLoaderOpen(false);
-              Swal.fire({
-                icon: "error",
-                toast: true,
-                title: "Failed",
-                text: "Failed to Delete Service",
-                showConfirmButton: true,
-              });
-            }
-          })
-          .catch((error) => {
-            setLoaderOpen(false);
-            Swal.fire({
-              icon: "error",
-              toast: true,
-              title: "Failed",
-              text: error,
-              showConfirmButton: true,
-            });
-          });
-      }
-      setLoaderOpen(false);
-    });
-  };
-
-  const getAllDeptServData = async (page = 0, searchText = "") => {
-    try {
-      console.log("Calling API with Page:", page); // ✅ Debugging line
-      console.log("Search Text:", searchText);
-
-      setLoading(true);
-      // const token = await getApiToken();
-
-      let apiUrl = `${BASE_URL}DepartmentSer/ByPage/${page}/${limit}`;
-
-      if (searchText) {
-        apiUrl = `${BASE_URL}DepartmentSer/ByPage/search/${searchText}/${page}/${limit}`;
-      }
-
-      console.log("Final API URL:", apiUrl); // ✅ Check if correct URL is formed
-
-      const response = await axios.get(apiUrl, {
-        // headers: {
-        //   "Content-Type": "application/json",
-        //   Authorization: token,
-        // },
-      });
-
-      console.log("API Response:", response.data);
-
-      if (response.data && response.data.values) {
-        setData(
-          response.data.values.map((item, index) => ({
-            ...item,
-            id: page * limit + index + 1, // ✅ Ensures SR.NO continues across pages
-          }))
-        );
-        setTotalRows(response.data.count);
-
-        if (searchText) {
-          setTotalRows(response.data.count);
-        }
-      }
-    } catch (error) {
-      console.error("Error fetching data:", error);
-      Swal.fire({
-        icon: "error",
-        toast: true,
-        title: "Failed",
-        text: error,
-        showConfirmButton: true,
-      });
-    } finally {
-      setLoading(false);
-    }
-  };
-  const handleOpenServiceProviderDialog = () => {
-    // clearFormData();
-    setSelectedServiceProvider(null); // Clear selected service provider
-    setNewServiceProvider({
-      serviceName: "",
-      timeLimit: "",
-      designatedOfficer: "",
-      firstAppellateOfficer: "",
-      secondAppellateOfficer: "",
-    });
-    setEditing(false);
-    setOpenServiceProviderDialog(true);
-  };
-  const handleParentDialogOpen = () => {
-    setSaveUpdateButton("SAVE");
-    setClearUpdateButton("CLEAR"); // ✅ Ensure it's set to "CLEAR"
-
-    setTimeout(() => {
-      // ✅ Delay to ensure state updates
-      clearFormData();
-      setOpen(true);
-    }, 50);
-  };
-  const handleParentDialogClose = () => {
-    setClearUpdateButton("CLEAR");
-    setSaveUpdateButton("SAVE");
-    clearFormData();
-    setOpen(false);
-  };
-  const fetchDepartments = async () => {
-    try {
-      const response = await axios.get(`${BASE_URL}Department/All`);
-      const departmentList = response.data.values; // Store the response in a variable
-      setDepartments(departmentList); // Update state with fetched data
-      console.log("Fetched Departments:", departmentList); // Log fetched data
-    } catch (error) {
-      console.error("Error fetching departments:", error);
-      Swal.fire({
-        icon: "error",
-        toast: true,
-        title: "Failed",
-        text: error,
-        showConfirmButton: true,
-      });
-    }
-  };
-
-  useEffect(() => {
-    fetchDepartments();
-  }, []);
-
-  const clearDocTypeForm = () => {
-    if (ClearDocTypeButton === "CLEAR") {
-      setdocType({ english: "", marathi: "" });
-    }
-  };
-  const clearDocument = () => {
-    setNewDocument({ DocNameEN: "", DocTypeMR: "" });
-  };
-  const clearFormData = () => {
-    console.log("ClearUpdateButton value:", ClearUpdateButton);
-    if (ClearUpdateButton === "CLEAR") {
-      setFormData({
-        ServiceNameEN: "",
-        ServiceNameMR: "",
-        DocLink: "",
-        ApplyLink: "",
-        DeptId: "",
-        Status: 1,
-        docTypes: [],
-        serviceProviders: [],
-      });
-      setDocTypes([]);
-      setServiceProviders([]);
-      return;
-    }
-
-    if (ClearUpdateButton === "RESET" && originalDataRef.current) {
-      const {
-        Id,
-        ServiceNameEN,
-        ServiceNameMR,
-        DocLink,
-        ApplyLink,
-        DeptId,
-        Status,
-        ServicesProvider,
-        Documents,
-      } = originalDataRef.current;
-
-      setFormData({
-        Id,
-        ServiceNameEN,
-        ServiceNameMR,
-        DocLink,
-        ApplyLink,
-        DeptId,
-        Status,
-      });
-
-      setServiceProviders(
-        ServicesProvider?.map(
-          ({
-            Id,
-            SerId,
-            ServiceName,
-            TimeLimitDays,
-            DesignatedOfficer,
-            FirstAppellateOfficer,
-            SecondAppellateOfficer,
-          }) => ({
-            Id: Id || "",
-            SerId: SerId || "",
-            serviceName: ServiceName,
-            timeLimit: TimeLimitDays,
-            designatedOfficer: DesignatedOfficer,
-            firstAppellateOfficer: FirstAppellateOfficer,
-            secondAppellateOfficer: SecondAppellateOfficer,
-          })
-        ) || []
-      );
-
-      setDocTypes(
-        Documents?.map(({ Id, DocTypeEN, DocTypeMR, Documents }) => ({
-          Id: Id || null,
-          english: DocTypeEN,
-          marathi: DocTypeMR,
-          documents:
-            Documents?.map(({ Id, DocNameEN, DocNameMR }) => ({
-              Id: Id || 0,
-              english: DocNameEN,
-              marathi: DocNameMR,
-            })) || [],
-        })) || []
-      );
-    }
-  };
-  useEffect(() => {
-    getAllDeptServData();
-  }, []);
-  const handleAddOrUpdateDocument = () => {
-    if (newDocument.english.trim() && newDocument.marathi.trim()) {
-      const updatedDocTypes = [...docTypes];
-      if (selectedDocIndex !== null) {
-        // Update existing document
-        updatedDocTypes[selectedDocType].documents[selectedDocIndex] =
-          newDocument;
-      } else {
-        // Add new document
-        updatedDocTypes[selectedDocType].documents.push(newDocument);
-      }
-      setDocTypes(updatedDocTypes);
-      setNewDocument({ english: "", marathi: "" });
-      setSelectedDocIndex(null);
-      setOpenDocDialog(false);
-    }
-  };
-  const handleDeleteDocument = (docTypeIndex, docIndex) => {
-    const updatedDocTypes = [...docTypes];
-    updatedDocTypes[docTypeIndex].documents.splice(docIndex, 1);
-    setDocTypes(updatedDocTypes);
-  };
-  // Filtered Document Types based on search
-  const filteredDocTypes = docTypes.filter(
-    (docType) =>
-      docType.english.toLowerCase().includes(searchQuery.toLowerCase()) ||
-      docType.marathi.toLowerCase().includes(searchQuery.toLowerCase())
-  );
-  // Function to open the edit modal for a Document Type
-  const handleEditDocType = (index) => {
-    selectedDocTypeIndexRef.current = index;
-    setSelectedDocTypeIndex(index);            // Store the index
-    setdocType({ ...docTypes[index] });         // Populate the form with the selected Document Type
-    setClearDocTypeButton("RESET");
-    setSaveDocTypeButton("UPDATE");
-    setOpenDocTypeDialog(true);
-  };
-  const handleResetDocType = () => {
-    if (selectedDocTypeIndexRef.current !== null) {
-      // Revert to the original data from the docTypes array
-      setdocType({ ...docTypes[selectedDocTypeIndexRef.current] });
-    }
-  };
-  
-  const handleSaveOrUpdateDocType = () => {
-    if (docType.english.trim() && docType.marathi.trim()) {
-      if (saveDocTypeButton === "UPDATE") {
-        // Update the existing Document Type using the stored index
-        const updatedDocTypes = [...docTypes];
-        if (selectedDocTypeIndex !== null) {
-          updatedDocTypes[selectedDocTypeIndex] = { ...docType };
-          setDocTypes(updatedDocTypes);
-        }
-      } else {
-        // Save new Document Type
-        setDocTypes([...docTypes, { ...docType, documents: [] }]);
-      }
-      setOpenDocTypeDialog(false);
-      setdocType({ english: "", marathi: "" });
-      setClearDocTypeButton("CLEAR");
-      setSaveDocTypeButton("SAVE");
-      setSelectedDocTypeIndex(null); // Reset the selected index after updating
-    }
-  };
-    const handleDeleteDocType = (index) => {
-    setDocTypes(docTypes.filter((_, i) => i !== index));
-  };
-  const handleSaveServiceProvider = () => {
-    if (editing) {
-      // Update existing row
-      const updatedProviders = serviceProviders.map((provider) =>
-        provider.srNo === selectedServiceProvider.srNo
-          ? { ...provider, ...newServiceProvider }
-          : provider
-      );
-      setServiceProviders(updatedProviders);
-    } else {
-      // Generate a new row with unique srNo for DataGrid and Id as null for backend
-      const newProvider = {
-        ...newServiceProvider,
-        srNo: serviceProviders.length
-          ? Math.max(...serviceProviders.map((sp) => sp.srNo || 0)) + 1
-          : 1, // Unique srNo for DataGrid
-        Id: null, // Ensure new row sends `null` to backend
-      };
-      setServiceProviders([...serviceProviders, newProvider]);
-    }
-
-    // Reset state
-    setOpenServiceProviderDialog(false);
-    setEditing(false);
-    setNewServiceProvider({
-      Id: "",
-      serviceName: "",
-      timeLimit: "",
-      designatedOfficer: "",
-      firstAppellateOfficer: "",
-      secondAppellateOfficer: "",
-    });
-  };
-  const handleEditServiceProvider = (identifier) => {
-    const providerToEdit = serviceProviders.find(
-      (sp) => sp.Id === identifier || sp.srNo === identifier
-    );
-
-    if (providerToEdit) {
-      setSelectedServiceProvider(providerToEdit);
-      setNewServiceProvider({ ...providerToEdit });
-      setEditing(true);
-      setOpenServiceProviderDialog(true);
-    } else {
-      console.error("Provider not found for identifier:", identifier);
-    }
-  };
-  // Function to handle delete of Service Provider
-  const handleDeleteServiceProvider = (identifier) => {
-    setServiceProviders(
-      (prevProviders) =>
-        prevProviders
-          .filter((sp) => sp.Id !== identifier && sp.srNo !== identifier)
-          .map((sp, index) => ({ ...sp, srNo: index + 1 })) // Reassign `srNo`
-    );
-  };
-
-  const validateForm = () => {
-    const { ServiceNameEN, DocLink, DeptId } = formData;
-    return ServiceNameEN && DocLink && DeptId;
-  };
-  const handleSave = async () => {
-    setClearUpdateButton("CLEAR");
-
-    try {
-      const selectedDept = Departments.find(
-        (dept) => dept.Id === formData.DeptId
-      );
-
-      // Ensure Documents are structured correctly
-      const formattedDocuments = docTypes.map((docType) => ({
-        Id: docType.Id || null,
-        DocTypeEN: docType.english,
-        DocTypeMR: docType.marathi,
-        Status: 1, // Default active
-        // SerId: formData.SerId || null,
-        Documents: docType.documents.map((doc) => ({
-          Id: doc.Id || null,
-          DocNameEN: doc.english,
-          DocNameMR: doc.marathi,
-        })),
-      }));
-
-      // Ensure ServicesProvider is structured correctly
-      const formattedServiceProviders = serviceProviders.map((sp) => ({
-        Id: sp.Id || null,
-        ServiceName: sp.serviceName,
-        TimeLimitDays: sp.timeLimit,
-        DesignatedOfficer: sp.designatedOfficer,
-        FirstAppellateOfficer: sp.firstAppellateOfficer,
-        SecondAppellateOfficer: sp.secondAppellateOfficer,
-        Lang: "EN", // Assuming language is always English
-        // SerId: sp.SerId ,
-        Status: 1, // Default active
-      }));
-
-      const formattedData = {
-        ...formData,
-        DeptId: formData.DeptId,
-        DeptNameEN: selectedDept ? selectedDept.DeptNameEN : "",
-        Documents: formattedDocuments,
-        ServicesProvider: formattedServiceProviders,
-      };
-
-      if (SaveUpdateButton === "SAVE") {
-        axios
-          .post(`${BASE_URL}DepartmentSer/`, formattedData)
-          .then((response) => {
-            setLoaderOpen(false);
-            if (response.data.success) {
-              getAllDeptServData(currentPage, searchText);
-              Swal.fire({
-                position: "center",
-                icon: "success",
-                toast: true,
-                title: "Service added successfully",
-                showConfirmButton: false,
-                timer: 1500,
-              });
-              getAllDeptServData(currentPage, searchText);
-              handleParentDialogClose(false);
-            } else {
-              Swal.fire({
-                icon: "error",
-                title: "Failed to save Service",
-                text: response.data.message,
-              });
-            }
-          })
-          .catch((error) => handleApiError(error));
-      } else {
-        if (!formData.Id) {
-          setLoaderOpen(false);
-          Swal.fire({
-            icon: "error",
-            title: "Update Failed",
-            text: "Invalid Service ID",
-          });
-          return;
-        }
-
-        const result = await Swal.fire({
-          text: "Do you want to Update...?",
-          icon: "warning",
-          showCancelButton: true,
-          confirmButtonText: "Yes, Update it!",
-        });
-        document.querySelector(".swal2-container").style.zIndex = "99999";
-
-        if (!result.isConfirmed) return;
-
-        axios
-          .put(`${BASE_URL}DepartmentSer/${formData.Id}`, formattedData)
-          .then((response) => {
-            setLoaderOpen(false);
-            if (response.data.success) {
-              clearFormData();
-              getAllDeptServData(currentPage, searchText);
-              Swal.fire({
-                position: "center",
-                icon: "success",
-                toast: true,
-                title: "Service Updated successfully",
-                showConfirmButton: false,
-                timer: 1500,
-              });
-              getAllDeptServData(currentPage, searchText);
-              handleParentDialogClose(false);
-            } else {
-              Swal.fire({
-                icon: "error",
-                title: "Failed to update Service",
-                text: response.data.message,
-              });
-            }
-          })
-          .catch((error) => handleApiError(error));
-      }
-    } catch (error) {
-      handleApiError(error);
-    }
-  };
-
-  const handleApiError = (error) => {
-    setLoaderOpen(false);
-    console.error("Error:", error);
-    Swal.fire({
-      icon: "error",
-      title: "Failed",
-      text: error.message || "Something went wrong",
-    });
-  };
-
-  const handleInputChange = (e) => {
-    const { name, value } = e.target;
-    setFormData((prevData) => ({
-      ...prevData,
-      [name]: value,
-    }));
-  };
-  useEffect(() => {
-    console.log("Updated Service Providers:", serviceProviders);
-  }, [serviceProviders]);
-
-  const handleEditClick = async (row) => {
-    console.log("Selected Row:", row);
-    setSaveUpdateButton("UPDATE");
-    setClearUpdateButton("RESET");
-
-    try {
-      setLoading(true);
-      // const token = await getApiToken(); // Get authentication token
-
-      const apiUrl = `${BASE_URL}DepartmentSer/ById/${row.Id}`;
-      console.log("Fetching API URL:", apiUrl);
-
-      const response = await axios.get(apiUrl, {
-        // headers: {
-        //   "Content-Type": "application/json",
-        //   Authorization: token,
-        // },
-      });
-
-      console.log("API Response:", response.data);
-
-      if (response.data) {
-        const data = response.data.values;
-        originalDataRef.current = JSON.parse(JSON.stringify(data));
-
-        // Set form data for the modal
-        setFormData({
-          Id: data.Id,
-          ServiceNameEN: data.ServiceNameEN,
-          ServiceNameMR: data.ServiceNameMR,
-          DocLink: data.DocLink,
-          ApplyLink: data.ApplyLink,
-          DeptId: data.DeptId,
-          Status: data.Status,
-        });
-
-        // Set service providers to state
-        if (data.ServicesProvider) {
-          const formattedProviders = data.ServicesProvider.map((sp) => ({
-            Id: sp.Id || "",
-            SerId: sp.SerId || "",
-            serviceName: sp.ServiceName,
-            timeLimit: sp.TimeLimitDays,
-            designatedOfficer: sp.DesignatedOfficer,
-            firstAppellateOfficer: sp.FirstAppellateOfficer,
-            secondAppellateOfficer: sp.SecondAppellateOfficer,
-          }));
-          setServiceProviders(formattedProviders);
-        } else {
-          setServiceProviders([]); // Ensure it's cleared if empty
-        }
-
-        // Set Document Types and Documents
-        if (data.Documents) {
-          const formattedDocTypes = data.Documents.map((docType) => ({
-            Id: docType.Id || null,
-            english: docType.DocTypeEN,
-            marathi: docType.DocTypeMR,
-            documents: docType.Documents
-              ? docType.Documents.map((doc) => ({
-                  Id: doc.Id || 0,
-                  english: doc.DocNameEN,
-                  marathi: doc.DocNameMR,
-                }))
-              : [],
-          }));
-          setDocTypes(formattedDocTypes);
-        } else {
-          setDocTypes([]); // Ensure it's cleared if empty
-        }
-        // originalDataRef.current = data;
-        setOpen(true); // Open modal
-      }
-    } catch (error) {
-      console.error("Error fetching department service data:", error);
-      Swal.fire({
-        icon: "error",
-        toast: true,
-        title: "Failed",
-        text: error,
-        showConfirmButton: true,
-      });
-    } finally {
-      setLoading(false);
-    }
-  };
-
   return (
     <>
       {loaderOpen && <Loader open={loaderOpen} />}
@@ -929,7 +842,8 @@ const OnlineServices = () => {
 
       <Dialog
         elevation={7}
-        component={Paper}
+        onSubmit={handleSubmit(handleSave)} // Handle submit via react-hook-form
+        component={"form"}
         boxShadow={20}
         open={open}
         onClose={handleParentDialogClose}
@@ -988,32 +902,43 @@ const OnlineServices = () => {
           >
             <Grid container spacing={2} pt={3}>
               <Grid item xs={12} sm={4}>
-                <InputDescriptionField
-                  size="small"
-                  fullWidth
-                  id="ServiceNameEN"
-                  label="Service Name English"
+                <Controller
                   name="ServiceNameEN"
-                  value={formData.ServiceNameEN}
-                  onChange={handleInputChange}
+                  control={control}
+                  defaultValue=""
+                  render={({ field }) => (
+                    <InputDescriptionField
+                      {...field}
+                      label="Service Name English"
+                      size="small"
+                      fullWidth
+                      error={!!errors.ServiceNameEN}
+                      helperText={errors.ServiceNameEN?.message}
+                    />
+                  )}
                 />
               </Grid>
-              {/* --------------------------------------------- */}
-              {/* <Grid item xs={12} sm={4} width={200}></Grid> */}
-              {/* --------------------------------------------- */}
+
               <Grid item xs={12} sm={4}>
-                <InputDescriptionField
-                  size="small"
-                  fullWidth
-                  id="ServiceNameMR"
-                  label="Service Name Marathi"
+                <Controller
                   name="ServiceNameMR"
-                  multiline
-                  rows={2}
-                  value={formData.ServiceNameMR}
-                  onChange={handleInputChange}
+                  control={control}
+                  defaultValue=""
+                  render={({ field }) => (
+                    <InputDescriptionField
+                      {...field}
+                      label="Service Name Marathi"
+                      size="small"
+                      fullWidth
+                      multiline
+                      rows={2}
+                      error={!!errors.ServiceNameMR}
+                      helperText={errors.ServiceNameMR?.message}
+                    />
+                  )}
                 />
               </Grid>
+
               <Grid
                 item
                 xs={12}
@@ -1024,74 +949,102 @@ const OnlineServices = () => {
                   alignItems: "center",
                 }}
               >
-                <Autocomplete
-                  size="small"
-                  options={Departments}
-                  getOptionLabel={(option) => option.DeptNameEN} // Display department name
-                  value={
-                    Departments.find((dept) => dept.Id === formData.DeptId) ||
-                    null
-                  } // Set selected value
-                  onChange={(event, newValue) => {
-                    setFormData((prev) => ({
-                      ...prev,
-                      DeptId: newValue ? newValue.Id : "", // Store selected department Id
-                    }));
-                  }}
-                  sx={{ width: "220px" }} // Reduced width
-                  renderInput={(params) => (
-                    <TextField
-                      {...params}
-                      label="Select Department"
-                      fullWidth
+                <Controller
+                  name="DeptId"
+                  control={control}
+                  defaultValue={null} // Ensure default value is null
+                  render={({ field }) => (
+                    <Autocomplete
+                      {...field}
+                      size="small"
+                      options={Departments} // Your departments array
+                      getOptionLabel={(option) =>
+                        option.DeptNameEN || "Unknown Department"
+                      } // Display dept name
+                      isOptionEqualToValue={(option, value) =>
+                        option.Id === value.Id
+                      } // Compare options by Id
+                      value={
+                        Departments.find((dept) => dept.Id === field.value) ||
+                        null // Ensure value matches by Id
+                      }
+                      onChange={(_, newValue) => {
+                        setValue("DeptId", newValue ? newValue.Id : null); // Set the selected Id
+                      }}
+                      sx={{ width: "220px" }}
+                      renderInput={(params) => (
+                        <TextField
+                          {...params}
+                          label="Select Department"
+                          fullWidth
+                          error={!!errors.DeptId}
+                          helperText={errors.DeptId?.message}
+                        />
+                      )}
                     />
                   )}
                 />
               </Grid>
+
               <Grid item xs={12} sm={4}>
-                <InputTextField
-                  size="small"
-                  fullWidth
-                  id="DocLink"
-                  label="Document Link"
+                <Controller
                   name="DocLink"
-                  multiline
-                  rows={2}
-                  value={formData.DocLink}
-                  onChange={handleInputChange}
-                />
-              </Grid>
-              {/* <Grid item xs={12} sm={4} width={200}></Grid> */}
-              <Grid item xs={12} sm={4}>
-                <InputTextField
-                  size="small"
-                  fullWidth
-                  id="ApplyLink"
-                  label="Apply Link"
-                  name="ApplyLink"
-                  multiline
-                  rows={2}
-                  value={formData.ApplyLink}
-                  onChange={handleInputChange}
+                  control={control}
+                  defaultValue=""
+                  render={({ field }) => (
+                    <InputTextField
+                      {...field}
+                      label="Document Link"
+                      size="small"
+                      fullWidth
+                      multiline
+                      rows={2}
+                      error={!!errors.DocLink}
+                      helperText={errors.DocLink?.message}
+                    />
+                  )}
                 />
               </Grid>
 
-              {/* <Grid item xs={12} sm={4} width={200}></Grid> */}
+              <Grid item xs={12} sm={4}>
+                <Controller
+                  name="ApplyLink"
+                  control={control}
+                  defaultValue=""
+                  render={({ field }) => (
+                    <InputTextField
+                      {...field}
+                      label="Apply Link"
+                      size="small"
+                      fullWidth
+                      multiline
+                      rows={2}
+                      error={!!errors.ApplyLink}
+                      helperText={errors.ApplyLink?.message}
+                    />
+                  )}
+                />
+              </Grid>
+
               <Grid item xs={12} sm={4} textAlign={"center"}>
-                <CheckboxInputs
-                  checked={formData.Status === 1} // Ensure it's checked by default
-                  label="Active"
-                  id="Status"
-                  onChange={(event) =>
-                    handleInputChange({
-                      target: {
-                        name: "Status",
-                        value: event.target.checked ? 1 : 0, // Ensure value is set properly
-                      },
-                    })
-                  }
-                  value={formData.Status}
+                <Controller
                   name="Status"
+                  control={control}
+                  defaultValue={1} // Default to checked (1)
+                  render={({ field }) => (
+                    <FormControlLabel
+                      control={
+                        <Checkbox
+                          {...field}
+                          checked={field.value === 1}
+                          onChange={(e) =>
+                            field.onChange(e.target.checked ? 1 : 0)
+                          }
+                        />
+                      }
+                      label="Active"
+                    />
+                  )}
                 />
               </Grid>
             </Grid>
@@ -1367,9 +1320,9 @@ const OnlineServices = () => {
                     fullWidth
                     name="DocTypeEN"
                     label="Document Type (English)"
-                    value={docType.english}
+                    defaultValue={docType.english}
                     onChange={(e) =>
-                      setdocType({ ...docType, english: e.target.value })
+                      handleDocTypeChange("english", e.target.value)
                     }
                     sx={{ mt: 2 }}
                   />
@@ -1377,13 +1330,14 @@ const OnlineServices = () => {
                     fullWidth
                     name="DocTypeMR"
                     label="Document Type (Marathi)"
-                    value={docType.marathi}
+                    defaultValue={docType.marathi}
                     onChange={(e) =>
-                      setdocType({ ...docType, marathi: e.target.value })
+                      handleDocTypeChange("marathi", e.target.value)
                     }
                     sx={{ mt: 2 }}
                   />
                 </DialogContent>
+
                 <DialogActions
                   sx={{ display: "flex", justifyContent: "space-between" }}
                 >
@@ -1400,8 +1354,8 @@ const OnlineServices = () => {
                         transform: "translateY(2px)",
                       },
                     }}
-                    onClick={handleResetDocType}
-                    >
+                    // onClick={handleResetDocType}
+                  >
                     {ClearDocTypeButton}
                   </Button>
                   <Button
@@ -1446,12 +1400,9 @@ const OnlineServices = () => {
                     fullWidth
                     label="Document Name (English)"
                     name="DocNameEN"
-                    value={newDocument.english}
+                    defaultValue={newDocument.english}
                     onChange={(e) =>
-                      setNewDocument({
-                        ...newDocument,
-                        english: e.target.value,
-                      })
+                      handleDocumentChange("english", e.target.value)
                     }
                     sx={{ mt: 2 }}
                   />
@@ -1459,12 +1410,9 @@ const OnlineServices = () => {
                     fullWidth
                     name="DocNameMR"
                     label="Document Name (Marathi)"
-                    value={newDocument.marathi}
+                    defaultValue={newDocument.marathi}
                     onChange={(e) =>
-                      setNewDocument({
-                        ...newDocument,
-                        marathi: e.target.value,
-                      })
+                      handleDocumentChange("marathi", e.target.value)
                     }
                     sx={{ mt: 2 }}
                   />
@@ -1621,64 +1569,53 @@ const OnlineServices = () => {
                   <TextField
                     fullWidth
                     label="Service Name"
-                    value={newServiceProvider.serviceName}
+                    defaultValue={newServiceProvider.serviceName}
                     onChange={(e) =>
-                      setNewServiceProvider({
-                        ...newServiceProvider,
-                        serviceName: e.target.value,
-                      })
+                      handleInputChange("serviceName", e.target.value)
                     }
                     sx={{ mt: 2 }}
                   />
                   <TextField
                     fullWidth
                     label="Time Limit"
-                    value={newServiceProvider.timeLimit}
+                    defaultValue={newServiceProvider.timeLimit}
                     onChange={(e) =>
-                      setNewServiceProvider({
-                        ...newServiceProvider,
-                        timeLimit: e.target.value,
-                      })
+                      handleInputChange("timeLimit", e.target.value)
                     }
                     sx={{ mt: 2 }}
                   />
                   <TextField
                     fullWidth
                     label="Designated Officer"
-                    value={newServiceProvider.designatedOfficer}
+                    defaultValue={newServiceProvider.designatedOfficer}
                     onChange={(e) =>
-                      setNewServiceProvider({
-                        ...newServiceProvider,
-                        designatedOfficer: e.target.value,
-                      })
+                      handleInputChange("designatedOfficer", e.target.value)
                     }
                     sx={{ mt: 2 }}
                   />
                   <TextField
                     fullWidth
                     label="First Appellate Officer"
-                    value={newServiceProvider.firstAppellateOfficer}
+                    defaultValue={newServiceProvider.firstAppellateOfficer}
                     onChange={(e) =>
-                      setNewServiceProvider({
-                        ...newServiceProvider,
-                        firstAppellateOfficer: e.target.value,
-                      })
+                      handleInputChange("firstAppellateOfficer", e.target.value)
                     }
                     sx={{ mt: 2 }}
                   />
                   <TextField
                     fullWidth
                     label="Second Appellate Officer"
-                    value={newServiceProvider.secondAppellateOfficer}
+                    defaultValue={newServiceProvider.secondAppellateOfficer}
                     onChange={(e) =>
-                      setNewServiceProvider({
-                        ...newServiceProvider,
-                        secondAppellateOfficer: e.target.value,
-                      })
+                      handleInputChange(
+                        "secondAppellateOfficer",
+                        e.target.value
+                      )
                     }
                     sx={{ mt: 2 }}
                   />
                 </DialogContent>
+
                 <DialogActions
                   sx={{ display: "flex", justifyContent: "space-between" }}
                 >
@@ -1777,7 +1714,7 @@ const OnlineServices = () => {
                   marginRight: "10px",
                 },
               }}
-              disabled={!validateForm()}
+              // disabled={!validateForm()}
               onClick={handleSave} // Handle save action
             >
               {SaveUpdateButton}

@@ -117,11 +117,11 @@ export default function ManageUsers() {
             : dayjs(),
         };
         reset(resetData);
-        setImage(
-          resetData.Avatar
-            ? `${Bunny_Image_URL}/Users/${resetData.Id}/${resetData.Avatar}`
-            : ""
-        );
+        // setImage(
+        //   resetData.Avatar
+        //     ? `${Bunny_Image_URL}/Users/${resetData.Id}/${resetData.Avatar}`
+        //     : ""
+        // );
       } else {
         console.error("Original data is not available!");
       }
@@ -162,11 +162,11 @@ export default function ManageUsers() {
         setValue("Email", data.Email);
         setValue("Status", data.Status);
         setValue("Avatar", data.Avatar);
-        setImage(
-          data.Avatar
-            ? `${Bunny_Image_URL}/Users/${data.Id}/${data.Avatar}`
-            : ""
-        );
+        // setImage(
+        //   data.Avatar
+        //     ? `${Bunny_Image_URL}/Users/${data.Id}/${data.Avatar}`
+        //     : ""
+        // );
       }
     } catch (error) {
       console.error("Error fetching user data:", error);
@@ -608,11 +608,11 @@ export default function ManageUsers() {
       sortable: false,
       renderCell: (params) => (
         <img
-          src={
-            params.row.Avatar === ""
-              ? avatar
-              : `${Bunny_Image_URL}/Users/${params.row.Id}/${params.row.Avatar}`
-          }
+          // src={
+          //   params.row.Avatar === ""
+          //     ? avatar
+          //     : `${Bunny_Image_URL}/Users/${params.row.Id}/${params.row.Avatar}`
+          // }
           alt="avatar"
           style={{
             height: "60px",
