@@ -17,16 +17,18 @@ import ManageAccountsIcon from "@mui/icons-material/ManageAccounts";
 import MenuIcon from "@mui/icons-material/Menu";
 import ModeNightIcon from "@mui/icons-material/ModeNight";
 import { MdMiscellaneousServices } from "react-icons/md";
-
+import logoDarkTheme from "../assets/darkThemeLogo.png";
 import SettingsIcon from "@mui/icons-material/Settings";
 import SubscriptionsIcon from "@mui/icons-material/Subscriptions";
-import SmartphoneIcon from '@mui/icons-material/Smartphone';import VaccinesIcon from "@mui/icons-material/Vaccines";
+import SmartphoneIcon from "@mui/icons-material/Smartphone";
+import VaccinesIcon from "@mui/icons-material/Vaccines";
 import VideoSettingsIcon from "@mui/icons-material/VideoSettings";
 import WorkHistoryIcon from "@mui/icons-material/WorkHistory";
 import FeaturedPlayListOutlinedIcon from "@mui/icons-material/FeaturedPlayListOutlined";
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
 import { faBuilding } from "@fortawesome/free-solid-svg-icons";
-
+import BusinessIcon from "@mui/icons-material/Business";
+import MiscellaneousServicesIcon from "@mui/icons-material/MiscellaneousServices";
 import {
   Avatar,
   Button,
@@ -484,12 +486,12 @@ export default function Dashboard() {
                   color="inherit"
                 >
                   <Avatar
-                    // src={
-                    //   `${Bunny_Image_URL}/Users/${userData._id}/${userData.Avatar}` 
-                    //   || (
-                    //     <AccountCircle />
-                    //   )
-                    // }
+                  // src={
+                  //   `${Bunny_Image_URL}/Users/${userData._id}/${userData.Avatar}`
+                  //   || (
+                  //     <AccountCircle />
+                  //   )
+                  // }
                   />
                 </IconButton>
               </Tooltip>
@@ -512,7 +514,7 @@ export default function Dashboard() {
               }}
             >
               <img
-                src={logo}
+                src={themestatus ? logo : logoDarkTheme} // Use logoDarkTheme for dark mode and logo for light mode
                 alt="logo"
                 style={{
                   maxWidth: "100%",
@@ -533,7 +535,7 @@ export default function Dashboard() {
                 "&:hover": {
                   overflowY: "auto",
                   scrollbarWidth: "thin",
-                  scrollbarColor: "#888 transparent",
+                  // scrollbarColor: "#888 transparent",
                 },
               }}
             >
@@ -566,6 +568,7 @@ export default function Dashboard() {
                         "& .MuiListItemText-primary": {
                           color: theme.palette.text.primary,
                         },
+                        
                       }}
                     >
                       <ListItemIcon
@@ -626,7 +629,7 @@ export default function Dashboard() {
                         sx={{ minWidth: "33px", marginRight: "8px" }}
                         onClick={handleDrawerOpen}
                       >
-                        <FontAwesomeIcon icon={faBuilding} />{" "}
+                        <BusinessIcon />
                       </ListItemIcon>
                       <ListItemText primary="Department" />
                     </ListItemButton>
@@ -684,8 +687,8 @@ export default function Dashboard() {
                         sx={{ minWidth: "33px", marginRight: "8px" }}
                         onClick={handleDrawerOpen}
                       >
-                        <MdMiscellaneousServices />
-                        </ListItemIcon>
+                        <MiscellaneousServicesIcon />
+                      </ListItemIcon>
                       <ListItemText primary="Offline Services" />
                     </ListItemButton>
                   </Link>

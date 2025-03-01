@@ -249,7 +249,7 @@ export default function ManageUsers() {
   };
 
   const updateUser = async () => {
-    alert();
+    // alert();
     const requiredFields = ["FirstName", "LastName", "Phone", "DOB", "Email"];
     const emptyRequiredFields = requiredFields.filter(
       (field) => !getValues(field) || !String(getValues(field)).trim()
@@ -848,7 +848,7 @@ export default function ManageUsers() {
                 )}
               />
             </Grid>
-            <Grid item md={3} sm={3} xs={12} textAlign={"left"} ml={3}>
+            <Grid item md={3} sm={3} xs={12} textAlign={"center"} >
               <Controller
                 name="Status"
                 control={control}
@@ -876,7 +876,12 @@ export default function ManageUsers() {
               display="flex"
               justifyContent="space-between"
               alignItems="center"
-              sx={{ position: "absolute", bottom: 10, left: 10, right: 10 }}
+              position="sticky"
+              bottom={0}
+              sx={{
+                padding: "10px",
+                zIndex: 1000, // Keep it above other elements
+              }}
             >
               {/* Cancel Button (Left) */}
               <Button

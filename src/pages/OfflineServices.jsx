@@ -1,4 +1,4 @@
-import { Controller, useForm } from "react-hook-form"; // Import useForm
+import { Controller, useForm } from "react-hook-form"; 
 import AddIcon from "@mui/icons-material/Add";
 import DeleteForeverIcon from "@mui/icons-material/DeleteForever";
 import EditNoteIcon from "@mui/icons-material/EditNote";
@@ -6,19 +6,16 @@ import CloseIcon from "@mui/icons-material/Close";
 import { GridToolbar } from "@mui/x-data-grid";
 
 import {
-  Box,
   Button,
   Checkbox,
   Dialog,
   DialogActions,
   DialogContent,
   DialogTitle,
-  FormControl,
   FormControlLabel,
   Grid,
   IconButton,
   Paper,
-  Select,
   TextField,
   Typography,
 } from "@mui/material";
@@ -29,7 +26,6 @@ import Swal from "sweetalert2";
 import { BASE_URL } from "../Constant";
 import Loader from "../components/Loader";
 import InputTextField, {
-  CheckboxInputs,
   InputSelectField,
   InputTextField1,
 } from "../components/Component";
@@ -37,12 +33,10 @@ import DeleteIcon from "@mui/icons-material/Delete";
 
 const OfflineServices = () => {
   const {
-    register,
     control,
     handleSubmit,
     getValues,
     reset,
-    setValue,
     formState: { errors },
   } = useForm({
     defaultValues: {
@@ -70,7 +64,6 @@ const OfflineServices = () => {
       Email: [],
     },
   });
-
   const [loaderOpen, setLoaderOpen] = React.useState(false);
   const [on, setOn] = React.useState(false);
   const [SaveUpdateButton, setSaveUpdateButton] = React.useState("UPDATE");
@@ -84,14 +77,9 @@ const OfflineServices = () => {
   const [ClearUpdateButton, setClearUpdateButton] = React.useState("RESET");
   const [loading, setLoading] = React.useState(false);
   const originalDataRef = React.useRef(null);
-  const debounceTimer = React.useRef(null);  // This will store the debounce timer
-  const idCounter = React.useRef(1); // Ensures unique IDs persist even after deletion
+  const localInputs = React.useRef({}); // ✅ Fix localInputs reference
+  const localEmailInputs = React.useRef({}); // 🔹 Store local input values (prevents re-renders)
 
-  React.useEffect(() => {
-    console.log('Component re-rendered');
-  });
-
-  
   const validateForm = () => {
     const {
       DepartmentEN,
@@ -118,89 +106,190 @@ const OfflineServices = () => {
     );
   };
 
-
-
-  const handleAddAddress = () => {
-    setAddressList((prev) => [
-      ...prev,
-      {
-        id: prev.length + 1, // Always assigns sequential ID
-        srNo: prev.length + 1, // Keeps srNo consistent
-        Address: "",
-        AddressLink: "",
-      },
-    ]);
+  const debounce = (func, delay) => {
+    let timeout;
+    return (...args) => {
+      clearTimeout(timeout);
+      timeout = setTimeout(() => func(...args), delay);
+    };
   };
   
-  const handleDeleteAddress = (id) => {
-    setAddressList((prev) =>
-      prev
-        .filter((row) => row.id !== id) // Remove the selected row
-        .map((row, index) => ({
-          ...row,
-          id: index + 1, // Reassign ID sequentially
-          srNo: index + 1, // Keep srNo sequential
-        }))
+//===================================Email===========================
+const debouncedEmailUpdate = React.useRef(null);
+React.useEffect(() => {
+  // ✅ Initialize debounce function once
+  debouncedEmailUpdate.current = debounce((id, field, value) => {
+    setEmailList((prev) =>
+      prev.map((row) => (row.id === id ? { ...row, [field]: value } : row))
     );
+  }, 500);
+  return () => {
+    // ✅ Cleanup debounce on unmount
+    if (debouncedEmailUpdate.current?.cancel) {
+      debouncedEmailUpdate.current.cancel();
+    }
   };
-  
-  
-// Debounce function
-const debounce = (func, delay) => {
-  let timeout;
-  return (...args) => {
-    clearTimeout(timeout);
-    timeout = setTimeout(() => func(...args), delay);
-  };
+}, []);
+
+
+const handleInputEmailChange = (id, field, value) => {
+  localEmailInputs.current[`${id}-${field}`] = value;
+  setEmailList((prev) =>
+    prev.map((row) => (row.id === id ? { ...row, [field]: value } : row))
+  );
 };
 
-const handleAddressChange = React.useCallback(
-  debounce((id, field, value) => {
+const handleCommitEmailChange = (id, field) => {
+  const value = localEmailInputs.current[`${id}-${field}`] ?? "";
+  debouncedEmailUpdate.current(id, field, value);
+};
+
+// 🔹 Memoized DataGrid columns
+const columnsEmail = React.useMemo(
+  () => [
+    { field: "id", headerName: "Sr. No.", width: 70 },
+    {
+      field: "Email",
+      headerName: "Email",
+      flex: 1,
+      renderCell: (params) => (
+        <TextField
+          fullWidth
+          defaultValue={params.row.Email}
+          onChange={(e) => handleInputEmailChange(params.row.id, "Email", e.target.value)}
+          onBlur={() => handleCommitEmailChange(params.row.id, "Email")} // 🔥 Commit on blur
+          onKeyDown={(e) => e.stopPropagation()} // Prevents DataGrid interference
+        />
+      ),
+    },
+    {
+      field: "actions",
+      headerName: "Actions",
+      width: 100,
+      renderCell: (params) => (
+        <IconButton color="error" onClick={() => handleDeleteEmail(params.row.id || params.row.Id)}>
+          <DeleteIcon />
+        </IconButton>
+      ),
+    },
+  ],
+  []
+); // 🔥 No dependencies (does not re-create)
+
+// 🔹 Optimized function for adding emails
+const handleAddEmail = React.useCallback(() => {
+  setEmailList((prev) => [
+    ...prev,
+    { id: prev.length + 1, Email: "" },
+  ]);
+}, [setEmailList]);
+
+const handleDeleteEmail = React.useCallback((deleteId) => {
+  setEmailList((prev) => {
+    const filteredEmailList = prev.filter((row) => row.id !== deleteId);
+    const newList = filteredEmailList.map((row, index) => ({
+      ...row,
+      id: index + 1, 
+    }));
+    return newList; 
+  });
+}, []);
+
+//========================Address============================
+const debouncedUpdate = React.useRef(null);
+
+React.useEffect(() => {
+  // ✅ Initialize debounce function once
+  debouncedUpdate.current = debounce((id, field, value) => {
     setAddressList((prev) =>
       prev.map((row) => (row.id === id ? { ...row, [field]: value } : row))
     );
-  }, 500), // You can adjust the debounce delay as needed (e.g., 500ms)
-  []
-);
+  }, 500);
 
-
-  // const handleDeleteAddress = (id) => {
-  //   const updatedList = addressList.filter((row) => row.id !== id);
-  //   const updatedWithSrNo = updatedList.map((row, index) => ({
-  //     ...row,
-  //     id: index + 1,
-  //   }));
-  //   setAddressList(updatedWithSrNo);
-  // };
-
-  const handleAddEmail = () => {
-    const newRow = {
-      id: EmailList.length + 1, // Ensure new ID is unique
-      srNo: EmailList.length + 1, // Sr. No. is always sequential
-      Email: "", // Empty address field
-    };
-    setEmailList([...EmailList, newRow]); // Append row at the end
+  return () => {
+    // ✅ Cleanup debounce on unmount
+    if (debouncedUpdate.current?.cancel) {
+      debouncedUpdate.current.cancel();
+    }
   };
-  // Function to handle direct input changes inside the DataGrid
-  const handleEmailChange = React.useCallback(
-    debounce((id, value) => {
-      setEmailList((prev) =>
-        prev.map((row) => (row.id === id ? { ...row, Email: value } : row))
-      );
-    }, 500), 
-    []
+}, []);
+
+// 🔹 Handle local input without triggering re-renders
+const handleInputChange = (id, field, value) => {
+  localInputs.current[`${id}-${field}`] = value;
+  setAddressList((prev) =>
+    prev.map((row) => (row.id === id ? { ...row, [field]: value } : row))
   );
-  
-  const handleDeleteEmail = (id) => {
-    setEmailList((prevList) => {
-      const updatedList = prevList.filter((row) => row.id !== id);
-      return updatedList.map((row, index) => ({
-        ...row,
-        id: index + 1, 
-      }));
-    });
-  };
+};
 
+const handleCommitChange = (id, field) => {
+  const value = localInputs.current[`${id}-${field}`] ?? "";
+  debouncedUpdate.current(id, field, value);
+};
+
+const columnsAddress = React.useMemo(() => [
+  { field: "id", headerName: "Sr.No.", width: 70 },
+  {
+    field: "Address",
+    headerName: "Address",
+    flex: 1,
+    renderCell: (params) => (
+      <TextField
+        fullWidth
+        defaultValue={params.row.Address}
+        onChange={(e) => handleInputChange(params.row.id, "Address", e.target.value)}
+        onBlur={() => handleCommitChange(params.row.id, "Address")} // 🔥 Commit on blur
+        onKeyDown={(e) => e.stopPropagation()} // Prevents DataGrid interference
+      />
+    ),
+  },
+  {
+    field: "AddressLink",
+    headerName: "Address Link",
+    flex: 1,
+    renderCell: (params) => (
+      <TextField
+        fullWidth
+        defaultValue={params.row.AddressLink}
+        onChange={(e) => handleInputChange(params.row.id, "AddressLink", e.target.value)}
+        onBlur={() => handleCommitChange(params.row.id, "AddressLink")}
+        onKeyDown={(e) => e.stopPropagation()}
+      />
+    ),
+  },
+  {
+    field: "actions",
+    headerName: "Actions",
+    width: 100,
+    renderCell: (params) => (
+      <IconButton color="error" onClick={() => handleDeleteAddress(params.row.id || params.row.Id)}>
+        <DeleteIcon />
+      </IconButton>
+    ),
+  },
+], []); // 🔥 No dependency array (never re-creates)
+
+const handleAddAddress = React.useCallback(() => {
+  setAddressList((prev) => [
+    ...prev,
+    { id: prev.length + 1, Address: "", AddressLink: "" },
+  ]);
+}, [setAddressList]);
+
+const handleDeleteAddress = React.useCallback((deleteId) => {
+  setAddressList((prev) => {
+    const filteredList = prev.filter((row) => row.id !== deleteId);
+    const newList = filteredList.map((row, index) => ({
+      ...row,
+      id: index + 1, 
+    }));
+    return newList; 
+  });
+}, []);
+
+
+//=============================================================
+  
   const handleSave = async () => {
     setClearUpdateButton("CLEAR");
     try {
@@ -314,6 +403,72 @@ const handleAddressChange = React.useCallback(
       handleApiError(error);
     }
   };
+  const handleUpdate = async (rowData) => {
+    setSaveUpdateButton("UPDATE");
+    setClearUpdateButton("RESET");
+    setOn(true);
+    try {
+      setLoading(true);
+      const apiUrl = `${BASE_URL}DepartmentNoticeSer/ById/${rowData.Id}`;
+      const response = await axios.get(apiUrl);
+      if (response.data) {
+        const data = response.data.values;
+        originalDataRef.current = JSON.parse(JSON.stringify(data));
+
+        // Set the form fields with API response
+        reset({
+          Id: data.Id,
+          ServicesEN: data.ServicesEN,
+          ServicesMR: data.ServicesMR,
+          DepartmentEN: data.DepartmentEN,
+          DepartmentMR: data.DepartmentMR,
+          SubDepartmentEN: data.SubDepartmentEN,
+          SubDepartmentMR: data.SubDepartmentMR,
+          TimeLimitEN: data.TimeLimitEN,
+          TimeLimitMR: data.TimeLimitMR,
+          DesignatedOfficerEN: data.DesignatedOfficerEN,
+          DesignatedOfficerMR: data.DesignatedOfficerMR,
+          FirstAppellateOfficerEN: data.FirstAppellateOfficerEN,
+          FirstAppellateOfficerMR: data.FirstAppellateOfficerMR,
+          SecondAppllateOfficerEN: data.SecondAppllateOfficerEN,
+          SecondAppllateOfficerMR: data.SecondAppllateOfficerMR,
+          PhoneNumbers: data.PhoneNumbers,
+          Website: data.Website,
+          OtherLink: data.OtherLink,
+          AvailableOnPortalEN: data.AvailableOnPortalEN,
+          AvailableOnPortalMR: data.AvailableOnPortalMR,
+        });
+
+        // Handle Address List
+        setAddressList(
+          data.Address
+            ? data.Address.map((sp, index) => ({
+                id: index + 1,
+                Id: sp.Id || null,
+                Address: sp.Address,
+                AddressLink: sp.AddressLink,
+              }))
+            : []
+        );
+
+        // Handle Email List
+        setEmailList(
+          data.Email
+            ? data.Email.map((sp, index) => ({
+                id: index + 1,
+                Id: sp.Id || null,
+                Email: sp.Email,
+              }))
+            : []
+        );
+      }
+    } catch (error) {
+      handleApiError(error);
+    } finally {
+      setLoading(false);
+    }
+  };
+
 
   const handleApiError = (error) => {
     setLoaderOpen(false);
@@ -324,7 +479,6 @@ const handleAddressChange = React.useCallback(
       text: error.message || "Something went wrong",
     });
   };
-
   const getAllImgList = async (page = 0, searchText = "") => {
     try {
       setLoading(true);
@@ -352,7 +506,6 @@ const handleAddressChange = React.useCallback(
       setLoading(false);
     }
   };
-
   React.useEffect(() => {
     if (!searchText) {
       // fetchTotalRecords();
@@ -409,52 +562,6 @@ const handleAddressChange = React.useCallback(
       }
     });
   };
-
-  const handleUpdate = async (rowData) => {
-    setSaveUpdateButton("UPDATE");
-    setClearUpdateButton("RESET");
-    setOn(true);
-    try {
-      setLoading(true);
-      const apiUrl = `${BASE_URL}DepartmentNoticeSer/ById/${rowData.Id}`;
-      const response = await axios.get(apiUrl);
-      if (response.data) {
-        const data = response.data.values;
-        originalDataRef.current = JSON.parse(JSON.stringify(data));
-
-        // Set the form fields with API response
-        reset(data); // Using reset from useForm
-
-        // Handle Address List
-        setAddressList(
-          data.Address
-            ? data.Address.map((sp, index) => ({
-                id: index + 1,
-                Id: sp.Id || null,
-                Address: sp.Address,
-                AddressLink: sp.AddressLink,
-              }))
-            : []
-        );
-
-        // Handle Email List
-        setEmailList(
-          data.Email
-            ? data.Email.map((sp, index) => ({
-                id: index + 1,
-                Id: sp.Id || null,
-                Email: sp.Email,
-              }))
-            : []
-        );
-      }
-    } catch (error) {
-      handleApiError(error);
-    } finally {
-      setLoading(false);
-    }
-  };
-
   const clearFormData = () => {
     if (ClearUpdateButton === "CLEAR") {
       // Clear all form data and reset form fields to default values
@@ -492,47 +599,17 @@ const handleAddressChange = React.useCallback(
       );
     }
   };
-  
-
   const handleClose = () => {
     setOn(false);
     setClearUpdateButton("CLEAR");
     clearFormData();
   };
-
   const handleOnSave = () => {
     setSaveUpdateButton("SAVE");
     setClearUpdateButton("CLEAR");
     setOn(true);
     clearFormData();
   };
-
-  const validationAlert = (message) => {
-    Swal.fire({
-      position: "center",
-      icon: "warning",
-      toast: true,
-      title: message,
-      showConfirmButton: false,
-      timer: 1500,
-    });
-  };
-
-  const onChangeHandler = (event) => {
-    const { name, value } = event.target;
-
-    if (name === "PhoneNumbers") {
-      if (value.length > 10) {
-        validationAlert("Phone number must be exactly 10 digits long.");
-        return;
-      } else if (value.includes("e")) {
-        validationAlert("Please enter a valid number");
-        return;
-      }
-    }
-    setValue(name, value); // Update field using react-hook-form's setValue
-  };
-
   const yesNoOptions = [
     { key: "Yes", value: "Yes" },
     { key: "No", value: "No" },
@@ -1212,235 +1289,109 @@ const handleAddressChange = React.useCallback(
             </Grid>
           </Paper>
           <Paper elevation={3} sx={{ width: "100%", marginTop: 3 }}>
-            <div style={{ padding: "16px", maxWidth: "1850px" }}>
-              {/* Add Service Provider Button */}
-              <Grid container spacing={2} sx={{ mb: 2 }}>
-                <Grid item xs={12} sm={3}>
-                  <Button
-                    sx={{
-                      pr: 2,
-                      color: "white",
-                      background:
-                        "linear-gradient(to right, rgb(0, 90, 91), rgb(22, 149, 153))",
-                      borderRadius: "8px",
-                      transition: "all 0.2s ease-in-out",
-                      boxShadow: "0 4px 8px rgba(0, 90, 91, 0.3)",
-                      "&:hover": {
-                        transform: "translateY(2px)",
-                        boxShadow: "0 2px 4px rgba(0, 90, 91, 0.2)",
-                      },
-                      display: "flex",
-                      alignItems: "center",
-                      gap: 1, // Adjust spacing between icon and text
-                    }}
-                    onClick={handleAddAddress}
-                  >
-                    <AddIcon />
-                    <Typography
-                      variant="body1"
-                      sx={{ flexGrow: 1, textAlign: "center" }}
-                    >
-                      Address
-                    </Typography>
-                  </Button>
-                </Grid>
-              </Grid>
+      <div style={{ padding: "16px", maxWidth: "1850px" }}>
+        {/* Add Address Button */}
+        <Grid container spacing={2} sx={{ mb: 2 }}>
+          <Grid item xs={12} sm={3}>
+            <Button
+              sx={{
+                pr: 2,
+                color: "white",
+                background: "linear-gradient(to right, rgb(0, 90, 91), rgb(22, 149, 153))",
+                borderRadius: "8px",
+                transition: "all 0.2s ease-in-out",
+                boxShadow: "0 4px 8px rgba(0, 90, 91, 0.3)",
+                "&:hover": { transform: "translateY(2px)", boxShadow: "0 2px 4px rgba(0, 90, 91, 0.2)" },
+                display: "flex",
+                alignItems: "center",
+                gap: 1,
+              }}
+              onClick={handleAddAddress}
+            >
+              <AddIcon />
+              <Typography variant="body1" sx={{ flexGrow: 1, textAlign: "center" }}>
+                Address
+              </Typography>
+            </Button>
+          </Grid>
+        </Grid>
 
-              {/* DataGrid */}
-              <DataGrid
-                hideFooter
-                className="datagrid-style"
-                rows={addressList}
-                sx={{
-                  "& .MuiDataGrid-columnHeaders": {
-                    backgroundColor: (theme) =>
-                      theme.palette.custome.datagridcolor,
-                  },
-                  "& .MuiDataGrid-row:hover": {
-                    boxShadow: "0px 4px 20px rgba(0, 0, 0.2, 0.2)",
-                  },
-                }}
-                getRowHeight={() => 60} // Adjust row height here
-                columns={[
-                  { field: "id", headerName: "ID", width: 70 },
-                  {
-                    field: "Address",
-                    headerName: "Address",
-                    flex: 1,
-                    renderCell: (params) => (
-                      <Controller
-                        control={control}
-                        name={`Address[${params.row.id - 1}].Address`}
-                        defaultValue={params.row.Address || ""}
-                        render={({ field }) => (
-                          <TextField
-                            {...field}
-                            fullWidth
-                            size="small"
-                            onChange={(e) => {
-                              field.onChange(e.target.value); // react-hook-form
-                              // Use debounced handler for address field
-                              handleAddressChange(params.row.id, "Address", e.target.value);
-                            }}
-                            onBlur={field.onBlur}
-                            onKeyDown={(e) => e.stopPropagation()} // Prevent interference
-                          />
-                        )}
-                      />
-                    ),
-                  },
-                  {
-                    field: "AddressLink",
-                    headerName: "Address Link",
-                    flex: 1,
-                    renderCell: (params) => (
-                      <Controller
-                        control={control}
-                        name={`Address[${params.row.id - 1}].AddressLink`}
-                        defaultValue={params.row.AddressLink || ""}
-                        render={({ field }) => (
-                          <TextField
-                            {...field}
-                            fullWidth
-                            size="small"
-                            onChange={(e) => {
-                              field.onChange(e.target.value);
-                              handleAddressChange(params.row.id, "AddressLink", e.target.value);
-                            }}
-                            onBlur={field.onBlur}
-                            // onKeyDown={(e) => e.stopPropagation()} // Prevent interference
-                          />
-                        )}
-                      />
-                    ),
-                  },
-                  
-                  {
-                    field: "actions",
-                    headerName: "Actions",
-                    width: 100,
-                    renderCell: (params) => (
-                      <IconButton
-                        color="error"
-                        onClick={() => handleDeleteAddress(params.row.id)}
-                      >
-                        <DeleteIcon />
-                      </IconButton>
-                    ),
-                  },
-                ]}
-                pageSize={5}
-                disableColumnFilter
-                disableColumnMenu
-                disableColumnSelector
-              />
+        {/* DataGrid */}
+        <DataGrid
+          hideFooter
+          className="datagrid-style"
+          rows={addressList} // ✅ Prevents full re-render
+          getRowId={(row) => row.id}
+          sx={{
+            "& .MuiDataGrid-columnHeaders": {
+              backgroundColor: (theme) => theme.palette.custome.datagridcolor,
+            },
+            "& .MuiDataGrid-row:hover": {
+              boxShadow: "0px 4px 20px rgba(0, 0, 0.2, 0.2)",
+            },
+          }}
+          key={addressList.length} 
+          getRowHeight={() => 60} // Adjust row height here
+          columns={columnsAddress}
+          pageSize={5}
+          disableColumnFilter
+          disableColumnMenu
+          disableColumnSelector
+        />
+      </div>
+    </Paper>
 
-    
-            </div>
-          </Paper>
-          <Paper elevation={3} sx={{ width: "100%", marginTop: 3 }}>
-            <div style={{ padding: "16px", maxWidth: "1850px" }}>
-              {/* Add Service Provider Button */}
-              <Grid container spacing={2} sx={{ mb: 2 }}>
-                <Grid item xs={12} sm={3}>
-                  <Button
-                    sx={{
-                      pr: 2,
-                      color: "white",
-                      background:
-                        "linear-gradient(to right, rgb(0, 90, 91), rgb(22, 149, 153))",
-                      borderRadius: "8px",
-                      transition: "all 0.2s ease-in-out",
-                      boxShadow: "0 4px 8px rgba(0, 90, 91, 0.3)",
-                      "&:hover": {
-                        transform: "translateY(2px)",
-                        boxShadow: "0 2px 4px rgba(0, 90, 91, 0.2)",
-                      },
-                      display: "flex",
-                      alignItems: "center",
-                      gap: 1, // Spacing between icon and text
-                    }}
-                    onClick={handleAddEmail}
-                  >
-                    <AddIcon />
-                    <Typography
-                      variant="body1"
-                      sx={{ flexGrow: 1, textAlign: "center" }}
-                    >
-                      Email
-                    </Typography>
-                  </Button>
-                </Grid>
-              </Grid>
+    <Paper elevation={3} sx={{ width: "100%", marginTop: 3 }}>
+      <div style={{ padding: "16px", maxWidth: "1850px" }}>
+        <Grid container spacing={2} sx={{ mb: 2 }}>
+          <Grid item xs={12} sm={3}>
+            <Button
+              sx={{
+                pr: 2,
+                color: "white",
+                background: "linear-gradient(to right, rgb(0, 90, 91), rgb(22, 149, 153))",
+                borderRadius: "8px",
+                transition: "all 0.2s ease-in-out",
+                boxShadow: "0 4px 8px rgba(0, 90, 91, 0.3)",
+                "&:hover": { transform: "translateY(2px)", boxShadow: "0 2px 4px rgba(0, 90, 91, 0.2)" },
+                display: "flex",
+                alignItems: "center",
+                gap: 1,
+              }}
+              onClick={handleAddEmail}
+            >
+              <AddIcon />
+              <Typography variant="body1" sx={{ flexGrow: 1, textAlign: "center" }}>
+                Email
+              </Typography>
+            </Button>
+          </Grid>
+        </Grid>
 
-              {/* DataGrid */}
-              <DataGrid
-                className="datagrid-style"
-                hideFooter
-                sx={{
-                  "& .MuiDataGrid-columnHeaders": {
-                    backgroundColor: (theme) =>
-                      theme.palette.custome.datagridcolor,
-                  },
-                  "& .MuiDataGrid-row:hover": {
-                    boxShadow: "0px 4px 20px rgba(0, 0, 0.2, 0.2)",
-                  },
-                }}
-                rows={EmailList}
-                getRowHeight={() => 60} // Adjust row height here
-                columns={[
-                  { field: "id", headerName: "ID", width: 70 },
-                  {
-                    field: "Email",
-                    headerName: "Email",
-                    flex: 1,
-                    renderCell: (params) => (
-                      <Controller
-  control={control}
-  name={`Email[${params.row.id - 1}].Email`} // Use array indexing for proper form management
-  defaultValue={params.row.Email || ""}
-  render={({ field }) => (
-    <TextField
-      {...field}
-      fullWidth
-      size="small"
-      onChange={(e) => {
-        field.onChange(e.target.value); // Updates react-hook-form state
-        handleEmailChange(params.row.id, e.target.value); // Updates custom state
-      }}
-      onBlur={field.onBlur} // Ensures validation triggers on blur
-      sx={{
-        padding: "4px 8px",
-        borderRadius: "4px",
-      }}
-      onKeyDown={(e) => e.stopPropagation()} 
-    />
-  )}
-/>
-
-                    ),
-                  },
-                  
-                  {
-                    field: "actions",
-                    headerName: "Actions",
-                    width: 100,
-                    renderCell: (params) => (
-                      <IconButton
-                        color="error"
-                        onClick={() => handleDeleteEmail(params.row.id)}
-                      >
-                        <DeleteIcon />
-                      </IconButton>
-                    ),
-                  },
-                ]}
-                pageSize={5}
-              />
-             
-            </div>
-          </Paper>
-		  
+        {/* DataGrid */}
+        <DataGrid
+          hideFooter
+          className="datagrid-style"
+          rows={EmailList}
+          sx={{
+            "& .MuiDataGrid-columnHeaders": {
+              backgroundColor: (theme) => theme.palette.custome.datagridcolor,
+            },
+            "& .MuiDataGrid-row:hover": {
+              boxShadow: "0px 4px 20px rgba(0, 0, 0.2, 0.2)",
+            },
+          }}
+          getRowId={(row) => row.id}
+          getRowHeight={() => 60}
+          columns={columnsEmail}
+          key={EmailList.length} 
+          pageSize={5}
+          disableColumnFilter
+          disableColumnMenu
+          disableColumnSelector
+        />
+      </div>
+    </Paper>
           <DialogActions sx={{ position: "sticky", bottom: 0, padding: 2 }}>
             {/* Clear Button - Positioned to the bottom-left */}
             <Button

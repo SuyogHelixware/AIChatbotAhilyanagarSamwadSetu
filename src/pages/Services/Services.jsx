@@ -11,11 +11,15 @@ import {
   DialogActions,
   DialogContent,
   DialogTitle,
+  FormControl,
   FormControlLabel,
   Grid,
   IconButton,
+  InputLabel,
   List,
+  MenuItem,
   Paper,
+  Select,
   TextField,
   Typography,
 } from "@mui/material";
@@ -25,13 +29,12 @@ import React, { useCallback, useEffect, useRef, useState } from "react";
 import Swal from "sweetalert2";
 import { BASE_URL } from "../../Constant";
 import InputTextField, {
-  CheckboxInputs,
   InputDescriptionField,
+  InputSelectField,
 } from "../../components/Component";
 import Loader from "../../components/Loader";
 import ExpandMoreIcon from "@mui/icons-material/ExpandMore";
 import DeleteIcon from "@mui/icons-material/Delete";
-import { useTheme } from "@emotion/react";
 import Autocomplete from "@mui/material/Autocomplete";
 import { useForm, Controller } from "react-hook-form"; // import useForm and Controller
 
@@ -50,7 +53,6 @@ const OnlineServices = () => {
     useState(false);
   const [docType, setdocType] = useState({ english: "", marathi: "" });
   const [newDocument, setNewDocument] = useState({ english: "", marathi: "" });
-  const [ClearDocTypeButton, setClearDocTypeButton] = React.useState("RESET");
   const [saveDocTypeButton, setSaveDocTypeButton] = useState("SAVE");
 
   const [newServiceProvider, setNewServiceProvider] = useState({
@@ -60,6 +62,7 @@ const OnlineServices = () => {
     designatedOfficer: "",
     firstAppellateOfficer: "",
     secondAppellateOfficer: "",
+    Lang: "",
   });
   const [editing, setEditing] = useState(false);
   const [selectedDocTypeIndex, setSelectedDocTypeIndex] = React.useState(null);
@@ -105,7 +108,7 @@ const OnlineServices = () => {
       timeout = setTimeout(() => func(...args), delay);
     };
   };
-
+  //=========================Documents==================================
   const handleAddOrUpdateDocument = () => {
     if (newDocument.english.trim() && newDocument.marathi.trim()) {
       const updatedDocTypes = [...docTypes];
@@ -128,41 +131,6 @@ const OnlineServices = () => {
     updatedDocTypes[docTypeIndex].documents.splice(docIndex, 1);
     setDocTypes(updatedDocTypes);
   };
-  // Filtered Document Types based on search
-  const filteredDocTypes = docTypes.filter(
-    (docType) =>
-      docType.english.toLowerCase().includes(searchQuery.toLowerCase()) ||
-      docType.marathi.toLowerCase().includes(searchQuery.toLowerCase())
-  );
-
-  // Function to open the edit modal for a Document Type
-  const handleEditDocType = (index) => {
-    // selectedDocTypeIndexRef.current = index;
-    setSelectedDocTypeIndex(index); // Store the index
-    setdocType({ ...docTypes[index] }); // Populate the form with the selected Document Type
-    setClearDocTypeButton("RESET");
-    setSaveDocTypeButton("UPDATE");
-    setOpenDocTypeDialog(true);
-  };
-  // const handleResetDocType = () => {
-  //   if (selectedDocTypeIndexRef.current !== null) {
-  //     // Revert to the original data from the docTypes array
-  //     setdocType({ ...docTypes[selectedDocTypeIndexRef.current] });
-  //   }
-  // };
-  const handleInputChange = useCallback(
-    debounce((field, value) => {
-      setNewServiceProvider((prev) => ({ ...prev, [field]: value }));
-    }, 300), // Adjust delay as needed (300ms recommended)
-    []
-  );
-  const handleDocTypeChange = useCallback(
-    debounce((field, value) => {
-      setdocType((prev) => ({ ...prev, [field]: value }));
-    }, 100), // Adjust debounce delay (300ms recommended)
-    []
-  );
-
   const updateDocumentState = useCallback(
     debounce(() => {
       setNewDocument({ ...docRef.current });
@@ -173,29 +141,59 @@ const OnlineServices = () => {
     docRef.current = { ...docRef.current, [field]: value }; // Store latest input without triggering re-render
     updateDocumentState(); // Apply debounced update
   };
+
+  //=======================Document Type========================
+  const handleDocTypeChange = useCallback(
+    debounce((field, value) => {
+      setdocType((prev) => ({ ...prev, [field]: value }));
+    }, 200), // Adjust debounce delay (300ms recommended)
+    []
+  );
   const handleSaveOrUpdateDocType = () => {
-    if (docType.english.trim() && docType.marathi.trim()) {
-      if (saveDocTypeButton === "UPDATE") {
-        // Update the existing Document Type using the stored index
-        const updatedDocTypes = [...docTypes];
-        if (selectedDocTypeIndex !== null) {
-          updatedDocTypes[selectedDocTypeIndex] = { ...docType };
-          setDocTypes(updatedDocTypes);
-        }
-      } else {
-        // Save new Document Type
-        setDocTypes([...docTypes, { ...docType, documents: [] }]);
-      }
-      setOpenDocTypeDialog(false);
-      setdocType({ english: "", marathi: "" });
-      setClearDocTypeButton("CLEAR");
-      setSaveDocTypeButton("SAVE");
-      setSelectedDocTypeIndex(null); // Reset the selected index after updating
+    if (!docType.english.trim() || !docType.marathi.trim()) return; // Prevents empty input
+
+    if (saveDocTypeButton === "UPDATE" && selectedDocTypeIndex !== null) {
+      // Update the selected Document Type immutably
+      setDocTypes((prevDocTypes) =>
+        prevDocTypes.map((doc, index) =>
+          index === selectedDocTypeIndex ? { ...docType } : doc
+        )
+      );
+    } else {
+      // Save a new Document Type
+      setDocTypes((prevDocTypes) => [
+        ...prevDocTypes,
+        { ...docType, documents: [] },
+      ]);
     }
+
+    // Reset state after save/update
+    setOpenDocTypeDialog(false);
+    setdocType({ english: "", marathi: "" });
+    setSaveDocTypeButton("SAVE");
+    setSelectedDocTypeIndex(null);
   };
+
   const handleDeleteDocType = (index) => {
     setDocTypes(docTypes.filter((_, i) => i !== index));
   };
+  const handleEditDocType = (index) => {
+    setSelectedDocTypeIndex(index); // Store the index
+    setdocType({ ...docTypes[index] }); // Populate the form with the selected Document Type
+    setSaveDocTypeButton("UPDATE");
+    setOpenDocTypeDialog(true);
+  };
+  const filteredDocTypes = docTypes.filter((docType) => {
+    // Ensure docType.english and docType.marathi are strings before calling toLowerCase
+    const english = docType.english ? docType.english.toLowerCase() : "";
+    const marathi = docType.marathi ? docType.marathi.toLowerCase() : "";
+
+    return (
+      english.includes(searchQuery.toLowerCase()) ||
+      marathi.includes(searchQuery.toLowerCase())
+    );
+  });
+  //=====================Service Provider===================
   const handleSaveServiceProvider = () => {
     if (editing) {
       // Update existing row
@@ -206,15 +204,19 @@ const OnlineServices = () => {
       );
       setServiceProviders(updatedProviders);
     } else {
-      // Generate a new row with unique srNo for DataGrid and Id as null for backend
+      // Get the max SrNo from the current data (including API data)
+      const maxSrNo = serviceProviders.length
+        ? Math.max(...serviceProviders.map((sp) => sp.SrNo || sp.srNo || 0))
+        : 0;
+
+      // Create new provider with correct SrNo
       const newProvider = {
         ...newServiceProvider,
-        srNo: serviceProviders.length
-          ? Math.max(...serviceProviders.map((sp) => sp.srNo || 0)) + 1
-          : 1, // Unique srNo for DataGrid
+        srNo: maxSrNo + 1, // Ensure SrNo increments correctly
         Id: null, // Ensure new row sends `null` to backend
       };
-      setServiceProviders([...serviceProviders, newProvider]);
+
+      setServiceProviders((prev) => [...prev, newProvider]);
     }
 
     // Reset state
@@ -230,6 +232,8 @@ const OnlineServices = () => {
     });
   };
   const handleEditServiceProvider = (identifier) => {
+    console.log("Editing row with identifier:", identifier);
+
     const providerToEdit = serviceProviders.find(
       (sp) => sp.Id === identifier || sp.srNo === identifier
     );
@@ -240,10 +244,13 @@ const OnlineServices = () => {
       setEditing(true);
       setOpenServiceProviderDialog(true);
     } else {
-      console.error("Provider not found for identifier:", identifier);
+      console.error(
+        "Provider not found for identifier:",
+        identifier,
+        serviceProviders
+      );
     }
   };
-  // Function to handle delete of Service Provider
   const handleDeleteServiceProvider = (identifier) => {
     setServiceProviders(
       (prevProviders) =>
@@ -252,6 +259,206 @@ const OnlineServices = () => {
           .map((sp, index) => ({ ...sp, srNo: index + 1 })) // Reassign `srNo`
     );
   };
+  const handleInputChange = debounce((field, value) => {
+    setNewServiceProvider((prev) => ({ ...prev, [field]: value }));
+  }, 20); // Adjust delay as needed (300ms recommended)
+
+  //==========================================================
+  const handleSave = async () => {
+    try {
+      const selectedDept = Departments.find(
+        (dept) => dept.Id === watch("DeptId")
+      );
+
+      const formattedDocuments = docTypes.map((docType) => ({
+        Id: docType.Id || null,
+        DocTypeEN: docType.english,
+        DocTypeMR: docType.marathi,
+        Status: 1,
+        Documents: docType.documents.map((doc) => ({
+          Id: doc.Id || null,
+          DocNameEN: doc.english,
+          DocNameMR: doc.marathi,
+        })),
+      }));
+
+      const formattedServiceProviders = serviceProviders.map((sp) => ({
+        Id: sp.Id || null,
+        ServiceName: sp.serviceName,
+        TimeLimitDays: sp.timeLimit,
+        DesignatedOfficer: sp.designatedOfficer,
+        FirstAppellateOfficer: sp.firstAppellateOfficer,
+        SecondAppellateOfficer: sp.secondAppellateOfficer,
+        Lang: sp.Lang,
+        Status: 1,
+      }));
+
+      const formattedData = {
+        ...watch(),
+        DeptId: watch("DeptId"),
+        DeptNameEN: selectedDept ? selectedDept.DeptNameEN : "",
+        Documents: formattedDocuments,
+        ServicesProvider: formattedServiceProviders,
+      };
+
+      if (SaveUpdateButton === "SAVE") {
+        axios
+          .post(`${BASE_URL}DepartmentSer/`, formattedData)
+          .then((response) => {
+            setLoaderOpen(false);
+            if (response.data.success) {
+              getAllDeptServData(currentPage, searchText);
+              Swal.fire({
+                position: "center",
+                icon: "success",
+                toast: true,
+                title: "Service added successfully",
+                showConfirmButton: false,
+                timer: 1500,
+              });
+              handleParentDialogClose(false);
+            } else {
+              Swal.fire({
+                icon: "error",
+                title: "Failed to save Service",
+                text: response.data.message,
+              });
+            }
+          })
+          .catch((error) => handleApiError(error));
+      } else {
+        console.log(formattedData);
+        if (!watch("Id")) {
+          setLoaderOpen(false);
+          Swal.fire({
+            icon: "error",
+            title: "Update Failed",
+            text: "Invalid Service ID",
+          });
+          return;
+        }
+
+        const result = await Swal.fire({
+          text: "Do you want to Update...?",
+          icon: "warning",
+          showCancelButton: true,
+          confirmButtonText: "Yes, Update it!",
+        });
+
+        if (!result.isConfirmed) return;
+
+        axios
+          .put(`${BASE_URL}DepartmentSer/${watch("Id")}`, formattedData)
+          .then((response) => {
+            setLoaderOpen(false);
+            if (response.data.success) {
+              getAllDeptServData(currentPage, searchText);
+              Swal.fire({
+                position: "center",
+                icon: "success",
+                toast: true,
+                title: "Service Updated successfully",
+                showConfirmButton: false,
+                timer: 1500,
+              });
+              handleParentDialogClose(false);
+            } else {
+              Swal.fire({
+                icon: "error",
+                title: "Failed to update Service",
+                text: response.data.message,
+              });
+            }
+          })
+          .catch((error) => handleApiError(error));
+      }
+    } catch (error) {
+      handleApiError(error);
+    }
+  };
+  const handleEditClick = async (row) => {
+    setSaveUpdateButton("UPDATE");
+    setClearUpdateButton("RESET");
+
+    try {
+      setLoading(true);
+      const apiUrl = `${BASE_URL}DepartmentSer/ById/${row.Id}`;
+      const response = await axios.get(apiUrl);
+
+      if (response.data) {
+        const data = response.data.values;
+        originalDataRef.current = JSON.parse(JSON.stringify(data));
+
+        // Reset form with fetched data
+        reset({
+          Id: data.Id,
+          ServiceNameEN: data.ServiceNameEN,
+          ServiceNameMR: data.ServiceNameMR,
+          DocLink: data.DocLink,
+          ApplyLink: data.ApplyLink,
+          DeptId: data.DeptId,
+          Status: data.Status,
+        });
+
+        // Handling Service Providers and ensuring SrNo
+        if (data.ServicesProvider) {
+          const formattedProviders = data.ServicesProvider.map((sp, index) => ({
+            SrNo: index + 1, // Add SrNo sequentially
+            Id: sp.Id || "",
+            SerId: sp.SerId || "",
+            serviceName: sp.ServiceName,
+            timeLimit: sp.TimeLimitDays,
+            designatedOfficer: sp.DesignatedOfficer,
+            firstAppellateOfficer: sp.FirstAppellateOfficer,
+            secondAppellateOfficer: sp.SecondAppellateOfficer,
+            Lang:sp.Lang
+          }));
+          setServiceProviders(formattedProviders);
+        } else {
+          setServiceProviders([]); // Ensure it's cleared if empty
+        }
+
+        // Handling Document Types and Documents and ensuring SrNo
+        if (data.Documents) {
+          const formattedDocTypes = data.Documents.map((docType, index) => ({
+            SrNo: index + 1, // Add SrNo sequentially
+            Id: docType.Id || null,
+            english: docType.DocTypeEN,
+            marathi: docType.DocTypeMR,
+            documents: docType.Documents
+              ? docType.Documents.map((doc) => ({
+                  SrNo: index + 1, // Ensure SrNo is sequential for documents
+                  Id: doc.Id || 0,
+                  english: doc.DocNameEN,
+                  marathi: doc.DocNameMR,
+                }))
+              : [],
+          }));
+          setDocTypes(formattedDocTypes);
+        } else {
+          setDocTypes([]); // Ensure it's cleared if empty
+        }
+
+        setOpen(true); // Open modal
+      }
+    } catch (error) {
+      console.error("Error fetching department service data:", error);
+      Swal.fire({
+        icon: "error",
+        toast: true,
+        title: "Failed",
+        text: error,
+        showConfirmButton: true,
+      });
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  const ENMROptions = [
+    { value: "MR", label: "Marathi" },
+    { value: "EN", label: "English" },
+  ];
   const handleOpenServiceProviderDialog = () => {
     // clearFormData();
     setSelectedServiceProvider(null); // Clear selected service provider
@@ -265,11 +472,10 @@ const OnlineServices = () => {
     setEditing(false);
     setOpenServiceProviderDialog(true);
   };
-
   const clearDocTypeForm = () => {
-    if (ClearDocTypeButton === "CLEAR") {
-      setdocType({ english: "", marathi: "" });
-    }
+    // if (ClearDocTypeButton === "CLEAR") {
+    setdocType({ english: "", marathi: "" });
+    // }
   };
   const clearDocument = () => {
     setNewDocument({ DocNameEN: "", DocTypeMR: "" });
@@ -289,7 +495,7 @@ const OnlineServices = () => {
           .then((response) => {
             if (response.data.success === true) {
               setLoaderOpen(false);
-              getAllDeptServData();
+              getAllDeptServData(currentPage, searchText);
               setData(data.filter((user) => user.Id !== id));
               Swal.fire({
                 position: "center",
@@ -324,7 +530,6 @@ const OnlineServices = () => {
       setLoaderOpen(false);
     });
   };
-
   const getAllDeptServData = async (page = 0, searchText = "") => {
     try {
       setLoading(true);
@@ -357,7 +562,6 @@ const OnlineServices = () => {
       setLoading(false);
     }
   };
-
   const fetchDepartments = async () => {
     try {
       const response = await axios.get(`${BASE_URL}Department/All`);
@@ -374,23 +578,18 @@ const OnlineServices = () => {
       });
     }
   };
-
-  useEffect(() => {
-    fetchDepartments();
-  }, []);
-
   useEffect(() => {
     getAllDeptServData();
+    fetchDepartments();
   }, []);
-
   const clearFormData = () => {
     if (ClearUpdateButton === "CLEAR") {
       reset();
-      setDocTypes([]);
+      setDocTypes([]); // Ensures empty state instead of undefined
       setServiceProviders([]);
       return;
     }
-
+    console.log(originalDataRef.current);
     if (ClearUpdateButton === "RESET" && originalDataRef.current) {
       const {
         Id,
@@ -400,11 +599,12 @@ const OnlineServices = () => {
         ApplyLink,
         DeptId,
         Status,
-        ServicesProvider,
-        Documents,
-      } = originalDataRef.current;
+        ServicesProvider = [], // Ensure default empty array
+        Documents = [], // Ensure default empty array
+      } = originalDataRef.current || {};
 
       reset({
+        Id,
         ServiceNameEN,
         ServiceNameMR,
         DocLink,
@@ -415,178 +615,70 @@ const OnlineServices = () => {
         ServicesProvider,
       });
 
-      setServiceProviders(ServicesProvider || []);
-      setDocTypes(Documents || []);
-    }
-  };
-  const handleParentDialogClose = () => {
-    setClearUpdateButton("CLEAR");
-    setSaveUpdateButton("SAVE");
-    clearFormData();
-    setOpen(false);
-  };
-  const handleSave = async () => {
-    try {
-      const selectedDept = Departments.find(
-        (dept) => dept.Id === watch("DeptId")
+      setServiceProviders(
+        ServicesProvider?.map(
+          ({
+            Id,
+            SerId,
+            ServiceName,
+            TimeLimitDays,
+            DesignatedOfficer,
+            FirstAppellateOfficer,
+            SecondAppellateOfficer,
+          }) => ({
+            Id: Id || "",
+            SerId: SerId || "",
+            serviceName: ServiceName,
+            timeLimit: TimeLimitDays,
+            designatedOfficer: DesignatedOfficer,
+            firstAppellateOfficer: FirstAppellateOfficer,
+            secondAppellateOfficer: SecondAppellateOfficer,
+          })
+        ) || []
       );
 
-      const formattedDocuments = docTypes.map((docType) => ({
-        Id: docType.Id || null,
-        DocTypeEN: docType.english,
-        DocTypeMR: docType.marathi,
-        Status: 1,
-        Documents: docType.documents.map((doc) => ({
-          Id: doc.Id || null,
-          DocNameEN: doc.english,
-          DocNameMR: doc.marathi,
-        })),
-      }));
-
-      const formattedServiceProviders = serviceProviders.map((sp) => ({
-        Id: sp.Id || null,
-        ServiceName: sp.serviceName,
-        TimeLimitDays: sp.timeLimit,
-        DesignatedOfficer: sp.designatedOfficer,
-        FirstAppellateOfficer: sp.firstAppellateOfficer,
-        SecondAppellateOfficer: sp.secondAppellateOfficer,
-        Lang: "EN",
-        Status: 1,
-      }));
-
-      const formattedData = {
-        ...watch(),
-        DeptId: watch("DeptId"),
-        DeptNameEN: selectedDept ? selectedDept.DeptNameEN : "",
-        Documents: formattedDocuments,
-        ServicesProvider: formattedServiceProviders,
-      };
-
-      if (SaveUpdateButton === "SAVE") {
-        axios
-          .post(`${BASE_URL}DepartmentSer/`, formattedData)
-          .then((response) => {
-            setLoaderOpen(false);
-            if (response.data.success) {
-              getAllDeptServData();
-              Swal.fire({
-                position: "center",
-                icon: "success",
-                toast: true,
-                title: "Service added successfully",
-                showConfirmButton: false,
-                timer: 1500,
-              });
-              handleParentDialogClose(false);
-            } else {
-              Swal.fire({
-                icon: "error",
-                title: "Failed to save Service",
-                text: response.data.message,
-              });
-            }
-          })
-          .catch((error) => handleApiError(error));
-      } else {
-        if (!watch("Id")) {
-          setLoaderOpen(false);
-          Swal.fire({
-            icon: "error",
-            title: "Update Failed",
-            text: "Invalid Service ID",
-          });
-          return;
-        }
-
-        const result = await Swal.fire({
-          text: "Do you want to Update...?",
-          icon: "warning",
-          showCancelButton: true,
-          confirmButtonText: "Yes, Update it!",
-        });
-
-        if (!result.isConfirmed) return;
-
-        axios
-          .put(`${BASE_URL}DepartmentSer/${watch("Id")}`, formattedData)
-          .then((response) => {
-            setLoaderOpen(false);
-            if (response.data.success) {
-              getAllDeptServData();
-              Swal.fire({
-                position: "center",
-                icon: "success",
-                toast: true,
-                title: "Service Updated successfully",
-                showConfirmButton: false,
-                timer: 1500,
-              });
-              handleParentDialogClose(false);
-            } else {
-              Swal.fire({
-                icon: "error",
-                title: "Failed to update Service",
-                text: response.data.message,
-              });
-            }
-          })
-          .catch((error) => handleApiError(error));
-      }
-    } catch (error) {
-      handleApiError(error);
+      setDocTypes(
+        Documents?.map(({ Id, DocTypeEN, DocTypeMR, Documents }) => ({
+          Id: Id || null,
+          english: DocTypeEN,
+          marathi: DocTypeMR,
+          documents:
+            Documents?.map(({ Id, DocNameEN, DocNameMR }) => ({
+              Id: Id || 0,
+              english: DocNameEN,
+              marathi: DocNameMR,
+            })) || [],
+        })) || []
+      );
     }
   };
-
   const handleApiError = (error) => {
     setLoaderOpen(false);
-    console.error("Error:", error);
+  
+    let errorMessage = "";
+  
+    const errors = error.response?.data?.errors;
+    if (errors) {
+      // Use a Set to deduplicate messages
+      const errorMessages = new Set();
+      Object.values(errors).forEach((msgArray) => {
+        msgArray.forEach((msg) => errorMessages.add(msg));
+      });
+      errorMessage = Array.from(errorMessages).join("\n");
+    } else if (error.response?.data?.message) {
+      errorMessage = error.response.data.message;
+    } else {
+      errorMessage = error.message || "An unexpected error occurred.";
+    }
+  
     Swal.fire({
-      icon: "error",
-      title: "Failed",
-      text: error.message || "Something went wrong",
+      // icon: "error",
+      title: "Error",
+      text: errorMessage,
     });
   };
-
-  const handleEditClick = async (row) => {
-    setSaveUpdateButton("UPDATE");
-    setClearUpdateButton("RESET");
-
-    try {
-      setLoading(true);
-      const apiUrl = `${BASE_URL}DepartmentSer/ById/${row.Id}`;
-      const response = await axios.get(apiUrl);
-
-      if (response.data) {
-        const data = response.data.values;
-        originalDataRef.current = JSON.parse(JSON.stringify(data));
-
-        reset({
-          Id: data.Id,
-          ServiceNameEN: data.ServiceNameEN,
-          ServiceNameMR: data.ServiceNameMR,
-          DocLink: data.DocLink,
-          ApplyLink: data.ApplyLink,
-          DeptId: data.DeptId,
-          Status: data.Status,
-        });
-
-        setServiceProviders(data.ServicesProvider || []);
-        setDocTypes(data.Documents || []);
-        setOpen(true);
-      }
-    } catch (error) {
-      console.error("Error fetching department service data:", error);
-      Swal.fire({
-        icon: "error",
-        toast: true,
-        title: "Failed",
-        text: error,
-        showConfirmButton: true,
-      });
-    } finally {
-      setLoading(false);
-    }
-  };
+  
+  
   const handleParentDialogOpen = () => {
     setSaveUpdateButton("SAVE");
     setClearUpdateButton("CLEAR"); // ✅ Ensure it's set to "CLEAR"
@@ -596,6 +688,12 @@ const OnlineServices = () => {
       clearFormData();
       setOpen(true);
     }, 50);
+  };
+  const handleParentDialogClose = () => {
+    setClearUpdateButton("CLEAR");
+    setSaveUpdateButton("SAVE");
+    clearFormData();
+    setOpen(false);
   };
   const columns = [
     {
@@ -689,7 +787,6 @@ const OnlineServices = () => {
       },
     },
   ];
-
   const buttonStyles = {
     border: "none",
     borderRadius: "4px",
@@ -698,12 +795,10 @@ const OnlineServices = () => {
     cursor: "pointer",
     color: "#fff",
   };
-
   const activeButtonStyle = {
     ...buttonStyles,
     backgroundColor: "green",
   };
-
   const inactiveButtonStyle = {
     ...buttonStyles,
     backgroundColor: "red",
@@ -803,7 +898,6 @@ const OnlineServices = () => {
           pageSizeOptions={[limit]}
           paginationModel={{ page: currentPage, pageSize: limit }}
           onPaginationModelChange={(newModel) => {
-            console.log("New Pagination Model:", newModel);
             setCurrentPage(newModel.page);
             getAllDeptServData(newModel.page, searchText);
           }}
@@ -1204,7 +1298,7 @@ const OnlineServices = () => {
                       </AccordionSummary>
                       <AccordionDetails>
                         {/* Documents List */}
-                        {docType.documents.length === 0 ? (
+                        {(docType.documents || []).length === 0 ? (
                           <Typography color="textSecondary">
                             No Documents
                           </Typography>
@@ -1354,9 +1448,9 @@ const OnlineServices = () => {
                         transform: "translateY(2px)",
                       },
                     }}
-                    // onClick={handleResetDocType}
+                    onClick={() => setOpenDocTypeDialog(false)}
                   >
-                    {ClearDocTypeButton}
+                    {/* {ClearDocTypeButton} */}CANCEL
                   </Button>
                   <Button
                     sx={{
@@ -1521,6 +1615,11 @@ const OnlineServices = () => {
                     flex: 1,
                   },
                   {
+                    field: "Lang",
+                    headerName: "Language",
+                    flex: 1,
+                  },
+                  {
                     field: "actions",
                     headerName: "Actions",
                     renderCell: (params) => (
@@ -1566,6 +1665,28 @@ const OnlineServices = () => {
                   {editing ? "Update Service Provider" : "Add Service Provider"}
                 </DialogTitle>
                 <DialogContent>
+                  {/* <Grid item xs={12} sm={4}> */}
+                  <Grid item xs={12} sx={{ mt: "9px" }}>
+                    <FormControl fullWidth variant="outlined">
+                      <InputLabel id="language-label">
+                        Select Language
+                      </InputLabel>
+                      <Select
+                        labelId="language-label"
+                        label="Select Language"
+                        defaultValue={newServiceProvider.Lang}
+                        onChange={(e) =>
+                          handleInputChange("Lang", e.target.value)
+                        }
+                      >
+                        {ENMROptions.map((option) => (
+                          <MenuItem key={option.value} value={option.value}>
+                            {option.label}
+                          </MenuItem>
+                        ))}
+                      </Select>
+                    </FormControl>
+                  </Grid>
                   <TextField
                     fullWidth
                     label="Service Name"
