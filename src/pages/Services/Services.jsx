@@ -1,5 +1,6 @@
 import CloseIcon from "@mui/icons-material/Close";
 import DeleteForeverIcon from "@mui/icons-material/DeleteForever";
+import AddIcon from "@mui/icons-material/Add";
 import EditNoteIcon from "@mui/icons-material/EditNote";
 import {
   Accordion,
@@ -98,6 +99,7 @@ const OnlineServices = () => {
       ServicesProvider: [],
     },
   });
+
   React.useEffect(() => {
     console.log("Component re-rendered");
   });
@@ -110,22 +112,32 @@ const OnlineServices = () => {
   };
   //=========================Documents==================================
   const handleAddOrUpdateDocument = () => {
-    if (newDocument.english.trim() && newDocument.marathi.trim()) {
-      const updatedDocTypes = [...docTypes];
-      if (selectedDocIndex !== null) {
-        // Update existing document
-        updatedDocTypes[selectedDocType].documents[selectedDocIndex] =
-          newDocument;
-      } else {
-        // Add new document
-        updatedDocTypes[selectedDocType].documents.push(newDocument);
-      }
-      setDocTypes(updatedDocTypes);
-      setNewDocument({ english: "", marathi: "" });
-      setSelectedDocIndex(null);
-      setOpenDocDialog(false);
+    if (!newDocument.english && !newDocument.marathi) {
+      Swal.fire({
+        position: "center",
+        icon: "warning",
+        toast: true,
+        title: "Document field is required",
+        showConfirmButton: false,
+        timer: 1500,
+      });      return;
     }
+  
+    const updatedDocTypes = [...docTypes];
+    if (selectedDocIndex !== null) {
+      // Update existing document
+      updatedDocTypes[selectedDocType].documents[selectedDocIndex] = newDocument;
+    } else {
+      // Add new document
+      updatedDocTypes[selectedDocType].documents.push(newDocument);
+    }
+  
+    setDocTypes(updatedDocTypes);
+    setNewDocument({ english: "", marathi: "" });
+    setSelectedDocIndex(null);
+    setOpenDocDialog(false);
   };
+  
   const handleDeleteDocument = (docTypeIndex, docIndex) => {
     const updatedDocTypes = [...docTypes];
     updatedDocTypes[docTypeIndex].documents.splice(docIndex, 1);
@@ -150,30 +162,36 @@ const OnlineServices = () => {
     []
   );
   const handleSaveOrUpdateDocType = () => {
-    if (!docType.english.trim() || !docType.marathi.trim()) return; // Prevents empty input
-
+    if (!docType.english.trim() && !docType.marathi.trim()) {
+      Swal.fire({
+        position: "center",
+        icon: "warning",
+        toast: true,
+        title: "Document Type is required",
+        showConfirmButton: false,
+        timer: 1500,
+      });      return;
+    }
+  
     if (saveDocTypeButton === "UPDATE" && selectedDocTypeIndex !== null) {
-      // Update the selected Document Type immutably
       setDocTypes((prevDocTypes) =>
         prevDocTypes.map((doc, index) =>
           index === selectedDocTypeIndex ? { ...docType } : doc
         )
       );
     } else {
-      // Save a new Document Type
       setDocTypes((prevDocTypes) => [
         ...prevDocTypes,
         { ...docType, documents: [] },
       ]);
     }
-
-    // Reset state after save/update
+  
     setOpenDocTypeDialog(false);
     setdocType({ english: "", marathi: "" });
     setSaveDocTypeButton("SAVE");
     setSelectedDocTypeIndex(null);
   };
-
+  
   const handleDeleteDocType = (index) => {
     setDocTypes(docTypes.filter((_, i) => i !== index));
   };
@@ -411,7 +429,7 @@ const OnlineServices = () => {
             designatedOfficer: sp.DesignatedOfficer,
             firstAppellateOfficer: sp.FirstAppellateOfficer,
             secondAppellateOfficer: sp.SecondAppellateOfficer,
-            Lang:sp.Lang
+            Lang: sp.Lang,
           }));
           setServiceProviders(formattedProviders);
         } else {
@@ -654,9 +672,9 @@ const OnlineServices = () => {
   };
   const handleApiError = (error) => {
     setLoaderOpen(false);
-  
+
     let errorMessage = "";
-  
+
     const errors = error.response?.data?.errors;
     if (errors) {
       // Use a Set to deduplicate messages
@@ -670,15 +688,14 @@ const OnlineServices = () => {
     } else {
       errorMessage = error.message || "An unexpected error occurred.";
     }
-  
+
     Swal.fire({
       // icon: "error",
       title: "Error",
       text: errorMessage,
     });
   };
-  
-  
+
   const handleParentDialogOpen = () => {
     setSaveUpdateButton("SAVE");
     setClearUpdateButton("CLEAR"); // ✅ Ensure it's set to "CLEAR"
@@ -699,7 +716,9 @@ const OnlineServices = () => {
     {
       field: "actions",
       headerName: "Action",
-      width: 150,
+      headerAlign: "center",
+      align: "center",
+      width: 120,
       sortable: false,
       renderCell: (params) => (
         <strong>
@@ -727,8 +746,10 @@ const OnlineServices = () => {
     {
       field: "id",
       headerName: "Sr.No",
-      width: 100,
+      width: 80,
       sortable: true,
+      headerAlign: "center",
+      align: "center",
     },
     {
       field: "ServiceNameEN",
@@ -866,6 +887,8 @@ const OnlineServices = () => {
             },
           }}
         >
+          {" "}
+          <AddIcon />
           Add Services
         </Button>
       </Grid>
@@ -999,11 +1022,12 @@ const OnlineServices = () => {
                 <Controller
                   name="ServiceNameEN"
                   control={control}
+                  rules={{ required: "Service Name (English) is required" }}
                   defaultValue=""
                   render={({ field }) => (
                     <InputDescriptionField
                       {...field}
-                      label="Service Name English"
+                      label="Service Name (English)"
                       size="small"
                       fullWidth
                       error={!!errors.ServiceNameEN}
@@ -1046,6 +1070,7 @@ const OnlineServices = () => {
                 <Controller
                   name="DeptId"
                   control={control}
+                  rules={{ required: "Department is required" }}
                   defaultValue={null} // Ensure default value is null
                   render={({ field }) => (
                     <Autocomplete
@@ -1399,14 +1424,12 @@ const OnlineServices = () => {
                 onClose={() => setOpenDocTypeDialog(false)}
               >
                 <DialogTitle
-                  sx={{ display: "flex", justifyContent: "space-between" }}
+                  sx={{textAlign:"center"}}
                 >
                   {editingDocType !== null
                     ? "Edit Document Type"
                     : "Add Document Type"}
-                  <IconButton onClick={() => setOpenDocTypeDialog(false)}>
-                    <CloseIcon />
-                  </IconButton>
+        
                 </DialogTitle>
 
                 <DialogContent>
@@ -1661,7 +1684,7 @@ const OnlineServices = () => {
                 open={openServiceProviderDialog}
                 onClose={() => setOpenServiceProviderDialog(false)}
               >
-                <DialogTitle>
+                <DialogTitle sx={{ textAlign: "center" }}>
                   {editing ? "Update Service Provider" : "Add Service Provider"}
                 </DialogTitle>
                 <DialogContent>

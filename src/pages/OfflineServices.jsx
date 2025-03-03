@@ -147,7 +147,7 @@ const handleCommitEmailChange = (id, field) => {
 // 🔹 Memoized DataGrid columns
 const columnsEmail = React.useMemo(
   () => [
-    { field: "id", headerName: "Sr. No.", width: 70 },
+    { field: "id", headerName: "Sr. No.", width: 70,headerAlign: "center", align: "center", },
     {
       field: "Email",
       headerName: "Email",
@@ -228,7 +228,7 @@ const handleCommitChange = (id, field) => {
 };
 
 const columnsAddress = React.useMemo(() => [
-  { field: "id", headerName: "Sr.No.", width: 70 },
+  { field: "id", headerName: "Sr.No.", width: 70 ,headerAlign: "center", align: "center",},
   {
     field: "Address",
     headerName: "Address",
@@ -253,7 +253,7 @@ const columnsAddress = React.useMemo(() => [
         defaultValue={params.row.AddressLink}
         onChange={(e) => handleInputChange(params.row.id, "AddressLink", e.target.value)}
         onBlur={() => handleCommitChange(params.row.id, "AddressLink")}
-        onKeyDown={(e) => e.stopPropagation()}
+        // onKeyDown={(e) => e.stopPropagation()}
       />
     ),
   },
@@ -652,25 +652,25 @@ const handleDeleteAddress = React.useCallback((deleteId) => {
     },
     {
       field: "ServicesEN",
-      headerName: "Service Name English",
+      headerName: "Service Name (English)",
       width: 250,
       sortable: false,
     },
     {
       field: "ServicesMR",
-      headerName: "Service Name Marathi",
+      headerName: "Service Name (Marathi)",
       width: 250,
       sortable: false,
     },
     {
       field: "DepartmentEN",
-      headerName: "Department Name",
+      headerName: "Department Name (English)",
       width: 250,
       sortable: false,
     },
     {
       field: "DepartmentMR",
-      headerName: "Department Name Marathi",
+      headerName: "Department Name (Marathi)",
       width: 250,
       sortable: false,
     },
@@ -682,56 +682,56 @@ const handleDeleteAddress = React.useCallback((deleteId) => {
     },
     {
       field: "SubDepartmentMR",
-      headerName: "Sub Department Name Marathi",
+      headerName: "Sub Department Name (Marathi)",
       width: 250,
       sortable: false,
     },
     {
       field: "TimeLimitEN",
-      headerName: "Time Limit Days",
+      headerName: "Time Limit Days (English)",
       width: 250,
       sortable: false,
     },
     {
       field: "TimeLimitMR",
-      headerName: "Time Limit Days",
+      headerName: "Time Limit Days (Marathi)",
       width: 250,
       sortable: false,
     },
     {
       field: "FirstAppellateOfficerEN",
-      headerName: "First Appellate Officer EN",
+      headerName: "First Appellate Officer (EN)",
       width: 250,
       sortable: false,
     },
     {
       field: "FirstAppellateOfficerMR",
-      headerName: "First Appellate Officer MR",
+      headerName: "First Appellate Officer (MR)",
       width: 250,
       sortable: false,
     },
     {
       field: "SecondAppllateOfficerEN",
-      headerName: "Second Appellate Officer EN",
+      headerName: "Second Appellate Officer (EN)",
       width: 250,
       sortable: false,
     },
     {
       field: "SecondAppllateOfficerMR",
-      headerName: "Second Appellate Officer MR",
+      headerName: "Second Appellate Officer (MR)",
       width: 250,
       sortable: false,
     },
 
     {
       field: "AvailableOnPortalEN",
-      headerName: "Available On PortalEN",
+      headerName: "Available On Portal (EN)",
       width: 250,
       sortable: false,
     },
     {
       field: "AvailableOnPortalMR",
-      headerName: "Available On PortalEN",
+      headerName: "Available On Portal (MR)",
       width: 250,
       sortable: false,
     },
@@ -831,7 +831,7 @@ const handleDeleteAddress = React.useCallback((deleteId) => {
                       {...field}
                       size="small"
                       fullWidth
-                      label="Service Name English"
+                      label="Service Name (English)"
                       id="ServicesEN"
                       autoFocus
                       sx={{ width: "100%", borderRadius: 10 }}
@@ -851,7 +851,7 @@ const handleDeleteAddress = React.useCallback((deleteId) => {
                       {...field}
                       size="small"
                       fullWidth
-                      label="Service Name Marathi"
+                      label="Service Name (Marathi)"
                       id="ServicesMR"
                       autoFocus
                       style={{ borderRadius: 10, width: "100%" }}
@@ -873,7 +873,7 @@ const handleDeleteAddress = React.useCallback((deleteId) => {
                       {...field}
                       size="small"
                       fullWidth
-                      label="Department Name English"
+                      label="Department Name (English)"
                       id="DepartmentEN"
                       autoFocus
                       style={{ borderRadius: 10, width: "100%" }}
@@ -895,7 +895,7 @@ const handleDeleteAddress = React.useCallback((deleteId) => {
                       {...field}
                       size="small"
                       fullWidth
-                      label="Department Name Marathi"
+                      label="Department Name (Marathi)"
                       id="DepartmentMR"
                       autoFocus
                       style={{ borderRadius: 10, width: "100%" }}
@@ -919,7 +919,7 @@ const handleDeleteAddress = React.useCallback((deleteId) => {
                       {...field}
                       size="small"
                       fullWidth
-                      label="Sub Department Name English"
+                      label="Sub Department Name (English)"
                       id="SubDepartmentEN"
                       autoFocus
                       style={{ borderRadius: 10, width: "100%" }}
@@ -945,7 +945,7 @@ const handleDeleteAddress = React.useCallback((deleteId) => {
                       {...field}
                       size="small"
                       fullWidth
-                      label="Sub Department Name Marathi"
+                      label="Sub Department Name (Marathi)"
                       id="SubDepartmentMR"
                       autoFocus
                       style={{ borderRadius: 10, width: "100%" }}
@@ -969,7 +969,7 @@ const handleDeleteAddress = React.useCallback((deleteId) => {
                       {...field}
                       size="small"
                       fullWidth
-                      label="Time Limit Days EN"
+                      label="Time Limit Days (English)"
                       id="TimeLimitEN"
                       autoFocus
                       style={{ borderRadius: 10, width: "100%" }}
@@ -991,7 +991,7 @@ const handleDeleteAddress = React.useCallback((deleteId) => {
                       {...field}
                       size="small"
                       fullWidth
-                      label="Time Limit Days MR"
+                      label="Time Limit Days (Marathi)"
                       id="TimeLimitMR"
                       autoFocus
                       style={{ borderRadius: 10, width: "100%" }}
@@ -1166,7 +1166,7 @@ const handleDeleteAddress = React.useCallback((deleteId) => {
                   render={({ field }) => (
                     <InputSelectField
                       {...field}
-                      label="Available On Portal EN"
+                      label="Available On Portal (English)"
                       name="AvailableOnPortalEN"
                       data={yesNoOptions}
                     />
@@ -1185,7 +1185,7 @@ const handleDeleteAddress = React.useCallback((deleteId) => {
                       {...field}
                       size="small"
                       fullWidth
-                      label="Available On Portal MR"
+                      label="Available On Portal (Marathi)"
                       id="AvailableOnPortalMR"
                       autoFocus
                       style={{ borderRadius: 10, width: "100%" }}
@@ -1210,6 +1210,15 @@ const handleDeleteAddress = React.useCallback((deleteId) => {
                       size="small"
                       fullWidth
                       type="number"
+                      inputProps={{
+                        maxLength: 10, // Note: this will be ignored for number input
+                        onInput: (e) => {
+                          // Restrict input to 6 digits
+                          if (e.target.value.length > 10) {
+                            e.target.value = e.target.value.slice(0, 10);
+                          }
+                        },
+                      }}
                       label="Phone Numbers"
                       id="PhoneNumbers"
                       autoFocus
@@ -1511,6 +1520,7 @@ const handleDeleteAddress = React.useCallback((deleteId) => {
             size="medium"
             sx={{
               pr: 2,
+              mb: 2,
               color: "white",
               background:
                 "linear-gradient(to right, rgb(0, 90, 91), rgb(22, 149, 153))",
@@ -1520,6 +1530,13 @@ const handleDeleteAddress = React.useCallback((deleteId) => {
               "&:hover": {
                 transform: "translateY(2px)",
                 boxShadow: "0 2px 4px rgba(0, 90, 91, 0.2)",
+              },
+              "& .MuiButton-label": {
+                display: "flex",
+                alignItems: "center",
+              },
+              "& .MuiSvgIcon-root": {
+                marginRight: "10px",
               },
             }}
           >

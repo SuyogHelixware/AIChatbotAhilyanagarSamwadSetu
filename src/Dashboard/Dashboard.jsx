@@ -1,32 +1,20 @@
-import { ExpandLess, ExpandMore } from "@mui/icons-material";
-import AccountCircle from "@mui/icons-material/AccountCircle";
-import AppSettingsAltIcon from "@mui/icons-material/AppSettingsAlt";
+
 // import ApprovalIcon from "@mui/icons-material/Approval";
 import ChevronLeftIcon from "@mui/icons-material/ChevronLeft";
 import ChevronRightIcon from "@mui/icons-material/ChevronRight";
 // import CommentIcon from "@mui/icons-material/Comment";
-import AdUnitsOutlinedIcon from "@mui/icons-material/AdUnitsOutlined";
-import ApprovalIcon from "@mui/icons-material/Approval";
 import DashboardIcon from "@mui/icons-material/Dashboard";
 import FullscreenIcon from "@mui/icons-material/Fullscreen";
 import FullscreenExitIcon from "@mui/icons-material/FullscreenExit";
 // import GroupsIcon from "@mui/icons-material/Groups";
 import LightModeIcon from "@mui/icons-material/LightMode";
-import LocalOfferIcon from "@mui/icons-material/LocalOffer";
 import ManageAccountsIcon from "@mui/icons-material/ManageAccounts";
 import MenuIcon from "@mui/icons-material/Menu";
 import ModeNightIcon from "@mui/icons-material/ModeNight";
-import { MdMiscellaneousServices } from "react-icons/md";
 import logoDarkTheme from "../assets/darkThemeLogo.png";
 import SettingsIcon from "@mui/icons-material/Settings";
-import SubscriptionsIcon from "@mui/icons-material/Subscriptions";
 import SmartphoneIcon from "@mui/icons-material/Smartphone";
-import VaccinesIcon from "@mui/icons-material/Vaccines";
-import VideoSettingsIcon from "@mui/icons-material/VideoSettings";
-import WorkHistoryIcon from "@mui/icons-material/WorkHistory";
-import FeaturedPlayListOutlinedIcon from "@mui/icons-material/FeaturedPlayListOutlined";
-import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
-import { faBuilding } from "@fortawesome/free-solid-svg-icons";
+
 import BusinessIcon from "@mui/icons-material/Business";
 import MiscellaneousServicesIcon from "@mui/icons-material/MiscellaneousServices";
 import {
@@ -692,6 +680,122 @@ export default function Dashboard() {
                       <ListItemText primary="Offline Services" />
                     </ListItemButton>
                   </Link>
+                  {/* <Link to="LoginPage1" className="link_style">
+                    <ListItemButton
+                      onClick={handleClickTransaction}
+                      selected={
+                        location.pathname === "../pages/LoginPage1.jsx"
+                      }
+                      sx={{
+                        "&.Mui-selected": {
+                          background:
+                            "linear-gradient(to right, rgb(0, 90, 91), rgb(22, 149, 153))",
+                          borderRadius: 1,
+                          "& .MuiListItemIcon-root, & .MuiTypography-root": {
+                            color: "#FFFFFF",
+                          },
+                        },
+                        "& .MuiListItemText-primary": {
+                          color: theme.palette.text.primary,
+                        },
+                      }}
+                    >
+                      <ListItemIcon
+                        sx={{ minWidth: "33px", marginRight: "8px" }}
+                        onClick={handleDrawerOpen}
+                      >
+                        <MiscellaneousServicesIcon />
+                      </ListItemIcon>
+                      <ListItemText primary="LoginPage1" />
+                    </ListItemButton>
+                  </Link>
+                  <Link to="LoginPage2" className="link_style">
+                    <ListItemButton
+                      onClick={handleClickTransaction}
+                      selected={
+                        location.pathname === "/dashboard/LoginPage2"
+                      }
+                      sx={{
+                        "&.Mui-selected": {
+                          background:
+                            "linear-gradient(to right, rgb(0, 90, 91), rgb(22, 149, 153))",
+                          borderRadius: 1,
+                          "& .MuiListItemIcon-root, & .MuiTypography-root": {
+                            color: "#FFFFFF",
+                          },
+                        },
+                        "& .MuiListItemText-primary": {
+                          color: theme.palette.text.primary,
+                        },
+                      }}
+                    >
+                      <ListItemIcon
+                        sx={{ minWidth: "33px", marginRight: "8px" }}
+                        onClick={handleDrawerOpen}
+                      >
+                        <MiscellaneousServicesIcon />
+                      </ListItemIcon>
+                      <ListItemText primary="LoginPage2" />
+                    </ListItemButton>
+                  </Link>
+                  <Link to="LoginPage3" className="link_style">
+                    <ListItemButton
+                      onClick={handleClickTransaction}
+                      selected={
+                        location.pathname === "/dashboard/LoginPage3"
+                      }
+                      sx={{
+                        "&.Mui-selected": {
+                          background:
+                            "linear-gradient(to right, rgb(0, 90, 91), rgb(22, 149, 153))",
+                          borderRadius: 1,
+                          "& .MuiListItemIcon-root, & .MuiTypography-root": {
+                            color: "#FFFFFF",
+                          },
+                        },
+                        "& .MuiListItemText-primary": {
+                          color: theme.palette.text.primary,
+                        },
+                      }}
+                    >
+                      <ListItemIcon
+                        sx={{ minWidth: "33px", marginRight: "8px" }}
+                        onClick={handleDrawerOpen}
+                      >
+                        <MiscellaneousServicesIcon />
+                      </ListItemIcon>
+                      <ListItemText primary="LoginPage3" />
+                    </ListItemButton>
+                  </Link>
+                  <Link to="LoginPage4" className="link_style">
+                    <ListItemButton
+                      onClick={handleClickTransaction}
+                      selected={
+                        location.pathname === "/dashboard/LoginPage4"
+                      }
+                      sx={{
+                        "&.Mui-selected": {
+                          background:
+                            "linear-gradient(to right, rgb(0, 90, 91), rgb(22, 149, 153))",
+                          borderRadius: 1,
+                          "& .MuiListItemIcon-root, & .MuiTypography-root": {
+                            color: "#FFFFFF",
+                          },
+                        },
+                        "& .MuiListItemText-primary": {
+                          color: theme.palette.text.primary,
+                        },
+                      }}
+                    >
+                      <ListItemIcon
+                        sx={{ minWidth: "33px", marginRight: "8px" }}
+                        onClick={handleDrawerOpen}
+                      >
+                        <MiscellaneousServicesIcon />
+                      </ListItemIcon>
+                      <ListItemText primary="LoginPage4" />
+                    </ListItemButton>
+                  </Link> */}
                 </div>
               </List>
             </Grid>

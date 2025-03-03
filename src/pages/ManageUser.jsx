@@ -510,6 +510,7 @@ export default function ManageUsers() {
     {
       field: "Action",
       headerName: "Action",
+      headerAlign: "center", align: "center",
       width: 100,
       sortable: false,
       renderCell: (params) => (
@@ -540,25 +541,26 @@ export default function ManageUsers() {
         </>
       ),
     },
-    { field: "id", headerName: "SR.No", width: 90, sortable: true },
+    { field: "id", headerName: "SR.No", headerAlign: "center", align: "center",width: 90, sortable: true },
     {
       field: "FirstName",
       headerName: "First Name",
       width: 150,
       sortable: false,
+      headerAlign: "center", align: "center"
     },
 
     {
       field: "LastName",
       headerName: "Last Name",
       width: 150,
-      sortable: false,
+      sortable: false,headerAlign: "center", align: "center"
     },
     {
       field: "Username",
       headerName: "Username",
       width: 150,
-      sortable: false,
+      sortable: false,headerAlign: "center", align: "center"
     },
     {
       field: "DOB",
@@ -566,25 +568,27 @@ export default function ManageUsers() {
       width: 150,
       sortable: false,
       valueFormatter: (params) => dayjs(params.value).format("YYYY-MM-DD"),
+      headerAlign: "center", align: "center"
     },
     {
       field: "Phone",
       headerName: "Phone",
       width: 150,
-      sortable: false,
+      sortable: false,headerAlign: "center", align: "center"
     },
 
     {
       field: "Email",
       headerName: "Email",
       width: 170,
-      sortable: false,
+      sortable: false,headerAlign: "center", align: "center"
     },
 
     {
       field: "Status",
       headerName: "Status",
       width: 100,
+      headerAlign: "center", align: "center",
       sortable: false,
       valueGetter: (params) =>
         params.row.Status === 1 ? "Active" : "Inactive",
