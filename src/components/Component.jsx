@@ -66,6 +66,8 @@ export default class InputTextField extends React.Component {
           value={this.props.value}
           size="small"
           sx={{ maxWidth: 220 }}
+           error={this.props.error}               // Add this line
+          helperText={this.props.helperText} 
         />
       </>
     );
@@ -105,6 +107,8 @@ export class InputDescriptionField extends React.Component {
           sx={{ maxWidth: 220 }}
           multiline
           rows={2}
+          error={this.props.error}               // Add this line
+          helperText={this.props.helperText}   
         />
       </>
     );

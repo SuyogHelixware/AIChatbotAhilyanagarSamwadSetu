@@ -14,6 +14,7 @@ import LoginPage4 from "../pages/LoginPage4"
 import LoginPage5 from "../pages/LoginPage5"
 import LoginPage6 from "../pages/LoginPage6"
 import LoginPage7 from "../pages/LoginPage7"
+import ForgotPassword from "../Dashboard/ForgotPassword";
 
 
 export default function Routing() {
@@ -21,15 +22,15 @@ export default function Routing() {
     <>
       <BrowserRouter>
         <Routes>
-          <Route path="/" element={<Signin />} />
-          <Route path="dashboard" element={<Dashboard />}>
-            <Route path="home" element={<Home />} />
-            <Route path="manage-user" element={<ManageUser />} />
-            <Route path="department" element={<Department />} />
-            <Route path="Services" element={<Services />} />
-            <Route path="OfflineServices" element={<OfflineServices />} />
-            
-          </Route>
+        <Route path="/" element={<Signin />} />
+        <Route path="forgot-password" element={<ForgotPassword />} /> {/* 👈 Add this route */}
+        <Route path="dashboard" element={<Dashboard />}>
+          <Route path="home" element={<Home />} />
+          <Route path="manage-user" element={<ManageUser />} />
+          <Route path="department" element={<Department />} />
+          <Route path="Services" element={<Services />} />
+          <Route path="OfflineServices" element={<OfflineServices />} />
+        </Route>
           {/* <Route path="/dashboard/special" element={<SpecialLayout />}> */}
           <Route path="LoginPage1" element={<LoginPage1 />} />
             <Route path="LoginPage2" element={<LoginPage2 />} />

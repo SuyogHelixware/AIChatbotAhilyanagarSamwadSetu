@@ -86,8 +86,10 @@ const OnlineServices = () => {
     setValue,
     reset,
     watch,
+    trigger,
     formState: { errors },
   } = useForm({
+    mode: "onChange", 
     defaultValues: {
       ServiceNameEN: "",
       ServiceNameMR: "",
@@ -98,6 +100,7 @@ const OnlineServices = () => {
       Documents: [],
       ServicesProvider: [],
     },
+    
   });
 
   React.useEffect(() => {
@@ -120,16 +123,27 @@ const OnlineServices = () => {
         title: "Document field is required",
         showConfirmButton: false,
         timer: 1500,
-      });      return;
+      });
+      return;
     }
   
     const updatedDocTypes = [...docTypes];
+  
     if (selectedDocIndex !== null) {
-      // Update existing document
-      updatedDocTypes[selectedDocType].documents[selectedDocIndex] = newDocument;
+      // Get existing document
+      const existingDoc = updatedDocTypes[selectedDocType].documents[selectedDocIndex];
+  
+      // Only update changed fields
+      updatedDocTypes[selectedDocType].documents[selectedDocIndex] = {
+        english: newDocument.english.trim() || existingDoc.english,
+        marathi: newDocument.marathi.trim() || existingDoc.marathi,
+      };
     } else {
       // Add new document
-      updatedDocTypes[selectedDocType].documents.push(newDocument);
+      updatedDocTypes[selectedDocType].documents.push({
+        english: newDocument.english.trim(),
+        marathi: newDocument.marathi.trim(),
+      });
     }
   
     setDocTypes(updatedDocTypes);
@@ -137,6 +151,8 @@ const OnlineServices = () => {
     setSelectedDocIndex(null);
     setOpenDocDialog(false);
   };
+  
+  
   
   const handleDeleteDocument = (docTypeIndex, docIndex) => {
     const updatedDocTypes = [...docTypes];
@@ -150,17 +166,18 @@ const OnlineServices = () => {
     []
   );
   const handleDocumentChange = (field, value) => {
-    docRef.current = { ...docRef.current, [field]: value }; // Store latest input without triggering re-render
-    updateDocumentState(); // Apply debounced update
+    setNewDocument((prev) => ({
+      ...prev,
+      [field]: value,
+    }));
   };
+  
 
   //=======================Document Type========================
-  const handleDocTypeChange = useCallback(
-    debounce((field, value) => {
-      setdocType((prev) => ({ ...prev, [field]: value }));
-    }, 200), // Adjust debounce delay (300ms recommended)
-    []
-  );
+  const handleDocTypeChange = (field, value) => {
+    setdocType((prev) => ({ ...prev, [field]: value }));
+  };
+  
   const handleSaveOrUpdateDocType = () => {
     if (!docType.english.trim() && !docType.marathi.trim()) {
       Swal.fire({
@@ -214,30 +231,21 @@ const OnlineServices = () => {
   //=====================Service Provider===================
   const handleSaveServiceProvider = () => {
     if (editing) {
-      // Update existing row
       const updatedProviders = serviceProviders.map((provider) =>
-        provider.srNo === selectedServiceProvider.srNo
+        provider.Id === selectedServiceProvider.Id
           ? { ...provider, ...newServiceProvider }
           : provider
       );
       setServiceProviders(updatedProviders);
     } else {
-      // Get the max SrNo from the current data (including API data)
-      const maxSrNo = serviceProviders.length
-        ? Math.max(...serviceProviders.map((sp) => sp.SrNo || sp.srNo || 0))
-        : 0;
-
-      // Create new provider with correct SrNo
       const newProvider = {
         ...newServiceProvider,
-        srNo: maxSrNo + 1, // Ensure SrNo increments correctly
-        Id: null, // Ensure new row sends `null` to backend
+        Id: Date.now(), // Temporary unique ID
       };
-
+  
       setServiceProviders((prev) => [...prev, newProvider]);
     }
-
-    // Reset state
+  
     setOpenServiceProviderDialog(false);
     setEditing(false);
     setNewServiceProvider({
@@ -247,42 +255,53 @@ const OnlineServices = () => {
       designatedOfficer: "",
       firstAppellateOfficer: "",
       secondAppellateOfficer: "",
+      Lang: "",
     });
   };
+  
+  
   const handleEditServiceProvider = (identifier) => {
-    console.log("Editing row with identifier:", identifier);
-
-    const providerToEdit = serviceProviders.find(
-      (sp) => sp.Id === identifier || sp.srNo === identifier
-    );
-
+    const providerToEdit = serviceProviders.find((sp) => sp.Id === identifier);
+  
     if (providerToEdit) {
       setSelectedServiceProvider(providerToEdit);
       setNewServiceProvider({ ...providerToEdit });
       setEditing(true);
       setOpenServiceProviderDialog(true);
-    } else {
-      console.error(
-        "Provider not found for identifier:",
-        identifier,
-        serviceProviders
-      );
     }
   };
+  
+  
   const handleDeleteServiceProvider = (identifier) => {
-    setServiceProviders(
-      (prevProviders) =>
-        prevProviders
-          .filter((sp) => sp.Id !== identifier && sp.srNo !== identifier)
-          .map((sp, index) => ({ ...sp, srNo: index + 1 })) // Reassign `srNo`
+    setServiceProviders((prevProviders) =>
+      prevProviders.filter((sp) => sp.Id !== identifier)
     );
   };
+  
   const handleInputChange = debounce((field, value) => {
     setNewServiceProvider((prev) => ({ ...prev, [field]: value }));
   }, 20); // Adjust delay as needed (300ms recommended)
 
   //==========================================================
   const handleSave = async () => {
+    const isFormValid = await trigger(); 
+    if (!isFormValid) {
+      Swal.fire({
+        icon: "warning",
+        text: "Please fill all required fields before saving.",
+      });
+      return;
+    }
+    const getServiceProviderId = (sp) => {
+      if (SaveUpdateButton === "SAVE") return null;
+      // If Id is large (temporary) or not present, treat as new
+      if (!sp.Id || sp.Id > 1000000000000) return null;
+      // Otherwise keep existing Id
+      return sp.Id;
+    };
+    
+    
+    
     try {
       const selectedDept = Departments.find(
         (dept) => dept.Id === watch("DeptId")
@@ -301,7 +320,7 @@ const OnlineServices = () => {
       }));
 
       const formattedServiceProviders = serviceProviders.map((sp) => ({
-        Id: sp.Id || null,
+        Id: getServiceProviderId(sp),
         ServiceName: sp.serviceName,
         TimeLimitDays: sp.timeLimit,
         DesignatedOfficer: sp.designatedOfficer,
@@ -474,8 +493,8 @@ const OnlineServices = () => {
   };
 
   const ENMROptions = [
-    { value: "MR", label: "Marathi" },
-    { value: "EN", label: "English" },
+    { value: "mr", label: "Marathi" },
+    { value: "en", label: "English" },
   ];
   const handleOpenServiceProviderDialog = () => {
     // clearFormData();
@@ -600,15 +619,22 @@ const OnlineServices = () => {
     getAllDeptServData();
     fetchDepartments();
   }, []);
-  const clearFormData = () => {
-    if (ClearUpdateButton === "CLEAR") {
-      reset();
-      setDocTypes([]); // Ensures empty state instead of undefined
+  const clearFormData = (buttonState) => {
+    if (buttonState === "CLEAR") {
+      reset({
+        ServiceNameEN: "",
+        ServiceNameMR: "",
+        DeptId: null,
+        DocLink: "",
+        ApplyLink: "",
+        Status: 1, // default active
+      });
+      setDocTypes([]);
       setServiceProviders([]);
       return;
     }
-    console.log(originalDataRef.current);
-    if (ClearUpdateButton === "RESET" && originalDataRef.current) {
+  
+    if (buttonState === "RESET" && originalDataRef.current) {
       const {
         Id,
         ServiceNameEN,
@@ -617,10 +643,10 @@ const OnlineServices = () => {
         ApplyLink,
         DeptId,
         Status,
-        ServicesProvider = [], // Ensure default empty array
-        Documents = [], // Ensure default empty array
+        ServicesProvider = [],
+        Documents = [],
       } = originalDataRef.current || {};
-
+  
       reset({
         Id,
         ServiceNameEN,
@@ -629,12 +655,10 @@ const OnlineServices = () => {
         ApplyLink,
         DeptId,
         Status,
-        Documents,
-        ServicesProvider,
       });
-
+  
       setServiceProviders(
-        ServicesProvider?.map(
+        ServicesProvider.map(
           ({
             Id,
             SerId,
@@ -652,24 +676,26 @@ const OnlineServices = () => {
             firstAppellateOfficer: FirstAppellateOfficer,
             secondAppellateOfficer: SecondAppellateOfficer,
           })
-        ) || []
+        )
       );
-
+  
       setDocTypes(
-        Documents?.map(({ Id, DocTypeEN, DocTypeMR, Documents }) => ({
+        Documents.map(({ Id, DocTypeEN, DocTypeMR, Documents }) => ({
           Id: Id || null,
           english: DocTypeEN,
           marathi: DocTypeMR,
           documents:
-            Documents?.map(({ Id, DocNameEN, DocNameMR }) => ({
+            Documents.map(({ Id, DocNameEN, DocNameMR }) => ({
               Id: Id || 0,
               english: DocNameEN,
               marathi: DocNameMR,
             })) || [],
-        })) || []
+        }))
       );
     }
   };
+  
+  
   const handleApiError = (error) => {
     setLoaderOpen(false);
 
@@ -698,14 +724,12 @@ const OnlineServices = () => {
 
   const handleParentDialogOpen = () => {
     setSaveUpdateButton("SAVE");
-    setClearUpdateButton("CLEAR"); // ✅ Ensure it's set to "CLEAR"
-
-    setTimeout(() => {
-      // ✅ Delay to ensure state updates
-      clearFormData();
-      setOpen(true);
-    }, 50);
+    setClearUpdateButton("CLEAR");
+    clearFormData("CLEAR");
+    setOpen(true);
   };
+  
+  
   const handleParentDialogClose = () => {
     setClearUpdateButton("CLEAR");
     setSaveUpdateButton("SAVE");
@@ -856,7 +880,7 @@ const OnlineServices = () => {
           padding={1}
           noWrap
         >
-          Manage Services
+          Manage Online Services
         </Typography>
       </Grid>
 
@@ -898,7 +922,7 @@ const OnlineServices = () => {
         item
         lg={12}
         component={Paper}
-        sx={{ height: "80vh", width: "100%" }}
+        sx={{ height: "70vh", width: "100%" }}
       >
         <DataGrid
           className="datagrid-style"
@@ -1023,7 +1047,6 @@ const OnlineServices = () => {
                   name="ServiceNameEN"
                   control={control}
                   rules={{ required: "Service Name (English) is required" }}
-                  defaultValue=""
                   render={({ field }) => (
                     <InputDescriptionField
                       {...field}
@@ -1310,9 +1333,10 @@ const OnlineServices = () => {
                                   onClick={() => {
                                     setSelectedDocType(index);
                                     setOpenDocDialog(true);
-                                    clearDocument();
-                                    setSelectedDocIndex(null); // Reset to avoid lingering "Update" state
+                                    setSelectedDocIndex(null);
+                                    setNewDocument({ english: "", marathi: "" }); // Clear previous values
                                   }}
+                                  
                                 >
                                   Add Document
                                 </Button>
@@ -1364,15 +1388,16 @@ const OnlineServices = () => {
                                   renderCell: (params) => (
                                     <>
                                       <IconButton
-                                        onClick={() => {
-                                          setSelectedDocType(index);
-                                          setSelectedDocIndex(params.row.id);
-                                          setNewDocument({
-                                            english: params.row.english,
-                                            marathi: params.row.marathi,
-                                          });
-                                          setOpenDocDialog(true);
-                                        }}
+                                       onClick={() => {
+                                        setSelectedDocType(index);
+                                        setSelectedDocIndex(params.row.id);
+                                        setNewDocument({
+                                          english: params.row.english,
+                                          marathi: params.row.marathi,
+                                        });
+                                        setOpenDocDialog(true);
+                                      }}
+                                      
                                         sx={{
                                           color: "rgb(0, 90, 91)", // Apply color to the icon
                                           "&:hover": {
@@ -1513,26 +1538,21 @@ const OnlineServices = () => {
                   Add Document
                 </DialogTitle>
                 <DialogContent>
-                  <TextField
-                    fullWidth
-                    label="Document Name (English)"
-                    name="DocNameEN"
-                    defaultValue={newDocument.english}
-                    onChange={(e) =>
-                      handleDocumentChange("english", e.target.value)
-                    }
-                    sx={{ mt: 2 }}
-                  />
-                  <TextField
-                    fullWidth
-                    name="DocNameMR"
-                    label="Document Name (Marathi)"
-                    defaultValue={newDocument.marathi}
-                    onChange={(e) =>
-                      handleDocumentChange("marathi", e.target.value)
-                    }
-                    sx={{ mt: 2 }}
-                  />
+                <TextField
+  fullWidth
+  label="Document Name (English)"
+  value={newDocument.english}
+  onChange={(e) => handleDocumentChange("english", e.target.value)}
+  sx={{ mt: 2 }}
+/>
+<TextField
+  fullWidth
+  label="Document Name (Marathi)"
+  value={newDocument.marathi}
+  onChange={(e) => handleDocumentChange("marathi", e.target.value)}
+  sx={{ mt: 2 }}
+/>
+
                 </DialogContent>
                 <DialogActions
                   sx={{ display: "flex", justifyContent: "space-between" }}
@@ -1612,12 +1632,14 @@ const OnlineServices = () => {
 
               {/* DataGrid */}
               <DataGrid
-                rows={serviceProviders.map((sp, index) => ({
-                  ...sp,
-                  srNo: index + 1, // Always assign a fresh serial number
-                }))}
+               rows={serviceProviders.map((sp, index) => ({
+                ...sp,
+                srNo: index + 1, // For display
+                id: sp.Id,        // MUI internal row identity
+              }))}
+              
                 hideFooter
-                getRowId={(row) => row.Id || row.srNo} // Hybrid key: use Id, fallback to srNo
+                getRowId={(row) => row.Id} // Hybrid key: use Id, fallback to srNo
                 columns={[
                   { field: "srNo", headerName: "Sr. No.", flex: 0.5 },
                   { field: "serviceName", headerName: "Service Name", flex: 1 },
@@ -1651,7 +1673,7 @@ const OnlineServices = () => {
                           color="rgb(0, 90, 91)"
                           onClick={() =>
                             handleEditServiceProvider(
-                              params.row.Id || params.row.srNo
+                              params.row.Id
                             )
                           }
                           sx={{
@@ -1695,13 +1717,12 @@ const OnlineServices = () => {
                         Select Language
                       </InputLabel>
                       <Select
-                        labelId="language-label"
-                        label="Select Language"
-                        defaultValue={newServiceProvider.Lang}
-                        onChange={(e) =>
-                          handleInputChange("Lang", e.target.value)
-                        }
-                      >
+  labelId="language-label"
+  label="Select Language"
+  value={newServiceProvider.Lang ?? ""}
+  onChange={(e) => handleInputChange("Lang", e.target.value)}
+>
+
                         {ENMROptions.map((option) => (
                           <MenuItem key={option.value} value={option.value}>
                             {option.label}
@@ -1829,8 +1850,8 @@ const OnlineServices = () => {
                   marginRight: "10px",
                 },
               }}
-              onClick={clearFormData}
-            >
+              onClick={() => clearFormData(ClearUpdateButton)}
+              >
               {ClearUpdateButton}
             </Button>
 

@@ -38,9 +38,9 @@ export default function Home() {
               }}
               elevation={7}
             >
-              Total Unique Pageviews
+              Total Registered Users
               <h2>
-                <CountUp start={0} end={550} duration={2.75} separator="," />K
+                <CountUp start={0} end={550} duration={2.75} separator="," />
               </h2>{" "}
             </Paper>
           </Grid>
@@ -60,9 +60,9 @@ export default function Home() {
               }}
               elevation={7}
             >
-              Total Unique Pageviews
+              Total Departments
               <h2>
-                <CountUp start={0} end={600} duration={2.75} separator="," />K
+                <CountUp start={0} end={100} duration={2.75} separator="," /> 
               </h2>{" "}
             </Paper>
           </Grid>
@@ -82,9 +82,9 @@ export default function Home() {
               }}
               elevation={7}
             >
-               Total Unique Pageviews
+               Total Online Services
               <h2>
-                <CountUp start={0} end={650} duration={2.75} separator="," />K
+                <CountUp start={0} end={650} duration={2.75} separator="," />
               </h2>{" "}
             </Paper>
           </Grid>
@@ -104,9 +104,9 @@ export default function Home() {
               }}
               elevation={7}
             >
-             Total Unique Pageviews
+             Total Offline Services
               <h2>
-                <CountUp start={0} end={680} duration={2.75} separator="," />K
+                <CountUp start={0} end={680} duration={2.75} separator="," />
               </h2>{" "}
             </Paper>
           </Grid>

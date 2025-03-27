@@ -612,15 +612,11 @@ export default function ManageUsers() {
       sortable: false,
       renderCell: (params) => (
         <img
-          // src={
-          //   params.row.Avatar === ""
-          //     ? avatar
-          //     : `${Bunny_Image_URL}/Users/${params.row.Id}/${params.row.Avatar}`
-          // }
+          src={avatar}
           alt="avatar"
           style={{
-            height: "60px",
-            width: "60px",
+            height: "30px",
+            width: "30px",
             borderRadius: "50%",
             objectFit: "cover",
           }}
@@ -802,7 +798,7 @@ export default function ManageUsers() {
                 )}
               />
               <Typography fontSize={"small"} color={"red"}>
-                Leave blank to current Password here
+                Leave blank here to keep current Password
               </Typography>
             </Grid>
             <Grid item md={6} sm={6} xs={12}>
@@ -935,7 +931,7 @@ export default function ManageUsers() {
         </Paper>
       </Modal>
 
-      <Modal open={open} onClose={handleProfileClose}>
+      {/* <Modal open={open} onClose={handleProfileClose}>
         <Paper
           elevation={10}
           sx={{
@@ -1005,7 +1001,7 @@ export default function ManageUsers() {
             </Grid>
           </Grid>
         </Paper>
-      </Modal>
+      </Modal> */}
 
       <Grid
         container

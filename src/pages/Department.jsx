@@ -26,7 +26,7 @@ import { Controller, useForm } from "react-hook-form"; // Importing React Hook F
 
 const Department = () => {
   const [loaderOpen, setLoaderOpen] = React.useState(false);
-  const [imgData, setImgData] = React.useState([]);
+  const [DepartmentData, setDepartmentData] = React.useState([]);
   const [on, setOn] = React.useState(false);
   const [SaveUpdateButton, setSaveUpdateButton] = React.useState("UPDATE");
   const [ClearUpdateButton, setClearUpdateButton] = React.useState("RESET");
@@ -70,8 +70,10 @@ const Department = () => {
   const handleOnSave = () => {
     setSaveUpdateButton("SAVE");
     setClearUpdateButton("CLEAR");
+        clearFormData();
+        setValue("DeptNameEN","")
+        setValue("DeptNameMR","")
     setOn(true);
-    clearFormData();
   };
 
   const validationAlert = (message) => {
@@ -183,7 +185,7 @@ const Department = () => {
 
       const response = await axios.get(apiUrl);
       if (response.data && response.data.values) {
-        setImgData(
+        setDepartmentData(
           response.data.values.map((item, index) => ({
             ...item,
             id: page * limit + index + 1,
@@ -394,6 +396,8 @@ const Department = () => {
             left: "50%",
             transform: "translate(-50%, -50%)",
             justifyContent: "center",
+            overflow: "auto", // <-- Add this
+            maxHeight: "90vh" 
           }}
         >
           <Grid
@@ -427,6 +431,7 @@ const Department = () => {
               <TextField
                 label="Department Name (English)"
                 fullWidth
+                InputLabelProps={{ shrink: true }} 
                 {...register("DeptNameEN", {
                   required: "This field is required",
                 })}
@@ -439,6 +444,7 @@ const Department = () => {
               <TextField
                 label="Department Name (Marathi)"
                 fullWidth
+                InputLabelProps={{ shrink: true }} 
                 {...register("DeptNameMR", {
                   required: "This field is required",
                 })}
@@ -589,7 +595,6 @@ const Department = () => {
               },
             }}
           >
-            {" "}
             <AddIcon />
             Add Department
           </Button>
@@ -614,7 +619,7 @@ const Department = () => {
               boxShadow: "0px 4px 20px rgba(0, 0, 0.2, 0.2)",
             },
           }}
-          rows={imgData}
+          rows={DepartmentData}
           columns={columns}
           // autoHeight
           pagination

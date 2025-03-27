@@ -169,6 +169,7 @@ export default function Dashboard() {
     const CurrentTheme = localStorage.getItem("Theme");
     return CurrentTheme === "dark" ? false : true;
   });
+  
   // const [drawerOpen, setDrawerOpen] = React.useState(false);
   const [userData, setUserData] = React.useState({
     Name: "",
@@ -389,14 +390,14 @@ export default function Dashboard() {
                       alignItems={"center"}
                     >
                       <MenuItem sx={{ fontSize: 13 }}>
-                        <b>Name : {userData.Name}</b>
+                        <b>Name : {userData.Username}</b>
                       </MenuItem>
-                      <MenuItem sx={{ fontSize: 13, paddingTop: 0 }}>
+                      {/* <MenuItem sx={{ fontSize: 13, paddingTop: 0 }}>
                         <b>Mob :</b> {userData.Phone}
-                      </MenuItem>
+                      </MenuItem> */}
 
                       <MenuItem sx={{ fontSize: 13, paddingTop: 0 }}>
-                        <b>Address :</b> {userData.Address}
+                        <b>Email :</b> {userData.Email}
                       </MenuItem>
                     </Grid>
 
@@ -463,9 +464,9 @@ export default function Dashboard() {
                 width="100%"
                 className="flash-animation"
                 sx={{ elevation: 6, color: "white" }}
-              ></Typography>
+              >Ahilyanagar Samwad Setu</Typography>
 
-              <Tooltip title={userData.Name}>
+              <Tooltip title={userData.Username}>
                 <IconButton
                   size="small"
                   aria-controls={menuId}

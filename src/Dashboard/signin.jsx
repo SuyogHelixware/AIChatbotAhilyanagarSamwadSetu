@@ -1,47 +1,30 @@
+import { Box, IconButton } from "@mui/material";
 import React, { useState } from "react";
-import { useNavigate } from "react-router-dom";
-import AccountCircleIcon from "@mui/icons-material/AccountCircle";
-import { Card, Container, Grid, ScopedCssBaseline } from "@mui/material";
-import Box from "@mui/material/Box";
-import Button from "@mui/material/Button";
-import Checkbox from "@mui/material/Checkbox";
-import FormControlLabel from "@mui/material/FormControlLabel";
-import IconButton from "@mui/material/IconButton";
-import InputAdornment from "@mui/material/InputAdornment";
-import TextField from "@mui/material/TextField";
-import Visibility from "@mui/icons-material/Visibility";
-import VisibilityOff from "@mui/icons-material/VisibilityOff";
-import logo from "../assets/ApaleSarkar.png";
-import bgimg from "../../src/assets/bg9.webp";
+import darkThemeLogo from "../assets/darkThemeLogo.png";
 import Swal from "sweetalert2";
 import axios from "axios";
+import { useNavigate } from "react-router-dom";
 import { BASE_URL } from "../Constant";
+import { Visibility, VisibilityOff } from "@mui/icons-material";
+import Loader from "../components/Loader";
 
-function Signin() {
+const Signin = () => {
   const [userId, setUserId] = useState("");
   const [password, setPassword] = useState("");
-  const Navigate = useNavigate();
-
+  const navigate = useNavigate();
   const [showPassword, setShowPassword] = useState(false);
-  const handleClickShowPassword = () => {
-    setShowPassword(!showPassword);
-  };
-  const handleMouseDownPassword = (event) => {
-    event.preventDefault();
-  };
+  const [loading, setLoading] = useState(false);
 
   const handleSubmit = async () => {
     try {
       const body = {
         Username: userId,
         Password: password,
-        UserType: "A",
       };
-
+      setLoading(true);
       axios
         .post(`${BASE_URL}Login`, body)
         .then((res) => {
-          console.log("Response data:", res.data);
           if (res.data.success === true) {
             const data = res.data.values;
             const userData = {
@@ -49,6 +32,7 @@ function Signin() {
               Username: data.Username,
               Address: data.Address,
               Email: data.Email,
+              Phone: data.Phone,
               BloodGroup: data.BloodGroup,
               Avatar: data.Avatar,
               _id: data._id,
@@ -56,6 +40,7 @@ function Signin() {
             };
             sessionStorage.setItem("userId", userId);
             sessionStorage.setItem("userData", JSON.stringify(userData));
+  
             Swal.fire({
               position: "top-end",
               toast: true,
@@ -64,8 +49,13 @@ function Signin() {
               timer: 1500,
               icon: "success",
             });
-            Navigate("/dashboard/home");
+  
+            // Wait briefly to show loader, then navigate
+            setTimeout(() => {
+              navigate("/dashboard/home");
+            }, 1000);
           } else {
+            setLoading(false);
             Swal.fire({
               position: "top-end",
               icon: "error",
@@ -76,8 +66,12 @@ function Signin() {
             });
           }
         })
-        .catch((e) => console.log(e));
+        .catch((e) => {
+          setLoading(false);
+          console.log(e);
+        });
     } catch (error) {
+      setLoading(false);
       Swal.fire({
         position: "top-end",
         icon: "error",
@@ -88,6 +82,7 @@ function Signin() {
       });
     }
   };
+  
 
   const login = (e) => {
     e.preventDefault();
@@ -96,7 +91,7 @@ function Signin() {
         position: "top-end",
         icon: "error",
         toast: true,
-        title: "Please Enter Username And password",
+        title: "Please Enter Username And Password",
         showConfirmButton: false,
         timer: 1500,
       });
@@ -105,205 +100,168 @@ function Signin() {
     }
   };
 
-  const handleOnChange = (event) => {
-    const { name, value } = event.target;
-    if (name === "userId") {
-      setUserId(value);
-    } else if (name === "password") {
-      setPassword(value);
-    }
-  };
-
   return (
     <>
-      <Grid
-        container
-        width={"100%"}
-        height="100vh"
-        justifyContent={"center"}
-        alignItems={"center"}
-        style={{
-          backgroundImage: "url(" + bgimg + ")",
-          backgroundPosition: "center",
-          backgroundRepeat: "no-repeat",
-          backgroundSize: "cover",
+        {loading && <Loader open={loading} />}
+    
+    <Box
+      sx={{
+        display: "flex",
+        justifyContent: "center",
+        alignItems: "center",
+        height: "100vh",
+        background: "linear-gradient(to right, #004d40, #26a69a)",
+        fontFamily: "Arial, sans-serif",
+        px: 2,
+      }}
+    >
+      <Box
+        sx={{
           display: "flex",
-          alignItems: "center",
-          position: "absolute",
-          top: 0,
-          left: 0,
-          height: "100%",
+          flexDirection: { xs: "column-reverse", md: "row" },   
+          width: { xs: "100%", sm: "90%", md: "800px" },
+          background: "white",
+          borderRadius: "20px",
+          boxShadow: "0 4px 10px rgba(0, 0, 0, 0.2)",
+          overflow: "hidden",
         }}
       >
-    <Card
-  elevation={5}
+        <Box
+          sx={{
+            flex: 1,
+            p: { xs: 3, md: 5 },
+            display: "flex",
+            flexDirection: "column",
+            alignItems: "center",
+          }}
+        >
+          <h2 style={{ fontSize: "24px", fontWeight: "bold", marginBottom: "10px" }}>
+            Sign In
+          </h2>
+
+          <Box
   sx={{
-    backgroundColor: "rgba(255, 255, 255, 0.6)", // Slightly white background for better readability
-    backdropFilter: "blur(10px)", // Blurred effect
-    borderRadius: "20px", // Rounded corners
-    boxShadow: "0px 15px 30px rgba(0, 0, 0, 0.1)",
-    width: "350px", // Adjusted width to make the form smaller
-    zIndex: 2,
-    border: "1px solid #006f5f", // Dark teal border
-    transition: "box-shadow 0.3s ease-in-out",
-    "&:hover": {
-      boxShadow: "0px 25px 50px rgba(0, 0, 0, 0.15)",
-    },
+    width: "100%",
+    maxWidth: { xs: "90%", sm: "80%", md: "320px" }, // container width
+    mx: "auto", // center
   }}
 >
-  <Grid
-    container
-    item
-    justifyContent="center"
-    alignItems="center"
-    sx={{ height: "100%", py: 5 }}
+  <Box sx={{ position: "relative", mb: 2 }}>
+    <span
+      style={{
+        position: "absolute",
+        top: "50%",
+        left: "15px",
+        transform: "translateY(-50%)",
+        fontSize: "16px",
+        color: "#888",
+      }}
+    >
+      📧
+    </span>
+    <input
+      type="text"
+      placeholder="User Name"
+      value={userId}
+      onChange={(e) => setUserId(e.target.value)}
+      style={{
+        width: "80%", // matches sign in button width
+        padding: "12px 12px 12px 40px",
+        border: "none",
+        borderRadius: "25px",
+        background: "#f5f5f5",
+        fontSize: "16px",
+      }}
+    />
+  </Box>
+
+  <Box sx={{ position: "relative", mb: 2 }}>
+    <IconButton
+      onClick={() => setShowPassword(!showPassword)}
+      sx={{
+        position: "absolute",
+        top: "50%",
+        left: "10px",
+        transform: "translateY(-50%)",
+        color: "#888",
+        p: 0,
+      }}
+    >
+      {showPassword ? <VisibilityOff /> : <Visibility />}
+    </IconButton>
+    <input
+      type={showPassword ? "text" : "password"}
+      placeholder="Password"
+      value={password}
+      onChange={(e) => setPassword(e.target.value)}
+      style={{
+        width: "80%", // same width as button
+        padding: "12px 12px 12px 45px",
+        border: "none",
+        borderRadius: "25px",
+        background: "#f5f5f5",
+        fontSize: "16px",
+      }}
+    />
+  </Box>
+
+  <p
+    onClick={() => navigate("/forgot-password")}
+    style={{
+      cursor: "pointer",
+      color: "#00796b",
+      textAlign: "center",
+      marginTop: "10px",
+    }}
   >
-    <Container component="main" maxWidth="xs" sx={{ zIndex: 3 }}>
-      <ScopedCssBaseline />
-      <Grid item sx={{ display: "flex", flexDirection: "column", alignItems: "center" }}>
-        <Box mb={0}>
-          <img
-            src={logo}
-            alt="logo"
-            width="120px"
-            height="auto"
-          />
+    Forgot Password?
+  </p>
+
+  <button
+    onClick={login}
+    style={{
+      width: "100%",
+      background: "#00796b",
+      color: "white",
+      border: "none",
+      padding: "12px",
+      borderRadius: "25px",
+      fontSize: "16px",
+      cursor: "pointer",
+      marginTop: "10px",
+    }}
+  >
+    Sign In
+  </button>
+</Box>
+
         </Box>
 
-        <Box component="form" sx={{ mt: 0}}>
-        <TextField
-  margin="normal"
-  size="large"
-  required
-  fullWidth
-  id="userId"
-  label="User Id"
-  name="userId"
-  variant="standard"
-  autoFocus
-  value={userId}
-  onChange={handleOnChange}
-  sx={{
-    "& .MuiInput-underline:before": {
-      borderBottomColor: "rgba(0, 0, 0, 0.42)", // Default color
-    },
-    "& .MuiInput-underline:after": {
-      borderBottomColor: "rgb(16,59,66)", // Focused bottom line color
-    },
-    "& .MuiInputLabel-root": {
-      color: "rgba(0, 0, 0, 0.6)", // Default label color
-    },
-    "& .MuiInputLabel-root.Mui-focused": {
-      color: "rgb(16,59,66)", // Focused label color
-    },
-  }}
-  InputProps={{
-    endAdornment: (
-      <InputAdornment position="end">
-        <IconButton edge="end" sx={{ color: "rgb(16,59,66)" }}>
-          <AccountCircleIcon />
-        </IconButton>
-      </InputAdornment>
-    ),
-  }}
-/>
-
-<TextField
-  margin="normal"
-  size="large"
-  required
-  variant="standard"
-  fullWidth
-  type={showPassword ? "text" : "password"}
-  name="password"
-  label="Password"
-  value={password}
-  onChange={(e) => setPassword(e.target.value)}
-  sx={{
-    "& .MuiInput-underline:before": {
-      borderBottomColor: "rgba(0, 0, 0, 0.42)", // Default color
-    },
-    "& .MuiInput-underline:after": {
-      borderBottomColor: "rgb(16,59,66)", // Focused bottom line color
-    },
-    "& .MuiInputLabel-root": {
-      color: "rgba(0, 0, 0, 0.6)", // Default label color
-    },
-    "& .MuiInputLabel-root.Mui-focused": {
-      color: "rgb(16,59,66)", // Focused label color
-    },
-  }}
-  InputProps={{
-    endAdornment: (
-      <InputAdornment position="end">
-        <IconButton
-          edge="end"
-          sx={{ color: "rgb(16,59,66)" }}
-          onClick={handleClickShowPassword}
-          onMouseDown={handleMouseDownPassword}
+        <Box
+          sx={{
+            flex: 1,
+            background: "linear-gradient(to right, #004d40, #00796b)",
+            color: "white",
+            display: "flex",
+            flexDirection: "column",
+            justifyContent: "center",
+            alignItems: "center",
+            p: { xs: 3, md: 5 },
+          }}
         >
-          {showPassword ? <VisibilityOff /> : <Visibility />}
-        </IconButton>
-      </InputAdornment>
-    ),
-  }}
-/>
-
-
-          <FormControlLabel
-            control={<Checkbox value="remember" color="primary" />}
-            label="Remember me"
-            sx={{
-              color: "rgb(16,59,66)",
-            }}
-          />
-
-          <Button
-            type="submit"
-            fullWidth
-            sx={{
-              mt: 4,
-              py: 1,
-              color: "white",
-              borderRadius: "30px",
-              background: "linear-gradient(to right,rgb(16,59,66), #3A808B)", // Dark and light teal gradient
-              boxShadow: 5,
-              "&:hover": {
-                transform: "translateY(2px)",
-                boxShadow: "0 2px 4px rgba(0, 0, 0, 0.2)",
-              },
-            }}
-            onClick={login}
-          >
-            Sign In
-          </Button>
-
-          <Box mt={2} textAlign="center">
-            <a href="#" style={{ color: "rgb(16,59,66)", fontSize: "14px" }}>
-              Forgot Password?
-            </a>
+          <Box sx={{ mb: 2, width: { xs: "220px", sm: "280px", md: "320px" } }}>
+            <img
+              src={darkThemeLogo}
+              alt="Logo"
+              width="100%"
+              style={{ objectFit: "contain" }}
+            />
           </Box>
         </Box>
-      </Grid>
-    </Container>
-  </Grid>
-</Card>
-
-      </Grid>
-      <footer
-        style={{
-          position: "absolute",
-          bottom: "10px",
-          width: "100%",
-          textAlign: "center",
-          color: "#fff",
-          fontSize: "14px",
-        }}
-      >
-        &copy; {new Date().getFullYear()} Your Company. All rights reserved.
-      </footer>
+      </Box>
+    </Box>
     </>
   );
-}
+};
 
 export default Signin;

@@ -81,30 +81,28 @@ const OfflineServices = () => {
   const localEmailInputs = React.useRef({}); // 🔹 Store local input values (prevents re-renders)
 
   const validateForm = () => {
-    const {
-      DepartmentEN,
-      SubDepartmentEN,
-      ServicesEN,
-      TimeLimitEN,
-      DesignatedOfficerEN,
-      FirstAppellateOfficerEN,
-      SecondAppllateOfficerEN,
-      AvailableOnPortalEN,
-      Website,
-    } = getValues();
-    return (
-      Website &&
-      DepartmentEN &&
-      SubDepartmentEN &&
-      ServicesEN &&
-      TimeLimitEN &&
-      DesignatedOfficerEN &&
-      FirstAppellateOfficerEN &&
-      SecondAppllateOfficerEN &&
-      AvailableOnPortalEN &&
-      Website
-    );
+    const fieldLabels = {
+      DepartmentEN: "Department (English)",
+      SubDepartmentEN: "Sub Department (English)",
+      ServicesEN: "Services (English)",
+      TimeLimitEN: "Time Limit (English)",
+      DesignatedOfficerEN: "Designated Officer (English)",
+      FirstAppellateOfficerEN: "First Appellate Officer (English)",
+      SecondAppllateOfficerEN: "Second Appellate Officer (English)",
+      AvailableOnPortalEN: "Available On Portal (English)",
+      // Website: "Website",
+    };
+  
+    const emptyFields = Object.entries(fieldLabels)
+      .filter(([field]) => !getValues(field) || !String(getValues(field)).trim())
+      .map(([_, label]) => label);
+  
+    return emptyFields; // return array of missing fields
   };
+  
+
+  
+  
 
   const debounce = (func, delay) => {
     let timeout;
@@ -155,7 +153,7 @@ const columnsEmail = React.useMemo(
       renderCell: (params) => (
         <TextField
           fullWidth
-          defaultValue={params.row.Email}
+          value={params.row.Email}
           onChange={(e) => handleInputEmailChange(params.row.id, "Email", e.target.value)}
           onBlur={() => handleCommitEmailChange(params.row.id, "Email")} // 🔥 Commit on blur
           onKeyDown={(e) => e.stopPropagation()} // Prevents DataGrid interference
@@ -236,7 +234,7 @@ const columnsAddress = React.useMemo(() => [
     renderCell: (params) => (
       <TextField
         fullWidth
-        defaultValue={params.row.Address}
+        value={params.row.Address}
         onChange={(e) => handleInputChange(params.row.id, "Address", e.target.value)}
         onBlur={() => handleCommitChange(params.row.id, "Address")} // 🔥 Commit on blur
         onKeyDown={(e) => e.stopPropagation()} // Prevents DataGrid interference
@@ -250,7 +248,7 @@ const columnsAddress = React.useMemo(() => [
     renderCell: (params) => (
       <TextField
         fullWidth
-        defaultValue={params.row.AddressLink}
+        value={params.row.AddressLink}
         onChange={(e) => handleInputChange(params.row.id, "AddressLink", e.target.value)}
         onBlur={() => handleCommitChange(params.row.id, "AddressLink")}
         // onKeyDown={(e) => e.stopPropagation()}
@@ -341,7 +339,6 @@ const handleDeleteAddress = React.useCallback((deleteId) => {
             } else {
               Swal.fire({
                 icon: "error",
-                title: "Failed to save Service",
                 text: response.data.message,
               });
             }
@@ -418,26 +415,25 @@ const handleDeleteAddress = React.useCallback((deleteId) => {
         // Set the form fields with API response
         reset({
           Id: data.Id,
-          ServicesEN: data.ServicesEN,
-          ServicesMR: data.ServicesMR,
-          DepartmentEN: data.DepartmentEN,
-          DepartmentMR: data.DepartmentMR,
-          SubDepartmentEN: data.SubDepartmentEN,
-          SubDepartmentMR: data.SubDepartmentMR,
-          TimeLimitEN: data.TimeLimitEN,
-          TimeLimitMR: data.TimeLimitMR,
-          DesignatedOfficerEN: data.DesignatedOfficerEN,
-          DesignatedOfficerMR: data.DesignatedOfficerMR,
-          FirstAppellateOfficerEN: data.FirstAppellateOfficerEN,
-          FirstAppellateOfficerMR: data.FirstAppellateOfficerMR,
-          SecondAppllateOfficerEN: data.SecondAppllateOfficerEN,
-          SecondAppllateOfficerMR: data.SecondAppllateOfficerMR,
-          PhoneNumbers: data.PhoneNumbers,
-          Website: data.Website,
-          OtherLink: data.OtherLink,
-          AvailableOnPortalEN: data.AvailableOnPortalEN,
-          AvailableOnPortalMR: data.AvailableOnPortalMR,
+          ServicesEN: data.ServicesEN ?? "",
+          ServicesMR: data.ServicesMR ?? "",
+          DepartmentEN: data.DepartmentEN ?? "",
+          DepartmentMR: data.DepartmentMR ?? "",
+          SubDepartmentEN: data.SubDepartmentEN ?? "",
+          SubDepartmentMR: data.SubDepartmentMR ?? "",
+          TimeLimitEN: data.TimeLimitEN ?? "",
+          TimeLimitMR: data.TimeLimitMR ?? "",
+          DesignatedOfficerEN: data.DesignatedOfficerEN ?? "",
+          DesignatedOfficerMR: data.DesignatedOfficerMR ?? "",
+          FirstAppellateOfficerEN: data.FirstAppellateOfficerEN ?? "",
+          FirstAppellateOfficerMR: data.FirstAppellateOfficerMR ?? "",
+          SecondAppllateOfficerEN: data.SecondAppllateOfficerEN ?? "",
+          SecondAppllateOfficerMR: data.SecondAppllateOfficerMR ?? "",
+          PhoneNumbers: data.PhoneNumbers ?? "",
+          Website: data.Website ?? "",
+          OtherLink: data.OtherLink ?? "",
         });
+        
 
         // Handle Address List
         setAddressList(
@@ -562,25 +558,29 @@ const handleDeleteAddress = React.useCallback((deleteId) => {
       }
     });
   };
+  
   const clearFormData = () => {
     if (ClearUpdateButton === "CLEAR") {
-      // Clear all form data and reset form fields to default values
-      reset({ DepartmentEN: "", DeptNameMR: "", Status: 1 }); // Reset the form using react-hook-form's reset method
-      setAddressList([]); // Clear address list
-      setEmailList([]); // Clear email list
+      reset({
+        DepartmentEN: "",
+        DeptNameMR: "",
+        Status: 1,
+      });
+      setAddressList([]);
+      setEmailList([]);
     }
   
     if (ClearUpdateButton === "RESET" && originalDataRef.current) {
-      // Reset to original data if there's any data stored in originalDataRef
       const { Address, Email, ...restData } = originalDataRef.current;
   
-      // Use reset() to set form values to original data
       reset({
-        ...restData, // Reset form fields to the original data values
-        Status: restData.Status || 1, // Ensure Status field is correctly set
+        ...Object.fromEntries(
+          Object.entries(restData).map(([key, value]) => [key, value ?? ""])
+        ),
+        Status: restData.Status || 1,
       });
   
-      // Set the AddressList and EmailList from the original data
+      // Immediately reset address & email lists (no timeout needed)
       setAddressList(
         Address?.map((sp, index) => ({
           id: index + 1,
@@ -589,6 +589,7 @@ const handleDeleteAddress = React.useCallback((deleteId) => {
           AddressLink: sp.AddressLink,
         })) || []
       );
+      localInputs.current = {};
   
       setEmailList(
         Email?.map((sp, index) => ({
@@ -597,8 +598,10 @@ const handleDeleteAddress = React.useCallback((deleteId) => {
           Email: sp.Email,
         })) || []
       );
+      localEmailInputs.current = {};
     }
   };
+  
   const handleClose = () => {
     setOn(false);
     setClearUpdateButton("CLEAR");
@@ -1235,7 +1238,7 @@ const handleDeleteAddress = React.useCallback((deleteId) => {
                   control={control}
                   name="Website"
                   defaultValue=""
-                  rules={{ required: "Website is required" }}
+                  // rules={{ required: "Website is required" }}
                   render={({ field }) => (
                     <InputTextField1
                       {...field}
@@ -1248,16 +1251,16 @@ const handleDeleteAddress = React.useCallback((deleteId) => {
                     />
                   )}
                 />
-                {errors.Website && <p>{errors.Website.message}</p>}
+                {/* {errors.Website && <p>{errors.Website.message}</p>} */}
               </Grid>
-
+            
               {/* Other Link */}
               <Grid item xs={12} sm={4}>
                 <Controller
                   control={control}
                   name="OtherLink"
                   defaultValue=""
-                  rules={{ required: "Other Link is required" }}
+                  // rules={{ required: "Other Link is required" }}
                   render={({ field }) => (
                     <InputTextField1
                       {...field}
@@ -1270,7 +1273,7 @@ const handleDeleteAddress = React.useCallback((deleteId) => {
                     />
                   )}
                 />
-                {errors.OtherLink && <p>{errors.OtherLink.message}</p>}
+                {/* {errors.OtherLink && <p>{errors.OtherLink.message}</p>} */}
               </Grid>
 
               {/* Status */}
@@ -1435,35 +1438,41 @@ const handleDeleteAddress = React.useCallback((deleteId) => {
 
             {/* Save/Update Button - Positioned to the bottom-right */}
             <Button
-              sx={{
-                p: 1,
-                px: 4,
-                color: "white",
-                background:
-                  "linear-gradient(to right, rgb(0, 90, 91), rgb(22, 149, 153))",
-                borderRadius: "8px",
-                transition: "all 0.2s ease-in-out",
-                boxShadow: "0 4px 8px rgba(0, 90, 91, 0.3)",
-                position: "absolute",
-                bottom: 10,
-                right: 10,
-                "&:hover": {
-                  transform: "translateY(2px)",
-                  boxShadow: "0 2px 4px rgba(0, 90, 91, 0.2)",
-                },
-                "& .MuiButton-label": {
-                  display: "flex",
-                  alignItems: "center",
-                },
-                "& .MuiSvgIcon-root": {
-                  marginRight: "10px",
-                },
-              }}
-              disabled={!validateForm()}
-              onClick={handleSave} // Handle save action
-            >
-              {SaveUpdateButton}
-            </Button>
+  sx={{
+    p: 1,
+    px: 4,
+    color: "white",
+    background: "linear-gradient(to right, rgb(0, 90, 91), rgb(22, 149, 153))",
+    borderRadius: "8px",
+    transition: "all 0.2s ease-in-out",
+    boxShadow: "0 4px 8px rgba(0, 90, 91, 0.3)",
+    position: "absolute",
+    bottom: 10,
+    right: 10,
+    "&:hover": {
+      transform: "translateY(2px)",
+      boxShadow: "0 2px 4px rgba(0, 90, 91, 0.2)",
+    },
+  }}
+  onClick={() => {
+    const missingFields = validateForm();
+    if (missingFields.length === 0) {
+      handleSave();
+    } else {
+      Swal.fire({
+        icon: "warning",
+        text: `Please fill all required fields:\n\n${missingFields.join(",\n ")}`,
+        position: "center",
+        showConfirmButton: true,
+      });
+      
+    }
+  }}
+>
+  {SaveUpdateButton}
+</Button>
+
+
           </DialogActions>
         </DialogContent>
       </Dialog>
@@ -1495,7 +1504,7 @@ const handleDeleteAddress = React.useCallback((deleteId) => {
           padding={1}
           noWrap
         >
-          Manage Services
+          Manage Offline Services
         </Typography>
       </Grid>
       <Grid container spacing={2} marginBottom={2}>
