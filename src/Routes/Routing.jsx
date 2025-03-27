@@ -15,6 +15,8 @@ import LoginPage5 from "../pages/LoginPage5"
 import LoginPage6 from "../pages/LoginPage6"
 import LoginPage7 from "../pages/LoginPage7"
 import ForgotPassword from "../Dashboard/ForgotPassword";
+import DocumentMaster from "../pages/DocumentMaster";
+import EmailSetup from "../pages/EmailSetup";
 
 
 export default function Routing() {
@@ -30,6 +32,8 @@ export default function Routing() {
           <Route path="department" element={<Department />} />
           <Route path="Services" element={<Services />} />
           <Route path="OfflineServices" element={<OfflineServices />} />
+          <Route path="DocumentMaster" element={<DocumentMaster />} />
+          <Route path="EmailSetup" element={<EmailSetup />} />
         </Route>
           {/* <Route path="/dashboard/special" element={<SpecialLayout />}> */}
           <Route path="LoginPage1" element={<LoginPage1 />} />

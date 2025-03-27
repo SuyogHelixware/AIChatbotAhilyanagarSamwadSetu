@@ -14,8 +14,9 @@ import ModeNightIcon from "@mui/icons-material/ModeNight";
 import logoDarkTheme from "../assets/darkThemeLogo.png";
 import SettingsIcon from "@mui/icons-material/Settings";
 import SmartphoneIcon from "@mui/icons-material/Smartphone";
-
+import EmailIcon from '@mui/icons-material/Email';
 import BusinessIcon from "@mui/icons-material/Business";
+import DescriptionIcon from '@mui/icons-material/Description';
 import MiscellaneousServicesIcon from "@mui/icons-material/MiscellaneousServices";
 import {
   Avatar,
@@ -679,6 +680,65 @@ export default function Dashboard() {
                         <MiscellaneousServicesIcon />
                       </ListItemIcon>
                       <ListItemText primary="Offline Services" />
+                    </ListItemButton>
+                  </Link>
+                  
+                  <Link to="DocumentMaster" className="link_style">
+                    <ListItemButton
+                      onClick={handleClickTransaction}
+                      selected={
+                        location.pathname === "/dashboard/DocumentMaster"
+                      }
+                      sx={{
+                        "&.Mui-selected": {
+                          background:
+                            "linear-gradient(to right, rgb(0, 90, 91), rgb(22, 149, 153))",
+                          borderRadius: 1,
+                          "& .MuiListItemIcon-root, & .MuiTypography-root": {
+                            color: "#FFFFFF",
+                          },
+                        },
+                        "& .MuiListItemText-primary": {
+                          color: theme.palette.text.primary,
+                        },
+                      }}
+                    >
+                      <ListItemIcon
+                        sx={{ minWidth: "33px", marginRight: "8px" }}
+                        onClick={handleDrawerOpen}
+                      >
+                        <DescriptionIcon />
+                      </ListItemIcon>
+                      <ListItemText primary="Documents Master" />
+                    </ListItemButton>
+                  </Link>
+                  <Link to="EmailSetup" className="link_style">
+                    <ListItemButton
+                      onClick={handleClickTransaction}
+                      selected={
+                        location.pathname === "/dashboard/EmailSetup"
+                      }
+                      sx={{
+                        "&.Mui-selected": {
+                          background:
+                            "linear-gradient(to right, rgb(0, 90, 91), rgb(22, 149, 153))",
+                          borderRadius: 1,
+                          "& .MuiListItemIcon-root, & .MuiTypography-root": {
+                            color: "#FFFFFF",
+                          },
+                        },
+                        "& .MuiListItemText-primary": {
+                          color: theme.palette.text.primary,
+                        },
+                      }}
+                    >
+                      <ListItemIcon
+                        sx={{ minWidth: "33px", marginRight: "8px" }}
+                        onClick={handleDrawerOpen}
+                      >
+                        <EmailIcon />
+                      </ListItemIcon>
+                      <ListItemText primary="Email Configuration" />
                     </ListItemButton>
                   </Link>
                   {/* <Link to="LoginPage1" className="link_style">

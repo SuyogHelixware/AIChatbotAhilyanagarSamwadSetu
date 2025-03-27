@@ -161,7 +161,7 @@ const Signin = () => {
     </span>
     <input
       type="text"
-      placeholder="User Name"
+      placeholder="Username"
       value={userId}
       onChange={(e) => setUserId(e.target.value)}
       style={{

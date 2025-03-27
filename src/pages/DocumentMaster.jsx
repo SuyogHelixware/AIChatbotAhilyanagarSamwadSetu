@@ -24,9 +24,9 @@ import { CheckboxInputs } from "../components/Component";
 import { debounce } from "lodash"; // Debouncing helper function
 import { Controller, useForm } from "react-hook-form"; // Importing React Hook Form
 
-const Department = () => {
+const DocumentMaster = () => {
   const [loaderOpen, setLoaderOpen] = React.useState(false);
-  const [DepartmentData, setDepartmentData] = React.useState([]);
+  const [DocumentData, setDocumentData] = React.useState([]);
   const [on, setOn] = React.useState(false);
   const [SaveUpdateButton, setSaveUpdateButton] = React.useState("UPDATE");
   const [ClearUpdateButton, setClearUpdateButton] = React.useState("RESET");
@@ -47,16 +47,16 @@ const Department = () => {
     formState: { errors },
   } = useForm({
     defaultValues: {
-      DeptNameEN: "",
-      DeptNameMR: "",
+      DocNameEN: "",
+      DocNameMR: "",
       Status: 1, // Default to checked (1)
     },
   });
   const clearFormData = () => {
     if (ClearUpdateButton === "CLEAR") {
       reset({
-        DeptNameEN: "",
-        DeptNameMR: "",
+        DocNameEN: "",
+        DocNameMR: "",
         Status: 1,
       });
     }
@@ -71,8 +71,8 @@ const Department = () => {
     setSaveUpdateButton("SAVE");
     setClearUpdateButton("CLEAR");
         clearFormData();
-        setValue("DeptNameEN","")
-        setValue("DeptNameMR","")
+        setValue("DocNameEN","")
+        setValue("DocNameMR","")
     setOn(true);
   };
 
@@ -89,7 +89,7 @@ const Department = () => {
 
   const handleSubmitForm = async (formData) => {
     try {
-      const requiredFields = ["DeptNameEN", "DeptNameMR"];
+      const requiredFields = ["DocNameEN", "DocNameMR"];
       const emptyRequiredFields = requiredFields.filter(
         (field) => !formData[field]?.trim()
       );
@@ -101,15 +101,15 @@ const Department = () => {
 
       const payload = {
         Id: null || formData.Id,
-        DeptNameEN: formData.DeptNameEN,
-        DeptNameMR: formData.DeptNameMR,
+        DocNameEN: formData.DocNameEN,
+        DocNameMR: formData.DocNameMR,
         Status: formData.Status,
       };
       let response;
 
       if (SaveUpdateButton === "SAVE") {
         setLoaderOpen(true);
-        response = await axios.post(`${BASE_URL}Department`, payload);
+        response = await axios.post(`${BASE_URL}Document`, payload);
       } else {
         if (!formData.Id) {
           Swal.fire({
@@ -117,7 +117,7 @@ const Department = () => {
             icon: "error",
             toast: true,
             title: "Update Failed",
-            text: "Invalid Department ID",
+            text: "Invalid Document ID",
             showConfirmButton: true,
           });
           return;
@@ -138,7 +138,7 @@ const Department = () => {
 
         setLoaderOpen(true);
         response = await axios.put(
-          `${BASE_URL}Department/${formData.Id}`,
+          `${BASE_URL}Document/${formData.Id}`,
           payload
         );
       }
@@ -152,8 +152,8 @@ const Department = () => {
           toast: true,
           title:
             SaveUpdateButton === "SAVE"
-              ? "Department Added Successfully"
-              : "Department Updated Successfully",
+              ? "Document Added Successfully"
+              : "Document Updated Successfully",
           showConfirmButton: false,
           timer: 1500,
         });
@@ -178,14 +178,14 @@ const Department = () => {
   const getAllImgList = async (page = 0, searchText = "") => {
     try {
       setLoading(true);
-      let apiUrl = `${BASE_URL}Department/ByPage/${page}/${limit}`;
+      let apiUrl = `${BASE_URL}Document/ByPage/${page}/${limit}`;
       if (searchText) {
-        apiUrl = `${BASE_URL}Department/ByPage/search/${searchText}/${page}/${limit}`;
+        apiUrl = `${BASE_URL}Document/ByPage/search/${searchText}/${page}/${limit}`;
       }
 
       const response = await axios.get(apiUrl);
       if (response.data && response.data.values) {
-        setDepartmentData(
+        setDocumentData(
           response.data.values.map((item, index) => ({
             ...item,
             id: page * limit + index + 1,
@@ -227,7 +227,7 @@ const Department = () => {
         setLoaderOpen(true);
         try {
           const response = await axios.delete(
-            `${BASE_URL}Department/${rowData.Id}`
+            `${BASE_URL}Document/${rowData.Id}`
           );
           setLoaderOpen(false);
           if (response.data && response.data.success) {
@@ -235,7 +235,7 @@ const Department = () => {
               position: "center",
               icon: "success",
               toast: true,
-              title: "Department deleted successfully",
+              title: "Document deleted successfully",
               showConfirmButton: false,
               timer: 1500,
             });
@@ -297,37 +297,37 @@ const Department = () => {
     },
     { field: "id", headerName: "Sr.No", width: 100, sortable: true,headerAlign: "center", align: "center" },
     {
-      field: "DeptNameEN",
-      headerName: "Department Name",
-      width: 500,
+      field: "DocNameEN",
+      headerName: "Document Name",
+      width: 300,
       sortable: false
     },
     {
-      field: "DeptNameMR",
-      headerName: "Department Name Marathi",
-      width: 500,
+      field: "DocNameMR",
+      headerName: "Document Name Marathi",
+      width: 300,
       sortable: false
     },
-    {
-      field: "Status",
-      headerName: "Status",
-      width: 200,
-      sortable: false,
-      headerAlign: "center", align: "center",
-      valueGetter: (params) =>
-        params.row.Status === 1 ? "Active" : "Inactive",
-      renderCell: (params) => {
-        const isActive = params.row.Status === 1;
-        return (
-          <button
-            style={isActive ? activeButtonStyle : inactiveButtonStyle}
-            disabled
-          >
-            {isActive ? "Active" : "Inactive"}
-          </button>
-        );
-      },
-    },
+    // {
+    //   field: "Status",
+    //   headerName: "Status",
+    //   width: 200,
+    //   sortable: false,
+    //   headerAlign: "center", align: "center",
+    //   valueGetter: (params) =>
+    //     params.row.Status === 1 ? "Active" : "Inactive",
+    //   renderCell: (params) => {
+    //     const isActive = params.row.Status === 1;
+    //     return (
+    //       <button
+    //         style={isActive ? activeButtonStyle : inactiveButtonStyle}
+    //         disabled
+    //       >
+    //         {isActive ? "Active" : "Inactive"}
+    //       </button>
+    //     );
+    //   },
+    // },
   ];
 
   const buttonStyles = {
@@ -340,15 +340,6 @@ const Department = () => {
     width: 55,
   };
 
-  const activeButtonStyle = {
-    ...buttonStyles,
-    backgroundColor: "green",
-  };
-
-  const inactiveButtonStyle = {
-    ...buttonStyles,
-    backgroundColor: "#dc3545",
-  };
 
   const handleUpdate = async (rowData) => {
     setSaveUpdateButton("UPDATE");
@@ -356,18 +347,18 @@ const Department = () => {
     setOn(true);
     try {
       setLoading(true);
-      const apiUrl = `${BASE_URL}Department/ById/${rowData.Id}`;
+      const apiUrl = `${BASE_URL}Document/ById/${rowData.Id}`;
       const response = await axios.get(apiUrl);
       if (response.data && response.data.values) {
-        const department = response.data.values;
-        originalDataRef.current = department;
-        setValue("Id", department.Id);
-        setValue("DeptNameEN", department.DeptNameEN);
-        setValue("DeptNameMR", department.DeptNameMR);
-        setValue("Status", department.Status);
+        const Document = response.data.values;
+        originalDataRef.current = Document;
+        setValue("Id", Document.Id);
+        setValue("DocNameEN", Document.DocNameEN);
+        setValue("DocNameMR", Document.DocNameMR);
+        setValue("Status", Document.Status);
       }
     } catch (error) {
-      console.error("Error fetching department data:", error);
+      console.error("Error fetching Document data:", error);
     } finally {
       setLoading(false);
     }
@@ -419,7 +410,7 @@ const Department = () => {
               sx={{ display: "flex", justifyContent: "space-between" }}
             >
               <Typography fontWeight="bold" textAlign={"center"}>
-                Add Department
+                Add Document
               </Typography>
               <IconButton onClick={handleClose}>
                 <CloseIcon />
@@ -429,31 +420,31 @@ const Department = () => {
 
             <Grid item xs={12}>
               <TextField
-                label="Department Name (English)"
+                label="Document Name (English)"
                 fullWidth
                 InputLabelProps={{ shrink: true }} 
-                {...register("DeptNameEN", {
+                {...register("DocNameEN", {
                   required: "This field is required",
                 })}
-                error={!!errors.DeptNameEN}
-                helperText={errors.DeptNameEN?.message}
+                error={!!errors.DocNameEN}
+                helperText={errors.DocNameEN?.message}
               />
             </Grid>
 
             <Grid item xs={12}>
               <TextField
-                label="Department Name (Marathi)"
+                label="Document Name (Marathi)"
                 fullWidth
                 InputLabelProps={{ shrink: true }} 
-                {...register("DeptNameMR", {
+                {...register("DocNameMR", {
                   required: "This field is required",
                 })}
-                error={!!errors.DeptNameMR}
-                helperText={errors.DeptNameMR?.message}
+                error={!!errors.DocNameMR}
+                helperText={errors.DocNameMR?.message}
               />
             </Grid>
 
-            <Grid item xs={12} sm={4} textAlign={"center"}>
+            {/* <Grid item xs={12} sm={4} textAlign={"center"}>
               <Controller
                 name="Status"
                 control={control}
@@ -473,7 +464,7 @@ const Department = () => {
                   />
                 )}
               />
-            </Grid>
+            </Grid> */}
             <Grid item xs={12} sm={4} textAlign={"center"}></Grid>
 
             <Grid
@@ -563,7 +554,7 @@ const Department = () => {
           padding={1}
           noWrap
         >
-          Manage Department
+          Manage Documents
         </Typography>
       </Grid>
       <Grid container spacing={2} marginBottom={1} justifyContent="flex-end">
@@ -596,7 +587,7 @@ const Department = () => {
             }}
           >
             <AddIcon />
-            Add Department
+            Add Documents
           </Button>
         </Grid>
       </Grid>
@@ -619,7 +610,7 @@ const Department = () => {
               boxShadow: "0px 4px 20px rgba(0, 0, 0.2, 0.2)",
             },
           }}
-          rows={DepartmentData}
+          rows={DocumentData}
           columns={columns}
           // autoHeight
           pagination
@@ -668,4 +659,4 @@ const Department = () => {
   );
 };
 
-export default Department;
+export default DocumentMaster;

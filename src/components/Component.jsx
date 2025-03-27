@@ -73,6 +73,20 @@ export default class InputTextField extends React.Component {
     );
   }
 }
+export const InputTextFieldmd = React.forwardRef(({ label, error, helperText, ...props }, ref) => {
+  return (
+    <TextField
+      label={label}
+      size="small"
+      sx={{ width: "100%", maxWidth: 350 }}
+      error={!!error}
+      helperText={helperText}
+      inputRef={ref} // Forward ref for react-hook-form
+      {...props}
+    />
+  );
+});
+
 export class InputTextField1 extends React.Component {
   render() {
     // Extract custom style and sx props if provided
@@ -148,7 +162,39 @@ export class InputPasswordField extends React.Component {
     );
   }
 }
-
+export class InputPasswordFieldmd extends React.Component {
+  render(props) {
+    return (
+      <>
+        <TextField
+          // required
+          label={this.props.label}
+          onChange={this.props.onChange}
+          id={this.props.id}
+          name={this.props.id}
+          type={this.props.type}
+          value={this.props.value}
+          size="small"
+          sx={{ width: "100%", maxWidth: 350 }} 
+          InputProps={{
+            endAdornment: (
+              <InputAdornment position="end">
+                <IconButton
+                  edge="end"
+                  sx={{ color: "rgba(0, 90, 91, 0.9)" }}
+                  onClick={this.props.onClick}
+                  onMouseDown={this.props.onMouseDown}
+                >
+                  {this.props.showPassword ? <VisibilityOff /> : <Visibility />}
+                </IconButton>
+              </InputAdornment>
+            ),
+          }}
+        />
+      </>
+    );
+  }
+}
 // export class DatePickerField extends React.Component {
 //   render(props) {
 //     return (

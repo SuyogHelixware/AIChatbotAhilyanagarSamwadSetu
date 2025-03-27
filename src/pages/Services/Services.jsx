@@ -230,6 +230,18 @@ const OnlineServices = () => {
   });
   //=====================Service Provider===================
   const handleSaveServiceProvider = () => {
+    let missingFields = [];
+
+  if (!newServiceProvider.Lang) missingFields.push("Language");
+  if (!newServiceProvider.serviceName.trim()) missingFields.push("Service Name");
+
+  if (missingFields.length > 0) {
+    Swal.fire({
+      icon: "warning",
+      text: `Please fill the following fields: ${missingFields.join(", ")}`,
+    });
+    return;
+  }
     if (editing) {
       const updatedProviders = serviceProviders.map((provider) =>
         provider.Id === selectedServiceProvider.Id

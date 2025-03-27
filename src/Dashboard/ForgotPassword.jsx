@@ -196,7 +196,7 @@ const ForgotPassword = () => {
                     value={email}
                     onChange={(e) => setEmail(e.target.value)}
                     style={{
-                      width: "100%",
+                      width: "80%",
                       padding: "12px 12px 12px 40px",
                       border: "none",
                       borderRadius: "25px",
