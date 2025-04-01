@@ -26,13 +26,11 @@ import {
 } from "@mui/material";
 import { DataGrid, GridToolbar } from "@mui/x-data-grid";
 import axios from "axios";
-import React, { useCallback, useEffect, useRef, useState } from "react";
+import React, {useEffect, useRef, useState } from "react";
 import Swal from "sweetalert2";
 import { BASE_URL } from "../../Constant";
 import InputTextField, {
-  InputDescriptionField,
-  InputSelectField,
-} from "../../components/Component";
+  InputDescriptionField} from "../../components/Component";
 import Loader from "../../components/Loader";
 import ExpandMoreIcon from "@mui/icons-material/ExpandMore";
 import DeleteIcon from "@mui/icons-material/Delete";
@@ -78,7 +76,6 @@ const OnlineServices = () => {
   const [editingDocType, setEditingDocType] = useState(null);
   const [selectedServiceProvider, setSelectedServiceProvider] = useState(null);
   const limit = 20; // Fixed page size
-  const docRef = useRef(newDocument); // Store latest input without re-rendering
 
   const {
     control,
@@ -150,21 +147,14 @@ const OnlineServices = () => {
     setNewDocument({ english: "", marathi: "" });
     setSelectedDocIndex(null);
     setOpenDocDialog(false);
-  };
-  
-  
+  }; 
   
   const handleDeleteDocument = (docTypeIndex, docIndex) => {
     const updatedDocTypes = [...docTypes];
     updatedDocTypes[docTypeIndex].documents.splice(docIndex, 1);
     setDocTypes(updatedDocTypes);
   };
-  const updateDocumentState = useCallback(
-    debounce(() => {
-      setNewDocument({ ...docRef.current });
-    }, 300), // Adjust delay as needed
-    []
-  );
+
   const handleDocumentChange = (field, value) => {
     setNewDocument((prev) => ({
       ...prev,
@@ -283,13 +273,12 @@ const OnlineServices = () => {
     }
   };
   
-  
   const handleDeleteServiceProvider = (identifier) => {
     setServiceProviders((prevProviders) =>
       prevProviders.filter((sp) => sp.Id !== identifier)
     );
   };
-  
+
   const handleInputChange = debounce((field, value) => {
     setNewServiceProvider((prev) => ({ ...prev, [field]: value }));
   }, 20); // Adjust delay as needed (300ms recommended)
@@ -526,9 +515,7 @@ const OnlineServices = () => {
     setdocType({ english: "", marathi: "" });
     // }
   };
-  const clearDocument = () => {
-    setNewDocument({ DocNameEN: "", DocTypeMR: "" });
-  };
+ 
   const handleDelete = async (id) => {
     Swal.fire({
       text: "Are you sure you want to delete?",
@@ -741,7 +728,6 @@ const OnlineServices = () => {
     setOpen(true);
   };
   
-  
   const handleParentDialogClose = () => {
     setClearUpdateButton("CLEAR");
     setSaveUpdateButton("SAVE");
@@ -903,7 +889,7 @@ const OnlineServices = () => {
           size="medium"
           sx={{
             pr: 2,
-            mb: 2,
+            mb: 0,
             color: "white",
             background:
               "linear-gradient(to right, rgb(0, 90, 91), rgb(22, 149, 153))",
@@ -934,13 +920,13 @@ const OnlineServices = () => {
         item
         lg={12}
         component={Paper}
-        sx={{ height: "70vh", width: "100%" }}
+        sx={{ height: "85vh", width: "100%" }}
       >
         <DataGrid
           className="datagrid-style"
           sx={{
-            height: "90%", // Set height in percentage
-            minHeight: "500px",
+            height: "90%", 
+            minHeight: "550px",
 
             "& .MuiDataGrid-columnHeaders": {
               backgroundColor: (theme) => theme.palette.custome.datagridcolor,
@@ -986,16 +972,16 @@ const OnlineServices = () => {
           onFilterModelChange={(model) => {
             const quickFilterValue = model.quickFilterValues?.[0] || "";
             setSearchText(quickFilterValue);
-            setCurrentPage(0); // ✅ Always reset to first page when searching
+            setCurrentPage(0); 
             getAllDeptServData(0, quickFilterValue);
           }}
-          getRowId={(row) => row.Id} // Ensure unique row ID from database
+          getRowId={(row) => row.Id} 
         />
       </Grid>
 
       <Dialog
         elevation={7}
-        onSubmit={handleSubmit(handleSave)} // Handle submit via react-hook-form
+        onSubmit={handleSubmit(handleSave)} 
         component={"form"}
         boxShadow={20}
         open={open}

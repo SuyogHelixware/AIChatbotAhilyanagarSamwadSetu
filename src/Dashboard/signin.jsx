@@ -142,7 +142,8 @@ const Signin = () => {
           <Box
   sx={{
     width: "100%",
-    maxWidth: { xs: "90%", sm: "80%", md: "320px" }, // container width
+    // display: "flex", flexDirection: "column", alignItems: "center", gap: 2,
+    maxWidth: { xs: "90%", sm: "80%", md: "320px" }, 
     mx: "auto", // center
   }}
 >

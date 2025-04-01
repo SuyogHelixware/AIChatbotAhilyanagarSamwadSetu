@@ -411,6 +411,7 @@ export default function Dashboard() {
                       <Button
                         onClick={() => {
                           Navigate("/");
+                          sessionStorage.clear();
                         }}
                         sx={{
                           boxShadow: 9,

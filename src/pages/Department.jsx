@@ -574,7 +574,7 @@ const Department = () => {
             size="medium"
             sx={{
               pr: 2,
-              mb: 2,
+              mb: 0,
               mt: 2,
               color: "white",
               background:

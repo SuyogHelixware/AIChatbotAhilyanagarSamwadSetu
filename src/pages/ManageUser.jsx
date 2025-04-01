@@ -1067,7 +1067,7 @@ export default function ManageUsers() {
       </Grid>
       <Paper
         sx={{
-          marginTop: 3,
+          marginTop: 1,
           display: "flex",
           flexDirection: "column",
           alignItems: "center",

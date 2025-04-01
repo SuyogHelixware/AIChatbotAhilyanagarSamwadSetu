@@ -1529,7 +1529,7 @@ const handleDeleteAddress = React.useCallback((deleteId) => {
             size="medium"
             sx={{
               pr: 2,
-              mb: 2,
+              mb: 0,
               color: "white",
               background:
                 "linear-gradient(to right, rgb(0, 90, 91), rgb(22, 149, 153))",
@@ -1559,7 +1559,7 @@ const handleDeleteAddress = React.useCallback((deleteId) => {
         item
         lg={12}
         component={Paper}
-        sx={{ height: "80vh", width: "100%" }}
+        sx={{ height: "85vh", width: "100%" }}
       >
         <DataGrid
           className="datagrid-style"
@@ -1569,8 +1569,8 @@ const handleDeleteAddress = React.useCallback((deleteId) => {
             params.row.isExpandedRow ? "expanded-row" : ""
           }
           sx={{
-            height: "90%", // Set height in percentage
-            minHeight: "500px",
+            height: "90%", 
+            minHeight: "550px",
             "& .MuiDataGrid-columnHeaders": {
               backgroundColor: (theme) => theme.palette.custome.datagridcolor,
             },

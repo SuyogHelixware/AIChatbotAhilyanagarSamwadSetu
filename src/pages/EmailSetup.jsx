@@ -96,7 +96,6 @@ const EmailSetup = () => {
   const handleSubmitForm = async (formData) => {
     console.log("Form Submitted:", formData);
   
-    // ✅ Show confirmation popup only for UPDATE case
     if (SaveUpdateButton === "UPDATE") {
       const result = await Swal.fire({
         text: "Do you want to Update...?",
@@ -107,7 +106,6 @@ const EmailSetup = () => {
         confirmButtonText: "Yes, Update it!",
       });
   
-      // 🚨 Stop execution if user cancels
       if (!result.isConfirmed) return;
     }
   
@@ -124,20 +122,19 @@ const EmailSetup = () => {
       MailPort: parseInt(formData.MailPort || ""),
       MailEncry: parseInt(formData.MailEncry || ""),
       MailUsername: formData.MailUsername || "",
+      MailPassword: formData.MailPassword || ""
     };
   
-    // ✅ Keep old password if no new password is entered
-    if (SaveUpdateButton === "UPDATE") {
-      payload.MailPassword =
-        formData.MailPassword && formData.MailPassword.trim() !== ""
-          ? formData.MailPassword
-          : existingMailPassword; // Use stored password if no new password is entered
-    } else {
-      // ✅ For ADD case, pass password only if it's not empty
-      if (formData.MailPassword && formData.MailPassword.trim() !== "") {
-        payload.MailPassword = formData.MailPassword;
-      }
-    }
+    // if (SaveUpdateButton === "UPDATE") {
+    //   payload.MailPassword =
+    //     formData.MailPassword && formData.MailPassword.trim() !== ""
+    //       ? formData.MailPassword
+    //       : existingMailPassword; // Use stored password if no new password is entered
+    // } else {
+    //   if (formData.MailPassword && formData.MailPassword.trim() !== "") {
+    //     payload.MailPassword = formData.MailPassword;
+    //   }
+    // }
   
     try {
       let response;
@@ -154,12 +151,11 @@ const EmailSetup = () => {
       const { success, message, values } = response.data;
   
       if (success) {
-        if (values?.length > 0) {
-          setExistingMailPassword(values[0].MailPassword);
-        }
+        // if (values?.length > 0) {
+        //   setExistingMailPassword(values[0].MailPassword);
+        // }
   
-        // ✅ Clear only the MailPassword field after update
-        setValue("MailPassword", "");
+        // setValue("MailPassword", "");
   
         Swal.fire({
           title: "Success!",
@@ -206,7 +202,7 @@ const EmailSetup = () => {
         const emailSetup = response.data.values[0];
 
         originalDataRef.current = emailSetup;
-        setExistingMailPassword(emailSetup.MailPassword); // Store password separately
+        setExistingMailPassword(emailSetup.MailPassword); 
 
         setValue("Id", emailSetup.Id);
         setStoreId(emailSetup.Id);
@@ -218,10 +214,9 @@ const EmailSetup = () => {
         setValue("MailPort", emailSetup.MailPort);
         setValue("MailEncry", emailSetup.MailEncry);
         setValue("MailUsername", emailSetup.MailUsername);
-
+        setValue("MailPassword", emailSetup.MailPassword)
         setValue("Status", emailSetup.Status);
 
-        // setValue("MailPassword", emailSetup.MailPassword);
       }
     } catch (error) {
       console.error("Error fetching email setup data:", error);
@@ -267,11 +262,32 @@ const EmailSetup = () => {
         container
         item
         lg={12}
-        sx={{ height: "77vh", width: "100%", p: 2 }}
+        spacing={2}
+        sx={{ height: "77vh", width: "100%", justifyContent:"center" }}
         onSubmit={handleSubmit(handleSubmitForm)}
         component={"form"}
       >
-        <Grid item md={6} xs={12} textAlign={"center"}>
+        <Grid
+        container
+        md={12}
+        lg={12}
+        component={Paper}
+        textAlign={"center"}
+        sx={{
+          width: "100%",
+          px: 5,
+          display: "flex",
+          flexDirection: "row",
+          alignItems: "center",
+          justifyContent: "space-between",
+          mb: 2,
+          mt: 2,
+          ml:3
+        }}
+        spacing={2}
+        elevation={4}
+      >
+        <Grid item md={4} xs={12} textAlign={"center"}>
           <Controller
             name="MailFromName"
             control={control}
@@ -290,7 +306,7 @@ const EmailSetup = () => {
             )}
           />
         </Grid>
-        <Grid item md={6} xs={12} textAlign={"center"}>
+        <Grid item md={4} xs={12} textAlign={"center"}>
           <Controller
             name="MailFromEmail"
             control={control}
@@ -309,7 +325,7 @@ const EmailSetup = () => {
             )}
           />
         </Grid>
-        <Grid item md={6} xs={12}>
+        <Grid item md={4} xs={12}>
           <Controller
             name="EnableQueue"
             control={control}
@@ -328,7 +344,7 @@ const EmailSetup = () => {
             )}
           />
         </Grid>
-        <Grid item md={6} xs={12}>
+        <Grid item md={4} xs={12}>
           <Controller
             name="MailDriver"
             control={control}
@@ -347,43 +363,8 @@ const EmailSetup = () => {
             )}
           />
         </Grid>
-        {/* <Grid
-          item
-          md={6} xs={12}
-          display="flex"
-          justifyContent="center"
-        >
-          <Controller
-            name="MailDriver"
-            control={control}
-            defaultValue="Material"
-            render={({ field }) => (
-              <FormControl component="fieldset">
-                <FormLabel component="legend" sx={{ textAlign: "center" }}>
-                  Mail Driver
-                </FormLabel>
-                <RadioGroup
-                  row
-                  {...field}
-                  sx={{ justifyContent: "center" }} // Centering the radio buttons
-                >
-                  <FormControlLabel
-                    value="Mail"
-                    control={<Radio />}
-                    label="Mail"
-                  />
-                  <FormControlLabel
-                    value="SMTP"
-                    control={<Radio />}
-                    label="SMTP"
-                  />
-                </RadioGroup>
-              </FormControl>
-            )}
-          />
-        </Grid> */}
 
-        <Grid item md={6} xs={12} textAlign={"center"}>
+        <Grid item md={4} xs={12} textAlign={"center"}>
           <Controller
             name="MailHost"
             control={control}
@@ -402,7 +383,7 @@ const EmailSetup = () => {
             )}
           />
         </Grid>
-        <Grid item md={6} xs={12} textAlign={"center"}>
+        <Grid item md={4} xs={12} textAlign={"center"}>
           <Controller
             name="MailPort"
             control={control}
@@ -421,7 +402,7 @@ const EmailSetup = () => {
             )}
           />
         </Grid>
-        <Grid item md={6} xs={12}>
+        <Grid item md={4} xs={12}>
           <Controller
             name="MailEncry"
             control={control}
@@ -443,7 +424,7 @@ const EmailSetup = () => {
             )}
           />
         </Grid>
-        <Grid item md={6} xs={12} textAlign={"center"}>
+        <Grid item md={4} xs={12} textAlign={"center"}>
           <Controller
             name="MailUsername"
             control={control}
@@ -462,7 +443,7 @@ const EmailSetup = () => {
             )}
           />
         </Grid>
-        <Grid item md={6} xs={12} textAlign={"center"}>
+        <Grid item md={4} xs={12} textAlign={"center"}>
           <Controller
             name="MailPassword"
             control={control}
@@ -482,13 +463,13 @@ const EmailSetup = () => {
               />
             )}
           />
-          {SaveUpdateButton === "UPDATE" && (
+          {/* {SaveUpdateButton === "UPDATE" && (
             <Typography fontSize={"small"} color={"red"}>
               Leave blank here to keep current Password
             </Typography>
-          )}
+          )} */}
         </Grid>
-
+        </Grid>
         <Grid
           item
           px={1}
@@ -500,7 +481,7 @@ const EmailSetup = () => {
             alignItems: "end",
             position: "sticky",
             bottom: "0px",
-            marginBottom: "8px",
+            marginBottom: "1px",
           }}
         >
           <Button
