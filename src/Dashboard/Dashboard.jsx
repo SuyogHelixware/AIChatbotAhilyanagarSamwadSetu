@@ -18,6 +18,10 @@ import EmailIcon from '@mui/icons-material/Email';
 import BusinessIcon from "@mui/icons-material/Business";
 import DescriptionIcon from '@mui/icons-material/Description';
 import MiscellaneousServicesIcon from "@mui/icons-material/MiscellaneousServices";
+import { MdMiscellaneousServices } from "react-icons/md";
+                        import DriveFolderUploadIcon from '@mui/icons-material/DriveFolderUpload';
+import ChecklistIcon from '@mui/icons-material/Checklist';
+
 import {
   Avatar,
   Button,
@@ -740,6 +744,69 @@ export default function Dashboard() {
                         <EmailIcon />
                       </ListItemIcon>
                       <ListItemText primary="Email Configuration" />
+                    </ListItemButton>
+                  </Link>
+
+
+ <Link to="Upload-" className="link_style">
+                    <ListItemButton
+                      onClick={handleClickTransaction}
+                      selected={
+                        location.pathname === "/dashboard/Upload-D"
+                      }
+                      sx={{
+                        "&.Mui-selected": {
+                          background:
+                            "linear-gradient(to right, rgb(0, 90, 91), rgb(22, 149, 153))",
+                          borderRadius: 1,
+                          "& .MuiListItemIcon-root, & .MuiTypography-root": {
+                            color: "#FFFFFF",
+                          },
+                        },
+                        "& .MuiListItemText-primary": {
+                          color: theme.palette.text.primary,
+                        },
+                      }}
+                    >
+                      <ListItemIcon
+                        sx={{ minWidth: "33px", marginRight: "8px" }}
+                        onClick={handleDrawerOpen}
+                      >
+                        <ChecklistIcon />
+                        </ListItemIcon>
+                      <ListItemText primary="Gazetted Master" />
+                    </ListItemButton>
+                  </Link>
+
+
+
+                   <Link to="Upload-Document" className="link_style">
+                    <ListItemButton
+                      onClick={handleClickTransaction}
+                      selected={
+                        location.pathname === "/dashboard/Upload-Document"
+                      }
+                      sx={{
+                        "&.Mui-selected": {
+                          background:
+                            "linear-gradient(to right, rgb(0, 90, 91), rgb(22, 149, 153))",
+                          borderRadius: 1,
+                          "& .MuiListItemIcon-root, & .MuiTypography-root": {
+                            color: "#FFFFFF",
+                          },
+                        },
+                        "& .MuiListItemText-primary": {
+                          color: theme.palette.text.primary,
+                        },
+                      }}
+                    >
+                      <ListItemIcon
+                        sx={{ minWidth: "33px", marginRight: "8px" }}
+                        onClick={handleDrawerOpen}
+                      >
+                        <DriveFolderUploadIcon />
+                        </ListItemIcon>
+                      <ListItemText primary="Upload Documents" />
                     </ListItemButton>
                   </Link>
                   {/* <Link to="LoginPage1" className="link_style">
