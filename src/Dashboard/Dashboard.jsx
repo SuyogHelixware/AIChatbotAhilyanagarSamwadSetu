@@ -1,4 +1,3 @@
-
 // import ApprovalIcon from "@mui/icons-material/Approval";
 import ChevronLeftIcon from "@mui/icons-material/ChevronLeft";
 import ChevronRightIcon from "@mui/icons-material/ChevronRight";
@@ -14,13 +13,13 @@ import ModeNightIcon from "@mui/icons-material/ModeNight";
 import logoDarkTheme from "../assets/darkThemeLogo.png";
 import SettingsIcon from "@mui/icons-material/Settings";
 import SmartphoneIcon from "@mui/icons-material/Smartphone";
-import EmailIcon from '@mui/icons-material/Email';
+import EmailIcon from "@mui/icons-material/Email";
 import BusinessIcon from "@mui/icons-material/Business";
-import DescriptionIcon from '@mui/icons-material/Description';
+import DescriptionIcon from "@mui/icons-material/Description";
 import MiscellaneousServicesIcon from "@mui/icons-material/MiscellaneousServices";
 import { MdMiscellaneousServices } from "react-icons/md";
-                        import DriveFolderUploadIcon from '@mui/icons-material/DriveFolderUpload';
-import ChecklistIcon from '@mui/icons-material/Checklist';
+import DriveFolderUploadIcon from "@mui/icons-material/DriveFolderUpload";
+import ChecklistIcon from "@mui/icons-material/Checklist";
 
 import {
   Avatar,
@@ -174,7 +173,7 @@ export default function Dashboard() {
     const CurrentTheme = localStorage.getItem("Theme");
     return CurrentTheme === "dark" ? false : true;
   });
-  
+
   // const [drawerOpen, setDrawerOpen] = React.useState(false);
   const [userData, setUserData] = React.useState({
     Name: "",
@@ -470,7 +469,9 @@ export default function Dashboard() {
                 width="100%"
                 className="flash-animation"
                 sx={{ elevation: 6, color: "white" }}
-              >Ahilyanagar Samwad Setu</Typography>
+              >
+                Ahilyanagar Samwad Setu
+              </Typography>
 
               <Tooltip title={userData.Username}>
                 <IconButton
@@ -563,7 +564,6 @@ export default function Dashboard() {
                         "& .MuiListItemText-primary": {
                           color: theme.palette.text.primary,
                         },
-                        
                       }}
                     >
                       <ListItemIcon
@@ -687,7 +687,7 @@ export default function Dashboard() {
                       <ListItemText primary="Offline Services" />
                     </ListItemButton>
                   </Link>
-                  
+
                   <Link to="DocumentMaster" className="link_style">
                     <ListItemButton
                       onClick={handleClickTransaction}
@@ -720,9 +720,7 @@ export default function Dashboard() {
                   <Link to="EmailSetup" className="link_style">
                     <ListItemButton
                       onClick={handleClickTransaction}
-                      selected={
-                        location.pathname === "/dashboard/EmailSetup"
-                      }
+                      selected={location.pathname === "/dashboard/EmailSetup"}
                       sx={{
                         "&.Mui-selected": {
                           background:
@@ -747,12 +745,11 @@ export default function Dashboard() {
                     </ListItemButton>
                   </Link>
 
-
- <Link to="Upload-" className="link_style">
+                  <Link to="Gazetted-Master" className="link_style">
                     <ListItemButton
                       onClick={handleClickTransaction}
                       selected={
-                        location.pathname === "/dashboard/Upload-D"
+                        location.pathname === "/dashboard/Gazetted-Master"
                       }
                       sx={{
                         "&.Mui-selected": {
@@ -773,14 +770,12 @@ export default function Dashboard() {
                         onClick={handleDrawerOpen}
                       >
                         <ChecklistIcon />
-                        </ListItemIcon>
+                      </ListItemIcon>
                       <ListItemText primary="Gazetted Master" />
                     </ListItemButton>
                   </Link>
 
-
-
-                   <Link to="Upload-Document" className="link_style">
+                  <Link to="Upload-Document" className="link_style">
                     <ListItemButton
                       onClick={handleClickTransaction}
                       selected={
@@ -805,7 +800,7 @@ export default function Dashboard() {
                         onClick={handleDrawerOpen}
                       >
                         <DriveFolderUploadIcon />
-                        </ListItemIcon>
+                      </ListItemIcon>
                       <ListItemText primary="Upload Documents" />
                     </ListItemButton>
                   </Link>

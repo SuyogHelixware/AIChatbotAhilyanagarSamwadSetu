@@ -18,6 +18,7 @@ import ForgotPassword from "../Dashboard/ForgotPassword";
 import DocumentMaster from "../pages/DocumentMaster";
 import EmailSetup from "../pages/EmailSetup";
 import UploadDocument from "../pages/Upload-Document";
+import GazettedMaster from "../pages/Gazetted-Master";
 
 export default function Routing() {
   return (
@@ -36,6 +37,8 @@ export default function Routing() {
             <Route path="DocumentMaster" element={<DocumentMaster />} />
             <Route path="EmailSetup" element={<EmailSetup />} />
             <Route path="Upload-Document" element={<UploadDocument />} />
+            <Route path="Gazetted-Master" element={<GazettedMaster />} />
+
           </Route>
           {/* <Route path="/dashboard/special" element={<SpecialLayout />}> */}
           <Route path="LoginPage1" element={<LoginPage1 />} />

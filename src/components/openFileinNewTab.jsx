@@ -208,3 +208,5 @@ export const openFileinNewTab = (data) => {
     downloadFile(fileUrl, fileName);
   }
 };
+
+ 
