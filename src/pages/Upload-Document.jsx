@@ -308,21 +308,38 @@ const UploadDocument = () => {
       },
     },
 
+    // {
+    //   field: "action",
+    //   headerName: "Action",
+    //   width: 90,
+    //   renderCell: (params) => (
+    //     <Button
+    //       variant="outlined"
+    //       color="error"
+    //       size="small"
+    //       onClick={() => handleRemove(params.row.LineNum)}
+    //     >
+    //       Remove
+    //     </Button>
+    //   ),
+    // },
+
     {
-      field: "action",
-      headerName: "Action",
-      width: 90,
-      renderCell: (params) => (
-        <Button
-          variant="outlined"
-          color="error"
-          size="small"
-          onClick={() => handleRemove(params.row.LineNum)}
-        >
-          Remove
-        </Button>
-      ),
-    },
+  field: "action",
+  headerName: "Action",
+  width: 90,
+  renderCell: (params) => (
+    <Button
+      variant="outlined"
+      color="error"
+      size="small"
+      onClick={() => handleRemove(params.row)}
+    >
+      Remove
+    </Button>
+  ),
+}
+
   ];
   // const columns = [
   //   {
@@ -636,9 +653,32 @@ const UploadDocument = () => {
     setRows([]); // clears table data
   };
 
-  const handleRemove = (LineNum) => {
-    setRows((prev) => prev.filter((row) => row.LineNum !== LineNum));
-  };
+//   const handleRemove = (LineNum) => {
+     
+//     setRows((prev) => prev.filter((row) => row.LineNum !== LineNum));
+    
+//   };
+
+//   const handleRemove = (id) => {
+     
+//   setRows((prev) => prev.filter((row) => row.id !== id));
+// };
+
+const handleRemove = (rowToRemove) => {
+  setRows((prev) =>
+    prev.filter((row) => {
+      // If row has LineNum, compare with rowToRemove.LineNum
+      if (row.LineNum !== undefined && rowToRemove.LineNum !== undefined) {
+        return row.LineNum !== rowToRemove.LineNum;
+      }
+      // Otherwise, compare by id
+      return row.id !== rowToRemove.id;
+    })
+  );
+};
+
+
+  
 
 
   const handleFileUpload = async (e) => {
