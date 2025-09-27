@@ -1,28 +1,23 @@
 import AddIcon from "@mui/icons-material/Add";
+import CloseIcon from "@mui/icons-material/Close";
 import DeleteForeverIcon from "@mui/icons-material/DeleteForever";
 import EditNoteIcon from "@mui/icons-material/EditNote";
-import CloseIcon from "@mui/icons-material/Close";
-import { GridToolbar } from "@mui/x-data-grid";
 import {
   Button,
-  Checkbox,
-  FormControlLabel,
   Grid,
   IconButton,
   Modal,
   Paper,
   TextField,
-  Typography,
+  Typography
 } from "@mui/material";
-import { DataGrid } from "@mui/x-data-grid";
+import { DataGrid, GridToolbar } from "@mui/x-data-grid";
 import axios from "axios";
 import * as React from "react";
+import { Controller, useForm } from "react-hook-form"; 
 import Swal from "sweetalert2";
 import { BASE_URL } from "../Constant";
 import Loader from "../components/Loader";
-import { CheckboxInputs } from "../components/Component";
-import { debounce } from "lodash"; // Debouncing helper function
-import { Controller, useForm } from "react-hook-form"; // Importing React Hook Form
 
 const GazettedMaster = () => {
   const [loaderOpen, setLoaderOpen] = React.useState(false);
@@ -184,8 +179,8 @@ const GazettedMaster = () => {
   //   }
   // };
 
-  const getAllOfficerList = async (page = 0, searchText = "", limit = 20) => {
-    try {
+  const getAllOfficerList = async (page = 0, searchText = "") => {
+     try {
       setLoading(true);
 
       const params = {

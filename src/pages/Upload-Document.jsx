@@ -734,45 +734,74 @@ const UploadDocument = () => {
     }
   };
 
-  const getAllDocList = async (params = {}) => {
-    try {
-      setLoading(true);
+  // const getAllDocList = async (params = {}) => {
+  //   try {
+  //     setLoading(true);
 
-      // Set default values if not provided
-      const defaultParams = {
-        // MobileNo: "",
-        Status: "1",
-        // Page: 0,
-        // Limit: 20,
-      };
+  //     // Set default values if not provided
+  //     const defaultParams = {
+  //       // MobileNo: "",
+  //       Status: "1",
+  //       // Page: 0,
+  //       // Limit: 20,
+  //     };
 
-      const queryParams = { ...defaultParams, ...params };
+  //     const queryParams = { ...defaultParams, ...params };
 
-      //  Only include SearchText if it has a value
-      if (!queryParams.SearchText) {
-        delete queryParams.SearchText;
-      }
+  //     //  Only include SearchText if it has a value
+  //     if (!queryParams.SearchText) {
+  //       delete queryParams.SearchText;
+  //     }
 
-      const response = await axios.get(`${BASE_URL}DocUpload`, {
-        params: queryParams,
-      });
+  //     const response = await axios.get(`${BASE_URL}DocUpload`, {
+  //       params: queryParams,
+  //     });
 
-      if (response.data && response.data.values) {
-        const { Page = 0, Limit = 20 } = queryParams;
-        setDocumentlist(
-          response.data.values.map((item, index) => ({
-            ...item,
-            id: Page * Limit + index + 1,
-          }))
-        );
-        setTotalRows(response.data.count);
-      }
-    } catch (error) {
-      console.error("Error fetching data:", error);
-    } finally {
-      setLoading(false);
+  //     if (response.data && response.data.values) {
+  //       const { Page = 0, Limit = 20 } = queryParams;
+  //       setDocumentlist(
+  //         response.data.values.map((item, index) => ({
+  //           ...item,
+  //           id: Page * Limit + index + 1,
+  //         }))
+  //       );
+  //       setTotalRows(response.data.count);
+  //     }
+  //   } catch (error) {
+  //     console.error("Error fetching data:", error);
+  //   } finally {
+  //     setLoading(false);
+  //   }
+  // };
+const getAllDocList = async (page = 0, searchText = "", limit = 20) => {
+  try {
+    setLoading(true);
+
+    // Build query params
+    const params = {
+      Status: "1",
+      Page: page,
+      Limit: limit,
+      ...(searchText ? { SearchText: searchText } : {}),
+    };
+
+    const response = await axios.get(`${BASE_URL}DocUpload`, { params });
+
+    if (response.data && response.data.values) {
+      setDocumentlist(
+        response.data.values.map((item, index) => ({
+          ...item,
+          id: page * limit + index + 1, // generate unique id for DataGrid
+        }))
+      );
+      setTotalRows(response.data.count);
     }
-  };
+  } catch (error) {
+    console.error("Error fetching documents:", error);
+  } finally {
+    setLoading(false);
+  }
+};
 
   const gazettedList = async (params = {}) => {
     setLoading(true);
@@ -1160,6 +1189,7 @@ const UploadDocument = () => {
             const quickFilterValue = model.quickFilterValues?.[0] || "";
             setSearchText(quickFilterValue);
             setCurrentPage(0);
+             getAllDocList(0, quickFilterValue, limit);
           }}
           getRowId={(row) => row.Id}
         />

@@ -1,6 +1,6 @@
 // export const BASE_URL = "http://34.232.150.10:3011/api/"; 
 export const BASE_URL = "http://hwaceri5:8077/api/";
-export const Celeriq_BASE_URL = "http://hwaceri5:8076/api/";
+// export const Celeriq_BASE_URL = "http://hwaceri5:8076/api/";
 
 
 // export const BASE_URL = "http://34.232.150.10:8075/api/";
