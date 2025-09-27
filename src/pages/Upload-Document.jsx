@@ -251,9 +251,10 @@ const UploadDocument = () => {
               onChange={handleChange}
               fullWidth
               variant="standard"
+              
             >
               {gazeteList.map((option) => (
-                <MenuItem key={option.Name} value={option.Name}>
+                <MenuItem key={option.Name} value={option.Name}   >
                   {option.Name}
                 </MenuItem>
               ))}
@@ -791,7 +792,7 @@ const getAllDocList = async (page = 0, searchText = "", limit = 20) => {
       setDocumentlist(
         response.data.values.map((item, index) => ({
           ...item,
-          id: page * limit + index + 1, // generate unique id for DataGrid
+          id: page * limit + index + 1, 
         }))
       );
       setTotalRows(response.data.count);
@@ -848,7 +849,7 @@ const getAllDocList = async (page = 0, searchText = "", limit = 20) => {
           sx={{
             width: "100%",
             maxWidth: 1100,
-            Height: 1500,
+            Height: 2000,
             position: "absolute",
             top: "50%",
             left: "50%",
@@ -1007,7 +1008,7 @@ const getAllDocList = async (page = 0, searchText = "", limit = 20) => {
             </Grid>
             <Grid item xs={12} md={4}></Grid>
             {/* DataGrid */}
-            <Grid item xs={12} style={{ height: 300 }}>
+            <Grid item xs={12} style={{ height: 300, paddingBottom: 40 }}>
               <DataGrid
                 rows={rows}
                 columns={DocColumns}

@@ -60,7 +60,7 @@ export default class InputTextField extends React.Component {
           // required
           label={this.props.label}
           onChange={this.props.onChange}
-          
+          disabled={this.props.disabled}
           id={this.props.id}
           name={this.props.id}
           type={this.props.type}

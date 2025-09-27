@@ -14,7 +14,9 @@ import {
   FormControlLabel,
   Grid,
   IconButton,
+  MenuItem,
   Modal,
+  TextField,
   Typography,
 } from "@mui/material";
 import Box from "@mui/material/Box";
@@ -36,7 +38,7 @@ import InputTextField, {
   InputPasswordField,
 } from "../components/Component";
 import Loader from "../components/Loader";
-import CameraAltOutlinedIcon from "@mui/icons-material/CameraAltOutlined";
+// import CameraAltOutlinedIcon from "@mui/icons-material/CameraAltOutlined";
 import { useTheme } from "@mui/material/styles";
 
 export default function ManageUsers() {
@@ -61,7 +63,7 @@ export default function ManageUsers() {
   const limit = 20; // Fixed page size
   const [loading, setLoading] = React.useState(false);
   const [currentPage, setCurrentPage] = React.useState(0);
-  const [searchText, setSearchText] = React.useState(""); // ✅ Search input state
+  const [searchText, setSearchText] = React.useState("");
   const [ClearUpdateButton, setClearUpdateButton] = React.useState("RESET");
   const originalDataRef = React.useRef(null);
 
@@ -99,10 +101,11 @@ export default function ManageUsers() {
         FirstName: "",
         Username: "",
         LastName: "",
-        DOB: dayjs(), // Set DOB to a valid dayjs object
+        // DOB: dayjs(),
         Phone: "",
         Status: 1,
         Email: "",
+        UserType: "U",
         Avatar: "",
       });
       setImage(""); // Clear the image
@@ -114,7 +117,7 @@ export default function ManageUsers() {
           // Ensure DOB is always a valid dayjs object
           DOB: originalDataRef.current.DOB
             ? dayjs(originalDataRef.current.DOB)
-            : dayjs(),
+            : undefined,
         };
         reset(resetData);
         // setImage(
@@ -145,7 +148,7 @@ export default function ManageUsers() {
 
     try {
       setLoading(true);
-      const apiUrl = `${BASE_URL}Users/ById/${row.Id}`;
+      const apiUrl = `${BASE_URL}Users/${row.Id}`;
       console.log("Fetching API URL:", apiUrl);
 
       const response = await axios.get(apiUrl);
@@ -157,11 +160,14 @@ export default function ManageUsers() {
         setValue("FirstName", data.FirstName);
         setValue("Username", data.Username);
         setValue("LastName", data.LastName);
-        setValue("DOB", dayjs(data.DOB));
+        // setValue("DOB", dayjs(data.DOB) );
+setValue("DOB", data.DOB ? dayjs(data.DOB) : null);
         setValue("Phone", data.Phone);
         setValue("Email", data.Email);
         setValue("Status", data.Status);
-        setValue("Avatar", data.Avatar);
+        setValue("UserType", data.UserType);
+
+        // setValue("Avatar", data.Avatar);
         // setImage(
         //   data.Avatar
         //     ? `${Bunny_Image_URL}/Users/${data.Id}/${data.Avatar}`
@@ -242,27 +248,23 @@ export default function ManageUsers() {
       position: "center",
       icon: "warning",
       toast: true,
-       width: '500px',
+      width: "500px",
       title: message,
       showConfirmButton: false,
       timer: 3000,
     });
   };
 
-  const updateUser = async () => {
-    // alert();
-    const requiredFields = ["FirstName", "LastName", "Phone", "DOB", "Email"];
+  const OnSubmit = async () => {
+    const requiredFields = ["FirstName", "LastName", "Username"];
     const emptyRequiredFields = requiredFields.filter(
       (field) => !getValues(field) || !String(getValues(field)).trim()
     );
 
-    const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(getValues("Email"));
-
     if (emptyRequiredFields.length > 0) {
-      validationAlert("Please fill in all required fields");
-      return;
-    } else if (!isValidPhoneNumber(getValues("Phone"))) {
-      validationAlert("Please enter a valid 10-digit phone number.");
+      validationAlert(
+        "Please fill in first Name , Last Name ,user Name & Password required fields"
+      );
       return;
     } else if (!isValidUsername(getValues("Username"))) {
       validationAlert("Please enter minimum 4 letters Username.");
@@ -275,37 +277,46 @@ export default function ManageUsers() {
         "Password must contain at least one numeric digit, one alphabet, and one capital letter and at least 8 character..."
       );
       return;
-    } else if (getValues("Email").length > 0 && !emailRegex) {
-      validationAlert("Please enter a valid email address.");
-      return;
     }
 
     setLoaderOpen(true);
 
-    const filename = new Date().getTime() + "_" + uploadedImg.name;
+    // const filename = new Date().getTime() + "_" + uploadedImg.name;
     const saveObj = {
-      FirstName: getValues("FirstName"),
+      UserId: localStorage.getItem("UserId") || "",
+      ModifiedBy: localStorage.getItem("UserName") || "",
+      CreatedBy: localStorage.getItem("UserName") || "",
+      FirstName: getValues("FirstName") || "",
       Username: getValues("Username"),
-      LastName: getValues("LastName"),
-      DOB: getValues("DOB"),
+      LastName: getValues("LastName") || "",
+      DOB: getValues("DOB") || undefined,
       Password: getValues("Password"),
-      Phone: getValues("Phone"),
-      Email: getValues("Email"),
-      UserType: "P",
-      Avatar: uploadedImg !== "" ? filename : "",
+      Phone: getValues("Phone") || "",
+      Email: getValues("Email") || "",
+      CreatedDate: dayjs().format("YYYY-MM-DD"),
+
+      UserType: getValues("UserType") || "U",
+      // Avatar: uploadedImg !== "" ? filename : "",
       Status: getValues("Status"),
     };
 
     const UpdateObj = {
       Id: getValues("Id"),
-      FirstName: getValues("FirstName"),
+      UserId: localStorage.getItem("UserId") || "",
+      ModifiedBy: localStorage.getItem("UserName"),
+      CreatedBy: localStorage.getItem("UserName"),
+        ModifiedDate: dayjs().format("YYYY-MM-DD"),
+      
+      FirstName: getValues("FirstName") || "",
       Username: getValues("Username"),
-      LastName: getValues("LastName"),
-      DOB: getValues("DOB") || 0,
-      Phone: getValues("Phone"),
-      Email: getValues("Email"),
+      LastName: getValues("LastName") || "",
+      DOB: getValues("DOB") || undefined,
+      Phone: getValues("Phone") || "",
+      Email: getValues("Email") || "",
+      UserType: getValues("UserType") || "U",
+
       Status: getValues("Status"),
-      Avatar: uploadedImg === "" ? getValues("Avatar") : filename,
+      // Avatar: uploadedImg === "" ? getValues("Avatar") : filename,
     };
 
     setLoaderOpen(true);
@@ -323,7 +334,7 @@ export default function ManageUsers() {
             maxBodyLength: Infinity,
             headers: {
               "Content-Type": "image/jpeg",
-              AccessKey: Bunny_Storage_Access_Key,
+              // AccessKey: Bunny_Storage_Access_Key,
             },
             data: uploadedImg,
           });
@@ -390,7 +401,7 @@ export default function ManageUsers() {
               maxBodyLength: Infinity,
               headers: {
                 "Content-Type": "image/jpeg",
-                AccessKey: Bunny_Storage_Access_Key,
+                // AccessKey: Bunny_Storage_Access_Key,
               },
               data: uploadedImg,
             });
@@ -401,7 +412,7 @@ export default function ManageUsers() {
                   method: "DELETE",
                   maxBodyLength: Infinity,
                   headers: {
-                    AccessKey: Bunny_Storage_Access_Key,
+                    // AccessKey: Bunny_Storage_Access_Key,
                   },
                 });
               }
@@ -409,7 +420,7 @@ export default function ManageUsers() {
               Swal.fire({
                 position: "center",
                 icon: "success",
-                title: " Data Updated Successfully",
+                title: "User Updated Successfully",
                 toast: true,
                 showConfirmButton: false,
                 timer: 1500,
@@ -426,7 +437,7 @@ export default function ManageUsers() {
             Swal.fire({
               position: "center",
               icon: "success",
-              title: " Data Updated Successfully",
+              title: " User Updated Successfully",
               toast: true,
               showConfirmButton: false,
               timer: 1500,
@@ -478,10 +489,10 @@ export default function ManageUsers() {
 
   const getUserData = async (page = 0, searchText = "") => {
     try {
-      let apiUrl = `${BASE_URL}Users/ByPage/${page}/${limit}`;
+      let apiUrl = `${BASE_URL}Users?Page=${page}&Limit=${limit}`;
 
       if (searchText) {
-        apiUrl = `${BASE_URL}Users/ByPage/search/${searchText}/${page}/${limit}`;
+        apiUrl = `${BASE_URL}Users?SearchText=${searchText}&Page=${page}&Limit=${limit}`;
       }
       const response = await axios.get(apiUrl);
 
@@ -511,7 +522,8 @@ export default function ManageUsers() {
     {
       field: "Action",
       headerName: "Action",
-      headerAlign: "center", align: "center",
+      headerAlign: "center",
+      align: "center",
       width: 100,
       sortable: false,
       renderCell: (params) => (
@@ -542,54 +554,98 @@ export default function ManageUsers() {
         </>
       ),
     },
-    { field: "id", headerName: "SR.No", headerAlign: "center", align: "center",width: 90, sortable: true },
+    {
+      field: "id",
+      headerName: "SR.No",
+      headerAlign: "center",
+      align: "center",
+      width: 90,
+      sortable: true,
+    },
     {
       field: "FirstName",
       headerName: "First Name",
-      width: 150,
+      width: 160,
       sortable: false,
-      headerAlign: "center", align: "center"
+      headerAlign: "center",
+      align: "center",
     },
 
     {
       field: "LastName",
       headerName: "Last Name",
-      width: 150,
-      sortable: false,headerAlign: "center", align: "center"
+      width: 160,
+      sortable: false,
+      headerAlign: "center",
+      align: "center",
     },
     {
       field: "Username",
       headerName: "Username",
-      width: 150,
-      sortable: false,headerAlign: "center", align: "center"
+      width: 160,
+      sortable: false,
+      headerAlign: "center",
+      align: "center",
     },
+    // {
+    //   field: "DOB",
+    //   headerName: "DOB",
+    //   width: 150,
+    //   sortable: false,
+    //   valueFormatter: (params) => dayjs(params.value).format("YYYY-MM-DD") ,
+    //   headerAlign: "center",
+    //   align: "center",
+    // },
     {
       field: "DOB",
       headerName: "DOB",
       width: 150,
       sortable: false,
-      valueFormatter: (params) => dayjs(params.value).format("YYYY-MM-DD"),
-      headerAlign: "center", align: "center"
+      valueFormatter: (params) => {
+        const value = params.value;
+        return value ? dayjs(value).format("YYYY-MM-DD") : "NA";
+      },
+      headerAlign: "center",
+      align: "center",
     },
+
+    // {
+    //   field: "Phone",
+    //   headerName: "Phone",
+    //   width: 150,
+    //   sortable: false,
+    //   headerAlign: "center",
+    //   align: "center",
+    // },
     {
-      field: "Phone",
-      headerName: "Phone",
-      width: 150,
-      sortable: false,headerAlign: "center", align: "center"
-    },
+  field: "Phone",
+  headerName: "Phone",
+  width: 150,
+  sortable: false,
+  headerAlign: "center",
+  align: "center",
+  valueFormatter: (params) => {
+    if (!params.value) return "NA";  
+    return `+91 ${params.value}`;
+  },
+},
+
 
     {
       field: "Email",
       headerName: "Email",
-      width: 170,
-      sortable: false,headerAlign: "center", align: "center"
+      width: 200,
+      sortable: false,
+      headerAlign: "center",
+      align: "center",
     },
 
     {
       field: "Status",
       headerName: "Status",
-      width: 100,
-      headerAlign: "center", align: "center",
+      width: 80,
+      headerAlign: "center",
+      align: "center",
       sortable: false,
       valueGetter: (params) =>
         params.row.Status === 1 ? "Active" : "Inactive",
@@ -606,24 +662,24 @@ export default function ManageUsers() {
       },
     },
 
-    {
-      field: "Avatar",
-      headerName: "Image",
-      width: 100,
-      sortable: false,
-      renderCell: (params) => (
-        <img
-          src={avatar}
-          alt="avatar"
-          style={{
-            height: "30px",
-            width: "30px",
-            borderRadius: "50%",
-            objectFit: "cover",
-          }}
-        />
-      ),
-    },
+    // {
+    //   field: "Avatar",
+    //   headerName: "Image",
+    //   width: 100,
+    //   sortable: false,
+    //   renderCell: (params) => (
+    //     <img
+    //       src={avatar}
+    //       alt="avatar"
+    //       style={{
+    //         height: "30px",
+    //         width: "30px",
+    //         borderRadius: "50%",
+    //         objectFit: "cover",
+    //       }}
+    //     />
+    //   ),
+    // },
   ];
 
   const buttonStyles = {
@@ -661,7 +717,7 @@ export default function ManageUsers() {
           sx={{
             width: "90%",
             maxWidth: 600,
-            height: 450,
+            height: 500,
             // bgcolor: "#E6E6FA",
             position: "absolute",
             top: "50%",
@@ -683,7 +739,7 @@ export default function ManageUsers() {
             rowSpacing={2.2}
             columnSpacing={2}
             component={"form"}
-            onSubmit={handleSubmit(updateUser)}
+            onSubmit={handleSubmit(OnSubmit)}
           >
             <Grid
               container
@@ -707,11 +763,11 @@ export default function ManageUsers() {
                   style={{
                     display: "block",
                     borderRadius: "50%",
-                    cursor: "pointer",
+                    // cursor: "pointer",
                   }}
                 />
 
-                <CameraAltOutlinedIcon
+                {/* <CameraAltOutlinedIcon
                   style={{
                     position: "absolute",
                     bottom: 0,
@@ -722,7 +778,7 @@ export default function ManageUsers() {
                     borderRadius: "70%",
                     padding: "1px",
                   }}
-                />
+                /> */}
               </Badge>
             </Grid>
             <IconButton
@@ -802,24 +858,23 @@ export default function ManageUsers() {
                 Leave blank here to keep current Password
               </Typography>
             </Grid>
-     
 
             <Grid item md={6} sm={6} xs={12}>
               <Controller
                 name="DOB"
                 control={control}
-                defaultValue={dayjs()}
+                // defaultValue={dayjs()}
                 render={({ field }) => (
                   <DatePickerField
                     {...field}
                     id="DOB"
-                    label="DOB"
+                    label="Date Of Birth"
                     maxDate={dayjs(undefined)}
                   />
                 )}
               />
             </Grid>
-            <Grid item md={6} sm={6} xs={12}>
+            {/* <Grid item md={6} sm={6} xs={12}>
               <Controller
                 name="Phone"
                 control={control}
@@ -833,7 +888,48 @@ export default function ManageUsers() {
                   />
                 )}
               />
+            </Grid> */}
+
+            <Grid item md={6} sm={6} xs={12}>
+              <Controller
+                name="Phone"
+                control={control}
+                rules={{
+                  // required: "Mobile number is required",
+                  pattern: {
+                    value: /^[0-9]{10}$/,
+                    message: "Enter a valid 10-digit mobile number",
+                  },
+                }}
+                render={({ field, fieldState }) => (
+                  <TextField
+                    {...field}
+                    label="Phone No"
+                    // fullWidth
+                    size="small"
+                    error={!!fieldState.error}
+                    helperText={fieldState.error?.message}
+                    inputProps={{
+                      maxLength: 10,
+                      inputMode: "numeric",
+                      pattern: "[0-9]*",
+                    }}
+                    onChange={(e) => {
+                      const value = e.target.value.replace(/\D/g, "");
+                      if (value.length <= 10) {
+                        field.onChange(value);
+                      }
+                    }}
+                    InputProps={{
+                      startAdornment: (
+                        <span style={{ marginRight: 8 }}>+91</span>
+                      ),
+                    }}
+                  />
+                )}
+              />
             </Grid>
+
             <Grid item md={6} sm={6} xs={12}>
               <Controller
                 name="Email"
@@ -851,7 +947,28 @@ export default function ManageUsers() {
                 )}
               />
             </Grid>
-            <Grid item md={3} sm={3} xs={12} textAlign={"center"} >
+
+            <Grid item md={6} sm={6} xs={12}>
+              <Controller
+                name="UserType"
+                control={control}
+                defaultValue="U"
+                render={({ field }) => (
+                  <TextField
+                    select
+                    label="User Type"
+                    fullWidth
+                    size="small"
+                    {...field}
+                  >
+                    <MenuItem value="U">USER</MenuItem>
+                    <MenuItem value="A">ADMIN</MenuItem>
+                  </TextField>
+                )}
+              />
+            </Grid>
+
+            <Grid item md={3} sm={3} xs={12} textAlign={"center"}>
               <Controller
                 name="Status"
                 control={control}
@@ -911,7 +1028,7 @@ export default function ManageUsers() {
               <Button
                 type="submit"
                 size="small"
-                // onClick={() => updateUser(data.Id)}
+                // onClick={() => OnSubmit(data.Id)}
                 sx={{
                   p: 1,
                   width: 80,
@@ -1121,7 +1238,7 @@ export default function ManageUsers() {
             onFilterModelChange={(model) => {
               const quickFilterValue = model.quickFilterValues?.[0] || "";
               setSearchText(quickFilterValue);
-              setCurrentPage(0); // ✅ Always reset to first page when searching
+              setCurrentPage(0);
               getUserData(0, quickFilterValue);
             }}
             sx={{
