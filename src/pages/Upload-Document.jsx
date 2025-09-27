@@ -19,15 +19,14 @@ import { DataGrid, GridToolbar } from "@mui/x-data-grid";
 import axios from "axios";
 import dayjs from "dayjs";
 import * as React from "react";
-import { Controller, useForm } from "react-hook-form"; // Importing React Hook Form
+import { Controller, useForm } from "react-hook-form";
 import Swal from "sweetalert2";
 import InputTextField, {
   DatePickerField,
   InputDescriptionField,
 } from "../components/Component";
 import Loader from "../components/Loader";
-import { openFileinNewTab } from "../components/openFileinNewTab";
-import { BASE_URL, Celeriq_BASE_URL } from "../Constant";
+import { BASE_URL } from "../Constant";
 
 const UploadDocument = () => {
   const [loaderOpen, setLoaderOpen] = React.useState(false);
@@ -69,7 +68,6 @@ const UploadDocument = () => {
       initial,
     },
   });
- 
 
   const DocopetionOptions = [
     { label: " Aadhaar Card", value: "AadhaarCard" },
@@ -89,6 +87,29 @@ const UploadDocument = () => {
       renderCell: (params) =>
         params.api.getSortedRowIds().indexOf(params.id) + 1,
     },
+    // {
+    //   field: "ViewFile",
+    //   headerName: "View File",
+    //   width: 78,
+    //   sortable: false,
+    //   headerAlign: "center",
+    //   align: "center",
+    //   renderCell: (params) => (
+    //     <div style={{ display: "flex", alignItems: "center", gap: 8 }}>
+    //       <Tooltip title="Open File">
+    //         <IconButton
+    //           size="small"
+    //           onClick={(e) => {
+    //             e.stopPropagation();
+    //             openFileinNewTab(params.row);
+    //           }}
+    //         >
+    //           <RemoveRedEyeIcon fontSize="small" />
+    //         </IconButton>
+    //       </Tooltip>
+    //     </div>
+    //   ),
+    // },
     {
       field: "ViewFile",
       headerName: "View File",
@@ -103,7 +124,7 @@ const UploadDocument = () => {
               size="small"
               onClick={(e) => {
                 e.stopPropagation();
-                openFileinNewTab(params.row);
+                handleViewFile(params.row);
               }}
             >
               <RemoveRedEyeIcon fontSize="small" />
@@ -242,32 +263,6 @@ const UploadDocument = () => {
       },
     },
 
-    // {
-    //   field: "DocType",
-    //   headerName: "DOCUMENT TYPE",
-    //   flex: 1,
-    //   renderCell: (params) => {
-    //     const { id, field, value, api } = params;
-
-    //     const handleChange = (e) => {
-    //       api.updateRows([{ id, [field]: e.target.value }]);
-    //     };
-    //     return (
-    //       <Select
-    //         value={value || ""}
-    //         onChange={handleChange}
-    //         fullWidth
-    //         variant="standard"
-    //       >
-    //         {DocopetionOptions.map((option) => (
-    //           <MenuItem key={option.value} value={option.value}>
-    //             {option.label}
-    //           </MenuItem>
-    //         ))}
-    //       </Select>
-    //     );
-    //   },
-    // },
     {
       field: "DocType",
       headerName: "DOCUMENT TYPE",
@@ -307,102 +302,38 @@ const UploadDocument = () => {
         );
       },
     },
-
-    // {
-    //   field: "action",
-    //   headerName: "Action",
-    //   width: 90,
-    //   renderCell: (params) => (
-    //     <Button
-    //       variant="outlined"
-    //       color="error"
-    //       size="small"
-    //       onClick={() => handleRemove(params.row.LineNum)}
-    //     >
-    //       Remove
-    //     </Button>
-    //   ),
-    // },
-
     {
-  field: "action",
-  headerName: "Action",
-  width: 90,
-  renderCell: (params) => (
-    <Button
-      variant="outlined"
-      color="error"
-      size="small"
-      onClick={() => handleRemove(params.row)}
-    >
-      Remove
-    </Button>
-  ),
-}
-
+      field: "action",
+      headerName: "Action",
+      width: 90,
+      renderCell: (params) => (
+        <Button
+          variant="outlined"
+          color="error"
+          size="small"
+          onClick={() => handleRemove(params.row)}
+        >
+          Remove
+        </Button>
+      ),
+    },
   ];
-  // const columns = [
-  //   {
-  //     field: "actions",
-  //     headerName: "Action",
-  //     width: 150,
-  //     sortable: false,
-  //     renderCell: (params) => (
-  //       <strong>
-  //         <IconButton
-  //           color="primary"
-  //           onClick={() => handleUpdate(params.row)}
-  //           sx={{
-  //             color: "rgb(0, 90, 91)",
-  //             "&:hover": {
-  //               backgroundColor: "rgba(0, 90, 91, 0.1)",
-  //             },
-  //           }}
-  //         >
-  //           <EditNoteIcon />
-  //         </IconButton>
-  //         <Button
-  //           size="medium"
-  //           sx={{ color: "red" }}
-  //           onClick={() => handleDelete(params.row)}
-  //         >
-  //           <DeleteForeverIcon />
-  //         </Button>
-  //       </strong>
-  //     ),
-  //   },
-  //   {
-  //     field: "id",
-  //     headerName: "Sr.No",
-  //     width: 100,
-  //     sortable: true,
-  //   },
-  //   {
-  //     field: "Name",
-  //     headerName: " NAME",
-  //      Width: "150px",
-  //     sortable: false,
-  //   },
 
-  //   {
-  //     field: "MobileNo",
-  //     headerName: "PHONE NO",
-  //      minWidth: 150,
-  //     sortable: false,
-  //   },
-  //   {
-  //     field: "Email",
-  //     headerName: "EMAIL ID",
-  //      minWidth: 180,
-  //     sortable: false,
-  //   },
-  //   {
-  //     field: "Address",
-  //     headerName: "ADDRESS",
-  //      minWidth: 200,
-  //     sortable: false,
-  //   },
-  // ];
+  const handleViewFile = (row) => {
+    if (row.SrcPath) {
+      // Old file from server
+      window.open(row.SrcPath, "_blank");
+    } else if (row.File) {
+      // New file not uploaded yet → create a temporary URL
+      const fileURL = URL.createObjectURL(row.File);
+      window.open(fileURL, "_blank");
+
+      // Optional: revoke URL after a while to free memory
+      setTimeout(() => URL.revokeObjectURL(fileURL), 10000);
+    } else {
+      console.warn("File not available to open");
+    }
+  };
 
   const columns = [
     {
@@ -549,45 +480,6 @@ const UploadDocument = () => {
     }
   };
 
-  // const clearFormData = () => {
-  //   reset();
-  //   setRows([]);
-  //   if (ClearUpdateButton === "CLEAR") {
-  //     reset({
-  //       Status: 1,
-  //       mobile: "",
-  //       Address: "",
-  //       Email: "",
-  //       MobileNo: "",
-  //       Name: "",
-  //       oDocLines: [],
-  //     });
-  //   }
-  //   if (ClearUpdateButton === "RESET") {
-  //     reset(originalDataRef.current);
-
-  //     if (ClearUpdateButton === "RESET") {
-  //       reset(originalDataRef.current);
-
-  //       // normalize oDocLines again for DataGrid
-  //       if (
-  //         originalDataRef.current.oDocLines &&
-  //         Array.isArray(originalDataRef.current.oDocLines)
-  //       ) {
-  //         const formattedLines = originalDataRef.current.oDocLines.map(
-  //           (line, index) => ({
-  //             ...line,
-  //             id: line.LineNum ?? index, // unique key for DataGrid
-  //           })
-  //         );
-
-  //         setRows(formattedLines); // ✅ repopulate DataGrid
-  //       } else {
-  //         setRows([]); // ✅ in case no lines exist
-  //       }
-  //     }
-  //   }
-  // };
   const clearFormData = () => {
     setRows([]); // clear DataGrid first
 
@@ -653,33 +545,18 @@ const UploadDocument = () => {
     setRows([]); // clears table data
   };
 
-//   const handleRemove = (LineNum) => {
-     
-//     setRows((prev) => prev.filter((row) => row.LineNum !== LineNum));
-    
-//   };
-
-//   const handleRemove = (id) => {
-     
-//   setRows((prev) => prev.filter((row) => row.id !== id));
-// };
-
-const handleRemove = (rowToRemove) => {
-  setRows((prev) =>
-    prev.filter((row) => {
-      // If row has LineNum, compare with rowToRemove.LineNum
-      if (row.LineNum !== undefined && rowToRemove.LineNum !== undefined) {
-        return row.LineNum !== rowToRemove.LineNum;
-      }
-      // Otherwise, compare by id
-      return row.id !== rowToRemove.id;
-    })
-  );
-};
-
-
-  
-
+  const handleRemove = (rowToRemove) => {
+    setRows((prev) =>
+      prev.filter((row) => {
+        // If row has LineNum, compare with rowToRemove.LineNum
+        if (row.LineNum !== undefined && rowToRemove.LineNum !== undefined) {
+          return row.LineNum !== rowToRemove.LineNum;
+        }
+        // Otherwise, compare by id
+        return row.id !== rowToRemove.id;
+      })
+    );
+  };
 
   const handleFileUpload = async (e) => {
     const files = Array.from(e.target.files);
@@ -1053,19 +930,6 @@ const handleRemove = (rowToRemove) => {
               />
             </Grid>
             <Grid item xs={6} md={4}>
-              {/* <Controller
-                name="Address"
-                control={control}
-                render={({ field }) => (
-                  <InputDescriptionField
-                    {...field}
-                    label="ENTER ADDRESS"
-                    size="small"
-                    fullWidth
-                  />
-                )}
-              /> */}
-
               <Controller
                 name="Address"
                 control={control}

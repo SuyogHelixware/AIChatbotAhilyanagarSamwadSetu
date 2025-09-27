@@ -144,6 +144,7 @@ const getMime = (data) => {
 
 // ✅ Open file in new tab OR download
 export const openFileinNewTab = (data) => {
+ 
   if (!data) {
     console.error("❌ File data is undefined:", data);
     return;

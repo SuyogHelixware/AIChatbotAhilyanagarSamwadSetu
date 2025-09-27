@@ -60,6 +60,7 @@ export default class InputTextField extends React.Component {
           // required
           label={this.props.label}
           onChange={this.props.onChange}
+          
           id={this.props.id}
           name={this.props.id}
           type={this.props.type}
@@ -129,39 +130,79 @@ export class InputDescriptionField extends React.Component {
   }
 }
 
+// export class InputPasswordField extends React.Component {
+//   render(props) {
+//     return (
+//       <>
+//         <TextField
+//           // required
+//           label={this.props.label}
+//           onChange={this.props.onChange}
+//           id={this.props.id}
+//           name={this.props.id}
+//           type={this.props.type}
+//           value={this.props.value}
+//           size="small"
+//           sx={{ maxWidth: 220 }}
+//           InputProps={{
+//             endAdornment: (
+//               <InputAdornment position="end">
+//                 <IconButton
+//                   edge="end"
+//                   sx={{ color: "#5C5CFF " }}
+//                   onClick={this.props.onClick}
+//                   onMouseDown={this.props.onMouseDown}
+//                 >
+//                   {this.props.showPassword ? <VisibilityOff /> : <Visibility />}
+//                 </IconButton>
+//               </InputAdornment>
+//             ),
+//           }}
+//         />
+//       </>
+//     );
+//   }
+// }
+
 export class InputPasswordField extends React.Component {
-  render(props) {
+  render() {
     return (
-      <>
-        <TextField
-          // required
-          label={this.props.label}
-          onChange={this.props.onChange}
-          id={this.props.id}
-          name={this.props.id}
-          type={this.props.type}
-          value={this.props.value}
-          size="small"
-          sx={{ maxWidth: 220 }}
-          InputProps={{
-            endAdornment: (
-              <InputAdornment position="end">
-                <IconButton
-                  edge="end"
-                  sx={{ color: "#5C5CFF " }}
-                  onClick={this.props.onClick}
-                  onMouseDown={this.props.onMouseDown}
-                >
-                  {this.props.showPassword ? <VisibilityOff /> : <Visibility />}
-                </IconButton>
-              </InputAdornment>
-            ),
-          }}
-        />
-      </>
+      <TextField
+        label={this.props.label}
+        onChange={this.props.onChange}
+        id={this.props.id}
+        name={this.props.id}
+        type={this.props.type}
+        value={this.props.value}
+        size="small"
+        sx={{ maxWidth: 220 }}
+        inputProps={{
+          maxLength: 16,
+           
+          ...(this.props.inputProps || {}), // allow parent to override/extend
+        }}
+        InputProps={{
+          endAdornment: (
+            <InputAdornment position="end">
+              <IconButton
+                edge="end"
+                sx={{ color: "#5C5CFF " }}
+                onClick={this.props.onClick}
+                onMouseDown={this.props.onMouseDown}
+              >
+                {this.props.showPassword ? <VisibilityOff /> : <Visibility />}
+              </IconButton>
+            </InputAdornment>
+          ),
+          ...(this.props.InputProps || {}), // allow parent overrides too
+        }}
+      />
     );
   }
 }
+
+
+
 export class InputPasswordFieldmd extends React.Component {
   render(props) {
     return (

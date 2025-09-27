@@ -242,9 +242,10 @@ export default function ManageUsers() {
       position: "center",
       icon: "warning",
       toast: true,
+       width: '500px',
       title: message,
       showConfirmButton: false,
-      timer: 1500,
+      timer: 3000,
     });
   };
 
@@ -271,7 +272,7 @@ export default function ManageUsers() {
       SaveUpdateButton === "ADD"
     ) {
       validationAlert(
-        "Password must contain at least one numeric digit, one alphabet, and one capital letter, @ Not allow..."
+        "Password must contain at least one numeric digit, one alphabet, and one capital letter and at least 8 character..."
       );
       return;
     } else if (getValues("Email").length > 0 && !emailRegex) {
@@ -801,6 +802,8 @@ export default function ManageUsers() {
                 Leave blank here to keep current Password
               </Typography>
             </Grid>
+     
+
             <Grid item md={6} sm={6} xs={12}>
               <Controller
                 name="DOB"
