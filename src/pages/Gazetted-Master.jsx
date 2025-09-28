@@ -9,6 +9,7 @@ import {
   Modal,
   Paper,
   TextField,
+  Tooltip,
   Typography
 } from "@mui/material";
 import { DataGrid, GridToolbar } from "@mui/x-data-grid";
@@ -148,36 +149,7 @@ const GazettedMaster = () => {
       });
     }
   };
-
-  // const getAllOfficerList = async (page , searchText = "", limit) => {
-
-  //   try {
-  //     setLoading(true);
-
-  //     // Construct query params
-  //     const params = {
-  //       Status: 1,
-  //       Page: page,
-  //       ...(limit ? { Limit: limit } : {}),
-  //     };
-
-  //     const response = await axios.get(`${BASE_URL}GazOfficers`, { params });
-
-  //     if (response.data && response.data.values) {
-  //       setOfficersList(
-  //         response.data.values.map((item, index) => ({
-  //           ...item,
-  //           id: page * (limit || response.data.values.length) + index + 1, // unique ID
-  //         }))
-  //       );
-  //       setTotalRows(response.data.count);
-  //     }
-  //   } catch (error) {
-  //     console.error("Error fetching data:", error);
-  //   } finally {
-  //     setLoading(false);
-  //   }
-  // };
+ 
 
   const getAllOfficerList = async (page = 0, searchText = "") => {
      try {
@@ -315,12 +287,23 @@ const GazettedMaster = () => {
       renderCell: (params) =>
         params.api.getSortedRowIds().indexOf(params.id) + 1,
     },
+    // {
+    //   field: "Name",
+    //   headerName: "Name",
+    //   width: 600,
+    //   sortable: false,
+    // },
     {
-      field: "Name",
-      headerName: "Name",
-      width: 600,
-      sortable: false,
-    },
+  field: "Name",
+  headerName: "Name",
+  width: 600,
+  sortable: false,
+  renderCell: (params) => (
+    <Tooltip title={params.value || ""} arrow>
+      <span>{params.value}</span>
+    </Tooltip>
+  ),
+}
   ];
 
   const handleUpdate = async (rowData) => {
@@ -334,9 +317,14 @@ const GazettedMaster = () => {
       if (response.data && response.data.values) {
         const department = response.data.values;
         originalDataRef.current = department;
-        setValue("Id", department.Id);
-        setValue("Name", department.Name);
+        // setValue("Id", department.Id);
+        // setValue("Name", department.Name);
         //  setValue("Status", department.Status);
+          reset({
+        Id: department.Id ?? "",
+        Name: department.Name ?? "",
+        // Status: department.Status ?? "", // uncomment if needed
+      });
       }
     } catch (error) {
       console.error("Error fetching department data:", error);
@@ -353,8 +341,8 @@ const GazettedMaster = () => {
         onClose={handleClose}
         sx={{
           backdropFilter: "blur(5px)",
-          backgroundColor: "rgba(0, 0, 0, 0.3)",
-          // zIndex: 1200,
+          // backgroundColor: "rgba(0, 0, 0, 0.3)",
+           // zIndex: 1200,
         }}
       >
         <Paper
@@ -368,7 +356,7 @@ const GazettedMaster = () => {
             left: "50%",
             transform: "translate(-50%, -50%)",
             justifyContent: "center",
-            overflow: "auto", // <-- Add this
+            overflow: "auto", 
             maxHeight: "90vh",
           }}
         >
@@ -391,7 +379,7 @@ const GazettedMaster = () => {
               sx={{ display: "flex", justifyContent: "space-between" }}
             >
               <Typography fontWeight="bold" textAlign={"center"}>
-                Add Gazetted
+                ADD GAZETTED
               </Typography>
               <IconButton onClick={handleClose}>
                 <CloseIcon />
@@ -412,6 +400,7 @@ const GazettedMaster = () => {
                   },
                 }}
                 render={({ field, fieldState: { error } }) => (
+                   <Tooltip title={field.value || ""} arrow placement="top">
                   <TextField
                     {...field}
                     inputRef={field.ref}
@@ -422,6 +411,7 @@ const GazettedMaster = () => {
                     error={!!error}
                     helperText={error?.message}
                   />
+                  </Tooltip>
                 )}
               />
             </Grid>
@@ -548,7 +538,7 @@ const GazettedMaster = () => {
             }}
           >
             <AddIcon />
-            Add Gazetteds
+            Add Gazetted
           </Button>
         </Grid>
       </Grid>

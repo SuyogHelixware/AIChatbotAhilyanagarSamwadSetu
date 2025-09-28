@@ -161,7 +161,7 @@ export default function ManageUsers() {
         setValue("Username", data.Username);
         setValue("LastName", data.LastName);
         // setValue("DOB", dayjs(data.DOB) );
-setValue("DOB", data.DOB ? dayjs(data.DOB) : null);
+       setValue("DOB", data.DOB ? dayjs(data.DOB) : null);
         setValue("Phone", data.Phone);
         setValue("Email", data.Email);
         setValue("Status", data.Status);
@@ -639,6 +639,31 @@ setValue("DOB", data.DOB ? dayjs(data.DOB) : null);
       headerAlign: "center",
       align: "center",
     },
+    // {
+    //   field: "UserType",
+    //   headerName: "User Type",
+    //   width: 200,
+    //   sortable: false,
+    //   headerAlign: "center",
+    //   align: "center",
+    // },
+    {
+  field: "UserType",
+  headerName: "User Type",
+  width: 200,
+  sortable: false,
+  headerAlign: "center",
+  align: "center",
+  renderCell: (params) => {
+    // Map U to 'User' and A to 'Admin'
+    const userTypeMap = {
+      U: "User",
+      A: "Admin"
+    };
+    return userTypeMap[params.value] || params.value;  
+  }
+},
+
 
     {
       field: "Status",
@@ -706,7 +731,7 @@ setValue("DOB", data.DOB ? dayjs(data.DOB) : null);
       {loaderOpen && <Loader open={loaderOpen} />}
       <Modal
         open={on}
-        onClose={handleClose}
+        // onClose={handleClose}
         sx={{
           backdropFilter: "blur(5px)",
           backgroundColor: "rgba(0, 0, 0, 0.3)",
@@ -804,7 +829,7 @@ setValue("DOB", data.DOB ? dayjs(data.DOB) : null);
                 render={({ field }) => (
                   <InputTextField
                     {...field}
-                    label="First Name"
+                    label="FIRST NAME"
                     id="FirstName"
                     className="custom-required-field"
                   />
@@ -818,7 +843,7 @@ setValue("DOB", data.DOB ? dayjs(data.DOB) : null);
                 control={control}
                 defaultValue=""
                 render={({ field }) => (
-                  <InputTextField {...field} label="Last Name" id="LastName" />
+                  <InputTextField {...field} label="LAST NAME" id="LastName" />
                 )}
               />
             </Grid>
@@ -830,7 +855,7 @@ setValue("DOB", data.DOB ? dayjs(data.DOB) : null);
                 render={({ field }) => (
                   <InputTextField
                     {...field}
-                    label="Username"
+                    label="USERNAME "
                     id="Username"
                     disabled={ClearUpdateButton === "RESET"}
                   />
@@ -845,7 +870,7 @@ setValue("DOB", data.DOB ? dayjs(data.DOB) : null);
                 render={({ field }) => (
                   <InputPasswordField
                     {...field}
-                    label="Password"
+                    label="PASSWORD"
                     id="Password"
                     type={showPassword ? "text" : "Password"}
                     showPassword={showPassword}
@@ -868,7 +893,7 @@ setValue("DOB", data.DOB ? dayjs(data.DOB) : null);
                   <DatePickerField
                     {...field}
                     id="DOB"
-                    label="Date Of Birth"
+                    label="DATE OF BIRTH"
                     maxDate={dayjs(undefined)}
                   />
                 )}
@@ -904,7 +929,7 @@ setValue("DOB", data.DOB ? dayjs(data.DOB) : null);
                 render={({ field, fieldState }) => (
                   <TextField
                     {...field}
-                    label="Phone No"
+                    label="PHONE NO"
                     // fullWidth
                     size="small"
                     error={!!fieldState.error}
@@ -938,7 +963,7 @@ setValue("DOB", data.DOB ? dayjs(data.DOB) : null);
                 render={({ field }) => (
                   <InputTextField
                     {...field}
-                    label="Email ID"
+                    label="EMAIL ID "
                     id="Email"
                     type="email"
                     required
@@ -956,7 +981,7 @@ setValue("DOB", data.DOB ? dayjs(data.DOB) : null);
                 render={({ field }) => (
                   <TextField
                     select
-                    label="User Type"
+                    label="USER TYPE "
                     fullWidth
                     size="small"
                     {...field}
@@ -984,7 +1009,7 @@ setValue("DOB", data.DOB ? dayjs(data.DOB) : null);
                         }
                       />
                     }
-                    label="Active"
+                    label="ACTIVE"
                   />
                 )}
               />

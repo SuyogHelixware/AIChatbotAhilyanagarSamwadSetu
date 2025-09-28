@@ -169,6 +169,18 @@ const UploadDocument = () => {
         const handleChange = (event) => {
           const newValue = event.target.value;
 
+          //       if (newValue.trim() === "") {
+          //   Swal.fire({
+          //     toast: true,
+          //     icon: "warning",
+          //     title: "Document name cannot be just spaces",
+          //     position: "center",
+          //     showConfirmButton: false,
+          //     timer: 2000,
+          //   });
+          //   return;
+          // }
+
           // Update DataGrid UI
           api.updateRows([{ id, [field]: newValue }]);
 
@@ -251,10 +263,9 @@ const UploadDocument = () => {
               onChange={handleChange}
               fullWidth
               variant="standard"
-              
             >
               {gazeteList.map((option) => (
-                <MenuItem key={option.Name} value={option.Name}   >
+                <MenuItem key={option.Name} value={option.Name}>
                   {option.Name}
                 </MenuItem>
               ))}
@@ -374,7 +385,7 @@ const UploadDocument = () => {
     },
     {
       field: "MobileNo",
-      headerName: "PHONE NO",
+      headerName: "MOBILE NO",
       minWidth: 100,
       flex: 1,
       sortable: false,
@@ -446,40 +457,81 @@ const UploadDocument = () => {
     });
   };
 
+  // const handleUpdate = async (rowData) => {
+  //   setSaveUpdateButton("UPDATE");
+  //   setClearUpdateButton("RESET");
+  //   setOn(true);
+  //   try {
+  //     setLoading(true);
+  //     const apiUrl = `${BASE_URL}DocUpload/${rowData.Id}`;
+  //     const response = await axios.get(apiUrl);
+  //     if (response.data && response.data.values) {
+  //       const olddata = response.data.values;
+  //       originalDataRef.current = olddata;
+  //       setValue("Id", olddata.Id);
+  //       setValue("Name", olddata.Name);
+  //       setValue("MobileNo", olddata.MobileNo);
+  //       setValue("Email", olddata.Email);
+  //       setValue("Address", olddata.Address);
+
+  //       if (olddata.oDocLines && Array.isArray(olddata.oDocLines)) {
+  //         // normalize data for DataGrid
+  //         const formattedLines = olddata.oDocLines.map((line, index) => ({
+  //           ...line,
+  //           id: line.LineNum ?? index, // pick unique key
+  //         }));
+
+  //         setValue("oDocLines", formattedLines); // if storing in react-hook-form
+  //         setRows(formattedLines); // for DataGrid display
+  //       }
+  //     }
+  //   } catch (error) {
+  //     console.error("Error fetching olddata data:", error);
+  //   } finally {
+  //     setLoading(false);
+  //   }
+  // };
   const handleUpdate = async (rowData) => {
-    setSaveUpdateButton("UPDATE");
-    setClearUpdateButton("RESET");
-    setOn(true);
-    try {
-      setLoading(true);
-      const apiUrl = `${BASE_URL}DocUpload/${rowData.Id}`;
-      const response = await axios.get(apiUrl);
-      if (response.data && response.data.values) {
-        const olddata = response.data.values;
-        originalDataRef.current = olddata;
-        setValue("Id", olddata.Id);
-        setValue("Name", olddata.Name);
-        setValue("MobileNo", olddata.MobileNo);
-        setValue("Email", olddata.Email);
-        setValue("Address", olddata.Address);
+  setSaveUpdateButton("UPDATE");
+  setClearUpdateButton("RESET");
+  setOn(true);
 
-        if (olddata.oDocLines && Array.isArray(olddata.oDocLines)) {
-          // normalize data for DataGrid
-          const formattedLines = olddata.oDocLines.map((line, index) => ({
+  try {
+    setLoading(true);
+    const apiUrl = `${BASE_URL}DocUpload/${rowData.Id}`;
+    const response = await axios.get(apiUrl);
+
+    if (response.data && response.data.values) {
+      const olddata = response.data.values;
+      originalDataRef.current = olddata;
+
+      // normalize doc lines
+      const formattedLines = Array.isArray(olddata.oDocLines)
+        ? olddata.oDocLines.map((line, index) => ({
             ...line,
-            id: line.LineNum ?? index, // pick unique key
-          }));
+            id: line.LineNum ?? index,
+          }))
+        : [];
 
-          setValue("oDocLines", formattedLines); // if storing in react-hook-form
-          setRows(formattedLines); // for DataGrid display
-        }
-      }
-    } catch (error) {
-      console.error("Error fetching olddata data:", error);
-    } finally {
-      setLoading(false);
+      // reset the whole form with API values
+      reset({
+        Id: olddata.Id ?? "",
+        Name: olddata.Name ?? "",
+        MobileNo: olddata.MobileNo ?? "",
+        Email: olddata.Email ?? "",
+        Address: olddata.Address ?? "",
+        oDocLines: formattedLines,
+      });
+
+      setRows(formattedLines); // for DataGrid
     }
-  };
+  } catch (error) {
+    console.error("Error fetching olddata data:", error);
+  } finally {
+    setLoading(false);
+  }
+};
+
 
   const clearFormData = () => {
     setRows([]); // clear DataGrid first
@@ -619,6 +671,24 @@ const UploadDocument = () => {
         timerProgressBar: true,
       });
 
+      return;
+    }
+
+    // 🔹 Validate FileName not just spaces
+    const invalidFileName = rows.find(
+      (row) => !row.FileName || row.FileName.trim() === ""
+    );
+    if (invalidFileName) {
+      Swal.fire({
+        toast: true,
+        icon: "warning",
+        title: "Invalid Document Name",
+        text: "Document Name cannot be empty or just spaces.",
+        position: "center",
+        showConfirmButton: false,
+        timer: 5000,
+        timerProgressBar: true,
+      });
       return;
     }
 
@@ -774,35 +844,35 @@ const UploadDocument = () => {
   //     setLoading(false);
   //   }
   // };
-const getAllDocList = async (page = 0, searchText = "", limit = 20) => {
-  try {
-    setLoading(true);
+  const getAllDocList = async (page = 0, searchText = "", limit = 20) => {
+    try {
+      setLoading(true);
 
-    // Build query params
-    const params = {
-      Status: "1",
-      Page: page,
-      Limit: limit,
-      ...(searchText ? { SearchText: searchText } : {}),
-    };
+      // Build query params
+      const params = {
+        Status: "1",
+        Page: page,
+        Limit: limit,
+        ...(searchText ? { SearchText: searchText } : {}),
+      };
 
-    const response = await axios.get(`${BASE_URL}DocUpload`, { params });
+      const response = await axios.get(`${BASE_URL}DocUpload`, { params });
 
-    if (response.data && response.data.values) {
-      setDocumentlist(
-        response.data.values.map((item, index) => ({
-          ...item,
-          id: page * limit + index + 1, 
-        }))
-      );
-      setTotalRows(response.data.count);
+      if (response.data && response.data.values) {
+        setDocumentlist(
+          response.data.values.map((item, index) => ({
+            ...item,
+            id: page * limit + index + 1,
+          }))
+        );
+        setTotalRows(response.data.count);
+      }
+    } catch (error) {
+      console.error("Error fetching documents:", error);
+    } finally {
+      setLoading(false);
     }
-  } catch (error) {
-    console.error("Error fetching documents:", error);
-  } finally {
-    setLoading(false);
-  }
-};
+  };
 
   const gazettedList = async (params = {}) => {
     setLoading(true);
@@ -882,6 +952,8 @@ const getAllDocList = async (page = 0, searchText = "", limit = 20) => {
                 defaultValue=""
                 rules={{
                   required: "Name is required",
+                  validate: (value) =>
+                    value.trim() !== "" || "Name cannot be just spaces",
                   maxLength: {
                     value: 100,
                     message: "Name cannot exceed 100 characters",
@@ -892,7 +964,7 @@ const getAllDocList = async (page = 0, searchText = "", limit = 20) => {
                     <div style={{ width: "100%" }}>
                       <TextField
                         {...field}
-                        inputRef={field.ref} // important for react-hook-form
+                        inputRef={field.ref}
                         label="ENTER NAME"
                         size="small"
                         inputProps={{ maxLength: 100 }}
@@ -953,12 +1025,40 @@ const getAllDocList = async (page = 0, searchText = "", limit = 20) => {
                   <InputTextField
                     {...field}
                     label="ENTER EMAIL ID"
+                     type="email"
                     size="small"
                     rows={1}
                   />
                 )}
               />
             </Grid>
+            {/* <Grid item xs={6} md={4}>
+              <Controller
+                name="Email"
+                control={control}
+                defaultValue=""
+                rules={{
+                  validate: (value) => {
+                    if (!value) return true; // allow empty
+                    return (
+                      /^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(value) ||
+                      "Enter a valid email address"
+                    );
+                  },
+                }}
+                render={({ field, fieldState: { error } }) => (
+                  <InputTextField
+                    {...field}
+                    label="ENTER EMAIL ID"
+                    size="small"
+                    rows={1}
+                    error={!!error}
+                    helperText={error ? error.message : ""}
+                  />
+                )}
+              />
+            </Grid> */}
+
             <Grid item xs={6} md={4}>
               <Controller
                 name="Address"
@@ -1190,7 +1290,7 @@ const getAllDocList = async (page = 0, searchText = "", limit = 20) => {
             const quickFilterValue = model.quickFilterValues?.[0] || "";
             setSearchText(quickFilterValue);
             setCurrentPage(0);
-             getAllDocList(0, quickFilterValue, limit);
+            getAllDocList(0, quickFilterValue, limit);
           }}
           getRowId={(row) => row.Id}
         />
