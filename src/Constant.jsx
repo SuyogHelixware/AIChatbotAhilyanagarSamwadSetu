@@ -2,6 +2,8 @@
 
 // =============================================
 export const BASE_URL = "http://hwaceri5:8077/api/";
+
+// VPS Server URI below
 // export const BASE_URL = "http://srv957718.hstgr.cloud:8072/api/";
 
 // =============================================================

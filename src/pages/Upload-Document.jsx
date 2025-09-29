@@ -492,47 +492,48 @@ const UploadDocument = () => {
   //   }
   // };
   const handleUpdate = async (rowData) => {
-  setSaveUpdateButton("UPDATE");
-  setClearUpdateButton("RESET");
-  setOn(true);
+    setSaveUpdateButton("UPDATE");
+    setClearUpdateButton("RESET");
+    setOn(true);
 
-  try {
-    setLoading(true);
-    const apiUrl = `${BASE_URL}DocUpload/${rowData.Id}`;
-    const response = await axios.get(apiUrl);
+    try {
+      setLoading(true);
+      const apiUrl = `${BASE_URL}DocUpload/${rowData.Id}`;
+      const response = await axios.get(apiUrl);
 
-    if (response.data && response.data.values) {
-      const olddata = response.data.values;
-      originalDataRef.current = olddata;
+      if (response.data && response.data.values) {
+        const olddata = response.data.values;
+        originalDataRef.current = olddata;
 
-      // normalize doc lines
-      const formattedLines = Array.isArray(olddata.oDocLines)
-        ? olddata.oDocLines.map((line, index) => ({
-            ...line,
-            id: line.LineNum ?? index,
-          }))
-        : [];
+        // normalize doc lines
+        const formattedLines = Array.isArray(olddata.oDocLines)
+          ? olddata.oDocLines.map((line, index) => ({
+              ...line,
+              id: line.LineNum ?? index,
+            }))
+          : [];
 
-      // reset the whole form with API values
-      reset({
-        Id: olddata.Id ?? "",
-        Name: olddata.Name ?? "",
-        // MobileNo: olddata.MobileNo ?? "",
-         MobileNo: olddata.MobileNo ? olddata.MobileNo.replace(/^\+91/, "") : "",
-        Email: olddata.Email ?? "",
-        Address: olddata.Address ?? "",
-        oDocLines: formattedLines,
-      });
+        // reset the whole form with API values
+        reset({
+          Id: olddata.Id ?? "",
+          Name: olddata.Name ?? "",
+          // MobileNo: olddata.MobileNo ?? "",
+          MobileNo: olddata.MobileNo
+            ? olddata.MobileNo.replace(/^\+91/, "")
+            : "",
+          Email: olddata.Email ?? "",
+          Address: olddata.Address ?? "",
+          oDocLines: formattedLines,
+        });
 
-      setRows(formattedLines); // for DataGrid
+        setRows(formattedLines); // for DataGrid
+      }
+    } catch (error) {
+      console.error("Error fetching olddata data:", error);
+    } finally {
+      setLoading(false);
     }
-  } catch (error) {
-    console.error("Error fetching olddata data:", error);
-  } finally {
-    setLoading(false);
-  }
-};
-
+  };
 
   const clearFormData = () => {
     setRows([]); // clear DataGrid first
@@ -548,37 +549,72 @@ const UploadDocument = () => {
       });
     }
 
-    if (ClearUpdateButton === "RESET") {
-      if (originalDataRef.current) {
-        reset(originalDataRef.current);
+    // if (ClearUpdateButton === "RESET") {
+      
+    //   if (originalDataRef.current) {
+    //     reset(originalDataRef.current);
 
-        // also set rows for DataGrid
-        if (
-          originalDataRef.current.oDocLines &&
-          Array.isArray(originalDataRef.current.oDocLines)
-        ) {
-          const formattedLines = originalDataRef.current.oDocLines.map(
-            (line, index) => ({
-              ...line,
-              id: line.LineNum ?? index,
-            })
-          );
-          setRows(formattedLines);
-        } else {
-          setRows([]);
-        }
-      } else {
-        reset({
-          Status: 1,
-          Address: "",
-          Email: "",
-          MobileNo: "",
-          Name: "",
-          oDocLines: [],
-        });
-        setRows([]);
-      }
+    //     // also set rows for DataGrid
+    //     if (
+    //       originalDataRef.current.oDocLines &&
+    //       Array.isArray(originalDataRef.current.oDocLines)
+    //     ) {
+    //       const formattedLines = originalDataRef.current.oDocLines.map(
+    //         (line, index) => ({
+    //           ...line,
+    //           id: line.LineNum ?? index,
+    //         })
+    //       );
+    //       setRows(formattedLines);
+    //     } else {
+    //       setRows([]);
+    //     }
+    //   } else {
+    //     reset({
+    //       Status: 1,
+    //       Address: "",
+    //       Email: "",
+    //       MobileNo: "",
+    //       Name: "",
+    //       oDocLines: [],
+    //     });
+    //     setRows([]);
+    //   }
+    // }
+    if (ClearUpdateButton === "RESET") {
+  if (originalDataRef.current) {
+    const resetData = { ...originalDataRef.current };
+
+    // Remove +91 from MobileNo if it exists
+    if (resetData.MobileNo && resetData.MobileNo.startsWith("+91")) {
+      resetData.MobileNo = resetData.MobileNo.slice(3);
     }
+
+    reset(resetData);
+
+    // also set rows for DataGrid
+    if (resetData.oDocLines && Array.isArray(resetData.oDocLines)) {
+      const formattedLines = resetData.oDocLines.map((line, index) => ({
+        ...line,
+        id: line.LineNum ?? index,
+      }));
+      setRows(formattedLines);
+    } else {
+      setRows([]);
+    }
+  } else {
+    reset({
+      Status: 1,
+      Address: "",
+      Email: "",
+      MobileNo: "", // no +91 here
+      Name: "",
+      oDocLines: [],
+    });
+    setRows([]);
+  }
+}
+
   };
 
   const handleClose = () => setOn(false);
@@ -600,13 +636,12 @@ const UploadDocument = () => {
   };
 
   const handleRemove = (rowToRemove) => {
-     
     setRows((prev) =>
       prev.filter((row) => {
-         if (row.LineNum !== undefined && rowToRemove.LineNum !== undefined) {
+        if (row.LineNum !== undefined && rowToRemove.LineNum !== undefined) {
           return row.LineNum !== rowToRemove.LineNum;
         }
-         return row.id !== rowToRemove.id;
+        return row.id !== rowToRemove.id;
       })
     );
   };
@@ -636,8 +671,8 @@ const UploadDocument = () => {
           Status: 0,
           CreatedDate: dayjs().format("YYYY-MM-DD"),
           ModifiedDate: dayjs().format("YYYY-MM-DD"),
-              ModifiedBy: sessionStorage.getItem("userId"),
-      CreatedBy: sessionStorage.getItem("userId"),
+          ModifiedBy: sessionStorage.getItem("userId"),
+          CreatedBy: sessionStorage.getItem("userId"),
           UserId: sessionStorage.getItem("UserId") || "1",
         };
       })
@@ -693,13 +728,12 @@ const UploadDocument = () => {
     }
 
     const formData = new FormData();
- 
 
     // Common fields
     formData.append("UserId", sessionStorage.getItem("userId") || "");
     formData.append("CreatedBy", sessionStorage.getItem("userId") || "");
     formData.append("ModifiedBy", sessionStorage.getItem("userId") || "");
-    formData.append("Status", "1");   
+    formData.append("Status", "1");
     formData.append("Email", data.Email || "");
     // formData.append("MobileNo", data.MobileNo || "");
     formData.append("MobileNo", "+91" + (data.MobileNo || ""));
@@ -707,6 +741,8 @@ const UploadDocument = () => {
     formData.append("Name", data.Name || "");
     formData.append("Address", data.Address || "");
     formData.append("Id", data.Id || "");
+    formData.append("CreatedDate", dayjs().format("YYYY-MM-DD"));
+
 
     rows.forEach((row, index) => {
       formData.append(
@@ -734,7 +770,10 @@ const UploadDocument = () => {
           : ""
       );
       formData.append(`oDocLines[${index}].SrcPath`, row.SrcPath || "");
-
+  formData.append(
+        `oDocLines[${index}].CreatedDate`,
+        row.CreatedDate ? dayjs(row.CreatedDate).format("YYYY-MM-DD") :  dayjs().format("YYYY-MM-DD")
+      );
       formData.append(
         `oDocLines[${index}].DocReqDate`,
         row.DocReqDate ? dayjs(row.DocReqDate).format("YYYY-MM-DD") : ""
@@ -979,7 +1018,7 @@ const UploadDocument = () => {
                 )}
               />
             </Grid>
-            <Grid item xs={6} md={4}>
+            {/* <Grid item xs={6} md={4}>
               <Controller
                 name="MobileNo"
                 control={control}
@@ -1017,8 +1056,87 @@ const UploadDocument = () => {
                   />
                 )}
               />
-            </Grid>
+            </Grid> */}
 
+            {/* <Grid item xs={6} md={4}>
+              <Controller
+                name="MobileNo"
+                control={control}
+                rules={{
+                  required: "Mobile number is required",
+                  pattern: {
+                    value: /^[0-9]{10}$/,
+                    message: "Enter a valid 10-digit mobile number",
+                  },
+                }}
+                render={({ field, fieldState }) => (
+                  <TextField
+                    {...field}
+                    label=" ENTER MOBILE NO"
+                    fullWidth
+                    size="small"
+                    error={!!fieldState.error}
+                    helperText={fieldState.error?.message}
+                    inputProps={{
+                      maxLength: 10,
+                      inputMode: "numeric",
+                      pattern: "[0-9]*",
+                    }}
+                    onChange={(e) => {
+                      const value = e.target.value.replace(/\D/g, "");
+                      {
+                        field.onChange("+91" + value);
+                      }
+                    }}
+                    InputProps={{
+                      startAdornment: (
+                        <span style={{ marginRight: 8 }}>+91</span>
+                      ),
+                    }}
+                  />
+                )}
+              />
+            </Grid> */}
+            <Grid item xs={6} md={4}>
+              {" "}
+              <Controller
+                name="MobileNo"
+                control={control}
+                rules={{
+                  required: "Mobile number is required",
+                  pattern: {
+                    value: /^[0-9]{10}$/,
+                    message: "Enter a valid 10-digit mobile number",
+                  },
+                }}
+                render={({ field, fieldState }) => (
+                  <TextField
+                    {...field}
+                    label=" ENTER MOBILE NO"
+                    // fullWidth
+                    size="small"
+                    error={!!fieldState.error}
+                    helperText={fieldState.error?.message}
+                    inputProps={{
+                      maxLength: 10,
+                      inputMode: "numeric",
+                      pattern: "[0-9]*",
+                    }}
+                    onChange={(e) => {
+                      const value = e.target.value.replace(/\D/g, "");
+                      if (value.length <= 10) {
+                        field.onChange(value);
+                      }
+                    }}
+                    InputProps={{
+                      startAdornment: (
+                        <span style={{ marginRight: 8 }}>+91</span>
+                      ),
+                    }}
+                  />
+                )}
+              />{" "}
+            </Grid>
             <Grid item xs={6} md={4}>
               <Controller
                 name="Email"
@@ -1028,7 +1146,7 @@ const UploadDocument = () => {
                   <InputTextField
                     {...field}
                     label="ENTER EMAIL ID"
-                     type="email"
+                    type="email"
                     size="small"
                     rows={1}
                   />

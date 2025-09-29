@@ -19,6 +19,7 @@ import { Controller, useForm } from "react-hook-form";
 import Swal from "sweetalert2";
 import { BASE_URL } from "../Constant";
 import Loader from "../components/Loader";
+import dayjs from "dayjs";
 
 const GazettedMaster = () => {
   const [loaderOpen, setLoaderOpen] = React.useState(false);
@@ -76,6 +77,8 @@ const GazettedMaster = () => {
       const payload = {
         UserId: sessionStorage.getItem("userId") || "",
           ModifiedBy: sessionStorage.getItem("userId"),
+      CreatedDate: dayjs().format("YYYY-MM-DD"),
+          
       CreatedBy: sessionStorage.getItem("userId"),
         Id: null || formData.Id,
         Name: formData.Name,
