@@ -283,9 +283,9 @@ export default function ManageUsers() {
 
     // const filename = new Date().getTime() + "_" + uploadedImg.name;
     const saveObj = {
-      UserId: localStorage.getItem("UserId") || "",
-      ModifiedBy: localStorage.getItem("UserName") || "",
-      CreatedBy: localStorage.getItem("UserName") || "",
+      UserId: sessionStorage.getItem("userId") || "",
+         ModifiedBy: sessionStorage.getItem("userId"),
+      CreatedBy: sessionStorage.getItem("userId"),
       FirstName: getValues("FirstName") || "",
       Username: getValues("Username"),
       LastName: getValues("LastName") || "",
@@ -299,12 +299,15 @@ export default function ManageUsers() {
       // Avatar: uploadedImg !== "" ? filename : "",
       Status: getValues("Status"),
     };
+    debugger
 
     const UpdateObj = {
+      
+      
       Id: getValues("Id"),
-      UserId: localStorage.getItem("UserId") || "",
-      ModifiedBy: localStorage.getItem("UserName"),
-      CreatedBy: localStorage.getItem("UserName"),
+      UserId: sessionStorage.getItem("userId") || "",
+      ModifiedBy: sessionStorage.getItem("userId"),
+      CreatedBy: sessionStorage.getItem("userId"),
         ModifiedDate: dayjs().format("YYYY-MM-DD"),
       
       FirstName: getValues("FirstName") || "",

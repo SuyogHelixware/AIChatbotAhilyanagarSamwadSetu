@@ -517,7 +517,8 @@ const UploadDocument = () => {
       reset({
         Id: olddata.Id ?? "",
         Name: olddata.Name ?? "",
-        MobileNo: olddata.MobileNo ?? "",
+        // MobileNo: olddata.MobileNo ?? "",
+         MobileNo: olddata.MobileNo ? olddata.MobileNo.replace(/^\+91/, "") : "",
         Email: olddata.Email ?? "",
         Address: olddata.Address ?? "",
         oDocLines: formattedLines,
@@ -599,14 +600,13 @@ const UploadDocument = () => {
   };
 
   const handleRemove = (rowToRemove) => {
+     
     setRows((prev) =>
       prev.filter((row) => {
-        // If row has LineNum, compare with rowToRemove.LineNum
-        if (row.LineNum !== undefined && rowToRemove.LineNum !== undefined) {
+         if (row.LineNum !== undefined && rowToRemove.LineNum !== undefined) {
           return row.LineNum !== rowToRemove.LineNum;
         }
-        // Otherwise, compare by id
-        return row.id !== rowToRemove.id;
+         return row.id !== rowToRemove.id;
       })
     );
   };
@@ -636,9 +636,9 @@ const UploadDocument = () => {
           Status: 0,
           CreatedDate: dayjs().format("YYYY-MM-DD"),
           ModifiedDate: dayjs().format("YYYY-MM-DD"),
-          CreatedBy: localStorage.getItem("UserName") || " ",
-          ModifiedBy: localStorage.getItem("UserName") || " ",
-          UserId: localStorage.getItem("UserId") || "1",
+              ModifiedBy: sessionStorage.getItem("userId"),
+      CreatedBy: sessionStorage.getItem("userId"),
+          UserId: sessionStorage.getItem("UserId") || "1",
         };
       })
     );
@@ -693,14 +693,17 @@ const UploadDocument = () => {
     }
 
     const formData = new FormData();
+ 
 
     // Common fields
-    formData.append("UserId", localStorage.getItem("UserId") || "");
-    formData.append("CreatedBy", localStorage.getItem("UserName") || "");
-    formData.append("ModifiedBy", localStorage.getItem("UserName") || "");
-    formData.append("Status", "1");
+    formData.append("UserId", sessionStorage.getItem("userId") || "");
+    formData.append("CreatedBy", sessionStorage.getItem("userId") || "");
+    formData.append("ModifiedBy", sessionStorage.getItem("userId") || "");
+    formData.append("Status", "1");   
     formData.append("Email", data.Email || "");
-    formData.append("MobileNo", data.MobileNo || "");
+    // formData.append("MobileNo", data.MobileNo || "");
+    formData.append("MobileNo", "+91" + (data.MobileNo || ""));
+
     formData.append("Name", data.Name || "");
     formData.append("Address", data.Address || "");
     formData.append("Id", data.Id || "");
@@ -708,15 +711,15 @@ const UploadDocument = () => {
     rows.forEach((row, index) => {
       formData.append(
         `oDocLines[${index}].UserId`,
-        localStorage.getItem("UserId")
+        sessionStorage.getItem("UserId")
       );
       formData.append(
         `oDocLines[${index}].CreatedBy`,
-        localStorage.getItem("UserName")
+        sessionStorage.getItem("userId")
       );
       formData.append(
         `oDocLines[${index}].ModifiedBy`,
-        localStorage.getItem("UserName")
+        sessionStorage.getItem("userId")
       );
 
       formData.append(`oDocLines[${index}].DocEntry`, row.DocEntry || "");
@@ -1000,12 +1003,12 @@ const UploadDocument = () => {
                       inputMode: "numeric",
                       pattern: "[0-9]*",
                     }}
-                    onChange={(e) => {
-                      const value = e.target.value.replace(/\D/g, "");
-                      if (value.length <= 10) {
-                        field.onChange(value);
-                      }
-                    }}
+             onChange={(e) => {
+  const value = e.target.value.replace(/\D/g, ""); // keep only digits
+  if (value.length <= 10) {
+    field.onChange("+91" + value); // store with +91
+  }
+}}
                     InputProps={{
                       startAdornment: (
                         <span style={{ marginRight: 8 }}>+91</span>

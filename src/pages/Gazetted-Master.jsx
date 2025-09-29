@@ -74,9 +74,9 @@ const GazettedMaster = () => {
   const handleSubmitForm = async (formData) => {
     try {
       const payload = {
-        UserId: localStorage.getItem("UserId") || "",
-        ModifiedBy: localStorage.getItem("UserName") || "",
-        CreatedBy: localStorage.getItem("UserName") || "",
+        UserId: sessionStorage.getItem("userId") || "",
+          ModifiedBy: sessionStorage.getItem("userId"),
+      CreatedBy: sessionStorage.getItem("userId"),
         Id: null || formData.Id,
         Name: formData.Name,
       };
