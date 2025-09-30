@@ -44,6 +44,8 @@ const UploadDocument = () => {
   const [gazeteList, setgazeteList] = React.useState([]);
 
   const firstLoad = React.useRef(true);
+const fileInputRef = React.useRef(null);
+
 
   const initial = {
     Status: "1",
@@ -87,29 +89,6 @@ const UploadDocument = () => {
       renderCell: (params) =>
         params.api.getSortedRowIds().indexOf(params.id) + 1,
     },
-    // {
-    //   field: "ViewFile",
-    //   headerName: "View File",
-    //   width: 78,
-    //   sortable: false,
-    //   headerAlign: "center",
-    //   align: "center",
-    //   renderCell: (params) => (
-    //     <div style={{ display: "flex", alignItems: "center", gap: 8 }}>
-    //       <Tooltip title="Open File">
-    //         <IconButton
-    //           size="small"
-    //           onClick={(e) => {
-    //             e.stopPropagation();
-    //             openFileinNewTab(params.row);
-    //           }}
-    //         >
-    //           <RemoveRedEyeIcon fontSize="small" />
-    //         </IconButton>
-    //       </Tooltip>
-    //     </div>
-    //   ),
-    // },
     {
       field: "ViewFile",
       headerName: "View File",
@@ -168,18 +147,6 @@ const UploadDocument = () => {
 
         const handleChange = (event) => {
           const newValue = event.target.value;
-
-          //       if (newValue.trim() === "") {
-          //   Swal.fire({
-          //     toast: true,
-          //     icon: "warning",
-          //     title: "Document name cannot be just spaces",
-          //     position: "center",
-          //     showConfirmButton: false,
-          //     timer: 2000,
-          //   });
-          //   return;
-          // }
 
           // Update DataGrid UI
           api.updateRows([{ id, [field]: newValue }]);
@@ -646,41 +613,95 @@ const UploadDocument = () => {
     );
   };
 
+  // const handleFileUpload = async (e) => {
+  //   const files = Array.from(e.target.files);
+
+  //   const newRows = await Promise.all(
+  //     files.map(async (file, index) => {
+  //       const ext = file.name.split(".").pop().toLowerCase();
+
+  //       return {
+  //         id: Date.now() + index,
+  //         // file details
+  //         name: file.name,
+  //         type: ext,
+  //         SrcPath: "",
+  //         File: file,
+  //         FileExt: ext,
+  //         FileName: file.name,
+
+  //         // extra DataGrid fields (initialize them)
+  //         DocReqDate: dayjs().format("YYYY-MM-DD"),
+  //         IssuedBy: "",
+  //         DocType: "",
+  //         DocEntry: "",
+  //         Status: 0,
+  //         CreatedDate: dayjs().format("YYYY-MM-DD"),
+  //         ModifiedDate: dayjs().format("YYYY-MM-DD"),
+  //         ModifiedBy: sessionStorage.getItem("userId"),
+  //         CreatedBy: sessionStorage.getItem("userId"),
+  //         UserId: sessionStorage.getItem("UserId") || "1",
+  //       };
+  //     })
+  //   );
+
+  //   setRows((prev) => [...prev, ...newRows]);
+  //   console.log("object file", newRows);
+  // };
   const handleFileUpload = async (e) => {
-    const files = Array.from(e.target.files);
+  const allowedExt = ["jpg", "jpeg", "png", "pdf"];
+  const files = Array.from(e.target.files);
 
-    const newRows = await Promise.all(
-      files.map(async (file, index) => {
-        const ext = file.name.split(".").pop().toLowerCase();
+  // filter invalid files
+  const validFiles = files.filter((file) => {
+    const ext = file.name.split(".").pop().toLowerCase();
+    if (!allowedExt.includes(ext)) {
+  Swal.fire({
+        icon: "error",
+        title: "Invalid File",
+        text: `${file.name} is not allowed. Only JPG, JPEG, PNG, PDF are accepted.`,
+        confirmButtonColor: "#d33",
+      });      return false;
+    }
+    return true;
+  });
 
-        return {
-          id: Date.now() + index,
-          // file details
-          name: file.name,
-          type: ext,
-          SrcPath: "",
-          File: file,
-          FileExt: ext,
-          FileName: file.name,
+  const newRows = await Promise.all(
+    validFiles.map(async (file, index) => {
+      const ext = file.name.split(".").pop().toLowerCase();
 
-          // extra DataGrid fields (initialize them)
-          DocReqDate: dayjs().format("YYYY-MM-DD"),
-          IssuedBy: "",
-          DocType: "",
-          DocEntry: "",
-          Status: 0,
-          CreatedDate: dayjs().format("YYYY-MM-DD"),
-          ModifiedDate: dayjs().format("YYYY-MM-DD"),
-          ModifiedBy: sessionStorage.getItem("userId"),
-          CreatedBy: sessionStorage.getItem("userId"),
-          UserId: sessionStorage.getItem("UserId") || "1",
-        };
-      })
-    );
+      return {
+        id: Date.now() + index,
+        name: file.name,
+        type: ext,
+        SrcPath: "",
+        File: file,
+        FileExt: ext,
+        FileName: file.name,
 
-    setRows((prev) => [...prev, ...newRows]);
-    console.log("object file", newRows);
-  };
+        DocReqDate: dayjs().format("YYYY-MM-DD"),
+        IssuedBy: "",
+        DocType: "",
+        DocEntry: "",
+        Status: 0,
+        CreatedDate: dayjs().format("YYYY-MM-DD"),
+        ModifiedDate: dayjs().format("YYYY-MM-DD"),
+        ModifiedBy: sessionStorage.getItem("userId"),
+        CreatedBy: sessionStorage.getItem("userId"),
+        UserId: sessionStorage.getItem("UserId") || "1",
+      };
+    })
+  );
+
+  setRows((prev) => [...prev, ...newRows]);
+  console.log("object file", newRows);
+
+    if (fileInputRef.current) {
+    fileInputRef.current.value = "";
+  }
+
+};
+
 
   const onSubmit = async (data) => {
     if (!rows || rows.length === 0) {
@@ -1223,6 +1244,7 @@ const UploadDocument = () => {
                   type="file"
                   hidden
                   multiple
+                    ref={fileInputRef}
                   onChange={handleFileUpload}
                 />
               </Button>
