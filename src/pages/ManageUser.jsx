@@ -66,6 +66,7 @@ export default function ManageUsers() {
   const [searchText, setSearchText] = React.useState("");
   const [ClearUpdateButton, setClearUpdateButton] = React.useState("RESET");
   const originalDataRef = React.useRef(null);
+  const [gazeteList, setgazeteList] = React.useState();
 
   const theme = useTheme();
 
@@ -105,6 +106,7 @@ export default function ManageUsers() {
         Phone: "",
         Status: 1,
         Email: "",
+        // GazOfficer:"",
         UserType: "U",
         Avatar: "",
       });
@@ -156,23 +158,31 @@ export default function ManageUsers() {
       if (response.data) {
         const data = response.data.values;
         originalDataRef.current = data;
-        setValue("Id", data.Id);
-        setValue("FirstName", data.FirstName);
-        setValue("Username", data.Username);
-        setValue("LastName", data.LastName);
-        // setValue("DOB", dayjs(data.DOB) );
-       setValue("DOB", data.DOB ? dayjs(data.DOB) : null);
-        setValue("Phone", data.Phone);
-        setValue("Email", data.Email);
-        setValue("Status", data.Status);
-        setValue("UserType", data.UserType);
-
-        // setValue("Avatar", data.Avatar);
-        // setImage(
-        //   data.Avatar
-        //     ? `${Bunny_Image_URL}/Users/${data.Id}/${data.Avatar}`
-        //     : ""
-        // );
+  reset({
+        Id: data.Id ?? "",
+        FirstName: data.FirstName ?? "",
+        Username: data.Username ?? "",
+        LastName: data.LastName ?? "",
+        DOB: data.DOB ? dayjs(data.DOB) : null,
+        Phone: data.Phone ?? "",
+        Email: data.Email ?? "",
+        Status: data.Status ?? "",
+        UserType: data.UserType ?? "",
+        GazOfficer: data.GazOfficer ?? "",
+      });
+    
+        // setValue("Id", data.Id);
+        // setValue("FirstName", data.FirstName);
+        // setValue("Username", data.Username);
+        // setValue("LastName", data.LastName);
+        // // setValue("DOB", dayjs(data.DOB) );
+        // setValue("DOB", data.DOB ? dayjs(data.DOB) : null);
+        // setValue("Phone", data.Phone);
+        // setValue("Email", data.Email);
+        // setValue("Status", data.Status);
+        // setValue("UserType", data.UserType);
+        // setValue("GazOfficer", data.GazOfficer);
+  
       }
     } catch (error) {
       console.error("Error fetching user data:", error);
@@ -282,9 +292,10 @@ export default function ManageUsers() {
     setLoaderOpen(true);
 
     // const filename = new Date().getTime() + "_" + uploadedImg.name;
+     
     const saveObj = {
       UserId: sessionStorage.getItem("userId") || "",
-         ModifiedBy: sessionStorage.getItem("userId"),
+      ModifiedBy: sessionStorage.getItem("userId"),
       CreatedBy: sessionStorage.getItem("userId"),
       FirstName: getValues("FirstName") || "",
       Username: getValues("Username"),
@@ -296,20 +307,19 @@ export default function ManageUsers() {
       CreatedDate: dayjs().format("YYYY-MM-DD"),
 
       UserType: getValues("UserType") || "U",
+        GazOfficer: getValues("GazOfficer") || null, 
+
       // Avatar: uploadedImg !== "" ? filename : "",
       Status: getValues("Status"),
     };
-    debugger
 
     const UpdateObj = {
-      
-      
       Id: getValues("Id"),
       UserId: sessionStorage.getItem("userId") || "",
       ModifiedBy: sessionStorage.getItem("userId"),
       CreatedBy: sessionStorage.getItem("userId"),
-        ModifiedDate: dayjs().format("YYYY-MM-DD"),
-      
+      ModifiedDate: dayjs().format("YYYY-MM-DD"),
+
       FirstName: getValues("FirstName") || "",
       Username: getValues("Username"),
       LastName: getValues("LastName") || "",
@@ -317,6 +327,8 @@ export default function ManageUsers() {
       Phone: getValues("Phone") || "",
       Email: getValues("Email") || "",
       UserType: getValues("UserType") || "U",
+        GazOfficer: getValues("GazOfficer") || null,  
+
 
       Status: getValues("Status"),
       // Avatar: uploadedImg === "" ? getValues("Avatar") : filename,
@@ -519,6 +531,7 @@ export default function ManageUsers() {
 
   useEffect(() => {
     getUserData(currentPage, searchText);
+    handleonGazettedList();
   }, [currentPage]);
 
   const columns = [
@@ -621,18 +634,17 @@ export default function ManageUsers() {
     //   align: "center",
     // },
     {
-  field: "Phone",
-  headerName: "Phone",
-  width: 150,
-  sortable: false,
-  headerAlign: "center",
-  align: "center",
-  valueFormatter: (params) => {
-    if (!params.value) return "NA";  
-    return `+91 ${params.value}`;
-  },
-},
-
+      field: "Phone",
+      headerName: "Phone",
+      width: 150,
+      sortable: false,
+      headerAlign: "center",
+      align: "center",
+      valueFormatter: (params) => {
+        if (!params.value) return "NA";
+        return `+91 ${params.value}`;
+      },
+    },
 
     {
       field: "Email",
@@ -651,22 +663,21 @@ export default function ManageUsers() {
     //   align: "center",
     // },
     {
-  field: "UserType",
-  headerName: "User Type",
-  width: 200,
-  sortable: false,
-  headerAlign: "center",
-  align: "center",
-  renderCell: (params) => {
-    // Map U to 'User' and A to 'Admin'
-    const userTypeMap = {
-      U: "User",
-      A: "Admin"
-    };
-    return userTypeMap[params.value] || params.value;  
-  }
-},
-
+      field: "UserType",
+      headerName: "User Type",
+      width: 200,
+      sortable: false,
+      headerAlign: "center",
+      align: "center",
+      renderCell: (params) => {
+        // Map U to 'User' and A to 'Admin'
+        const userTypeMap = {
+          U: "User",
+          A: "Admin",
+        };
+        return userTypeMap[params.value] || params.value;
+      },
+    },
 
     {
       field: "Status",
@@ -729,6 +740,28 @@ export default function ManageUsers() {
     ...buttonStyles,
     backgroundColor: "#dc3545",
   };
+
+  const handleonGazettedList = async (params = {}) => {
+    setLoading(true);
+    try {
+      // Default parameters
+      const queryParams = { Status: "1", ...params };
+
+      // Fetch data
+      const { data } = await axios.get(`${BASE_URL}GazOfficers`, {
+        params: queryParams,
+      });
+
+      if (data.values) {
+        setgazeteList(data.values);
+      }
+    } catch (error) {
+      console.error("Error fetching data:", error);
+    } finally {
+      setLoading(false);
+    }
+  };
+
   return (
     <>
       {loaderOpen && <Loader open={loaderOpen} />}
@@ -996,7 +1029,7 @@ export default function ManageUsers() {
               />
             </Grid>
 
-            <Grid item md={3} sm={3} xs={12} textAlign={"center"}>
+            <Grid item md={6} sm={3} xs={12} textAlign={"center"}>
               <Controller
                 name="Status"
                 control={control}
@@ -1017,6 +1050,54 @@ export default function ManageUsers() {
                 )}
               />
             </Grid>
+            {/* <Grid item md={6} sm={6} xs={12}>
+              <Controller
+                name="GazOfficer"
+                control={control}
+                defaultValue=""
+                render={({ field }) => (
+                  <TextField
+                    select
+                    label="Gaz Officer"
+                    fullWidth
+                    size="small"
+                    {...field}
+                  >
+                    {gazeteList.map((option) => (
+                      <MenuItem key={option.Name} value={option.Name}>
+                        {option.Name}
+                      </MenuItem>
+                    ))}
+                  </TextField>
+                )}
+              />
+            </Grid> */}
+            <Grid item md={6} sm={6} xs={12}>
+  <Controller
+    name="GazOfficer"
+    control={control}
+    defaultValue=""
+    render={({ field }) => (
+      <TextField
+        select
+        label="Gaz Officer"
+        fullWidth
+        size="small"
+        {...field}
+        InputLabelProps={{
+          shrink: Boolean(field.value), 
+        }}
+      >
+        {gazeteList.map((option) => (
+          <MenuItem key={option.Name} value={option.Name}>
+            {option.Name}
+          </MenuItem>
+        ))}
+      </TextField>
+    )}
+  />
+</Grid>
+
 
             <Grid
               item

@@ -3,6 +3,8 @@ import CloseIcon from "@mui/icons-material/Close";
 import DeleteForeverIcon from "@mui/icons-material/DeleteForever";
 import EditNoteIcon from "@mui/icons-material/EditNote";
 import RemoveRedEyeIcon from "@mui/icons-material/RemoveRedEye";
+import DeleteIcon from "@mui/icons-material/Delete";
+              import AttachFileIcon from '@mui/icons-material/AttachFile';
 import {
   Button,
   Grid,
@@ -44,8 +46,7 @@ const UploadDocument = () => {
   const [gazeteList, setgazeteList] = React.useState([]);
 
   const firstLoad = React.useRef(true);
-const fileInputRef = React.useRef(null);
-
+  const fileInputRef = React.useRef(null);
 
   const initial = {
     Status: "1",
@@ -89,10 +90,33 @@ const fileInputRef = React.useRef(null);
       renderCell: (params) =>
         params.api.getSortedRowIds().indexOf(params.id) + 1,
     },
+    // {
+    //   field: "ViewFile",
+    //   headerName: "View File",
+    //   width: 78,
+    //   sortable: false,
+    //   headerAlign: "center",
+    //   align: "center",
+    //   renderCell: (params) => (
+    //     <div style={{ display: "flex", alignItems: "center", gap: 8 }}>
+    //       <Tooltip title="Open File">
+    //         <IconButton
+    //           size="small"
+    //           onClick={(e) => {
+    //             e.stopPropagation();
+    //             handleViewFile(params.row);
+    //           }}
+    //         >
+    //           <RemoveRedEyeIcon fontSize="small" />
+    //         </IconButton>
+    //       </Tooltip>
+    //     </div>
+    //   ),
+    // },
     {
-      field: "ViewFile",
-      headerName: "View File",
-      width: 78,
+      field: "action",
+      headerName: "Action",
+      width: 120,
       sortable: false,
       headerAlign: "center",
       align: "center",
@@ -109,34 +133,39 @@ const fileInputRef = React.useRef(null);
               <RemoveRedEyeIcon fontSize="small" />
             </IconButton>
           </Tooltip>
+
+          <Tooltip title="Remove">
+            <IconButton
+              size="small"
+              color="error"
+              onClick={(e) => {
+                e.stopPropagation();
+                handleRemove(params.row);
+              }}
+            >
+              <DeleteIcon fontSize="small" />
+            </IconButton>
+          </Tooltip>
+          <Tooltip title="replace file">
+            <IconButton
+              size="small"
+              color="primary"
+              component="label"
+              onClick={(e) => e.stopPropagation()}
+            >
+              <AttachFileIcon fontSize="small" />
+              <input
+                type="file"
+                hidden
+                onChange={(e) => handleChangeFile(e, params.row.id)}
+                accept=".jpg,.jpeg,.png,.pdf"
+              />
+            </IconButton>
+          </Tooltip>
         </div>
       ),
     },
 
-    // {
-    //   field: "FileName",
-    //   headerName: "DOCUMENT NAME",
-    //   flex: 1,
-    //   sortable: false,
-    //   renderCell: (params) => {
-    //     const { id, field, api, value } = params;
-
-    //     const handleChange = (event) => {
-    //       api.updateRows([{ id, [field]: event.target.value }]);
-    //     };
-
-    //     return (
-    //       <TextField
-    //         value={value ?? ""}
-    //         onChange={handleChange}
-    //         onKeyDown={(e) => e.stopPropagation()}
-    //         fullWidth
-    //         size="small"
-    //         variant="outlined"
-    //       />
-    //     );
-    //   },
-    // },
     {
       field: "FileName",
       headerName: "DOCUMENT NAME",
@@ -281,21 +310,21 @@ const fileInputRef = React.useRef(null);
         );
       },
     },
-    {
-      field: "action",
-      headerName: "Action",
-      width: 90,
-      renderCell: (params) => (
-        <Button
-          variant="outlined"
-          color="error"
-          size="small"
-          onClick={() => handleRemove(params.row)}
-        >
-          Remove
-        </Button>
-      ),
-    },
+    // {
+    //   field: "action",
+    //   headerName: "Action",
+    //   width: 90,
+    //   renderCell: (params) => (
+    //     <Button
+    //       variant="outlined"
+    //       color="error"
+    //       size="small"
+    //       onClick={() => handleRemove(params.row)}
+    //     >
+    //       Remove
+    //     </Button>
+    //   ),
+    // },
   ];
 
   const handleViewFile = (row) => {
@@ -517,7 +546,7 @@ const fileInputRef = React.useRef(null);
     }
 
     // if (ClearUpdateButton === "RESET") {
-      
+
     //   if (originalDataRef.current) {
     //     reset(originalDataRef.current);
 
@@ -549,39 +578,38 @@ const fileInputRef = React.useRef(null);
     //   }
     // }
     if (ClearUpdateButton === "RESET") {
-  if (originalDataRef.current) {
-    const resetData = { ...originalDataRef.current };
+      if (originalDataRef.current) {
+        const resetData = { ...originalDataRef.current };
 
-    // Remove +91 from MobileNo if it exists
-    if (resetData.MobileNo && resetData.MobileNo.startsWith("+91")) {
-      resetData.MobileNo = resetData.MobileNo.slice(3);
+        // Remove +91 from MobileNo if it exists
+        if (resetData.MobileNo && resetData.MobileNo.startsWith("+91")) {
+          resetData.MobileNo = resetData.MobileNo.slice(3);
+        }
+
+        reset(resetData);
+
+        // also set rows for DataGrid
+        if (resetData.oDocLines && Array.isArray(resetData.oDocLines)) {
+          const formattedLines = resetData.oDocLines.map((line, index) => ({
+            ...line,
+            id: line.LineNum ?? index,
+          }));
+          setRows(formattedLines);
+        } else {
+          setRows([]);
+        }
+      } else {
+        reset({
+          Status: 1,
+          Address: "",
+          Email: "",
+          MobileNo: "", // no +91 here
+          Name: "",
+          oDocLines: [],
+        });
+        setRows([]);
+      }
     }
-
-    reset(resetData);
-
-    // also set rows for DataGrid
-    if (resetData.oDocLines && Array.isArray(resetData.oDocLines)) {
-      const formattedLines = resetData.oDocLines.map((line, index) => ({
-        ...line,
-        id: line.LineNum ?? index,
-      }));
-      setRows(formattedLines);
-    } else {
-      setRows([]);
-    }
-  } else {
-    reset({
-      Status: 1,
-      Address: "",
-      Email: "",
-      MobileNo: "", // no +91 here
-      Name: "",
-      oDocLines: [],
-    });
-    setRows([]);
-  }
-}
-
   };
 
   const handleClose = () => setOn(false);
@@ -649,59 +677,98 @@ const fileInputRef = React.useRef(null);
   //   console.log("object file", newRows);
   // };
   const handleFileUpload = async (e) => {
-  const allowedExt = ["jpg", "jpeg", "png", "pdf"];
-  const files = Array.from(e.target.files);
+    const allowedExt = ["jpg", "jpeg", "png", "pdf"];
+    const files = Array.from(e.target.files);
 
-  // filter invalid files
-  const validFiles = files.filter((file) => {
+    // filter invalid files
+    const validFiles = files.filter((file) => {
+      const ext = file.name.split(".").pop().toLowerCase();
+      if (!allowedExt.includes(ext)) {
+        Swal.fire({
+          icon: "error",
+          title: "Invalid File",
+          text: `${file.name} is not allowed. Only JPG, JPEG, PNG, PDF are accepted.`,
+          confirmButtonColor: "#d33",
+        });
+        return false;
+      }
+      return true;
+    });
+
+    const newRows = await Promise.all(
+      validFiles.map(async (file, index) => {
+        const ext = file.name.split(".").pop().toLowerCase();
+
+        return {
+          id: Date.now() + index,
+          name: file.name,
+          type: ext,
+          SrcPath: "",
+          File: file,
+          FileExt: ext,
+          FileName: file.name,
+
+          DocReqDate: dayjs().format("YYYY-MM-DD"),
+          IssuedBy: "",
+          DocType: "",
+          DocEntry: "",
+          Status: 0,
+          CreatedDate: dayjs().format("YYYY-MM-DD"),
+          ModifiedDate: dayjs().format("YYYY-MM-DD"),
+          ModifiedBy: sessionStorage.getItem("userId"),
+          CreatedBy: sessionStorage.getItem("userId"),
+          UserId: sessionStorage.getItem("UserId") || "1",
+        };
+      })
+    );
+
+    setRows((prev) => [...prev, ...newRows]);
+    console.log("object file", newRows);
+
+    if (fileInputRef.current) {
+      fileInputRef.current.value = "";
+    }
+  };
+
+  // =========================
+
+  const handleChangeFile = async (e, rowId) => {
+    const file = e.target.files[0];
+    if (!file) return;
+
+    const allowedExt = ["jpg", "jpeg", "png", "pdf"];
     const ext = file.name.split(".").pop().toLowerCase();
+
     if (!allowedExt.includes(ext)) {
-  Swal.fire({
+      Swal.fire({
         icon: "error",
         title: "Invalid File",
         text: `${file.name} is not allowed. Only JPG, JPEG, PNG, PDF are accepted.`,
         confirmButtonColor: "#d33",
-      });      return false;
+      });
+      return;
     }
-    return true;
-  });
 
-  const newRows = await Promise.all(
-    validFiles.map(async (file, index) => {
-      const ext = file.name.split(".").pop().toLowerCase();
+    // Update only the file fields in the row
+    setRows((prev) =>
+      prev.map((row) =>
+        row.id === rowId
+          ? {
+              ...row,
+              name: file.name,
+              File: file,
+              FileExt: ext,
+              FileName: file.name,
+            }
+          : row
+      )
+    );
 
-      return {
-        id: Date.now() + index,
-        name: file.name,
-        type: ext,
-        SrcPath: "",
-        File: file,
-        FileExt: ext,
-        FileName: file.name,
-
-        DocReqDate: dayjs().format("YYYY-MM-DD"),
-        IssuedBy: "",
-        DocType: "",
-        DocEntry: "",
-        Status: 0,
-        CreatedDate: dayjs().format("YYYY-MM-DD"),
-        ModifiedDate: dayjs().format("YYYY-MM-DD"),
-        ModifiedBy: sessionStorage.getItem("userId"),
-        CreatedBy: sessionStorage.getItem("userId"),
-        UserId: sessionStorage.getItem("UserId") || "1",
-      };
-    })
-  );
-
-  setRows((prev) => [...prev, ...newRows]);
-  console.log("object file", newRows);
-
+    // Reset input
     if (fileInputRef.current) {
-    fileInputRef.current.value = "";
-  }
-
-};
-
+      fileInputRef.current.value = "";
+    }
+  };
 
   const onSubmit = async (data) => {
     if (!rows || rows.length === 0) {
@@ -764,7 +831,6 @@ const fileInputRef = React.useRef(null);
     formData.append("Id", data.Id || "");
     formData.append("CreatedDate", dayjs().format("YYYY-MM-DD"));
 
-
     rows.forEach((row, index) => {
       formData.append(
         `oDocLines[${index}].UserId`,
@@ -791,9 +857,11 @@ const fileInputRef = React.useRef(null);
           : ""
       );
       formData.append(`oDocLines[${index}].SrcPath`, row.SrcPath || "");
-  formData.append(
+      formData.append(
         `oDocLines[${index}].CreatedDate`,
-        row.CreatedDate ? dayjs(row.CreatedDate).format("YYYY-MM-DD") :  dayjs().format("YYYY-MM-DD")
+        row.CreatedDate
+          ? dayjs(row.CreatedDate).format("YYYY-MM-DD")
+          : dayjs().format("YYYY-MM-DD")
       );
       formData.append(
         `oDocLines[${index}].DocReqDate`,
@@ -1242,9 +1310,10 @@ const fileInputRef = React.useRef(null);
                 Upload File
                 <input
                   type="file"
+                  accept=".jpg,.jpeg,.png,.pdf"
                   hidden
                   multiple
-                    ref={fileInputRef}
+                  ref={fileInputRef}
                   onChange={handleFileUpload}
                 />
               </Button>
