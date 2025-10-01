@@ -33,6 +33,7 @@ const Signin = () => {
               Address: data.Address,
               Email: data.Email,
               Phone: data.Phone,
+              UserType:data.UserType,
               BloodGroup: data.BloodGroup,
               Avatar: data.Avatar,
               _id: data._id,

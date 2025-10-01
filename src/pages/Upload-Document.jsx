@@ -187,11 +187,13 @@ const UploadDocument = () => {
             )
           );
         };
+          const displayValue = value ? value.replace(/\.[^/.]+$/, "") : "";
+
 
         return (
-          <Tooltip title={value || ""} arrow placement="top">
+          <Tooltip title={displayValue || ""} arrow placement="top">
             <TextField
-              value={value ?? ""}
+              value={displayValue ?? ""}
               onChange={handleChange}
               onKeyDown={(e) => e.stopPropagation()}
               fullWidth
