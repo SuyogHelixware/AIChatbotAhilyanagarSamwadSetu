@@ -4,7 +4,7 @@ import DeleteForeverIcon from "@mui/icons-material/DeleteForever";
 import EditNoteIcon from "@mui/icons-material/EditNote";
 import RemoveRedEyeIcon from "@mui/icons-material/RemoveRedEye";
 import DeleteIcon from "@mui/icons-material/Delete";
-              import AttachFileIcon from '@mui/icons-material/AttachFile';
+import AttachFileIcon from "@mui/icons-material/AttachFile";
 import {
   Button,
   Grid,
@@ -44,6 +44,7 @@ const UploadDocument = () => {
   const originalDataRef = React.useRef(null);
   const [rows, setRows] = React.useState([]);
   const [gazeteList, setgazeteList] = React.useState([]);
+  const [DeleteLineNums, setDeleteLineNums] = React.useState([]);
 
   const firstLoad = React.useRef(true);
   const fileInputRef = React.useRef(null);
@@ -73,10 +74,12 @@ const UploadDocument = () => {
   });
 
   const DocopetionOptions = [
-    { label: " Aadhaar Card", value: "AadhaarCard" },
-    { label: "Income Certificate", value: "Income Certificate" },
-    { label: "policy document", value: "policy document" },
+    { label: "Land Acquisition", value: "LandAcquisition" },
+    { label: "Income Certificate", value: "IncomeCertificate" },
+    { label: "Policy Document", value: "PolicyDocument" },
     { label: "NOC", value: "NOC" },
+    { label: "OTHER", value: "OTHER" },
+
   ];
 
   const DocColumns = [
@@ -90,29 +93,7 @@ const UploadDocument = () => {
       renderCell: (params) =>
         params.api.getSortedRowIds().indexOf(params.id) + 1,
     },
-    // {
-    //   field: "ViewFile",
-    //   headerName: "View File",
-    //   width: 78,
-    //   sortable: false,
-    //   headerAlign: "center",
-    //   align: "center",
-    //   renderCell: (params) => (
-    //     <div style={{ display: "flex", alignItems: "center", gap: 8 }}>
-    //       <Tooltip title="Open File">
-    //         <IconButton
-    //           size="small"
-    //           onClick={(e) => {
-    //             e.stopPropagation();
-    //             handleViewFile(params.row);
-    //           }}
-    //         >
-    //           <RemoveRedEyeIcon fontSize="small" />
-    //         </IconButton>
-    //       </Tooltip>
-    //     </div>
-    //   ),
-    // },
+
     {
       field: "action",
       headerName: "Action",
@@ -187,8 +168,7 @@ const UploadDocument = () => {
             )
           );
         };
-          const displayValue = value ? value.replace(/\.[^/.]+$/, "") : "";
-
+        const displayValue = value ? value.replace(/\.[^/.]+$/, "") : "";
 
         return (
           <Tooltip title={displayValue || ""} arrow placement="top">
@@ -232,7 +212,12 @@ const UploadDocument = () => {
         );
       },
     },
+ 
+    // ------------------------------------
+   
 
+
+    // ============working below=========================
     {
       field: "IssuedBy",
       headerName: "GAZETTED OFFICER",
@@ -240,13 +225,28 @@ const UploadDocument = () => {
       renderCell: (params) => {
         const { id, field, value, api } = params;
 
+        // Parse userData from sessionStorage
+        const userDataStr = sessionStorage.getItem("userData");
+        let userType = null;
+        let storedGazOfficer = null;
+
+        if (userDataStr) {
+          try {
+            const userData = JSON.parse(userDataStr);
+            userType = userData.UserType; // "A" or something else
+            storedGazOfficer = userData.GazOfficer || null;
+          } catch (error) {
+            console.error("Failed to parse userData:", error);
+          }
+        }
+
         const handleChange = (e) => {
           const newValue = e.target.value;
 
           // Update DataGrid UI
           api.updateRows([{ id, [field]: newValue }]);
 
-          // Update rows state so submit gets the correct value
+          // Update rows state for submission
           setRows((prev) =>
             prev.map((row) =>
               row.id === id ? { ...row, [field]: newValue } : row
@@ -254,6 +254,32 @@ const UploadDocument = () => {
           );
         };
 
+        // Non-admin: disable and set session value
+        if (userType !== "A" )  {
+           if (value !== storedGazOfficer) {
+            api.updateRows([{ id, [field]: storedGazOfficer }]);
+            setRows((prev) =>
+              prev.map((row) =>
+                row.id === id ? { ...row, [field]: storedGazOfficer } : row
+              )
+            );
+          }
+
+          return (
+            <Tooltip title={storedGazOfficer} arrow placement="top">
+              <Select
+                value={storedGazOfficer}
+                disabled
+                fullWidth
+                variant="standard"
+              >
+                <MenuItem value={storedGazOfficer}>{storedGazOfficer}</MenuItem>
+              </Select>
+            </Tooltip>
+          );
+        }
+
+        // Admin flow: enable and show full list
         return (
           <Tooltip title={value || ""} arrow placement="top">
             <Select
@@ -367,6 +393,8 @@ const UploadDocument = () => {
             size="medium"
             sx={{ color: "red" }}
             onClick={() => handleDelete(params.row)}
+          
+  // disabled={sessionStorage.getItem("UserType")?.trim().toUpperCase() !== "A"}
           >
             <DeleteForeverIcon />
           </IconButton>
@@ -459,29 +487,38 @@ const UploadDocument = () => {
   //   setSaveUpdateButton("UPDATE");
   //   setClearUpdateButton("RESET");
   //   setOn(true);
+
   //   try {
   //     setLoading(true);
   //     const apiUrl = `${BASE_URL}DocUpload/${rowData.Id}`;
   //     const response = await axios.get(apiUrl);
+
   //     if (response.data && response.data.values) {
   //       const olddata = response.data.values;
   //       originalDataRef.current = olddata;
-  //       setValue("Id", olddata.Id);
-  //       setValue("Name", olddata.Name);
-  //       setValue("MobileNo", olddata.MobileNo);
-  //       setValue("Email", olddata.Email);
-  //       setValue("Address", olddata.Address);
 
-  //       if (olddata.oDocLines && Array.isArray(olddata.oDocLines)) {
-  //         // normalize data for DataGrid
-  //         const formattedLines = olddata.oDocLines.map((line, index) => ({
-  //           ...line,
-  //           id: line.LineNum ?? index, // pick unique key
-  //         }));
+  //       // normalize doc lines
+  //       const formattedLines = Array.isArray(olddata.oDocLines)
+  //         ? olddata.oDocLines.map((line, index) => ({
+  //             ...line,
+  //             id: line.LineNum ?? index,
+  //           }))
+  //         : [];
 
-  //         setValue("oDocLines", formattedLines); // if storing in react-hook-form
-  //         setRows(formattedLines); // for DataGrid display
-  //       }
+  //       // reset the whole form with API values
+  //       reset({
+  //         Id: olddata.Id ?? "",
+  //         Name: olddata.Name ?? "",
+  //         // MobileNo: olddata.MobileNo ?? "",
+  //         MobileNo: olddata.MobileNo
+  //           ? olddata.MobileNo.replace(/^\+91/, "")
+  //           : "",
+  //         Email: olddata.Email ?? "",
+  //         Address: olddata.Address ?? "",
+  //         oDocLines: formattedLines,
+  //       });
+
+  //       setRows(formattedLines); // for DataGrid
   //     }
   //   } catch (error) {
   //     console.error("Error fetching olddata data:", error);
@@ -496,38 +533,134 @@ const UploadDocument = () => {
 
     try {
       setLoading(true);
-      const apiUrl = `${BASE_URL}DocUpload/${rowData.Id}`;
-      const response = await axios.get(apiUrl);
 
-      if (response.data && response.data.values) {
-        const olddata = response.data.values;
-        originalDataRef.current = olddata;
+      // Get user data
+      const userData = sessionStorage.getItem("userData");
+      let userType = null;
+      let userId = null;
 
-        // normalize doc lines
-        const formattedLines = Array.isArray(olddata.oDocLines)
-          ? olddata.oDocLines.map((line, index) => ({
-              ...line,
-              id: line.LineNum ?? index,
-            }))
-          : [];
+      if (userData) {
+        try {
+          const parsedData = JSON.parse(userData);
+          userType = parsedData.UserType;
+          userId = parsedData.UserId; // or sessionStorage.getItem("userId")
+        } catch (e) {
+          console.error("Error parsing userData:", e);
+        }
+      }
 
-        // reset the whole form with API values
-        reset({
-          Id: olddata.Id ?? "",
-          Name: olddata.Name ?? "",
-          // MobileNo: olddata.MobileNo ?? "",
-          MobileNo: olddata.MobileNo
-            ? olddata.MobileNo.replace(/^\+91/, "")
-            : "",
-          Email: olddata.Email ?? "",
-          Address: olddata.Address ?? "",
-          oDocLines: formattedLines,
+      if (userType === "A") {
+        // ✅ Call old API by Id
+        const apiUrl = `${BASE_URL}DocUpload/${rowData.Id}`;
+        const response = await axios.get(apiUrl);
+
+        if (response.data && response.data.values) {
+          const olddata = response.data.values;
+          originalDataRef.current = olddata;
+
+          const formattedLines = Array.isArray(olddata.oDocLines)
+            ? olddata.oDocLines.map((line, index) => ({
+                ...line,
+                id: line.LineNum ?? index,
+              }))
+            : [];
+
+          reset({
+            Id: olddata.Id ?? "",
+            Name: olddata.Name ?? "",
+            MobileNo: olddata.MobileNo
+              ? olddata.MobileNo.replace(/^\+91/, "")
+              : "",
+            Email: olddata.Email ?? "",
+            Address: olddata.Address ?? "",
+            oDocLines: formattedLines,
+          });
+
+          setRows(formattedLines);
+        }
+      } else {
+        const params = {};
+
+        // Get values from sessionStorage
+        const createdBy = sessionStorage.getItem("userId");
+        const userName = sessionStorage.getItem("Username");
+        const userData = sessionStorage.getItem("userData");
+
+        let userId = null;
+        if (userData) {
+          try {
+            const parsedData = JSON.parse(userData);
+            userId = parsedData.UserId;
+          } catch (e) {
+            console.error("Error parsing userData:", e);
+          }
+        }
+
+        if (createdBy) params.CreatedBy = createdBy;
+        if (rowData?.Id) params.Id = rowData.Id;
+
+        const listResponse = await axios.get(`${BASE_URL}DocUpload`, {
+          params,
         });
 
-        setRows(formattedLines); // for DataGrid
+        if (listResponse.data && listResponse.data.values) {
+          const olddata = listResponse.data.values;
+          originalDataRef.current = olddata;
+
+          const formattedLines = Array.isArray(olddata.oDocLines)
+            ? olddata.oDocLines.map((line, index) => ({
+                ...line,
+                id: line.LineNum ?? index,
+              }))
+            : [];
+
+          reset({
+            Id: olddata.Id ?? "",
+            Name: olddata.Name ?? "",
+            MobileNo: olddata.MobileNo
+              ? olddata.MobileNo.replace(/^\+91/, "")
+              : "",
+            Email: olddata.Email ?? "",
+            Address: olddata.Address ?? "",
+            oDocLines: formattedLines,
+          });
+
+          setRows(formattedLines);
+        }
+
+        // console.log("List API response:", listResponse.data);
+        // const olddata = listResponse.data.values;
+        // originalDataRef.current = olddata;
+        // if (listResponse.data && Array.isArray(listResponse.data.values)) {
+        //   const olddata =
+        //     listResponse.data.values.find((item) => item.Id === rowData.Id) ||
+        //     listResponse.data.values[0];
+
+        //   originalDataRef.current = olddata;
+
+        //   const formattedLines = Array.isArray(olddata.oDocLines)
+        //     ? olddata.oDocLines.map((line, index) => ({
+        //         ...line,
+        //         id: line.LineNum ?? index,
+        //       }))
+        //     : [];
+
+        //   reset({
+        //     Id: olddata.Id ?? "",
+        //     Name: olddata.Name ?? "",
+        //     MobileNo: olddata.MobileNo
+        //       ? olddata.MobileNo.replace(/^\+91/, "")
+        //       : "",
+        //     Email: olddata.Email ?? "",
+        //     Address: olddata.Address ?? "",
+        //     oDocLines: formattedLines,
+        //   });
+
+        //   setRows(formattedLines);
+        // }
       }
     } catch (error) {
-      console.error("Error fetching olddata data:", error);
+      console.error("Error in handleUpdate:", error);
     } finally {
       setLoading(false);
     }
@@ -632,52 +765,46 @@ const UploadDocument = () => {
     setRows([]); // clears table data
   };
 
-  const handleRemove = (rowToRemove) => {
-    setRows((prev) =>
-      prev.filter((row) => {
-        if (row.LineNum !== undefined && rowToRemove.LineNum !== undefined) {
-          return row.LineNum !== rowToRemove.LineNum;
-        }
-        return row.id !== rowToRemove.id;
-      })
-    );
-  };
+ 
 
-  // const handleFileUpload = async (e) => {
-  //   const files = Array.from(e.target.files);
-
-  //   const newRows = await Promise.all(
-  //     files.map(async (file, index) => {
-  //       const ext = file.name.split(".").pop().toLowerCase();
-
-  //       return {
-  //         id: Date.now() + index,
-  //         // file details
-  //         name: file.name,
-  //         type: ext,
-  //         SrcPath: "",
-  //         File: file,
-  //         FileExt: ext,
-  //         FileName: file.name,
-
-  //         // extra DataGrid fields (initialize them)
-  //         DocReqDate: dayjs().format("YYYY-MM-DD"),
-  //         IssuedBy: "",
-  //         DocType: "",
-  //         DocEntry: "",
-  //         Status: 0,
-  //         CreatedDate: dayjs().format("YYYY-MM-DD"),
-  //         ModifiedDate: dayjs().format("YYYY-MM-DD"),
-  //         ModifiedBy: sessionStorage.getItem("userId"),
-  //         CreatedBy: sessionStorage.getItem("userId"),
-  //         UserId: sessionStorage.getItem("UserId") || "1",
-  //       };
+  // const handleRemove = (rowToRemove) => {
+  //   // Remove row from table
+  //   setRows((prev) =>
+  //     prev.filter((row) => {
+  //       if (row.LineNum !== undefined && rowToRemove.LineNum !== undefined) {
+  //         return row.LineNum !== rowToRemove.LineNum;
+  //       }
+  //       return row.id !== rowToRemove.id;
   //     })
   //   );
 
-  //   setRows((prev) => [...prev, ...newRows]);
-  //   console.log("object file", newRows);
+  //   if (rowToRemove.LineNum !== undefined) {
+  //     setDeleteLineNums((prev) => [...prev, Number(rowToRemove.LineNum)]);
+  //   }
   // };
+  const handleRemove = (rowToRemove) => {
+  // Remove row from table
+  setRows((prev) =>
+    prev.filter((row) => {
+      if (row.LineNum !== undefined && rowToRemove.LineNum !== undefined) {
+        return row.LineNum !== rowToRemove.LineNum;
+      }
+      return row.id !== rowToRemove.id;
+    })
+  );
+
+  if (rowToRemove.LineNum !== undefined) {
+    setDeleteLineNums((prev) => {
+      // Only add if it doesn't exist already
+      if (!prev.includes(Number(rowToRemove.LineNum))) {
+        return [...prev, Number(rowToRemove.LineNum)];
+      }
+      return prev; // already exists, do nothing
+    });
+  }
+};
+
+
   const handleFileUpload = async (e) => {
     const allowedExt = ["jpg", "jpeg", "png", "pdf"];
     const files = Array.from(e.target.files);
@@ -713,7 +840,7 @@ const UploadDocument = () => {
           DocReqDate: dayjs().format("YYYY-MM-DD"),
           IssuedBy: "",
           DocType: "",
-          DocEntry: "",
+          // DocEntry: "",
           Status: 0,
           CreatedDate: dayjs().format("YYYY-MM-DD"),
           ModifiedDate: dayjs().format("YYYY-MM-DD"),
@@ -847,7 +974,7 @@ const UploadDocument = () => {
         sessionStorage.getItem("userId")
       );
 
-      formData.append(`oDocLines[${index}].DocEntry`, row.DocEntry || "");
+      formData.append(`oDocLines[${index}].Id`, row.Id || "");
       formData.append(`oDocLines[${index}].LineNum`, row.LineNum || "");
 
       formData.append(`oDocLines[${index}].FileExt`, row.FileExt || "");
@@ -880,9 +1007,18 @@ const UploadDocument = () => {
     try {
       let response;
 
+      if (DeleteLineNums) {
+        console.log("object", DeleteLineNums);
+
+        await axios.delete(`${BASE_URL}DocUpload`, {
+          headers: { "Content-Type": "application/json" },
+          data: DeleteLineNums,
+        });
+      }
+
       if (SaveUpdateButton === "SAVE") {
         setLoaderOpen(true);
-        response = await axios.post(`${BASE_URL}DocUpload`, formData, {
+        response = await axios.patch(`${BASE_URL}DocUpload`, formData, {
           headers: { "Content-Type": "multipart/form-data" },
         });
       } else {
@@ -901,13 +1037,9 @@ const UploadDocument = () => {
 
         setLoaderOpen(true);
 
-        response = await axios.put(
-          `${BASE_URL}DocUpload/${data.Id}`,
-          formData,
-          {
-            headers: { "Content-Type": "multipart/form-data" },
-          }
-        );
+        response = await axios.patch(`${BASE_URL}DocUpload`, formData, {
+          headers: { "Content-Type": "multipart/form-data" },
+        });
       }
 
       setLoaderOpen(false);
@@ -938,45 +1070,36 @@ const UploadDocument = () => {
     }
   };
 
-  // const getAllDocList = async (params = {}) => {
+  // const getAllDocList = async (page = 0, searchText = "", limit = 20) => {
   //   try {
   //     setLoading(true);
 
-  //     // Set default values if not provided
-  //     const defaultParams = {
-  //       // MobileNo: "",
+  //     // Build query params
+  //     const params = {
   //       Status: "1",
-  //       // Page: 0,
-  //       // Limit: 20,
+  //       Page: page,
+  //       Limit: limit,
+  //       ...(searchText ? { SearchText: searchText } : {}),
   //     };
 
-  //     const queryParams = { ...defaultParams, ...params };
-
-  //     //  Only include SearchText if it has a value
-  //     if (!queryParams.SearchText) {
-  //       delete queryParams.SearchText;
-  //     }
-
-  //     const response = await axios.get(`${BASE_URL}DocUpload`, {
-  //       params: queryParams,
-  //     });
+  //     const response = await axios.get(`${BASE_URL}DocUpload`, { params });
 
   //     if (response.data && response.data.values) {
-  //       const { Page = 0, Limit = 20 } = queryParams;
   //       setDocumentlist(
   //         response.data.values.map((item, index) => ({
   //           ...item,
-  //           id: Page * Limit + index + 1,
+  //           id: page * limit + index + 1,
   //         }))
   //       );
   //       setTotalRows(response.data.count);
   //     }
   //   } catch (error) {
-  //     console.error("Error fetching data:", error);
+  //     console.error("Error fetching documents:", error);
   //   } finally {
   //     setLoading(false);
   //   }
   // };
+
   const getAllDocList = async (page = 0, searchText = "", limit = 20) => {
     try {
       setLoading(true);
@@ -988,6 +1111,27 @@ const UploadDocument = () => {
         Limit: limit,
         ...(searchText ? { SearchText: searchText } : {}),
       };
+
+      // Get userData from sessionStorage
+      const userData = sessionStorage.getItem("userData");
+      let userType = null;
+
+      if (userData) {
+        try {
+          const parsedData = JSON.parse(userData);
+          userType = parsedData.UserType;
+        } catch (e) {
+          console.error("Error parsing userData:", e);
+        }
+      }
+
+      //  Add CreatedBy only if UserType != "A"
+      if (userType && userType !== "A") {
+        const createdBy = sessionStorage.getItem("userId");
+        if (createdBy) {
+          params.CreatedBy = createdBy;
+        }
+      }
 
       const response = await axios.get(`${BASE_URL}DocUpload`, { params });
 
@@ -1028,10 +1172,35 @@ const UploadDocument = () => {
     }
   };
 
+  // React.useEffect(() => {
+  //   if (firstLoad.current) {
+  //     getAllDocList();
+  //     gazettedList();
+  //     firstLoad.current = false;
+  //   }
+  // }, []);
+
   React.useEffect(() => {
     if (firstLoad.current) {
       getAllDocList();
-      gazettedList();
+
+      // Parse userData
+      const userDataStr = sessionStorage.getItem("userData");
+      let userType = null;
+      if (userDataStr) {
+        try {
+          const userData = JSON.parse(userDataStr);
+          userType = userData.UserType;
+        } catch (error) {
+          console.error("Failed to parse userData:", error);
+        }
+      }
+
+      // Fetch gazette list only for Admin
+      if (userType === "A") {
+        gazettedList();
+      }
+
       firstLoad.current = false;
     }
   }, []);

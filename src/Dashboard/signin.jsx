@@ -34,12 +34,14 @@ const Signin = () => {
               Email: data.Email,
               Phone: data.Phone,
               UserType:data.UserType,
+              GazOfficer:data.GazOfficer,
               BloodGroup: data.BloodGroup,
               Avatar: data.Avatar,
               _id: data._id,
               Token: data.Token,
             };
             sessionStorage.setItem("userId", userId);
+            
             sessionStorage.setItem("userData", JSON.stringify(userData));
   
             Swal.fire({
