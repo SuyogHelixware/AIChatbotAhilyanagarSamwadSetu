@@ -12,12 +12,12 @@ import MenuIcon from "@mui/icons-material/Menu";
 import ModeNightIcon from "@mui/icons-material/ModeNight";
 import logoDarkTheme from "../assets/darkThemeLogo.png";
 import SettingsIcon from "@mui/icons-material/Settings";
-import SmartphoneIcon from "@mui/icons-material/Smartphone";
-import EmailIcon from "@mui/icons-material/Email";
-import BusinessIcon from "@mui/icons-material/Business";
-import DescriptionIcon from "@mui/icons-material/Description";
-import MiscellaneousServicesIcon from "@mui/icons-material/MiscellaneousServices";
-import { MdMiscellaneousServices } from "react-icons/md";
+// import SmartphoneIcon from "@mui/icons-material/Smartphone";
+// import EmailIcon from "@mui/icons-material/Email";
+// import BusinessIcon from "@mui/icons-material/Business";
+// import DescriptionIcon from "@mui/icons-material/Description";
+// import MiscellaneousServicesIcon from "@mui/icons-material/MiscellaneousServices";
+// import { MdMiscellaneousServices } from "react-icons/md";
 import DriveFolderUploadIcon from "@mui/icons-material/DriveFolderUpload";
 import ChecklistIcon from "@mui/icons-material/Checklist";
 
@@ -396,13 +396,17 @@ export default function Dashboard() {
                       <MenuItem sx={{ fontSize: 13 }}>
                         <b>Name : {userData.Username}</b>
                       </MenuItem>
-                      {/* <MenuItem sx={{ fontSize: 13, paddingTop: 0 }}>
-                        <b>Mob :</b> {userData.Phone}
-                      </MenuItem> */}
-
                       <MenuItem sx={{ fontSize: 13, paddingTop: 0 }}>
+                        <b>Mob :</b> {userData.Phone}
+                      </MenuItem>
+                       <MenuItem sx={{ fontSize: 13, paddingTop: 0 }}>
                         <b>Email :</b> {userData.Email}
                       </MenuItem>
+                      <MenuItem sx={{ fontSize: 13, paddingTop: 0 }}>
+                        <b>Gaz Officer :</b> {userData.GazOfficer}
+                      </MenuItem>
+
+                     
                     </Grid>
 
                     <Grid

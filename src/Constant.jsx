@@ -1,10 +1,11 @@
 // export const BASE_URL = "http://34.232.150.10:3011/api/"; 
 
 // =============================================
-// export const BASE_URL = "http://hwaceri5:8077/api/";
+// local IP
+export const BASE_URL = "http://hwaceri5:8077/api/";
 
 // VPS Server URI below
-export const BASE_URL = "http://srv957718.hstgr.cloud:8072/api/";
+// export const BASE_URL = "http://srv957718.hstgr.cloud:8072/api/";
 
 // HTTPS IP below
 // export const BASE_URL = "https://194.238.17.55/api/";
@@ -12,7 +13,6 @@ export const BASE_URL = "http://srv957718.hstgr.cloud:8072/api/";
 
 
 // =============================================================
-// export const Celeriq_BASE_URL = "http://hwaceri5:8076/api/";
 
 
 // export const BASE_URL = "http://34.232.150.10:8075/api/";

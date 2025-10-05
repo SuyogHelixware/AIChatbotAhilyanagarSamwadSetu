@@ -10,12 +10,12 @@ import {
   Paper,
   TextField,
   Tooltip,
-  Typography
+  Typography,
 } from "@mui/material";
 import { DataGrid, GridToolbar } from "@mui/x-data-grid";
 import axios from "axios";
 import * as React from "react";
-import { Controller, useForm } from "react-hook-form"; 
+import { Controller, useForm } from "react-hook-form";
 import Swal from "sweetalert2";
 import { BASE_URL } from "../Constant";
 import Loader from "../components/Loader";
@@ -76,10 +76,11 @@ const GazettedMaster = () => {
     try {
       const payload = {
         UserId: sessionStorage.getItem("userId") || "",
-          ModifiedBy: sessionStorage.getItem("userId"),
-      CreatedDate: dayjs().format("YYYY-MM-DD"),
-          
-      CreatedBy: sessionStorage.getItem("userId"),
+         CreatedDate: dayjs().format("YYYY-MM-DD"),
+        CreatedBy: sessionStorage.getItem("userId"),
+        ModifiedBy: sessionStorage.getItem("userId"),
+ ModifiedDate: dayjs().format("YYYY-MM-DDTHH:mm:ss.SSS"),
+
         Id: null || formData.Id,
         Name: formData.Name,
       };
@@ -152,10 +153,9 @@ const GazettedMaster = () => {
       });
     }
   };
- 
 
   const getAllOfficerList = async (page = 0, searchText = "") => {
-     try {
+    try {
       setLoading(true);
 
       const params = {
@@ -297,16 +297,16 @@ const GazettedMaster = () => {
     //   sortable: false,
     // },
     {
-  field: "Name",
-  headerName: "Name",
-  width: 600,
-  sortable: false,
-  renderCell: (params) => (
-    <Tooltip title={params.value || ""} arrow>
-      <span>{params.value}</span>
-    </Tooltip>
-  ),
-}
+      field: "Name",
+      headerName: "Name",
+      width: 600,
+      sortable: false,
+      renderCell: (params) => (
+        <Tooltip title={params.value || ""} arrow>
+          <span>{params.value}</span>
+        </Tooltip>
+      ),
+    },
   ];
 
   const handleUpdate = async (rowData) => {
@@ -323,11 +323,11 @@ const GazettedMaster = () => {
         // setValue("Id", department.Id);
         // setValue("Name", department.Name);
         //  setValue("Status", department.Status);
-          reset({
-        Id: department.Id ?? "",
-        Name: department.Name ?? "",
-        // Status: department.Status ?? "", // uncomment if needed
-      });
+        reset({
+          Id: department.Id ?? "",
+          Name: department.Name ?? "",
+          // Status: department.Status ?? "", // uncomment if needed
+        });
       }
     } catch (error) {
       console.error("Error fetching department data:", error);
@@ -345,7 +345,7 @@ const GazettedMaster = () => {
         sx={{
           backdropFilter: "blur(5px)",
           // backgroundColor: "rgba(0, 0, 0, 0.3)",
-           // zIndex: 1200,
+          // zIndex: 1200,
         }}
       >
         <Paper
@@ -359,7 +359,7 @@ const GazettedMaster = () => {
             left: "50%",
             transform: "translate(-50%, -50%)",
             justifyContent: "center",
-            overflow: "auto", 
+            overflow: "auto",
             maxHeight: "90vh",
           }}
         >
@@ -403,17 +403,17 @@ const GazettedMaster = () => {
                   },
                 }}
                 render={({ field, fieldState: { error } }) => (
-                   <Tooltip title={field.value || ""} arrow placement="top">
-                  <TextField
-                    {...field}
-                    inputRef={field.ref}
-                    label="ENTER OFFICER NAME"
-                    size="small"
-                    inputProps={{ maxLength: 100 }}
-                    fullWidth
-                    error={!!error}
-                    helperText={error?.message}
-                  />
+                  <Tooltip title={field.value || ""} arrow placement="top">
+                    <TextField
+                      {...field}
+                      inputRef={field.ref}
+                      label="ENTER OFFICER NAME"
+                      size="small"
+                      inputProps={{ maxLength: 100 }}
+                      fullWidth
+                      error={!!error}
+                      helperText={error?.message}
+                    />
                   </Tooltip>
                 )}
               />

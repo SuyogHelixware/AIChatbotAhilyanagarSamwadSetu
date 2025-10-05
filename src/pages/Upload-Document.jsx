@@ -79,7 +79,6 @@ const UploadDocument = () => {
     { label: "Policy Document", value: "PolicyDocument" },
     { label: "NOC", value: "NOC" },
     { label: "OTHER", value: "OTHER" },
-
   ];
 
   const DocColumns = [
@@ -212,10 +211,8 @@ const UploadDocument = () => {
         );
       },
     },
- 
-    // ------------------------------------
-   
 
+    // ------------------------------------
 
     // ============working below=========================
     {
@@ -233,7 +230,7 @@ const UploadDocument = () => {
         if (userDataStr) {
           try {
             const userData = JSON.parse(userDataStr);
-            userType = userData.UserType; // "A" or something else
+            userType = userData.UserType; 
             storedGazOfficer = userData.GazOfficer || null;
           } catch (error) {
             console.error("Failed to parse userData:", error);
@@ -255,8 +252,8 @@ const UploadDocument = () => {
         };
 
         // Non-admin: disable and set session value
-        if (userType !== "A" )  {
-           if (value !== storedGazOfficer) {
+        if (userType !== "A") {
+          if (value !== storedGazOfficer) {
             api.updateRows([{ id, [field]: storedGazOfficer }]);
             setRows((prev) =>
               prev.map((row) =>
@@ -298,6 +295,9 @@ const UploadDocument = () => {
         );
       },
     },
+     
+
+
 
     {
       field: "DocType",
@@ -393,8 +393,11 @@ const UploadDocument = () => {
             size="medium"
             sx={{ color: "red" }}
             onClick={() => handleDelete(params.row)}
-          
-  // disabled={sessionStorage.getItem("UserType")?.trim().toUpperCase() !== "A"}
+            disabled={
+              JSON.parse(sessionStorage.getItem("userData") || "{}")
+                ?.UserType?.trim()
+                .toUpperCase() !== "A"
+            }
           >
             <DeleteForeverIcon />
           </IconButton>
@@ -431,7 +434,9 @@ const UploadDocument = () => {
       sortable: false,
     },
   ];
+  
 
+  
   const handleDelete = async (rowData) => {
     Swal.fire({
       text: "Are you sure you want to delete?",
@@ -765,8 +770,6 @@ const UploadDocument = () => {
     setRows([]); // clears table data
   };
 
- 
-
   // const handleRemove = (rowToRemove) => {
   //   // Remove row from table
   //   setRows((prev) =>
@@ -783,27 +786,26 @@ const UploadDocument = () => {
   //   }
   // };
   const handleRemove = (rowToRemove) => {
-  // Remove row from table
-  setRows((prev) =>
-    prev.filter((row) => {
-      if (row.LineNum !== undefined && rowToRemove.LineNum !== undefined) {
-        return row.LineNum !== rowToRemove.LineNum;
-      }
-      return row.id !== rowToRemove.id;
-    })
-  );
+    // Remove row from table
+    setRows((prev) =>
+      prev.filter((row) => {
+        if (row.LineNum !== undefined && rowToRemove.LineNum !== undefined) {
+          return row.LineNum !== rowToRemove.LineNum;
+        }
+        return row.id !== rowToRemove.id;
+      })
+    );
 
-  if (rowToRemove.LineNum !== undefined) {
-    setDeleteLineNums((prev) => {
-      // Only add if it doesn't exist already
-      if (!prev.includes(Number(rowToRemove.LineNum))) {
-        return [...prev, Number(rowToRemove.LineNum)];
-      }
-      return prev; // already exists, do nothing
-    });
-  }
-};
-
+    if (rowToRemove.LineNum !== undefined) {
+      setDeleteLineNums((prev) => {
+        // Only add if it doesn't exist already
+        if (!prev.includes(Number(rowToRemove.LineNum))) {
+          return [...prev, Number(rowToRemove.LineNum)];
+        }
+        return prev; // already exists, do nothing
+      });
+    }
+  };
 
   const handleFileUpload = async (e) => {
     const allowedExt = ["jpg", "jpeg", "png", "pdf"];
@@ -959,6 +961,8 @@ const UploadDocument = () => {
     formData.append("Address", data.Address || "");
     formData.append("Id", data.Id || "");
     formData.append("CreatedDate", dayjs().format("YYYY-MM-DD"));
+    formData.append("ModifiedDate", dayjs().format("YYYY-MM-DDTHH:mm:ss.SSS"));
+
 
     rows.forEach((row, index) => {
       formData.append(

@@ -158,19 +158,19 @@ export default function ManageUsers() {
       if (response.data) {
         const data = response.data.values;
         originalDataRef.current = data;
-  reset({
-        Id: data.Id ?? "",
-        FirstName: data.FirstName ?? "",
-        Username: data.Username ?? "",
-        LastName: data.LastName ?? "",
-        DOB: data.DOB ? dayjs(data.DOB) : null,
-        Phone: data.Phone ?? "",
-        Email: data.Email ?? "",
-        Status: data.Status ?? "",
-        UserType: data.UserType ?? "",
-        GazOfficer: data.GazOfficer ?? "",
-      });
-    
+        reset({
+          Id: data.Id ?? "",
+          FirstName: data.FirstName ?? "",
+          Username: data.Username ?? "",
+          LastName: data.LastName ?? "",
+          DOB: data.DOB ? dayjs(data.DOB) : null,
+          Phone: data.Phone ?? "",
+          Email: data.Email ?? "",
+          Status: data.Status ?? "",
+          UserType: data.UserType ?? "",
+          GazOfficer: data.GazOfficer ?? "",
+        });
+
         // setValue("Id", data.Id);
         // setValue("FirstName", data.FirstName);
         // setValue("Username", data.Username);
@@ -182,7 +182,6 @@ export default function ManageUsers() {
         // setValue("Status", data.Status);
         // setValue("UserType", data.UserType);
         // setValue("GazOfficer", data.GazOfficer);
-  
       }
     } catch (error) {
       console.error("Error fetching user data:", error);
@@ -292,7 +291,7 @@ export default function ManageUsers() {
     setLoaderOpen(true);
 
     // const filename = new Date().getTime() + "_" + uploadedImg.name;
-     
+
     const saveObj = {
       UserId: sessionStorage.getItem("userId") || "",
       ModifiedBy: sessionStorage.getItem("userId"),
@@ -307,7 +306,7 @@ export default function ManageUsers() {
       CreatedDate: dayjs().format("YYYY-MM-DD"),
 
       UserType: getValues("UserType") || "U",
-        GazOfficer: getValues("GazOfficer") || null, 
+      GazOfficer: getValues("GazOfficer") || null,
 
       // Avatar: uploadedImg !== "" ? filename : "",
       Status: getValues("Status"),
@@ -327,8 +326,7 @@ export default function ManageUsers() {
       Phone: getValues("Phone") || "",
       Email: getValues("Email") || "",
       UserType: getValues("UserType") || "U",
-        GazOfficer: getValues("GazOfficer") || null,  
-
+      GazOfficer: getValues("GazOfficer") || null,
 
       Status: getValues("Status"),
       // Avatar: uploadedImg === "" ? getValues("Avatar") : filename,
@@ -561,11 +559,12 @@ export default function ManageUsers() {
                 padding: 0,
                 marginLeft: 3,
               },
+              color: "red",
             }}
             onClick={() => deluser(params.row.Id)}
-            color="primary"
+          
           >
-            <DeleteForeverIcon style={{ color: "red" }} />
+            <DeleteForeverIcon />
           </IconButton>
         </>
       ),
@@ -1050,7 +1049,8 @@ export default function ManageUsers() {
                 )}
               />
             </Grid>
-            {/* <Grid item md={6} sm={6} xs={12}>
+
+            <Grid item md={6} sm={6} xs={12}>
               <Controller
                 name="GazOfficer"
                 control={control}
@@ -1062,7 +1062,12 @@ export default function ManageUsers() {
                     fullWidth
                     size="small"
                     {...field}
+                    InputLabelProps={{
+                      shrink: Boolean(field.value),
+                    }}
                   >
+                    <MenuItem value="">No Officer</MenuItem>
+
                     {gazeteList.map((option) => (
                       <MenuItem key={option.Name} value={option.Name}>
                         {option.Name}
@@ -1071,33 +1076,7 @@ export default function ManageUsers() {
                   </TextField>
                 )}
               />
-            </Grid> */}
-            <Grid item md={6} sm={6} xs={12}>
-  <Controller
-    name="GazOfficer"
-    control={control}
-    defaultValue=""
-    render={({ field }) => (
-      <TextField
-        select
-        label="Gaz Officer"
-        fullWidth
-        size="small"
-        {...field}
-        InputLabelProps={{
-          shrink: Boolean(field.value), 
-        }}
-      >
-        {gazeteList.map((option) => (
-          <MenuItem key={option.Name} value={option.Name}>
-            {option.Name}
-          </MenuItem>
-        ))}
-      </TextField>
-    )}
-  />
-</Grid>
-
+            </Grid>
 
             <Grid
               item
