@@ -40,7 +40,7 @@ export default function Home() {
             >
               Total Registered Users
               <h2>
-                <CountUp start={0} end={550} duration={2.75} separator="," />
+                <CountUp start={0} end={150} duration={2.75} separator="," />
               </h2>{" "}
             </Paper>
           </Grid>
@@ -60,9 +60,9 @@ export default function Home() {
               }}
               elevation={7}
             >
-              Total Departments
+              Total Gazetted Officers
               <h2>
-                <CountUp start={0} end={100} duration={2.75} separator="," /> 
+                <CountUp start={0} end={80} duration={2.75} separator="," /> 
               </h2>{" "}
             </Paper>
           </Grid>
@@ -82,9 +82,9 @@ export default function Home() {
               }}
               elevation={7}
             >
-               Total Online Services
+               Total Uploaded Document
               <h2>
-                <CountUp start={0} end={650} duration={2.75} separator="," />
+                <CountUp start={0} end={50} duration={2.75} separator="," />
               </h2>{" "}
             </Paper>
           </Grid>
@@ -104,9 +104,9 @@ export default function Home() {
               }}
               elevation={7}
             >
-             Total Offline Services
+             Total Services
               <h2>
-                <CountUp start={0} end={680} duration={2.75} separator="," />
+                <CountUp start={0} end={60} duration={2.75} separator="," />
               </h2>{" "}
             </Paper>
           </Grid>

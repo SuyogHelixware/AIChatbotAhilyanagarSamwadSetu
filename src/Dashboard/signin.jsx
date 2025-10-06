@@ -33,17 +33,17 @@ const Signin = () => {
               Address: data.Address,
               Email: data.Email,
               Phone: data.Phone,
-              UserType:data.UserType,
-              GazOfficer:data.GazOfficer,
+              UserType: data.UserType,
+              GazOfficer: data.GazOfficer,
               BloodGroup: data.BloodGroup,
               Avatar: data.Avatar,
               _id: data._id,
               Token: data.Token,
             };
             sessionStorage.setItem("userId", userId);
-            
+
             sessionStorage.setItem("userData", JSON.stringify(userData));
-  
+
             Swal.fire({
               position: "top-end",
               toast: true,
@@ -52,7 +52,7 @@ const Signin = () => {
               timer: 1500,
               icon: "success",
             });
-  
+
             // Wait briefly to show loader, then navigate
             setTimeout(() => {
               navigate("/dashboard/home");
@@ -85,7 +85,6 @@ const Signin = () => {
       });
     }
   };
-  
 
   const login = (e) => {
     e.preventDefault();
@@ -105,165 +104,182 @@ const Signin = () => {
 
   return (
     <>
-        {loading && <Loader open={loading} />}
-    
-    <Box
-      sx={{
-        display: "flex",
-        justifyContent: "center",
-        alignItems: "center",
-        height: "100vh",
-        background: "linear-gradient(to right, #004d40, #26a69a)",
-        fontFamily: "Arial, sans-serif",
-        px: 2,
-      }}
-    >
+      {loading && <Loader open={loading} />}
+
       <Box
         sx={{
           display: "flex",
-          flexDirection: { xs: "column-reverse", md: "row" },   
-          width: { xs: "100%", sm: "90%", md: "800px" },
-          background: "white",
-          borderRadius: "20px",
-          boxShadow: "0 4px 10px rgba(0, 0, 0, 0.2)",
-          overflow: "hidden",
+          justifyContent: "center",
+          alignItems: "center",
+          height: "100vh",
+          background: "linear-gradient(to right, #004d40, #26a69a)",
+          fontFamily: "Arial, sans-serif",
+          px: 2,
         }}
       >
         <Box
           sx={{
-            flex: 1,
-            p: { xs: 3, md: 5 },
             display: "flex",
-            flexDirection: "column",
-            alignItems: "center",
+            flexDirection: { xs: "column-reverse", md: "row" },
+            width: { xs: "100%", sm: "90%", md: "800px" },
+            background: "white",
+            borderRadius: "20px",
+            boxShadow: "0 4px 10px rgba(0, 0, 0, 0.2)",
+            overflow: "hidden",
           }}
         >
-          <h2 style={{ fontSize: "24px", fontWeight: "bold", marginBottom: "10px" }}>
-            Sign In
-          </h2>
+          <Box
+            sx={{
+              flex: 1,
+              p: { xs: 3, md: 5 },
+              display: "flex",
+              flexDirection: "column",
+              alignItems: "center",
+            }}
+          >
+            <h2
+              style={{
+                fontSize: "24px",
+                fontWeight: "bold",
+                marginBottom: "10px",
+              }}
+            >
+              Sign In
+            </h2>
+
+            <Box
+              sx={{
+                width: "100%",
+                // display: "flex", flexDirection: "column", alignItems: "center", gap: 2,
+                maxWidth: { xs: "90%", sm: "80%", md: "320px" },
+                mx: "auto", // center
+              }}
+            >
+              <Box sx={{ position: "relative", mb: 2 }}>
+                <span
+                  style={{
+                    position: "absolute",
+                    top: "50%",
+                    right: "2px",
+                    // left: "15px",
+                    transform: "translateY(-50%)",
+                    fontSize: "16px",
+                    color: "#888",
+                  }}
+                >
+                  📧
+                </span>
+                <input
+                  type="text"
+                  placeholder="Username"
+                  value={userId}
+                  onChange={(e) => setUserId(e.target.value)}
+                  tabIndex={1} 
+                  style={{
+                    width: "80%", 
+                    padding: "12px 12px 12px 40px",
+                    border: "none",
+                    borderRadius: "20px",
+                    background: "#f5f5f5",
+                    fontSize: "16px",
+                  }}
+                />
+              </Box>
+
+              <Box sx={{ position: "relative", mb: 2 }}>
+                <IconButton
+                  onClick={() => setShowPassword(!showPassword)}
+                  sx={{
+                    position: "absolute",
+                    top: "50%",
+                    right: "2px",
+                    // left: "1px",
+                    transform: "translateY(-50%)",
+                    color: "#888",
+                    p: 0,
+                  }}
+                >
+                  {showPassword ? <VisibilityOff /> : <Visibility />}
+                </IconButton>
+                <input
+                  type={showPassword ? "text" : "password"}
+                  placeholder="Password"
+                  value={password}
+                  onChange={(e) => setPassword(e.target.value)}
+                  onKeyDown={(e) => {
+                    if (e.key === "Enter") {
+                      login(e); 
+                    }
+                  }}
+                  tabIndex={2}
+                  style={{
+                    width: "80%", 
+                    padding: "12px 12px 12px 45px",
+                    border: "none",
+                    borderRadius: "20px",
+                    background: "#f5f5f5",
+                    fontSize: "16px",
+                  }}
+                />
+              </Box>
+
+              <p
+                onClick={() => navigate("/forgot-password")}
+                style={{
+                  cursor: "pointer",
+                  color: "#00796b",
+                  textAlign: "center",
+                  marginTop: "10px",
+                }}
+              >
+                Forgot Password?
+              </p>
+
+              <button
+                onClick={login}
+                tabIndex={3} 
+                style={{
+                  width: "100%",
+                  background: "#00796b",
+                  color: "white",
+                  border: "none",
+                  padding: "12px",
+                  borderRadius: "25px",
+                  fontSize: "16px",
+                  cursor: "pointer",
+                  marginTop: "10px",
+                }}
+              >
+                Sign In
+              </button>
+            </Box>
+          </Box>
 
           <Box
-  sx={{
-    width: "100%",
-    // display: "flex", flexDirection: "column", alignItems: "center", gap: 2,
-    maxWidth: { xs: "90%", sm: "80%", md: "320px" }, 
-    mx: "auto", // center
-  }}
->
-  <Box sx={{ position: "relative", mb: 2 }}>
-    <span
-      style={{
-        position: "absolute",
-        top: "50%",
-        left: "15px",
-        transform: "translateY(-50%)",
-        fontSize: "16px",
-        color: "#888",
-      }}
-    >
-      📧
-    </span>
-    <input
-      type="text"
-      placeholder="Username"
-      value={userId}
-      onChange={(e) => setUserId(e.target.value)}
-      style={{
-        width: "80%", // matches sign in button width
-        padding: "12px 12px 12px 40px",
-        border: "none",
-        borderRadius: "25px",
-        background: "#f5f5f5",
-        fontSize: "16px",
-      }}
-    />
-  </Box>
-
-  <Box sx={{ position: "relative", mb: 2 }}>
-    <IconButton
-      onClick={() => setShowPassword(!showPassword)}
-      sx={{
-        position: "absolute",
-        top: "50%",
-        left: "10px",
-        transform: "translateY(-50%)",
-        color: "#888",
-        p: 0,
-      }}
-    >
-      {showPassword ? <VisibilityOff /> : <Visibility />}
-    </IconButton>
-    <input
-      type={showPassword ? "text" : "password"}
-      placeholder="Password"
-      value={password}
-      onChange={(e) => setPassword(e.target.value)}
-      style={{
-        width: "80%", // same width as button
-        padding: "12px 12px 12px 45px",
-        border: "none",
-        borderRadius: "25px",
-        background: "#f5f5f5",
-        fontSize: "16px",
-      }}
-    />
-  </Box>
-
-  <p
-    onClick={() => navigate("/forgot-password")}
-    style={{
-      cursor: "pointer",
-      color: "#00796b",
-      textAlign: "center",
-      marginTop: "10px",
-    }}
-  >
-    Forgot Password?
-  </p>
-
-  <button
-    onClick={login}
-    style={{
-      width: "100%",
-      background: "#00796b",
-      color: "white",
-      border: "none",
-      padding: "12px",
-      borderRadius: "25px",
-      fontSize: "16px",
-      cursor: "pointer",
-      marginTop: "10px",
-    }}
-  >
-    Sign In
-  </button>
-</Box>
-
-        </Box>
-
-        <Box
-          sx={{
-            flex: 1,
-            background: "linear-gradient(to right, #004d40, #00796b)",
-            color: "white",
-            display: "flex",
-            flexDirection: "column",
-            justifyContent: "center",
-            alignItems: "center",
-            p: { xs: 3, md: 5 },
-          }}
-        >
-          <Box sx={{ mb: 2, width: { xs: "220px", sm: "280px", md: "320px" } }}>
-            <img
-              src={darkThemeLogo}
-              alt="Logo"
-              width="100%"
-              style={{ objectFit: "contain" }}
-            />
+            sx={{
+              flex: 1,
+              background: "linear-gradient(to right, #004d40, #00796b)",
+              color: "white",
+              display: "flex",
+              flexDirection: "column",
+              justifyContent: "center",
+              alignItems: "center",
+              p: { xs: 3, md: 5 },
+            }}
+          >
+            <Box
+              sx={{ mb: 2, width: { xs: "220px", sm: "280px", md: "320px" } }}
+            >
+              <img
+                src={darkThemeLogo}
+                alt="Logo"
+                width="100%"
+                style={{ objectFit: "contain" }}
+              />
+            </Box>
           </Box>
         </Box>
       </Box>
-    </Box>
     </>
   );
 };

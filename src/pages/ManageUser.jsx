@@ -1,12 +1,7 @@
-import React, { useEffect } from "react";
-import { Controller, useForm } from "react-hook-form"; // import useForm
-import AccountCircleOutlinedIcon from "@mui/icons-material/AccountCircleOutlined";
 import AddIcon from "@mui/icons-material/Add";
 import CloseIcon from "@mui/icons-material/Close";
-import DeleteIcon from "@mui/icons-material/Delete";
 import DeleteForeverIcon from "@mui/icons-material/DeleteForever";
 import EditNoteIcon from "@mui/icons-material/EditNote";
-import PhotoLibraryIcon from "@mui/icons-material/PhotoLibrary";
 import {
   Badge,
   Button,
@@ -24,18 +19,17 @@ import Paper from "@mui/material/Paper";
 import { DataGrid, GridToolbar } from "@mui/x-data-grid";
 import axios from "axios";
 import dayjs from "dayjs";
+import React, { useEffect } from "react";
+import { Controller, useForm } from "react-hook-form";
 import Swal from "sweetalert2";
 import avatar from "../../src/assets/avtar.png";
 import {
-  BASE_URL,
-  Bunny_Image_URL,
-  Bunny_Storage_Access_Key,
+  BASE_URL
 } from "../Constant";
 import InputTextField, {
-  CheckboxInputs,
   DatePickerField,
   //   DatePickerField,
-  InputPasswordField,
+  InputPasswordField
 } from "../components/Component";
 import Loader from "../components/Loader";
 // import CameraAltOutlinedIcon from "@mui/icons-material/CameraAltOutlined";
@@ -72,24 +66,24 @@ export default function ManageUsers() {
 
   const handleClickShowPassword = () => setShowPassword(!showPassword);
 
-  const handleImageUpload = (event) => {
-    const file = event.target.files[0];
-    if (file && file.type.startsWith("image/")) {
-      const reader = new FileReader();
-      reader.onload = () => setImage(reader.result);
-      reader.readAsDataURL(file);
-      setUploadedImg(file);
-    } else {
-      Swal.fire({
-        icon: "error",
-        title: "Invalid File",
-        text: "Please upload a valid image file",
-        toast: true,
-        showConfirmButton: true,
-      });
-      setUploadedImg("");
-    }
-  };
+  // const handleImageUpload = (event) => {
+  //   const file = event.target.files[0];
+  //   if (file && file.type.startsWith("image/")) {
+  //     const reader = new FileReader();
+  //     reader.onload = () => setImage(reader.result);
+  //     reader.readAsDataURL(file);
+  //     setUploadedImg(file);
+  //   } else {
+  //     Swal.fire({
+  //       icon: "error",
+  //       title: "Invalid File",
+  //       text: "Please upload a valid image file",
+  //       toast: true,
+  //       showConfirmButton: true,
+  //     });
+  //     setUploadedImg("");
+  //   }
+  // };
 
   const clearFormData = () => {
     console.log("ClearUpdateButton: ", ClearUpdateButton); // To debug
@@ -124,8 +118,7 @@ export default function ManageUsers() {
         reset(resetData);
         // setImage(
         //   resetData.Avatar
-        //     ? `${Bunny_Image_URL}/Users/${resetData.Id}/${resetData.Avatar}`
-        //     : ""
+         //     : ""
         // );
       } else {
         console.error("Original data is not available!");

@@ -33,7 +33,6 @@ const GazettedMaster = () => {
   const [searchText, setSearchText] = React.useState("");
   const limit = 20; // Fixed page size
   const originalDataRef = React.useRef(null);
-
   const firstLoad = React.useRef(true);
 
   // React Hook Form initialization
@@ -75,7 +74,7 @@ const GazettedMaster = () => {
   const handleSubmitForm = async (formData) => {
     try {
       const payload = {
-        UserId: sessionStorage.getItem("userId") || "",
+        UserId: sessionStorage.getItem("userId") ,
          CreatedDate: dayjs().format("YYYY-MM-DD"),
         CreatedBy: sessionStorage.getItem("userId"),
         ModifiedBy: sessionStorage.getItem("userId"),
@@ -166,7 +165,6 @@ const GazettedMaster = () => {
       };
 
       const response = await axios.get(`${BASE_URL}GazOfficers`, { params });
-
       if (response.data && response.data.values) {
         setOfficersList(
           response.data.values.map((item, index) => ({
@@ -253,9 +251,9 @@ const GazettedMaster = () => {
           <IconButton
             color="primary"
             sx={{
-              color: "rgb(0, 90, 91)", // Apply color to the icon
+              color: "rgb(0, 90, 91)", 
               "&:hover": {
-                backgroundColor: "rgba(0, 90, 91, 0.1)", // Optional hover effect
+                backgroundColor: "rgba(0, 90, 91, 0.1)", 
               },
             }}
             onClick={() => handleUpdate(params.row)}
@@ -272,15 +270,7 @@ const GazettedMaster = () => {
         </strong>
       ),
     },
-    // {
-    //   field: "id",
-    //   headerName: "Sr.No",
-    //   width: 100,
-    //   sortable: true,
-    //   headerAlign: "center",
-    //   align: "center",
-    // },
-    {
+       {
       field: "srNo",
       headerName: "SR NO",
       width: 60,
@@ -290,13 +280,7 @@ const GazettedMaster = () => {
       renderCell: (params) =>
         params.api.getSortedRowIds().indexOf(params.id) + 1,
     },
-    // {
-    //   field: "Name",
-    //   headerName: "Name",
-    //   width: 600,
-    //   sortable: false,
-    // },
-    {
+       {
       field: "Name",
       headerName: "Name",
       width: 600,
@@ -320,13 +304,11 @@ const GazettedMaster = () => {
       if (response.data && response.data.values) {
         const department = response.data.values;
         originalDataRef.current = department;
-        // setValue("Id", department.Id);
-        // setValue("Name", department.Name);
-        //  setValue("Status", department.Status);
+       
         reset({
           Id: department.Id ?? "",
           Name: department.Name ?? "",
-          // Status: department.Status ?? "", // uncomment if needed
+          // Status: department.Status ?? "", 
         });
       }
     } catch (error) {
@@ -353,7 +335,6 @@ const GazettedMaster = () => {
           sx={{
             width: "90%",
             maxWidth: 400,
-            // bgcolor: "#E6E6FA",
             position: "absolute",
             top: "50%",
             left: "50%",
@@ -438,7 +419,7 @@ const GazettedMaster = () => {
             >
               <Button
                 size="small"
-                onClick={() => clearFormData()} // Cancel button functionality
+                onClick={() => clearFormData()} 
                 sx={{
                   p: 1,
                   width: 80,
@@ -552,62 +533,6 @@ const GazettedMaster = () => {
         component={Paper}
         sx={{ height: "85vh", width: "100%" }}
       >
-        {/* <DataGrid
-          className="datagrid-style"
-          sx={{
-            height: "100%", // Set height in percentage
-            minHeight: "500px",
-            "& .MuiDataGrid-columnHeaders": {
-              backgroundColor: (theme) => theme.palette.custome.datagridcolor,
-            },
-            "& .MuiDataGrid-row:hover": {
-              boxShadow: "0px 4px 20px rgba(0, 0, 0.2, 0.2)",
-            },
-          }}
-          rows={OfficersList}
-          columns={columns}
-          // autoHeight
-          pagination
-          paginationMode="server"
-          rowCount={totalRows}
-          pageSizeOptions={[limit]}
-          paginationModel={{ page: currentPage, pageSize: limit }}
-          onPaginationModelChange={(newModel) => {
-            console.log("New Pagination Model:", newModel);
-            setCurrentPage(newModel.page);
-            getAllOfficerList(newModel.page, searchText);
-          }}
-          loading={loading}
-          initialState={{
-            pagination: { paginationModel: { pageSize: 8 } },
-
-            filter: {
-              filterModel: {
-                items: [],
-
-                quickFilterValues: [], // Default empty
-              },
-            },
-          }}
-          disableColumnFilter
-          disableColumnSelector
-          disableDensitySelector
-          slots={{ toolbar: GridToolbar }} // Enables search & export
-          slotProps={{
-            toolbar: {
-              showQuickFilter: true,
-
-              quickFilterProps: { debounceMs: 500 },
-            },
-          }}
-          onFilterModelChange={(model) => {
-            const quickFilterValue = model.quickFilterValues?.[0] || "";
-            setSearchText(quickFilterValue);
-            setCurrentPage(0); // ✅ Always reset to first page when searching
-            getAllOfficerList(0, quickFilterValue);
-          }}
-          getRowId={(row) => row.Id} // Ensure unique row ID from database
-        /> */}
         <DataGrid
           className="datagrid-style"
           sx={{
@@ -625,7 +550,7 @@ const GazettedMaster = () => {
           pagination
           paginationMode="server"
           rowCount={totalRows}
-          pageSizeOptions={[8, 20, 50]} // example sizes
+          pageSizeOptions={[10, 20, 50]} 
           paginationModel={{ page: currentPage, pageSize: limit }}
           onPaginationModelChange={(newModel) => {
             setCurrentPage(newModel.page);
@@ -654,5 +579,4 @@ const GazettedMaster = () => {
     </>
   );
 };
-
 export default GazettedMaster;

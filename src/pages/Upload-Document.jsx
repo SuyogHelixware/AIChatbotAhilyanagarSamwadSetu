@@ -48,6 +48,7 @@ const UploadDocument = () => {
 
   const firstLoad = React.useRef(true);
   const fileInputRef = React.useRef(null);
+  const handleClose = () => setOn(false);
 
   const initial = {
     Status: "1",
@@ -92,7 +93,6 @@ const UploadDocument = () => {
       renderCell: (params) =>
         params.api.getSortedRowIds().indexOf(params.id) + 1,
     },
-
     {
       field: "action",
       headerName: "Action",
@@ -145,7 +145,6 @@ const UploadDocument = () => {
         </div>
       ),
     },
-
     {
       field: "FileName",
       headerName: "DOCUMENT NAME",
@@ -153,13 +152,10 @@ const UploadDocument = () => {
       sortable: false,
       renderCell: (params) => {
         const { id, field, api, value } = params;
-
         const handleChange = (event) => {
           const newValue = event.target.value;
-
           // Update DataGrid UI
           api.updateRows([{ id, [field]: newValue }]);
-
           // Update rows state for onSubmit
           setRows((prev) =>
             prev.map((row) =>
@@ -183,7 +179,6 @@ const UploadDocument = () => {
         );
       },
     },
-
     {
       field: "DocReqDate",
       headerName: "DOC REQUEST DATE",
@@ -194,7 +189,6 @@ const UploadDocument = () => {
         const handleDateChange = (newValue) => {
           // Update DataGrid UI
           api.updateRows([{ id, [field]: newValue }]);
-
           // Update rows state for submit
           setRows((prev) =>
             prev.map((row) =>
@@ -202,7 +196,6 @@ const UploadDocument = () => {
             )
           );
         };
-
         return (
           <DatePickerField
             value={value ? dayjs(value) : dayjs()}
@@ -211,10 +204,6 @@ const UploadDocument = () => {
         );
       },
     },
-
-    // ------------------------------------
-
-    // ============working below=========================
     {
       field: "IssuedBy",
       headerName: "GAZETTED OFFICER",
@@ -230,13 +219,12 @@ const UploadDocument = () => {
         if (userDataStr) {
           try {
             const userData = JSON.parse(userDataStr);
-            userType = userData.UserType; 
+            userType = userData.UserType;
             storedGazOfficer = userData.GazOfficer || null;
           } catch (error) {
             console.error("Failed to parse userData:", error);
           }
         }
-
         const handleChange = (e) => {
           const newValue = e.target.value;
 
@@ -295,10 +283,6 @@ const UploadDocument = () => {
         );
       },
     },
-     
-
-
-
     {
       field: "DocType",
       headerName: "DOCUMENT TYPE",
@@ -319,7 +303,6 @@ const UploadDocument = () => {
             )
           );
         };
-
         return (
           <Tooltip title={value || ""} arrow placement="top">
             <Select
@@ -338,40 +321,9 @@ const UploadDocument = () => {
         );
       },
     },
-    // {
-    //   field: "action",
-    //   headerName: "Action",
-    //   width: 90,
-    //   renderCell: (params) => (
-    //     <Button
-    //       variant="outlined"
-    //       color="error"
-    //       size="small"
-    //       onClick={() => handleRemove(params.row)}
-    //     >
-    //       Remove
-    //     </Button>
-    //   ),
-    // },
   ];
 
-  const handleViewFile = (row) => {
-    if (row.SrcPath) {
-      // Old file from server
-      window.open(row.SrcPath, "_blank");
-    } else if (row.File) {
-      // New file not uploaded yet → create a temporary URL
-      const fileURL = URL.createObjectURL(row.File);
-      window.open(fileURL, "_blank");
-
-      // Optional: revoke URL after a while to free memory
-      setTimeout(() => URL.revokeObjectURL(fileURL), 10000);
-    } else {
-      console.warn("File not available to open");
-    }
-  };
-
-  const columns = [
+  const Maincolumns = [
     {
       field: "actions",
       headerName: "Action",
@@ -434,9 +386,23 @@ const UploadDocument = () => {
       sortable: false,
     },
   ];
-  
 
-  
+  const handleViewFile = (row) => {
+    if (row.SrcPath) {
+      // Old file from server
+      window.open(row.SrcPath, "_blank");
+    } else if (row.File) {
+      // New file not uploaded yet → create a temporary URL
+      const fileURL = URL.createObjectURL(row.File);
+      window.open(fileURL, "_blank");
+
+      // Optional: revoke URL after a while to free memory
+      setTimeout(() => URL.revokeObjectURL(fileURL), 10000);
+    } else {
+      console.warn("File not available to open");
+    }
+  };
+
   const handleDelete = async (rowData) => {
     Swal.fire({
       text: "Are you sure you want to delete?",
@@ -488,49 +454,6 @@ const UploadDocument = () => {
     });
   };
 
-  // const handleUpdate = async (rowData) => {
-  //   setSaveUpdateButton("UPDATE");
-  //   setClearUpdateButton("RESET");
-  //   setOn(true);
-
-  //   try {
-  //     setLoading(true);
-  //     const apiUrl = `${BASE_URL}DocUpload/${rowData.Id}`;
-  //     const response = await axios.get(apiUrl);
-
-  //     if (response.data && response.data.values) {
-  //       const olddata = response.data.values;
-  //       originalDataRef.current = olddata;
-
-  //       // normalize doc lines
-  //       const formattedLines = Array.isArray(olddata.oDocLines)
-  //         ? olddata.oDocLines.map((line, index) => ({
-  //             ...line,
-  //             id: line.LineNum ?? index,
-  //           }))
-  //         : [];
-
-  //       // reset the whole form with API values
-  //       reset({
-  //         Id: olddata.Id ?? "",
-  //         Name: olddata.Name ?? "",
-  //         // MobileNo: olddata.MobileNo ?? "",
-  //         MobileNo: olddata.MobileNo
-  //           ? olddata.MobileNo.replace(/^\+91/, "")
-  //           : "",
-  //         Email: olddata.Email ?? "",
-  //         Address: olddata.Address ?? "",
-  //         oDocLines: formattedLines,
-  //       });
-
-  //       setRows(formattedLines); // for DataGrid
-  //     }
-  //   } catch (error) {
-  //     console.error("Error fetching olddata data:", error);
-  //   } finally {
-  //     setLoading(false);
-  //   }
-  // };
   const handleUpdate = async (rowData) => {
     setSaveUpdateButton("UPDATE");
     setClearUpdateButton("RESET");
@@ -601,7 +524,7 @@ const UploadDocument = () => {
           }
         }
 
-        if (createdBy) params.CreatedBy = createdBy;
+        // if (createdBy) params.CreatedBy = createdBy;
         if (rowData?.Id) params.Id = rowData.Id;
 
         const listResponse = await axios.get(`${BASE_URL}DocUpload`, {
@@ -672,7 +595,7 @@ const UploadDocument = () => {
   };
 
   const clearFormData = () => {
-    setRows([]); // clear DataGrid first
+    setRows([]);
 
     if (ClearUpdateButton === "CLEAR") {
       reset({
@@ -684,39 +607,6 @@ const UploadDocument = () => {
         oDocLines: [],
       });
     }
-
-    // if (ClearUpdateButton === "RESET") {
-
-    //   if (originalDataRef.current) {
-    //     reset(originalDataRef.current);
-
-    //     // also set rows for DataGrid
-    //     if (
-    //       originalDataRef.current.oDocLines &&
-    //       Array.isArray(originalDataRef.current.oDocLines)
-    //     ) {
-    //       const formattedLines = originalDataRef.current.oDocLines.map(
-    //         (line, index) => ({
-    //           ...line,
-    //           id: line.LineNum ?? index,
-    //         })
-    //       );
-    //       setRows(formattedLines);
-    //     } else {
-    //       setRows([]);
-    //     }
-    //   } else {
-    //     reset({
-    //       Status: 1,
-    //       Address: "",
-    //       Email: "",
-    //       MobileNo: "",
-    //       Name: "",
-    //       oDocLines: [],
-    //     });
-    //     setRows([]);
-    //   }
-    // }
     if (ClearUpdateButton === "RESET") {
       if (originalDataRef.current) {
         const resetData = { ...originalDataRef.current };
@@ -725,7 +615,6 @@ const UploadDocument = () => {
         if (resetData.MobileNo && resetData.MobileNo.startsWith("+91")) {
           resetData.MobileNo = resetData.MobileNo.slice(3);
         }
-
         reset(resetData);
 
         // also set rows for DataGrid
@@ -743,7 +632,7 @@ const UploadDocument = () => {
           Status: 1,
           Address: "",
           Email: "",
-          MobileNo: "", // no +91 here
+          MobileNo: "",
           Name: "",
           oDocLines: [],
         });
@@ -751,8 +640,6 @@ const UploadDocument = () => {
       }
     }
   };
-
-  const handleClose = () => setOn(false);
 
   const handleOnSave = () => {
     setSaveUpdateButton("SAVE");
@@ -770,21 +657,6 @@ const UploadDocument = () => {
     setRows([]); // clears table data
   };
 
-  // const handleRemove = (rowToRemove) => {
-  //   // Remove row from table
-  //   setRows((prev) =>
-  //     prev.filter((row) => {
-  //       if (row.LineNum !== undefined && rowToRemove.LineNum !== undefined) {
-  //         return row.LineNum !== rowToRemove.LineNum;
-  //       }
-  //       return row.id !== rowToRemove.id;
-  //     })
-  //   );
-
-  //   if (rowToRemove.LineNum !== undefined) {
-  //     setDeleteLineNums((prev) => [...prev, Number(rowToRemove.LineNum)]);
-  //   }
-  // };
   const handleRemove = (rowToRemove) => {
     // Remove row from table
     setRows((prev) =>
@@ -802,7 +674,7 @@ const UploadDocument = () => {
         if (!prev.includes(Number(rowToRemove.LineNum))) {
           return [...prev, Number(rowToRemove.LineNum)];
         }
-        return prev; // already exists, do nothing
+        return prev;
       });
     }
   };
@@ -860,8 +732,6 @@ const UploadDocument = () => {
       fileInputRef.current.value = "";
     }
   };
-
-  // =========================
 
   const handleChangeFile = async (e, rowId) => {
     const file = e.target.files[0];
@@ -962,7 +832,6 @@ const UploadDocument = () => {
     formData.append("Id", data.Id || "");
     formData.append("CreatedDate", dayjs().format("YYYY-MM-DD"));
     formData.append("ModifiedDate", dayjs().format("YYYY-MM-DDTHH:mm:ss.SSS"));
-
 
     rows.forEach((row, index) => {
       formData.append(
@@ -1074,36 +943,6 @@ const UploadDocument = () => {
     }
   };
 
-  // const getAllDocList = async (page = 0, searchText = "", limit = 20) => {
-  //   try {
-  //     setLoading(true);
-
-  //     // Build query params
-  //     const params = {
-  //       Status: "1",
-  //       Page: page,
-  //       Limit: limit,
-  //       ...(searchText ? { SearchText: searchText } : {}),
-  //     };
-
-  //     const response = await axios.get(`${BASE_URL}DocUpload`, { params });
-
-  //     if (response.data && response.data.values) {
-  //       setDocumentlist(
-  //         response.data.values.map((item, index) => ({
-  //           ...item,
-  //           id: page * limit + index + 1,
-  //         }))
-  //       );
-  //       setTotalRows(response.data.count);
-  //     }
-  //   } catch (error) {
-  //     console.error("Error fetching documents:", error);
-  //   } finally {
-  //     setLoading(false);
-  //   }
-  // };
-
   const getAllDocList = async (page = 0, searchText = "", limit = 20) => {
     try {
       setLoading(true);
@@ -1116,7 +955,6 @@ const UploadDocument = () => {
         ...(searchText ? { SearchText: searchText } : {}),
       };
 
-      // Get userData from sessionStorage
       const userData = sessionStorage.getItem("userData");
       let userType = null;
 
@@ -1132,9 +970,9 @@ const UploadDocument = () => {
       //  Add CreatedBy only if UserType != "A"
       if (userType && userType !== "A") {
         const createdBy = sessionStorage.getItem("userId");
-        if (createdBy) {
-          params.CreatedBy = createdBy;
-        }
+        // if (createdBy) {
+        //   params.CreatedBy = createdBy;
+        // }
       }
 
       const response = await axios.get(`${BASE_URL}DocUpload`, { params });
@@ -1176,14 +1014,6 @@ const UploadDocument = () => {
     }
   };
 
-  // React.useEffect(() => {
-  //   if (firstLoad.current) {
-  //     getAllDocList();
-  //     gazettedList();
-  //     firstLoad.current = false;
-  //   }
-  // }, []);
-
   React.useEffect(() => {
     if (firstLoad.current) {
       getAllDocList();
@@ -1204,17 +1034,25 @@ const UploadDocument = () => {
       if (userType === "A") {
         gazettedList();
       }
-
       firstLoad.current = false;
     }
   }, []);
 
+  // ===================Username and CreatedBy are same in case Doc uploaded rows are enabled logic start============================
+
+  const userData = JSON.parse(sessionStorage.getItem("userData") || "{}");
+  const currentUserId = userData.Username;
+  const currentUserType = userData.UserType;
+  const updatedRows = rows.map((row) => ({
+    ...row,
+    isDisabled: !(row.CreatedBy === currentUserId || currentUserType === "A"),
+  }));
+  // ====================End============================
   return (
     <>
       {loaderOpen && <Loader open={loaderOpen} />}
       <Modal
         open={on}
-        // onClose={handleClose}
         sx={{
           backdropFilter: "blur(5px)",
           backgroundColor: "rgba(0, 0, 0, 0.3)",
@@ -1282,87 +1120,7 @@ const UploadDocument = () => {
                 )}
               />
             </Grid>
-            {/* <Grid item xs={6} md={4}>
-              <Controller
-                name="MobileNo"
-                control={control}
-                rules={{
-                  required: "Mobile number is required",
-                  pattern: {
-                    value: /^[0-9]{10}$/,
-                    message: "Enter a valid 10-digit mobile number",
-                  },
-                }}
-                render={({ field, fieldState }) => (
-                  <TextField
-                    {...field}
-                    label=" ENTER MOBILE NO"
-                    // fullWidth
-                    size="small"
-                    error={!!fieldState.error}
-                    helperText={fieldState.error?.message}
-                    inputProps={{
-                      maxLength: 10,
-                      inputMode: "numeric",
-                      pattern: "[0-9]*",
-                    }}
-             onChange={(e) => {
-  const value = e.target.value.replace(/\D/g, ""); // keep only digits
-  if (value.length <= 10) {
-    field.onChange("+91" + value); // store with +91
-  }
-}}
-                    InputProps={{
-                      startAdornment: (
-                        <span style={{ marginRight: 8 }}>+91</span>
-                      ),
-                    }}
-                  />
-                )}
-              />
-            </Grid> */}
-
-            {/* <Grid item xs={6} md={4}>
-              <Controller
-                name="MobileNo"
-                control={control}
-                rules={{
-                  required: "Mobile number is required",
-                  pattern: {
-                    value: /^[0-9]{10}$/,
-                    message: "Enter a valid 10-digit mobile number",
-                  },
-                }}
-                render={({ field, fieldState }) => (
-                  <TextField
-                    {...field}
-                    label=" ENTER MOBILE NO"
-                    fullWidth
-                    size="small"
-                    error={!!fieldState.error}
-                    helperText={fieldState.error?.message}
-                    inputProps={{
-                      maxLength: 10,
-                      inputMode: "numeric",
-                      pattern: "[0-9]*",
-                    }}
-                    onChange={(e) => {
-                      const value = e.target.value.replace(/\D/g, "");
-                      {
-                        field.onChange("+91" + value);
-                      }
-                    }}
-                    InputProps={{
-                      startAdornment: (
-                        <span style={{ marginRight: 8 }}>+91</span>
-                      ),
-                    }}
-                  />
-                )}
-              />
-            </Grid> */}
             <Grid item xs={6} md={4}>
-              {" "}
               <Controller
                 name="MobileNo"
                 control={control}
@@ -1417,33 +1175,6 @@ const UploadDocument = () => {
                 )}
               />
             </Grid>
-            {/* <Grid item xs={6} md={4}>
-              <Controller
-                name="Email"
-                control={control}
-                defaultValue=""
-                rules={{
-                  validate: (value) => {
-                    if (!value) return true; // allow empty
-                    return (
-                      /^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(value) ||
-                      "Enter a valid email address"
-                    );
-                  },
-                }}
-                render={({ field, fieldState: { error } }) => (
-                  <InputTextField
-                    {...field}
-                    label="ENTER EMAIL ID"
-                    size="small"
-                    rows={1}
-                    error={!!error}
-                    helperText={error ? error.message : ""}
-                  />
-                )}
-              />
-            </Grid> */}
-
             <Grid item xs={6} md={4}>
               <Controller
                 name="Address"
@@ -1497,13 +1228,22 @@ const UploadDocument = () => {
             {/* DataGrid */}
             <Grid item xs={12} style={{ height: 300, paddingBottom: 40 }}>
               <DataGrid
-                rows={rows}
+                rows={updatedRows}
                 columns={DocColumns}
                 pageSize={5}
                 rowsPerPageOptions={[5]}
                 disableRowSelectionOnClick
                 hideFooter
                 className="datagrid-style"
+                getRowClassName={(params) =>
+                  params.row.isDisabled ? "disabled-row" : ""
+                }
+                isCellEditable={(params) => !params.row.isDisabled}
+                onRowClick={(params, event) => {
+                  if (params.row.isDisabled) {
+                    event.stopPropagation(); // prevent selection/click
+                  }
+                }}
                 sx={{
                   "& .MuiDataGrid-columnHeaders": {
                     backgroundColor: (theme) =>
@@ -1512,10 +1252,14 @@ const UploadDocument = () => {
                   "& .MuiDataGrid-row:hover": {
                     boxShadow: "0px 4px 20px rgba(0, 0, 0.2, 0.2)",
                   },
+                  "& .disabled-row": {
+                    pointerEvents: "none",
+                    opacity: 0.5,
+                    backgroundColor: "#f5f5f5",
+                  },
                 }}
               />
             </Grid>
-
             {/* Footer */}
             <Grid
               item
@@ -1639,7 +1383,7 @@ const UploadDocument = () => {
           }}
           rows={Documentlist}
           // rows={dammyrows}
-          columns={columns}
+          columns={Maincolumns}
           // autoHeight
           pagination
           paginationMode="server"
@@ -1685,5 +1429,4 @@ const UploadDocument = () => {
     </>
   );
 };
-
 export default UploadDocument;
