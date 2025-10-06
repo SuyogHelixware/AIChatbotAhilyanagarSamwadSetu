@@ -6,6 +6,7 @@ import axios from "axios";
 import { useNavigate } from "react-router-dom";
 import { BASE_URL } from "../Constant";
 import Loader from "../components/Loader";
+import MailIcon from '@mui/icons-material/Mail';
 
 const ForgotPassword = () => {
   const [email, setEmail] = useState("");
@@ -178,18 +179,18 @@ const ForgotPassword = () => {
               </h2>
               <Box sx={{ width: { xs: "80%", sm: "70%", md: "250px" } }}>
                 <Box sx={{ position: "relative", mb: 2 }}>
-                  <span
+                  <MailIcon
                     style={{
                       position: "absolute",
                       top: "50%",
                       left: "15px",
                       transform: "translateY(-50%)",
-                      fontSize: "16px",
+                      fontSize: "20px",
                       color: "#888",
                     }}
-                  >
-                    📧
-                  </span>
+                  />
+                    {/* 📧      */}  
+                  {/* </span> */}
                   <input
                     type="email"
                     placeholder="Enter your Email"

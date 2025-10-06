@@ -66,8 +66,7 @@ const UploadDocument = () => {
     handleSubmit,
     control,
     reset,
-    setValue,
-    formState: { errors },
+    //  formState: { errors },
   } = useForm({
     defaultValues: {
       initial,
@@ -204,85 +203,183 @@ const UploadDocument = () => {
         );
       },
     },
-    {
-      field: "IssuedBy",
-      headerName: "GAZETTED OFFICER",
-      flex: 1,
-      renderCell: (params) => {
-        const { id, field, value, api } = params;
+    // {
+    //   field: "IssuedBy",
+    //   headerName: "GAZETTED OFFICER",
+    //   flex: 1,
+    //   renderCell: (params) => {
+    //     const { id, field, value, api } = params;
 
-        // Parse userData from sessionStorage
-        const userDataStr = sessionStorage.getItem("userData");
-        let userType = null;
-        let storedGazOfficer = null;
+    //     // Parse userData from sessionStorage
+    //     const userDataStr = sessionStorage.getItem("userData");
+    //     let userType = null;
+    //     let storedGazOfficer = null;
 
-        if (userDataStr) {
-          try {
-            const userData = JSON.parse(userDataStr);
-            userType = userData.UserType;
-            storedGazOfficer = userData.GazOfficer || null;
-          } catch (error) {
-            console.error("Failed to parse userData:", error);
-          }
-        }
-        const handleChange = (e) => {
-          const newValue = e.target.value;
+    //     if (userDataStr) {
+    //       try {
+    //         const userData = JSON.parse(userDataStr);
+    //         userType = userData.UserType;
+    //         storedGazOfficer = userData.GazOfficer || null;
+    //       } catch (error) {
+    //         console.error("Failed to parse userData:", error);
+    //       }
+    //     }
+    //     const handleChange = (e) => {
+    //       const newValue = e.target.value;
 
-          // Update DataGrid UI
-          api.updateRows([{ id, [field]: newValue }]);
+    //       // Update DataGrid UI
+    //       api.updateRows([{ id, [field]: newValue }]);
 
-          // Update rows state for submission
-          setRows((prev) =>
-            prev.map((row) =>
-              row.id === id ? { ...row, [field]: newValue } : row
-            )
-          );
-        };
+    //       // Update rows state for submission
+    //       setRows((prev) =>
+    //         prev.map((row) =>
+    //           row.id === id ? { ...row, [field]: newValue } : row
+    //         )
+    //       );
+    //     };
 
-        // Non-admin: disable and set session value
-        if (userType !== "A") {
-          if (value !== storedGazOfficer) {
-            api.updateRows([{ id, [field]: storedGazOfficer }]);
-            setRows((prev) =>
-              prev.map((row) =>
-                row.id === id ? { ...row, [field]: storedGazOfficer } : row
-              )
-            );
-          }
+    //     // Non-admin: disable and set session value
+    //     if (userType !== "A") {
+    //       if (value !== storedGazOfficer) {
+    //         api.updateRows([{ id, [field]: storedGazOfficer }]);
+    //         setRows((prev) =>
+    //           prev.map((row) =>
+    //             row.id === id ? { ...row, [field]: storedGazOfficer } : row
+    //           )
+    //         );
+    //       }
 
-          return (
-            <Tooltip title={storedGazOfficer} arrow placement="top">
-              <Select
-                value={storedGazOfficer}
-                disabled
-                fullWidth
-                variant="standard"
-              >
-                <MenuItem value={storedGazOfficer}>{storedGazOfficer}</MenuItem>
-              </Select>
-            </Tooltip>
-          );
-        }
+    //       return (
+    //         <Tooltip title={storedGazOfficer} arrow placement="top">
+    //           <Select
+    //             value={storedGazOfficer}
+    //             disabled
+    //             fullWidth
+    //             variant="standard"
+    //           >
+    //             <MenuItem value={storedGazOfficer}>{storedGazOfficer}</MenuItem>
+    //           </Select>
+    //         </Tooltip>
+    //       );
+    //     }
 
-        // Admin flow: enable and show full list
-        return (
-          <Tooltip title={value || ""} arrow placement="top">
-            <Select
-              value={value || ""}
-              onChange={handleChange}
-              fullWidth
-              variant="standard"
-            >
-              {gazeteList.map((option) => (
-                <MenuItem key={option.Name} value={option.Name}>
-                  {option.Name}
-                </MenuItem>
-              ))}
-            </Select>
-          </Tooltip>
+    //     // Admin flow: enable and show full list
+    //     return (
+    //       <Tooltip title={value || ""} arrow placement="top">
+    //         <Select
+    //           value={value || ""}
+    //           onChange={handleChange}
+    //           fullWidth
+    //           variant="standard"
+    //         >
+    //           {gazeteList.map((option) => (
+    //             <MenuItem key={option.Name} value={option.Name}>
+    //               {option.Name}
+    //             </MenuItem>
+    //           ))}
+    //         </Select>
+    //       </Tooltip>
+    //     );
+    //   },
+    // },
+     {
+  field: "IssuedBy",
+  headerName: "GAZETTED OFFICER",
+  flex: 1,
+  renderCell: (params) => {
+    const { id, field, value, api } = params;
+
+    // ✅ Ensure gazeteList is accessible
+    // (if it comes from props or state, pass it properly from parent)
+     
+    const gazetteOptions = Array.isArray(gazeteList) ? gazeteList : [];
+ 
+    // ✅ Parse userData
+    const userDataStr = sessionStorage.getItem("userData");
+    let UserType = null;
+    let storedGazOfficer = null;
+
+    if (userDataStr) {
+      try {
+        const userData = JSON.parse(userDataStr);
+        UserType = userData.UserType;
+        storedGazOfficer = userData.GazOfficer || "";
+      } catch (error) {
+        console.error("Failed to parse userData:", error);
+      }
+    }
+
+    const handleChange = (e) => {
+      const newValue = e.target.value;
+
+      // Update DataGrid UI
+      api.updateRows([{ id, [field]: newValue }]);
+
+      // Update parent state
+      setRows((prev) =>
+        prev.map((row) =>
+          row.id === id ? { ...row, [field]: newValue } : row
+        )
+      );
+    };
+
+    // ✅ Logic for enabling/disabling
+    const isEditable =
+      UserType === "A" || !storedGazOfficer || storedGazOfficer.trim() === "";
+
+    // ✅ When disabled (non-admin + GazOfficer present)
+    if (!isEditable) {
+      // Keep stored value synced
+      if (value !== storedGazOfficer) {
+        api.updateRows([{ id, [field]: storedGazOfficer }]);
+        setRows((prev) =>
+          prev.map((row) =>
+            row.id === id ? { ...row, [field]: storedGazOfficer } : row
+          )
         );
-      },
-    },
+      }
+
+      return (
+        <Tooltip title={storedGazOfficer || ""} arrow placement="top">
+          <Select
+            value={storedGazOfficer || ""}
+            disabled
+            fullWidth
+            variant="standard"
+          >
+            <MenuItem value={storedGazOfficer || ""}>
+              {storedGazOfficer || ""}
+            </MenuItem>
+          </Select>
+        </Tooltip>
+      );
+    }
+
+    // ✅ Editable case (UserType A OR GazOfficer empty)
+    return (
+      <Tooltip title={value || ""} arrow placement="top">
+        <Select
+          value={value || ""}
+          onChange={handleChange}
+          fullWidth
+          variant="standard"
+        >
+          {gazetteOptions.length > 0 ? (
+            gazetteOptions.map((option) => (
+              <MenuItem key={option.Name} value={option.Name}>
+                {option.Name}
+              </MenuItem>
+            ))
+          ) : (
+            <MenuItem disabled>No officers found</MenuItem>
+          )}
+        </Select>
+      </Tooltip>
+    );
+  },
+}
+,
+
     {
       field: "DocType",
       headerName: "DOCUMENT TYPE",
@@ -556,36 +653,6 @@ const UploadDocument = () => {
           setRows(formattedLines);
         }
 
-        // console.log("List API response:", listResponse.data);
-        // const olddata = listResponse.data.values;
-        // originalDataRef.current = olddata;
-        // if (listResponse.data && Array.isArray(listResponse.data.values)) {
-        //   const olddata =
-        //     listResponse.data.values.find((item) => item.Id === rowData.Id) ||
-        //     listResponse.data.values[0];
-
-        //   originalDataRef.current = olddata;
-
-        //   const formattedLines = Array.isArray(olddata.oDocLines)
-        //     ? olddata.oDocLines.map((line, index) => ({
-        //         ...line,
-        //         id: line.LineNum ?? index,
-        //       }))
-        //     : [];
-
-        //   reset({
-        //     Id: olddata.Id ?? "",
-        //     Name: olddata.Name ?? "",
-        //     MobileNo: olddata.MobileNo
-        //       ? olddata.MobileNo.replace(/^\+91/, "")
-        //       : "",
-        //     Email: olddata.Email ?? "",
-        //     Address: olddata.Address ?? "",
-        //     oDocLines: formattedLines,
-        //   });
-
-        //   setRows(formattedLines);
-        // }
       }
     } catch (error) {
       console.error("Error in handleUpdate:", error);
@@ -1014,29 +1081,58 @@ const UploadDocument = () => {
     }
   };
 
+  // React.useEffect(() => {
+  //   if (firstLoad.current) {
+  //     getAllDocList();
+
+  //     // Parse userData
+  //     const userDataStr = sessionStorage.getItem("userData");
+  //     let userType = null;
+  //     if (userDataStr) {
+  //       try {
+  //         const userData = JSON.parse(userDataStr);
+  //         userType = userData.UserType;
+  //       } catch (error) {
+  //         console.error("Failed to parse userData:", error);
+  //       }
+  //     }
+
+  //     // Fetch gazette list only for Admin
+  //     if (userType === "A" ||  ) {
+  //       gazettedList();
+  //     }
+  //     firstLoad.current = false;
+  //   }
+  // }, []);
+
   React.useEffect(() => {
-    if (firstLoad.current) {
-      getAllDocList();
+  if (firstLoad.current) {
+    getAllDocList();
 
-      // Parse userData
-      const userDataStr = sessionStorage.getItem("userData");
-      let userType = null;
-      if (userDataStr) {
-        try {
-          const userData = JSON.parse(userDataStr);
-          userType = userData.UserType;
-        } catch (error) {
-          console.error("Failed to parse userData:", error);
-        }
-      }
+    // Parse userData
+    const userDataStr = sessionStorage.getItem("userData");
+    let userType = null;
+    let gazOfficer = null;
 
-      // Fetch gazette list only for Admin
-      if (userType === "A") {
-        gazettedList();
+    if (userDataStr) {
+      try {
+        const userData = JSON.parse(userDataStr);
+        userType = userData.UserType;
+        gazOfficer = userData.GazOfficer || "";
+      } catch (error) {
+        console.error("Failed to parse userData:", error);
       }
-      firstLoad.current = false;
     }
-  }, []);
+
+    // ✅ Fetch gazette list for Admins OR if GazOfficer is missing
+    if (userType === "A" || !gazOfficer || gazOfficer.trim() === "") {
+      gazettedList(); 
+    }
+
+    firstLoad.current = false;
+  }
+}, []);
+
 
   // ===================Username and CreatedBy are same in case Doc uploaded rows are enabled logic start============================
 
@@ -1254,8 +1350,8 @@ const UploadDocument = () => {
                   },
                   "& .disabled-row": {
                     pointerEvents: "none",
-                    opacity: 0.5,
-                    backgroundColor: "#f5f5f5",
+                    opacity: 0.7,
+                    // backgroundColor: "#f5f5f5",
                   },
                 }}
               />

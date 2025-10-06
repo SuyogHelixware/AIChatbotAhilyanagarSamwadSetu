@@ -7,6 +7,7 @@ import { useNavigate } from "react-router-dom";
 import { BASE_URL } from "../Constant";
 import { Visibility, VisibilityOff } from "@mui/icons-material";
 import Loader from "../components/Loader";
+import PersonIcon from '@mui/icons-material/Person';
 
 const Signin = () => {
   const [userId, setUserId] = useState("");
@@ -156,19 +157,21 @@ const Signin = () => {
               }}
             >
               <Box sx={{ position: "relative", mb: 2 }}>
-                <span
+                <PersonIcon
+
                   style={{
                     position: "absolute",
                     top: "50%",
                     right: "2px",
                     // left: "15px",
                     transform: "translateY(-50%)",
-                    fontSize: "16px",
+                    fontSize: "25px",
                     color: "#888",
                   }}
-                >
-                  📧
-                </span>
+                />
+                  {/* 📧 */}
+                
+
                 <input
                   type="text"
                   placeholder="Username"
