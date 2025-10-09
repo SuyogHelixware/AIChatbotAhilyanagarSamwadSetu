@@ -68,7 +68,7 @@ export default class InputTextField extends React.Component {
           size="small"
           sx={{ maxWidth: 250 }}
            inputProps={{
-          maxLength: 16,
+          // maxLength: 16,
            
           ...(this.props.inputProps || {}), // allow parent to override/extend
         }}
