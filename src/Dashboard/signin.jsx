@@ -27,10 +27,13 @@ const Signin = () => {
         .post(`${BASE_URL}Login`, body)
         .then((res) => {
           if (res.data.success === true) {
+            
+
             const data = res.data.values;
             const userData = {
-              Name: `${data.Lastname} ${data.Firstname}`,
-              Username: data.Username,
+              
+              Name: `${data.LastName} ${data.FirstName}`,
+              Username: data.Username, 
               Address: data.Address,
               Email: data.Email,
               Phone: data.Phone,

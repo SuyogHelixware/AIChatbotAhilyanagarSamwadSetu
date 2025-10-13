@@ -29,6 +29,7 @@ import InputTextField, {
 } from "../components/Component";
 import Loader from "../components/Loader";
 import { BASE_URL } from "../Constant";
+import { useThemeMode } from "../Dashboard/Theme";
 
 const UploadDocument = () => {
   const [loaderOpen, setLoaderOpen] = React.useState(false);
@@ -49,6 +50,7 @@ const UploadDocument = () => {
   const firstLoad = React.useRef(true);
   const fileInputRef = React.useRef(null);
   const handleClose = () => setOn(false);
+  const { userSession } = useThemeMode();
 
   const initial = {
     Status: "1",
@@ -748,22 +750,43 @@ const UploadDocument = () => {
 
   const handleFileUpload = async (e) => {
     const allowedExt = ["jpg", "jpeg", "png", "pdf"];
+      const maxSize = 1 * 1024 * 1024; // 1 MB
+
     const files = Array.from(e.target.files);
 
     // filter invalid files
-    const validFiles = files.filter((file) => {
-      const ext = file.name.split(".").pop().toLowerCase();
-      if (!allowedExt.includes(ext)) {
-        Swal.fire({
-          icon: "error",
-          title: "Invalid File",
-          text: `${file.name} is not allowed. Only JPG, JPEG, PNG, PDF are accepted.`,
-          confirmButtonColor: "#d33",
-        });
-        return false;
-      }
-      return true;
-    });
+  const validFiles = files.filter((file) => {
+    const ext = file.name.split(".").pop().toLowerCase();
+
+    // Check file type
+    if (!allowedExt.includes(ext)) {
+      Swal.fire({
+        icon: "error",
+        title: "Invalid File Type",
+        text: `${file.name} is not allowed. Only JPG, JPEG, PNG, and PDF are accepted.`,
+        confirmButtonColor: "#d33",
+      });
+      return false;
+    }
+
+    // Check file size
+    if (file.size > maxSize) {
+      Swal.fire({
+    toast: true,
+    position: "center",
+    icon: "error",
+    title: `${file.name} exceeds the 1 MB limit.`,
+    showConfirmButton: false,
+    timer: 3000,
+    timerProgressBar: true,
+  });
+      return false;
+    }
+
+    return true;
+  });
+
+  if (validFiles.length === 0) return;
 
     const newRows = await Promise.all(
       validFiles.map(async (file, index) => {
@@ -785,9 +808,9 @@ const UploadDocument = () => {
           Status: 0,
           CreatedDate: dayjs().format("YYYY-MM-DD"),
           ModifiedDate: dayjs().format("YYYY-MM-DD"),
-          ModifiedBy: sessionStorage.getItem("userId"),
-          CreatedBy: sessionStorage.getItem("userId"),
-          UserId: sessionStorage.getItem("UserId") || "1",
+          ModifiedBy: userSession.userId || sessionStorage.getItem("userId"),
+          CreatedBy: userSession.userId || sessionStorage.getItem("userId"),
+          UserId:userSession.userId || sessionStorage.getItem("userId") ,
         };
       })
     );
@@ -980,6 +1003,8 @@ const UploadDocument = () => {
         response = await axios.patch(`${BASE_URL}DocUpload`, formData, {
           headers: { "Content-Type": "multipart/form-data" },
         });
+
+        
       }
 
       setLoaderOpen(false);
@@ -997,17 +1022,31 @@ const UploadDocument = () => {
         handleClose();
         getAllDocList();
       } else {
+         
         throw new Error(response.data.message || "Unexpected error");
+        
       }
-    } catch (error) {
-      setLoaderOpen(false);
-      Swal.fire({
-        title: "Error!",
-        text: error.message || error,
-        icon: "error",
-        confirmButtonText: "Ok",
-      });
-    }
+     }   
+    catch (error) {
+  setLoaderOpen(false);               
+  
+   if (error.response && error.Status === 413) {
+    Swal.fire({ 
+      icon: "error",
+      title: "File Too Large",
+      text: "One or more files exceed the maximum upload size allowed by the server.",
+      confirmButtonColor: "#d33",
+    });
+    return;
+  }
+
+  Swal.fire({
+    title: "Error!",
+    text: error.message || "Something went wrong while uploading.",
+    icon: "error",
+    confirmButtonText: "Ok",
+  });
+}
   };
 
   const getAllDocList = async (page = 0, searchText = "", limit = 20) => {
@@ -1135,7 +1174,7 @@ const UploadDocument = () => {
 
 
   // ===================Username and CreatedBy are same in case Doc uploaded rows are enabled logic start============================
-
+ 
   const userData = JSON.parse(sessionStorage.getItem("userData") || "{}");
   const currentUserId = userData.Username;
   const currentUserType = userData.UserType;
@@ -1159,7 +1198,7 @@ const UploadDocument = () => {
           sx={{
             width: "100%",
             maxWidth: 1100,
-            Height: 2000,
+            Height: 2500,
             position: "absolute",
             top: "50%",
             left: "50%",
@@ -1322,7 +1361,7 @@ const UploadDocument = () => {
             </Grid>
             <Grid item xs={12} md={4}></Grid>
             {/* DataGrid */}
-            <Grid item xs={12} style={{ height: 300, paddingBottom: 40 }}>
+            <Grid item xs={12} style={{ height: 400, paddingBottom: 40 }}>
               <DataGrid
                 rows={updatedRows}
                 columns={DocColumns}

@@ -824,6 +824,36 @@ export default function Dashboard() {
           ) : (
             <>
               {/* ===== For UserType = U → Show Only Upload Documents ===== */}
+
+                <Link to="home" className="link_style">
+                <ListItemButton
+                  onClick={handleClickTransaction}
+                  selected={location.pathname === "/dashboard/home"}
+                  sx={{
+                    "&.Mui-selected": {
+                      background:
+                        "linear-gradient(to right, rgb(0, 90, 91), rgb(22, 149, 153))",
+                      borderRadius: 1,
+                      "& .MuiListItemIcon-root, & .MuiTypography-root": {
+                        color: "#FFFFFF",
+                      },
+                    },
+                    "& .MuiListItemText-primary": {
+                      color: theme.palette.text.primary,
+                    },
+                  }}
+                >
+                  <ListItemIcon
+                    sx={{ minWidth: "33px", marginRight: "8px" }}
+                    onClick={handleDrawerOpen}
+                  >
+                    <DashboardIcon />
+                  </ListItemIcon>
+                  <ListItemText primary="Dashboard" />
+                </ListItemButton>
+              </Link>
+
+
               <Link to="Upload-Document" className="link_style">
                 <ListItemButton
                   onClick={handleClickTransaction}
