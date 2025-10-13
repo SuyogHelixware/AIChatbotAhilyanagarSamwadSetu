@@ -396,10 +396,10 @@ export default function Dashboard() {
                       paddingTop={7}
                       display={"flex"}
                       flexDirection={"column"}
-                      alignItems={"center"}
+                      alignItems={"start"}
                     >
                       <MenuItem sx={{ fontSize: 13 }}>
-                        <b>Name : {userData.Username}</b>
+                        <b>Name : {userData.Name}</b>
                       </MenuItem>
                       <MenuItem sx={{ fontSize: 13, paddingTop: 0 }}>
                         <b>Mob :</b> {userData.Phone}

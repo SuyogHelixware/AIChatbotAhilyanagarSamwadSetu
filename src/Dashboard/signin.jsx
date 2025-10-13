@@ -32,7 +32,7 @@ const Signin = () => {
             const data = res.data.values;
             const userData = {
               
-              Name: `${data.LastName} ${data.FirstName}`,
+              Name: ` ${data.FirstName} ${data.LastName}`,
               Username: data.Username, 
               Address: data.Address,
               Email: data.Email,
@@ -44,7 +44,7 @@ const Signin = () => {
               _id: data._id,
               Token: data.Token,
             };
-            sessionStorage.setItem("userId", userId);
+            sessionStorage.setItem("userId", userData.Username);
 
             sessionStorage.setItem("userData", JSON.stringify(userData));
 

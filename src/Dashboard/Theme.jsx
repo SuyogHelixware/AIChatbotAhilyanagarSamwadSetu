@@ -40,17 +40,18 @@ export const ModeContextProvider = ({ children }) => {
     const storedUser = JSON.parse(sessionStorage.getItem("userData") || "{}");
 
   useEffect(() => {     
-     
-     const userId = sessionStorage.getItem("userId");
+     debugger
+    //  const userId = sessionStorage.getItem("userId");
+     const userId = storedUser.Username;
     const UserType = storedUser.UserType;
-    const CreatedBy = sessionStorage.getItem("userId");
+    const CreatedBy = storedUser.Username;
     setUserSession({ userId, UserType, CreatedBy });
   }, []);
 
   const refreshUserSession = () => {
-    const userId = sessionStorage.getItem("userId") || "";
+    const userId =  storedUser.Username;
     const UserType = storedUser.UserType;
-    const CreatedBy = sessionStorage.getItem("userId") || "";
+    const CreatedBy = storedUser.Username;
     setUserSession({ userId, UserType, CreatedBy });
   };
  

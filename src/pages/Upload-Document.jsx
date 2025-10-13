@@ -609,8 +609,8 @@ const UploadDocument = () => {
         const params = {};
 
         // Get values from sessionStorage
-        const createdBy = sessionStorage.getItem("userId");
-        const userName = sessionStorage.getItem("Username");
+        // const createdBy = sessionStorage.getItem("userId");
+        // const userName = sessionStorage.getItem("Username");
         const userData = sessionStorage.getItem("userData");
 
         let userId = null;
@@ -805,12 +805,12 @@ const UploadDocument = () => {
           IssuedBy: "",
           DocType: "",
           // DocEntry: "",
-          Status: 0,
+          Status: 1,
           CreatedDate: dayjs().format("YYYY-MM-DD"),
           ModifiedDate: dayjs().format("YYYY-MM-DD"),
-          ModifiedBy: userSession.userId || sessionStorage.getItem("userId"),
-          CreatedBy: userSession.userId || sessionStorage.getItem("userId"),
-          UserId:userSession.userId || sessionStorage.getItem("userId") ,
+          ModifiedBy: userSession.userId ,
+          CreatedBy: userSession.userId ,
+          UserId:userSession.userId ,
         };
       })
     );
