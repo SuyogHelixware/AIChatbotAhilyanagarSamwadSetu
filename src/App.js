@@ -1,8 +1,7 @@
 
 import { ThemeProvider, createTheme } from "@mui/material/styles";
-import React, { useState } from "react";
-import "./App.css";
-import { ModeContextProvider } from "./Dashboard/Theme";
+ import "./App.css";
+import { ModeContextProvider, useThemeMode } from "./Dashboard/Theme";
 import Routing from "./Routes/Routing.jsx";
 
 const lightTheme = createTheme({
@@ -30,23 +29,42 @@ const darkTheme = createTheme({
   },
 });
 
-function App() {
-  const [themeMode, setThemeMode] = useState("light");
+// function App() {
+//   const [themeMode, setThemeMode] = useState("light");
 
-  const LightMode = () => {
-    setThemeMode("light");
-  };
+//   const LightMode = () => {
+//     setThemeMode("light");
+//   };
 
-  const DarkMode = () => {
-    setThemeMode("dark");
-  };
+//   const DarkMode = () => {
+//     setThemeMode("dark");
+//   };
+//   return (
+//     <ModeContextProvider value={{ themeMode, LightMode, DarkMode }}>
+//       <ThemeProvider theme={themeMode === "light" ? lightTheme : darkTheme}>
+//         <div className="App">
+//           <Routing/>
+//         </div>
+//       </ThemeProvider>
+//     </ModeContextProvider>
+//   );
+// }
+function ThemedApp() {
+  const { themeMode } = useThemeMode();
+
   return (
-    <ModeContextProvider value={{ themeMode, LightMode, DarkMode }}>
-      <ThemeProvider theme={themeMode === "light" ? lightTheme : darkTheme}>
-        <div className="App">
-          <Routing/>
-        </div>
-      </ThemeProvider>
+    <ThemeProvider theme={themeMode === "light" ? lightTheme : darkTheme}>
+      <div className="App">
+        <Routing />
+      </div>
+    </ThemeProvider>
+  );
+}
+
+function App() {
+  return (
+    <ModeContextProvider>
+      <ThemedApp />
     </ModeContextProvider>
   );
 }

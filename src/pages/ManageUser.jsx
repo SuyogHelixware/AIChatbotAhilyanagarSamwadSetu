@@ -12,6 +12,7 @@ import {
   MenuItem,
   Modal,
   TextField,
+  Tooltip,
   Typography,
 } from "@mui/material";
 import Box from "@mui/material/Box";
@@ -37,13 +38,11 @@ import { useTheme } from "@mui/material/styles";
 
 export default function ManageUsers() {
   const {
-    register,
+  
     control,
     handleSubmit,
-    setValue,
     getValues,
     reset,
-    formState: { errors },
   } = useForm();
   const [loaderOpen, setLoaderOpen] = React.useState(false);
   const [userData, setUserData] = React.useState([]);
@@ -132,9 +131,9 @@ export default function ManageUsers() {
     clearFormData();
   };
 
-  const handleProfileClose = () => {
-    setOpen(false);
-  };
+  // const handleProfileClose = () => {
+  //   setOpen(false);
+  // };
 
   const handleClick = async (row) => {
     setSaveUpdateButton("UPDATE");
@@ -1033,7 +1032,7 @@ export default function ManageUsers() {
               />
             </Grid>
 
-            <Grid item md={6} sm={6} xs={12}>
+            {/* <Grid item md={6} sm={6} xs={12}>
               <Controller
                 name="GazOfficer"
                 control={control}
@@ -1059,7 +1058,66 @@ export default function ManageUsers() {
                   </TextField>
                 )}
               />
-            </Grid>
+            </Grid> */}
+
+<Grid item md={6} sm={6} xs={12}>
+  <Controller
+    name="GazOfficer"
+    control={control}
+    defaultValue=""
+    render={({ field }) => {
+      const selectedValue =
+        field.value && field.value.trim() !== ""
+          ? field.value
+          : "No Officer";
+
+      return (
+        <Tooltip
+          title={selectedValue} 
+          arrow
+          placement="bottom"
+        >
+          <TextField
+            select
+            label="Gaz Officer"
+            fullWidth
+            size="small"
+            {...field}
+            InputLabelProps={{
+              shrink: Boolean(field.value),
+            }}
+            SelectProps={{
+              MenuProps: {
+                PaperProps: {
+                  style: {
+                    maxHeight: 200, // 👈 Limit dropdown height
+                    overflowY: "auto", // 👈 Add scrollbar
+                  },
+                },
+              },
+            }}
+          >
+            <MenuItem value="">No Officer</MenuItem>
+
+            {gazeteList.map((option) => (
+              <MenuItem
+                key={option.Name}
+                value={option.Name}
+                sx={{
+                  height: 35, // 👈 Fixed height
+                  display: "flex",
+                  alignItems: "center",
+                }}
+              >
+                {option.Name}
+              </MenuItem>
+            ))}
+          </TextField>
+        </Tooltip>
+      );
+    }}
+  />
+</Grid>
 
             <Grid
               item

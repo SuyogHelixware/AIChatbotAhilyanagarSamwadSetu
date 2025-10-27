@@ -27,22 +27,21 @@ const GazettedMaster = () => {
   const [on, setOn] = React.useState(false);
   const [SaveUpdateButton, setSaveUpdateButton] = React.useState("UPDATE");
   const [ClearUpdateButton, setClearUpdateButton] = React.useState("RESET");
-  const [totalRows, setTotalRows] = React.useState("");
   const [currentPage, setCurrentPage] = React.useState(0);
   const [loading, setLoading] = React.useState(false);
   const [searchText, setSearchText] = React.useState("");
-  const limit = 20; // Fixed page size
+  const limit = 20; 
   const originalDataRef = React.useRef(null);
   const firstLoad = React.useRef(true);
 
   // React Hook Form initialization
   const {
-    register,
+    
     handleSubmit,
     control,
     setValue,
     reset,
-    formState: { errors },
+    // formState: {  },
   } = useForm({
     defaultValues: {
       Name: "",
@@ -172,7 +171,7 @@ const GazettedMaster = () => {
             id: item.Id,
           }))
         );
-        setTotalRows(response.data.count);
+        // setTotalRows(response.data.count);
       }
     } catch (error) {
       console.error("Error fetching data:", error);
@@ -549,8 +548,8 @@ const GazettedMaster = () => {
           columns={columns}
           pagination
           paginationMode="server"
-          rowCount={totalRows}
-          pageSizeOptions={[10, 20, 50]} 
+          // rowCount={totalRows}
+          // pageSizeOptions={[10, 20, 50]}
           paginationModel={{ page: currentPage, pageSize: limit }}
           onPaginationModelChange={(newModel) => {
             setCurrentPage(newModel.page);
@@ -558,6 +557,7 @@ const GazettedMaster = () => {
           }}
           loading={loading}
           disableColumnFilter
+          hideFooterSelectedRowCount
           disableColumnSelector
           disableDensitySelector
           slots={{ toolbar: GridToolbar }}
