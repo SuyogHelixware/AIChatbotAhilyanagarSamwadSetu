@@ -595,15 +595,7 @@ export default function ManageUsers() {
       headerAlign: "center",
       align: "center",
     },
-    // {
-    //   field: "DOB",
-    //   headerName: "DOB",
-    //   width: 150,
-    //   sortable: false,
-    //   valueFormatter: (params) => dayjs(params.value).format("YYYY-MM-DD") ,
-    //   headerAlign: "center",
-    //   align: "center",
-    // },
+ 
     {
       field: "DOB",
       headerName: "DOB",
@@ -617,14 +609,7 @@ export default function ManageUsers() {
       align: "center",
     },
 
-    // {
-    //   field: "Phone",
-    //   headerName: "Phone",
-    //   width: 150,
-    //   sortable: false,
-    //   headerAlign: "center",
-    //   align: "center",
-    // },
+ 
     {
       field: "Phone",
       headerName: "Phone",
@@ -638,22 +623,27 @@ export default function ManageUsers() {
       },
     },
 
-    {
-      field: "Email",
-      headerName: "Email",
-      width: 200,
-      sortable: false,
-      headerAlign: "center",
-      align: "center",
-    },
     // {
-    //   field: "UserType",
-    //   headerName: "User Type",
+    //   field: "Email",
+    //   headerName: "Email",
     //   width: 200,
     //   sortable: false,
     //   headerAlign: "center",
     //   align: "center",
     // },
+    {
+  field: "Email",
+  headerName: "Email",
+  width: 200,
+  sortable: false,
+  headerAlign: "center",
+  align: "center",
+  valueFormatter: (params) => {
+    const value = params.value?.trim();
+    return value ? value : "NA";
+  },
+},
+ 
     {
       field: "UserType",
       headerName: "User Type",
@@ -1283,6 +1273,7 @@ export default function ManageUsers() {
             getRowId={(row) => row.Id}
             rows={userData.map((data, id) => ({ ...data, id: id + 1 }))}
             columns={columns}
+            hideFooterSelectedRowCount
             pagination
             paginationMode="server"
             rowCount={totalRows}

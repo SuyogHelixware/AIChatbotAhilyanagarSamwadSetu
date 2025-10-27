@@ -94,65 +94,138 @@ const UploadDocument = () => {
       renderCell: (params) =>
         params.api.getSortedRowIds().indexOf(params.id) + 1,
     },
+    // {
+    //   field: "action",
+    //   headerName: "Action",
+    //   width: 120,
+    //   sortable: false,
+    //   headerAlign: "center",
+    //   align: "center",
+    //   renderCell: (params) => (
+    //     <div style={{ display: "flex", alignItems: "center", gap: 8 }}>
+    //       <Tooltip title="Open File">
+    //         <IconButton
+    //           size="small"
+    //           onClick={(e) => {
+    //             e.stopPropagation();
+    //             handleViewFile(params.row);
+    //           }}
+    //         >
+    //           <RemoveRedEyeIcon fontSize="small" />
+    //         </IconButton>
+    //       </Tooltip>
+
+    //       <Tooltip title="Remove">
+    //         <IconButton
+    //           size="small"
+    //           color="error"
+    //           onClick={(e) => {
+    //             e.stopPropagation();
+    //             handleRemove(params.row);
+    //           }}
+    //         >
+    //           <DeleteIcon fontSize="small" />
+    //         </IconButton>
+    //       </Tooltip>
+    //       <Tooltip title="replace file">
+    //         <IconButton
+    //           size="small"
+    //           color="primary"
+    //           component="label"
+    //           onClick={(e) => e.stopPropagation()}
+    //         >
+    //           <AttachFileIcon fontSize="small" />
+    //           <input
+    //             type="file"
+    //             hidden
+    //             onChange={(e) => handleChangeFile(e, params.row.id)}
+    //             accept=".jpg,.jpeg,.png,.pdf"
+    //           />
+    //         </IconButton>
+    //       </Tooltip>
+    //     </div>
+    //   ),
+    // },
     {
       field: "action",
       headerName: "Action",
-      width: 120,
+      width: 140,
       sortable: false,
       headerAlign: "center",
       align: "center",
-      renderCell: (params) => (
-        <div style={{ display: "flex", alignItems: "center", gap: 8 }}>
-          <Tooltip title="Open File">
-            <IconButton
-              size="small"
-              onClick={(e) => {
-                e.stopPropagation();
-                handleViewFile(params.row);
-              }}
-            >
-              <RemoveRedEyeIcon fontSize="small" />
-            </IconButton>
-          </Tooltip>
+      renderCell: (params) => {
+        const isDisabled = params.row.isDisabled;
 
-          <Tooltip title="Remove">
-            <IconButton
-              size="small"
-              color="error"
-              onClick={(e) => {
-                e.stopPropagation();
-                handleRemove(params.row);
-              }}
+        return (
+          <div style={{ display: "flex", alignItems: "center", gap: 8 }}>
+            {/* ✅ Always enabled: Open File */}
+            <Tooltip title="Open File">
+              <IconButton
+                size="small"
+                onClick={(e) => {
+                  e.stopPropagation();
+                  handleViewFile(params.row);
+                }}
+              >
+                <RemoveRedEyeIcon fontSize="small" />
+              </IconButton>
+            </Tooltip>
+
+            {/* ❌ Disabled if not same user or admin */}
+            <Tooltip title={isDisabled ? "No permission to remove" : "Remove"}>
+              <span>
+                <IconButton
+                  size="small"
+                  color="error"
+                  disabled={isDisabled}
+                  onClick={(e) => {
+                    e.stopPropagation();
+                    if (!isDisabled) handleRemove(params.row);
+                  }}
+                >
+                  <DeleteIcon fontSize="small" />
+                </IconButton>
+              </span>
+            </Tooltip>
+
+            {/* ❌ Disabled if not same user or admin */}
+            <Tooltip
+              title={
+                isDisabled ? "No permission to replace file" : "Replace File"
+              }
             >
-              <DeleteIcon fontSize="small" />
-            </IconButton>
-          </Tooltip>
-          <Tooltip title="replace file">
-            <IconButton
-              size="small"
-              color="primary"
-              component="label"
-              onClick={(e) => e.stopPropagation()}
-            >
-              <AttachFileIcon fontSize="small" />
-              <input
-                type="file"
-                hidden
-                onChange={(e) => handleChangeFile(e, params.row.id)}
-                accept=".jpg,.jpeg,.png,.pdf"
-              />
-            </IconButton>
-          </Tooltip>
-        </div>
-      ),
+              <span>
+                <IconButton
+                  size="small"
+                  color="primary"
+                  component="label"
+                  disabled={isDisabled}
+                  onClick={(e) => e.stopPropagation()}
+                >
+                  <AttachFileIcon fontSize="small" />
+                  <input
+                    type="file"
+                    hidden
+                    onChange={(e) => handleChangeFile(e, params.row.id)}
+                    accept=".jpg,.jpeg,.png,.pdf"
+                  />
+                </IconButton>
+              </span>
+            </Tooltip>
+          </div>
+        );
+      },
     },
+
     {
       field: "FileName",
       headerName: "DOCUMENT NAME",
       flex: 1,
       sortable: false,
       renderCell: (params) => {
-        const { id, field, api, value } = params;
+        const { id, field, api, value, row } = params;
+        const isDisabled = row.isDisabled;
+
         const handleChange = (event) => {
           const newValue = event.target.value;
           // Update DataGrid UI
@@ -175,17 +248,20 @@ const UploadDocument = () => {
               fullWidth
               size="small"
               variant="outlined"
+              disabled={isDisabled} // 🚫 Disable if not allowed
             />
           </Tooltip>
         );
       },
     },
+
     {
       field: "DocReqDate",
       headerName: "DOC REQUEST DATE",
       flex: 1,
       renderCell: (params) => {
-        const { id, value, api, field } = params;
+        const { id, value, api, field, row } = params;
+        const isDisabled = row.isDisabled;
 
         const handleDateChange = (newValue) => {
           // Update DataGrid UI
@@ -201,193 +277,152 @@ const UploadDocument = () => {
           <DatePickerField
             value={value ? dayjs(value) : dayjs()}
             onChange={handleDateChange}
+            disabled={isDisabled}
           />
         );
       },
     },
-    // {
-    //   field: "IssuedBy",
-    //   headerName: "GAZETTED OFFICER",
-    //   flex: 1,
-    //   renderCell: (params) => {
-    //     const { id, field, value, api } = params;
 
-    //     // Parse userData from sessionStorage
-    //     const userDataStr = sessionStorage.getItem("userData");
-    //     let userType = null;
-    //     let storedGazOfficer = null;
+    {
+      field: "IssuedBy",
+      headerName: "GAZETTED OFFICER",
+      flex: 1,
+      renderCell: (params) => {
+        const { id, field, value, api } = params;
+        const isDisabled = params.row.isDisabled;
 
-    //     if (userDataStr) {
-    //       try {
-    //         const userData = JSON.parse(userDataStr);
-    //         userType = userData.UserType;
-    //         storedGazOfficer = userData.GazOfficer || null;
-    //       } catch (error) {
-    //         console.error("Failed to parse userData:", error);
-    //       }
-    //     }
-    //     const handleChange = (e) => {
-    //       const newValue = e.target.value;
+        // (if it comes from props or state, pass it properly from parent)
 
-    //       // Update DataGrid UI
-    //       api.updateRows([{ id, [field]: newValue }]);
+        const gazetteOptions = Array.isArray(gazeteList) ? gazeteList : [];
 
-    //       // Update rows state for submission
-    //       setRows((prev) =>
-    //         prev.map((row) =>
-    //           row.id === id ? { ...row, [field]: newValue } : row
-    //         )
-    //       );
-    //     };
+        const userDataStr = sessionStorage.getItem("userData");
+        let UserType = null;
+        let storedGazOfficer = null;
 
-    //     // Non-admin: disable and set session value
-    //     if (userType !== "A") {
-    //       if (value !== storedGazOfficer) {
-    //         api.updateRows([{ id, [field]: storedGazOfficer }]);
-    //         setRows((prev) =>
-    //           prev.map((row) =>
-    //             row.id === id ? { ...row, [field]: storedGazOfficer } : row
-    //           )
-    //         );
-    //       }
+        if (userDataStr) {
+          try {
+            const userData = JSON.parse(userDataStr);
+            UserType = userData.UserType;
+            storedGazOfficer = userData.GazOfficer || "";
+          } catch (error) {
+            console.error("Failed to parse userData:", error);
+          }
+        }
 
-    //       return (
-    //         <Tooltip title={storedGazOfficer} arrow placement="top">
-    //           <Select
-    //             value={storedGazOfficer}
-    //             disabled
-    //             fullWidth
-    //             variant="standard"
-    //           >
-    //             <MenuItem value={storedGazOfficer}>{storedGazOfficer}</MenuItem>
-    //           </Select>
-    //         </Tooltip>
-    //       );
-    //     }
+        const handleChange = (e) => {
+          const newValue = e.target.value;
 
-    //     // Admin flow: enable and show full list
-    //     return (
-    //       <Tooltip title={value || ""} arrow placement="top">
-    //         <Select
-    //           value={value || ""}
-    //           onChange={handleChange}
-    //           fullWidth
-    //           variant="standard"
-    //         >
-    //           {gazeteList.map((option) => (
-    //             <MenuItem key={option.Name} value={option.Name}>
-    //               {option.Name}
-    //             </MenuItem>
-    //           ))}
-    //         </Select>
-    //       </Tooltip>
-    //     );
-    //   },
-    // },
-     {
-  field: "IssuedBy",
-  headerName: "GAZETTED OFFICER",
-  flex: 1,
-  renderCell: (params) => {
-    const { id, field, value, api } = params;
+          // Update DataGrid UI
+          api.updateRows([{ id, [field]: newValue }]);
 
-    // ✅ Ensure gazeteList is accessible
-    // (if it comes from props or state, pass it properly from parent)
-     
-    const gazetteOptions = Array.isArray(gazeteList) ? gazeteList : [];
- 
-    // ✅ Parse userData
-    const userDataStr = sessionStorage.getItem("userData");
-    let UserType = null;
-    let storedGazOfficer = null;
+          // Update parent state
+          setRows((prev) =>
+            prev.map((row) =>
+              row.id === id ? { ...row, [field]: newValue } : row
+            )
+          );
+        };
 
-    if (userDataStr) {
-      try {
-        const userData = JSON.parse(userDataStr);
-        UserType = userData.UserType;
-        storedGazOfficer = userData.GazOfficer || "";
-      } catch (error) {
-        console.error("Failed to parse userData:", error);
-      }
-    }
+        // ✅ Logic for enabling/disabling
+        const isEditable =
+          UserType === "A" ||
+          !storedGazOfficer ||
+          storedGazOfficer.trim() === "";
 
-    const handleChange = (e) => {
-      const newValue = e.target.value;
+        // ✅ When disabled (non-admin + GazOfficer present)
+        if (!isEditable) {
+          // Keep stored value synced
+          if (value !== storedGazOfficer) {
+            api.updateRows([{ id, [field]: storedGazOfficer }]);
+            setRows((prev) =>
+              prev.map((row) =>
+                row.id === id ? { ...row, [field]: storedGazOfficer } : row
+              )
+            );
+          }
+          return (
+            <Tooltip title={storedGazOfficer || ""} arrow placement="top">
+              <Select
+                value={storedGazOfficer || ""}
+                disabled={isDisabled}
+                fullWidth
+                variant="standard"
+              >
+                <MenuItem value={storedGazOfficer || ""}>
+                  {storedGazOfficer || ""}
+                </MenuItem>
+              </Select>
+            </Tooltip>
+          );
+        }
 
-      // Update DataGrid UI
-      api.updateRows([{ id, [field]: newValue }]);
-
-      // Update parent state
-      setRows((prev) =>
-        prev.map((row) =>
-          row.id === id ? { ...row, [field]: newValue } : row
-        )
-      );
-    };
-
-    // ✅ Logic for enabling/disabling
-    const isEditable =
-      UserType === "A" || !storedGazOfficer || storedGazOfficer.trim() === "";
-
-    // ✅ When disabled (non-admin + GazOfficer present)
-    if (!isEditable) {
-      // Keep stored value synced
-      if (value !== storedGazOfficer) {
-        api.updateRows([{ id, [field]: storedGazOfficer }]);
-        setRows((prev) =>
-          prev.map((row) =>
-            row.id === id ? { ...row, [field]: storedGazOfficer } : row
-          )
-        );
-      }
-
-      return (
-        <Tooltip title={storedGazOfficer || ""} arrow placement="top">
-          <Select
-            value={storedGazOfficer || ""}
-            disabled
-            fullWidth
-            variant="standard"
+        // ✅ Editable case (UserType A OR GazOfficer empty)
+        // return (
+        //   <Tooltip title={value || ""} arrow placement="top">
+        //     <Select
+        //       value={value || ""}
+        //       onChange={handleChange}
+        //       fullWidth
+        //       variant="standard"
+        //     >
+        //       {gazetteOptions.length > 0 ? (
+        //         gazetteOptions.map((option) => (
+        //           <MenuItem key={option.Name} value={option.Name}>
+        //             {option.Name}
+        //           </MenuItem>
+        //         ))
+        //       ) : (
+        //         <MenuItem disabled>No officers found</MenuItem>
+        //       )}
+        //     </Select>
+        //   </Tooltip>
+        // );
+        return (
+  <Tooltip title={value || ""} arrow placement="top">
+    <Select
+      value={value || ""}
+      onChange={handleChange}
+      fullWidth
+      variant="standard"
+      MenuProps={{
+        PaperProps: {
+          style: {
+            maxHeight: 220, 
+            overflowY: "auto", 
+          },
+        },
+      }}
+    >
+      {gazetteOptions.length > 0 ? (
+        gazetteOptions.map((option) => (
+          <MenuItem
+            key={option.Name}
+            value={option.Name}
+            sx={{
+              height: 35, 
+              display: "flex",
+              alignItems: "center",
+            }}
           >
-            <MenuItem value={storedGazOfficer || ""}>
-              {storedGazOfficer || ""}
-            </MenuItem>
-          </Select>
-        </Tooltip>
-      );
-    }
+            {option.Name}
+          </MenuItem>
+        ))
+      ) : (
+        <MenuItem disabled>No officers found</MenuItem>
+      )}
+    </Select>
+  </Tooltip>
+);
 
-    // ✅ Editable case (UserType A OR GazOfficer empty)
-    return (
-      <Tooltip title={value || ""} arrow placement="top">
-        <Select
-          value={value || ""}
-          onChange={handleChange}
-          fullWidth
-          variant="standard"
-        >
-          {gazetteOptions.length > 0 ? (
-            gazetteOptions.map((option) => (
-              <MenuItem key={option.Name} value={option.Name}>
-                {option.Name}
-              </MenuItem>
-            ))
-          ) : (
-            <MenuItem disabled>No officers found</MenuItem>
-          )}
-        </Select>
-      </Tooltip>
-    );
-  },
-}
-,
-
+      },
+    },
     {
       field: "DocType",
       headerName: "DOCUMENT TYPE",
       flex: 1,
       renderCell: (params) => {
-        const { id, field, value, api } = params;
+        const { id, field, value, api, row } = params;
+        const isDisabled = row.isDisabled;
 
         const handleChange = (e) => {
           const newValue = e.target.value;
@@ -402,22 +437,61 @@ const UploadDocument = () => {
             )
           );
         };
+        // return (
+        //   <Tooltip title={value || ""} arrow placement="top">
+        //     <Select
+        //       value={value || ""}
+        //       onChange={handleChange}
+        //       fullWidth
+        //       disabled={isDisabled}
+        //       variant="standard"
+        //     >
+        //       {DocopetionOptions.map((option) => (
+        //         <MenuItem key={option.value} value={option.value}>
+        //           {option.label}
+        //         </MenuItem>
+        //       ))}
+        //     </Select>
+        //   </Tooltip>
+        // );
         return (
-          <Tooltip title={value || ""} arrow placement="top">
-            <Select
-              value={value || ""}
-              onChange={handleChange}
-              fullWidth
-              variant="standard"
-            >
-              {DocopetionOptions.map((option) => (
-                <MenuItem key={option.value} value={option.value}>
-                  {option.label}
-                </MenuItem>
-              ))}
-            </Select>
-          </Tooltip>
-        );
+  <Tooltip title={value || ""} arrow placement="top">
+    <Select
+      value={value || ""}
+      onChange={handleChange}
+      fullWidth
+      disabled={isDisabled}
+      variant="standard"
+      MenuProps={{
+        PaperProps: {
+          style: {
+            maxHeight: 200, 
+            overflowY: "auto", 
+          },
+        },
+      }}
+    >
+      {DocopetionOptions.length > 0 ? (
+        DocopetionOptions.map((option) => (
+          <MenuItem
+            key={option.value}
+            value={option.value}
+            sx={{
+              height: 35, 
+              display: "flex",
+              alignItems: "center",
+            }}
+          >
+            {option.label}
+          </MenuItem>
+        ))
+      ) : (
+        <MenuItem disabled>No options available</MenuItem>
+      )}
+    </Select>
+  </Tooltip>
+);
+
       },
     },
   ];
@@ -654,7 +728,6 @@ const UploadDocument = () => {
 
           setRows(formattedLines);
         }
-
       }
     } catch (error) {
       console.error("Error in handleUpdate:", error);
@@ -748,17 +821,88 @@ const UploadDocument = () => {
     }
   };
 
+  // const handleFileUpload = async (e) => {
+  //   const allowedExt = ["jpg", "jpeg", "png", "pdf"];
+  //   const maxSize = 1 * 1024 * 1024; // 1 MB
+
+  //   const files = Array.from(e.target.files);
+
+  //   // filter invalid files
+  //   const validFiles = files.filter((file) => {
+  //     const ext = file.name.split(".").pop().toLowerCase();
+
+  //     // Check file type
+  //     if (!allowedExt.includes(ext)) {
+  //       Swal.fire({
+  //         icon: "error",
+  //         title: "Invalid File Type",
+  //         text: `${file.name} is not allowed. Only JPG, JPEG, PNG, and PDF are accepted.`,
+  //         confirmButtonColor: "#d33",
+  //       });
+  //       return false;
+  //     }
+
+  //     // Check file size
+  //     if (file.size > maxSize) {
+  //       Swal.fire({
+  //         toast: true,
+  //         position: "center",
+  //         icon: "error",
+  //         title: `${file.name} exceeds the 1 MB limit.`,
+  //         showConfirmButton: false,
+  //         timer: 3000,
+  //         timerProgressBar: true,
+  //       });
+  //       return false;
+  //     }
+
+  //     return true;
+  //   });
+
+  //   if (validFiles.length === 0) return;
+
+  //   const newRows = await Promise.all(
+  //     validFiles.map(async (file, index) => {
+  //       const ext = file.name.split(".").pop().toLowerCase();
+
+  //       return {
+  //         id: Date.now() + index,
+  //         name: file.name,
+  //         type: ext,
+  //         SrcPath: "",
+  //         File: file,
+  //         FileExt: ext,
+  //         FileName: file.name,
+
+  //         DocReqDate: dayjs().format("YYYY-MM-DD"),
+  //         IssuedBy: "",
+  //         DocType: "",
+  //         // DocEntry: "",
+  //         Status: 1,
+  //         CreatedDate: dayjs().format("YYYY-MM-DD"),
+  //         ModifiedDate: dayjs().format("YYYY-MM-DD"),
+  //         ModifiedBy: userSession.userId,
+  //         CreatedBy: userSession.userId,
+  //         UserId: userSession.userId,
+  //       };
+  //     })
+  //   );
+
+  //   setRows((prev) => [...prev, ...newRows]);
+  //   console.log("object file", newRows);
+
+  //   if (fileInputRef.current) {
+  //     fileInputRef.current.value = "";
+  //   }
+  // };
   const handleFileUpload = async (e) => {
-    const allowedExt = ["jpg", "jpeg", "png", "pdf"];
-      const maxSize = 1 * 1024 * 1024; // 1 MB
+  const allowedExt = ["jpg", "jpeg", "png", "pdf"];
+  const maxSize = 1 * 1024 * 1024; // 1 MB
 
-    const files = Array.from(e.target.files);
-
-    // filter invalid files
+  const files = Array.from(e.target.files);
   const validFiles = files.filter((file) => {
     const ext = file.name.split(".").pop().toLowerCase();
 
-    // Check file type
     if (!allowedExt.includes(ext)) {
       Swal.fire({
         icon: "error",
@@ -769,17 +913,16 @@ const UploadDocument = () => {
       return false;
     }
 
-    // Check file size
     if (file.size > maxSize) {
       Swal.fire({
-    toast: true,
-    position: "center",
-    icon: "error",
-    title: `${file.name} exceeds the 1 MB limit.`,
-    showConfirmButton: false,
-    timer: 3000,
-    timerProgressBar: true,
-  });
+        toast: true,
+        position: "center",
+        icon: "error",
+        title: `${file.name} exceeds the 1 MB limit.`,
+        showConfirmButton: false,
+        timer: 3000,
+        timerProgressBar: true,
+      });
       return false;
     }
 
@@ -788,40 +931,46 @@ const UploadDocument = () => {
 
   if (validFiles.length === 0) return;
 
-    const newRows = await Promise.all(
-      validFiles.map(async (file, index) => {
-        const ext = file.name.split(".").pop().toLowerCase();
+  //  Use same user identity as above
+  const userData = JSON.parse(sessionStorage.getItem("userData") || "{}");
+  const currentUser = userData.Username || userData.userId || "";
 
-        return {
-          id: Date.now() + index,
-          name: file.name,
-          type: ext,
-          SrcPath: "",
-          File: file,
-          FileExt: ext,
-          FileName: file.name,
+  const newRows = await Promise.all(
+    validFiles.map(async (file, index) => {
+      const ext = file.name.split(".").pop().toLowerCase();
 
-          DocReqDate: dayjs().format("YYYY-MM-DD"),
-          IssuedBy: "",
-          DocType: "",
-          // DocEntry: "",
-          Status: 1,
-          CreatedDate: dayjs().format("YYYY-MM-DD"),
-          ModifiedDate: dayjs().format("YYYY-MM-DD"),
-          ModifiedBy: userSession.userId ,
-          CreatedBy: userSession.userId ,
-          UserId:userSession.userId ,
-        };
-      })
-    );
+      return {
+        id: Date.now() + index,
+        name: file.name,
+        type: ext,
+        SrcPath: "",
+        File: file,
+        FileExt: ext,
+        FileName: file.name,
 
-    setRows((prev) => [...prev, ...newRows]);
-    console.log("object file", newRows);
+        DocReqDate: dayjs().format("YYYY-MM-DD"),
+        IssuedBy: "",
+        DocType: "",
+        Status: 1,
+        CreatedDate: dayjs().format("YYYY-MM-DD"),
+        ModifiedDate: dayjs().format("YYYY-MM-DD"),
 
-    if (fileInputRef.current) {
-      fileInputRef.current.value = "";
-    }
-  };
+        //  Use currentUser for CreatedBy / ModifiedBy / UserId
+        CreatedBy: currentUser,
+        ModifiedBy: currentUser,
+        UserId: currentUser,
+      };
+    })
+  );
+
+  setRows((prev) => [...prev, ...newRows]);
+  console.log("object file", newRows);
+
+  if (fileInputRef.current) {
+    fileInputRef.current.value = "";
+  }
+};
+
 
   const handleChangeFile = async (e, rowId) => {
     const file = e.target.files[0];
@@ -1003,8 +1152,6 @@ const UploadDocument = () => {
         response = await axios.patch(`${BASE_URL}DocUpload`, formData, {
           headers: { "Content-Type": "multipart/form-data" },
         });
-
-        
       }
 
       setLoaderOpen(false);
@@ -1022,31 +1169,28 @@ const UploadDocument = () => {
         handleClose();
         getAllDocList();
       } else {
-         
         throw new Error(response.data.message || "Unexpected error");
-        
       }
-     }   
-    catch (error) {
-  setLoaderOpen(false);               
-  
-   if (error.response && error.Status === 413) {
-    Swal.fire({ 
-      icon: "error",
-      title: "File Too Large",
-      text: "One or more files exceed the maximum upload size allowed by the server.",
-      confirmButtonColor: "#d33",
-    });
-    return;
-  }
+    } catch (error) {
+      setLoaderOpen(false);
 
-  Swal.fire({
-    title: "Error!",
-    text: error.message || "Something went wrong while uploading.",
-    icon: "error",
-    confirmButtonText: "Ok",
-  });
-}
+      if (error.response && error.Status === 413) {
+        Swal.fire({
+          icon: "error",
+          title: "File Too Large",
+          text: "One or more files exceed the maximum upload size allowed by the server.",
+          confirmButtonColor: "#d33",
+        });
+        return;
+      }
+
+      Swal.fire({
+        title: "Error!",
+        text: error.message || "Something went wrong while uploading.",
+        icon: "error",
+        confirmButtonText: "Ok",
+      });
+    }
   };
 
   const getAllDocList = async (page = 0, searchText = "", limit = 20) => {
@@ -1120,68 +1264,72 @@ const UploadDocument = () => {
     }
   };
 
-  // React.useEffect(() => {
-  //   if (firstLoad.current) {
-  //     getAllDocList();
-
-  //     // Parse userData
-  //     const userDataStr = sessionStorage.getItem("userData");
-  //     let userType = null;
-  //     if (userDataStr) {
-  //       try {
-  //         const userData = JSON.parse(userDataStr);
-  //         userType = userData.UserType;
-  //       } catch (error) {
-  //         console.error("Failed to parse userData:", error);
-  //       }
-  //     }
-
-  //     // Fetch gazette list only for Admin
-  //     if (userType === "A" ||  ) {
-  //       gazettedList();
-  //     }
-  //     firstLoad.current = false;
-  //   }
-  // }, []);
+ 
 
   React.useEffect(() => {
-  if (firstLoad.current) {
-    getAllDocList();
+    if (firstLoad.current) {
+      getAllDocList();
 
-    // Parse userData
-    const userDataStr = sessionStorage.getItem("userData");
-    let userType = null;
-    let gazOfficer = null;
+      // Parse userData
+      const userDataStr = sessionStorage.getItem("userData");
+      let userType = null;
+      let gazOfficer = null;
 
-    if (userDataStr) {
-      try {
-        const userData = JSON.parse(userDataStr);
-        userType = userData.UserType;
-        gazOfficer = userData.GazOfficer || "";
-      } catch (error) {
-        console.error("Failed to parse userData:", error);
+      if (userDataStr) {
+        try {
+          const userData = JSON.parse(userDataStr);
+          userType = userData.UserType;
+          gazOfficer = userData.GazOfficer || "";
+        } catch (error) {
+          console.error("Failed to parse userData:", error);
+        }
       }
+
+      // Fetch gazette list for Admins OR if GazOfficer is missing
+      if (userType === "A" || !gazOfficer || gazOfficer.trim() === "") {
+        gazettedList();
+      }
+
+      firstLoad.current = false;
     }
-
-    // ✅ Fetch gazette list for Admins OR if GazOfficer is missing
-    if (userType === "A" || !gazOfficer || gazOfficer.trim() === "") {
-      gazettedList(); 
-    }
-
-    firstLoad.current = false;
-  }
-}, []);
-
+  }, []);
 
   // ===================Username and CreatedBy are same in case Doc uploaded rows are enabled logic start============================
- 
-  const userData = JSON.parse(sessionStorage.getItem("userData") || "{}");
-  const currentUserId = userData.Username;
-  const currentUserType = userData.UserType;
-  const updatedRows = rows.map((row) => ({
+
+  // const userData = JSON.parse(sessionStorage.getItem("userData") || "{}");
+  // const currentUserId = userData.Username;
+  // const currentUserType = userData.UserType;
+  // const updatedRows = rows.map((row) => ({
+  //   ...row,
+  //   isDisabled: !(row.CreatedBy === currentUserId || currentUserType === "A"),
+  // }));
+
+  // =================== Username and CreatedBy are same in case Doc uploaded rows are enabled logic start ============================
+
+//  Get current user data safely
+const userData = JSON.parse(sessionStorage.getItem("userData") || "{}");
+
+// Use one consistent identity value for comparison
+const currentUser = userData.Username || "";
+const currentUserType = userData.UserType;
+
+// Updated disable logic — new rows uploaded by current user will NOT be disabled
+const updatedRows = rows.map((row) => {
+   
+  const createdBy = (row.CreatedBy || "").toString().trim();
+  const userId = (row.UserId || "").toString().trim();
+  const current = currentUser.toString().trim();
+
+  // Allow edit if same user (by either CreatedBy or UserId) or admin
+  const isAllowed =
+    currentUserType === "A" || createdBy === current || userId === current;
+
+  return {
     ...row,
-    isDisabled: !(row.CreatedBy === currentUserId || currentUserType === "A"),
-  }));
+    isDisabled: !isAllowed,
+  };
+});
+
   // ====================End============================
   return (
     <>
@@ -1376,7 +1524,7 @@ const UploadDocument = () => {
                 isCellEditable={(params) => !params.row.isDisabled}
                 onRowClick={(params, event) => {
                   if (params.row.isDisabled) {
-                    event.stopPropagation(); // prevent selection/click
+                    event.stopPropagation();
                   }
                 }}
                 sx={{
@@ -1388,9 +1536,10 @@ const UploadDocument = () => {
                     boxShadow: "0px 4px 20px rgba(0, 0, 0.2, 0.2)",
                   },
                   "& .disabled-row": {
-                    pointerEvents: "none",
+                    // pointerEvents: "none",
+                    pointerEvents: "auto",
+
                     opacity: 0.7,
-                    // backgroundColor: "#f5f5f5",
                   },
                 }}
               />
@@ -1517,11 +1666,10 @@ const UploadDocument = () => {
             },
           }}
           rows={Documentlist}
-          // rows={dammyrows}
-          columns={Maincolumns}
-          // autoHeight
-          pagination
+           columns={Maincolumns}
+           pagination
           paginationMode="server"
+          hideFooterSelectedRowCount
           rowCount={totalRows}
           pageSizeOptions={[limit]}
           paginationModel={{ page: currentPage, pageSize: limit }}
@@ -1532,7 +1680,6 @@ const UploadDocument = () => {
           loading={loading}
           initialState={{
             pagination: { paginationModel: { pageSize: 8 } },
-
             filter: {
               filterModel: {
                 items: [],

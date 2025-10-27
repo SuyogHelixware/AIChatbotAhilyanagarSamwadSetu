@@ -40,7 +40,7 @@ export const ModeContextProvider = ({ children }) => {
     const storedUser = JSON.parse(sessionStorage.getItem("userData") || "{}");
 
   useEffect(() => {     
-     debugger
+      
     //  const userId = sessionStorage.getItem("userId");
      const userId = storedUser.Username;
     const UserType = storedUser.UserType;
