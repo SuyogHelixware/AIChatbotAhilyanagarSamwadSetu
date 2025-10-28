@@ -24,7 +24,6 @@ export const ModeContext = createContext({
 
 export const ModeContextProvider = ({ children }) => {
   const [themeMode, setThemeMode] = useState("light");
-
   const LightMode = () => setThemeMode("light");
   const DarkMode = () => setThemeMode("dark");
 

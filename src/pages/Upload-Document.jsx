@@ -644,7 +644,7 @@ const UploadDocument = () => {
         try {
           const parsedData = JSON.parse(userData);
           userType = parsedData.UserType;
-          userId = parsedData.UserId; // or sessionStorage.getItem("userId")
+          userId = parsedData.UserId; 
         } catch (e) {
           console.error("Error parsing userData:", e);
         }
@@ -931,9 +931,9 @@ const UploadDocument = () => {
 
   if (validFiles.length === 0) return;
 
-  //  Use same user identity as above
-  const userData = JSON.parse(sessionStorage.getItem("userData") || "{}");
-  const currentUser = userData.Username || userData.userId || "";
+
+  // const userData = JSON.parse(sessionStorage.getItem("userData") || "{}");
+  const currentUser = userSession.Username || userSession.userId || "";
 
   const newRows = await Promise.all(
     validFiles.map(async (file, index) => {
@@ -955,7 +955,6 @@ const UploadDocument = () => {
         CreatedDate: dayjs().format("YYYY-MM-DD"),
         ModifiedDate: dayjs().format("YYYY-MM-DD"),
 
-        //  Use currentUser for CreatedBy / ModifiedBy / UserId
         CreatedBy: currentUser,
         ModifiedBy: currentUser,
         UserId: currentUser,
@@ -970,7 +969,6 @@ const UploadDocument = () => {
     fileInputRef.current.value = "";
   }
 };
-
 
   const handleChangeFile = async (e, rowId) => {
     const file = e.target.files[0];
@@ -1264,8 +1262,6 @@ const UploadDocument = () => {
     }
   };
 
- 
-
   React.useEffect(() => {
     if (firstLoad.current) {
       getAllDocList();
@@ -1305,24 +1301,17 @@ const UploadDocument = () => {
   // }));
 
   // =================== Username and CreatedBy are same in case Doc uploaded rows are enabled logic start ============================
-
-//  Get current user data safely
-const userData = JSON.parse(sessionStorage.getItem("userData") || "{}");
-
-// Use one consistent identity value for comparison
-const currentUser = userData.Username || "";
-const currentUserType = userData.UserType;
+   
+ const currentUser = userSession.userId || "";
+const currentUserType = userSession.UserType;
 
 // Updated disable logic — new rows uploaded by current user will NOT be disabled
 const updatedRows = rows.map((row) => {
    
   const createdBy = (row.CreatedBy || "").toString().trim();
-  const userId = (row.UserId || "").toString().trim();
-  const current = currentUser.toString().trim();
+   const current = currentUser.toString().trim();
 
-  // Allow edit if same user (by either CreatedBy or UserId) or admin
-  const isAllowed =
-    currentUserType === "A" || createdBy === current || userId === current;
+   const isAllowed =currentUserType === "A" || createdBy === current ;
 
   return {
     ...row,
@@ -1330,7 +1319,7 @@ const updatedRows = rows.map((row) => {
   };
 });
 
-  // ====================End============================
+  // ====================End============================ 
   return (
     <>
       {loaderOpen && <Loader open={loaderOpen} />}
