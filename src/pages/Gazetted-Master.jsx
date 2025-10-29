@@ -30,12 +30,11 @@ const GazettedMaster = () => {
   const [currentPage, setCurrentPage] = React.useState(0);
   const [loading, setLoading] = React.useState(false);
   const [searchText, setSearchText] = React.useState("");
-  const limit = 20; 
+  const limit = 35; 
   const originalDataRef = React.useRef(null);
   const firstLoad = React.useRef(true);
 
-  // React Hook Form initialization
-  const {
+   const {
     
     handleSubmit,
     control,
@@ -550,6 +549,7 @@ const GazettedMaster = () => {
           paginationMode="server"
           // rowCount={totalRows}
           // pageSizeOptions={[10, 20, 50]}
+          
           paginationModel={{ page: currentPage, pageSize: limit }}
           onPaginationModelChange={(newModel) => {
             setCurrentPage(newModel.page);

@@ -15,7 +15,7 @@ import SettingsIcon from "@mui/icons-material/Settings";
 // import SmartphoneIcon from "@mui/icons-material/Smartphone";
 // import EmailIcon from "@mui/icons-material/Email";
 // import BusinessIcon from "@mui/icons-material/Business";
-// import DescriptionIcon from "@mui/icons-material/Description";
+import DescriptionIcon from "@mui/icons-material/Description";
 // import MiscellaneousServicesIcon from "@mui/icons-material/MiscellaneousServices";
 // import { MdMiscellaneousServices } from "react-icons/md";
 import DriveFolderUploadIcon from "@mui/icons-material/DriveFolderUpload";
@@ -705,34 +705,7 @@ export default function Dashboard() {
                 </ListItemButton>
               </Link> */}
 
-              {/* ===== Documents Master ===== */}
-              {/* <Link to="DocumentMaster" className="link_style">
-                <ListItemButton
-                  onClick={handleClickTransaction}
-                  selected={location.pathname === "/dashboard/DocumentMaster"}
-                  sx={{
-                    "&.Mui-selected": {
-                      background:
-                        "linear-gradient(to right, rgb(0, 90, 91), rgb(22, 149, 153))",
-                      borderRadius: 1,
-                      "& .MuiListItemIcon-root, & .MuiTypography-root": {
-                        color: "#FFFFFF",
-                      },
-                    },
-                    "& .MuiListItemText-primary": {
-                      color: theme.palette.text.primary,
-                    },
-                  }}
-                >
-                  <ListItemIcon
-                    sx={{ minWidth: "33px", marginRight: "8px" }}
-                    onClick={handleDrawerOpen}
-                  >
-                    <DescriptionIcon />
-                  </ListItemIcon>
-                  <ListItemText primary="Documents Master" />
-                </ListItemButton>
-              </Link> */}
+            
 
               {/* ===== Email Configuration ===== */}
               {/* <Link to="EmailSetup" className="link_style">
@@ -789,6 +762,34 @@ export default function Dashboard() {
                     <ChecklistIcon />
                   </ListItemIcon>
                   <ListItemText primary="Gazetted Master" />
+                </ListItemButton>
+              </Link>
+                {/* ===== Documents Master Creation ===== */}
+              <Link to="DocumentMaster" className="link_style">
+                <ListItemButton
+                  onClick={handleClickTransaction}
+                  selected={location.pathname === "/dashboard/DocumentMaster"}
+                  sx={{
+                    "&.Mui-selected": {
+                      background:
+                        "linear-gradient(to right, rgb(0, 90, 91), rgb(22, 149, 153))",
+                      borderRadius: 1,
+                      "& .MuiListItemIcon-root, & .MuiTypography-root": {
+                        color: "#FFFFFF",
+                      },
+                    },
+                    "& .MuiListItemText-primary": {
+                      color: theme.palette.text.primary,
+                    },
+                  }}
+                >
+                  <ListItemIcon
+                    sx={{ minWidth: "33px", marginRight: "8px" }}
+                    onClick={handleDrawerOpen}
+                  >
+                    <DescriptionIcon />
+                  </ListItemIcon>
+                  <ListItemText primary="Documents Master" />
                 </ListItemButton>
               </Link>
 

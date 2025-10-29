@@ -12,6 +12,7 @@ import {
   Modal,
   Paper,
   TextField,
+  Tooltip,
   Typography,
 } from "@mui/material";
 import { DataGrid } from "@mui/x-data-grid";
@@ -23,6 +24,7 @@ import Loader from "../components/Loader";
 import { CheckboxInputs } from "../components/Component";
 import { debounce } from "lodash"; // Debouncing helper function
 import { Controller, useForm } from "react-hook-form"; // Importing React Hook Form
+import dayjs from "dayjs";
 
 const DocumentMaster = () => {
   const [loaderOpen, setLoaderOpen] = React.useState(false);
@@ -34,8 +36,10 @@ const DocumentMaster = () => {
   const [currentPage, setCurrentPage] = React.useState(0);
   const [loading, setLoading] = React.useState(false);
   const [searchText, setSearchText] = React.useState("");
-  const limit = 20; // Fixed page size
+  const limit = 35;
   const originalDataRef = React.useRef(null);
+
+  const firstLoad = React.useRef(true);
 
   // React Hook Form initialization
   const {
@@ -47,16 +51,18 @@ const DocumentMaster = () => {
     formState: { errors },
   } = useForm({
     defaultValues: {
-      DocNameEN: "",
-      DocNameMR: "",
-      Status: 1, // Default to checked (1)
+      NameEN: "",
+      NameMR: "",
+      Description: "",
+      Status: 1,
     },
   });
   const clearFormData = () => {
     if (ClearUpdateButton === "CLEAR") {
       reset({
-        DocNameEN: "",
-        DocNameMR: "",
+        NameEN: "",
+        NameMR: "",
+        Description: "",
         Status: 1,
       });
     }
@@ -70,9 +76,11 @@ const DocumentMaster = () => {
   const handleOnSave = () => {
     setSaveUpdateButton("SAVE");
     setClearUpdateButton("CLEAR");
-        clearFormData();
-        setValue("DocNameEN","")
-        setValue("DocNameMR","")
+    clearFormData();
+    setValue("NameEN", "");
+    setValue("NameMR", "");
+    setValue("Description", "");
+
     setOn(true);
   };
 
@@ -89,7 +97,7 @@ const DocumentMaster = () => {
 
   const handleSubmitForm = async (formData) => {
     try {
-      const requiredFields = ["DocNameEN", "DocNameMR"];
+      const requiredFields = ["NameEN", "NameMR"];
       const emptyRequiredFields = requiredFields.filter(
         (field) => !formData[field]?.trim()
       );
@@ -101,15 +109,21 @@ const DocumentMaster = () => {
 
       const payload = {
         Id: null || formData.Id,
-        DocNameEN: formData.DocNameEN,
-        DocNameMR: formData.DocNameMR,
-        Status: formData.Status,
+        CreatedDate: dayjs().format("YYYY-MM-DD"),
+        CreatedBy: sessionStorage.getItem("userId"),
+        ModifiedBy: sessionStorage.getItem("userId"),
+        ModifiedDate: dayjs().format("YYYY-MM-DD"),
+
+        NameEN: formData.NameEN,
+        NameMR: formData.NameMR,
+        Description: formData.Description,
+        Status: formData.Status || "1",
       };
       let response;
 
       if (SaveUpdateButton === "SAVE") {
         setLoaderOpen(true);
-        response = await axios.post(`${BASE_URL}Document`, payload);
+        response = await axios.post(`${BASE_URL}DocsMaster`, payload);
       } else {
         if (!formData.Id) {
           Swal.fire({
@@ -138,7 +152,7 @@ const DocumentMaster = () => {
 
         setLoaderOpen(true);
         response = await axios.put(
-          `${BASE_URL}Document/${formData.Id}`,
+          `${BASE_URL}DocsMaster/${formData.Id}`,
           payload
         );
       }
@@ -158,7 +172,8 @@ const DocumentMaster = () => {
           timer: 1500,
         });
         handleClose();
-        getAllImgList(currentPage, searchText);
+        // getAllImgList(currentPage, searchText);
+        getAllDocumentList(currentPage, searchText);
       } else {
         throw new Error(response.data.message || "Unexpected error");
       }
@@ -175,23 +190,64 @@ const DocumentMaster = () => {
     }
   };
 
-  const getAllImgList = async (page = 0, searchText = "") => {
+  // const getAllImgList = async (page = 0, searchText = "") => {
+  //   try {
+  //     setLoading(true);
+  //     let apiUrl = `${BASE_URL}Document/ByPage/${page}/${limit}`;
+  //     if (searchText) {
+  //       apiUrl = `${BASE_URL}Document/ByPage/search/${searchText}/${page}/${limit}`;
+  //     }
+
+  //     const response = await axios.get(apiUrl);
+  //     if (response.data && response.data.values) {
+  //       setDocumentData(
+  //         response.data.values.map((item, index) => ({
+  //           ...item,
+  //           id: page * limit + index + 1,
+  //         }))
+  //       );
+  //       setTotalRows(response.data.count);
+  //     }
+  //   } catch (error) {
+  //     console.error("Error fetching data:", error);
+  //   } finally {
+  //     setLoading(false);
+  //   }
+  // };
+
+  // Debounced search function
+  // const debouncedSearch = React.useMemo(
+  //   () =>
+  //     debounce((searchText) => {
+  //       getAllImgList(currentPage, searchText);
+  //     }, 500),
+  //   [currentPage]
+  // );
+
+  // React.useEffect(() => {
+  //   debouncedSearch(searchText);
+  //   return () => debouncedSearch.cancel();
+  // }, [searchText]);
+
+  const getAllDocumentList = async (page = 0, searchText = "") => {
     try {
       setLoading(true);
-      let apiUrl = `${BASE_URL}Document/ByPage/${page}/${limit}`;
-      if (searchText) {
-        apiUrl = `${BASE_URL}Document/ByPage/search/${searchText}/${page}/${limit}`;
-      }
 
-      const response = await axios.get(apiUrl);
+      const params = {
+        Status: 1,
+        Page: page,
+        ...(limit ? { Limit: limit } : {}),
+        ...(searchText ? { SearchText: searchText } : {}),
+      };
+
+      const response = await axios.get(`${BASE_URL}DocsMaster`, { params });
       if (response.data && response.data.values) {
         setDocumentData(
           response.data.values.map((item, index) => ({
             ...item,
-            id: page * limit + index + 1,
+            id: item.Id,
           }))
         );
-        setTotalRows(response.data.count);
       }
     } catch (error) {
       console.error("Error fetching data:", error);
@@ -200,19 +256,15 @@ const DocumentMaster = () => {
     }
   };
 
-  // Debounced search function
-  const debouncedSearch = React.useMemo(
-    () =>
-      debounce((searchText) => {
-        getAllImgList(currentPage, searchText);
-      }, 500),
-    [currentPage]
-  );
 
   React.useEffect(() => {
-    debouncedSearch(searchText);
-    return () => debouncedSearch.cancel(); // Cancel the debounced search when component unmounts
-  }, [searchText]);
+    if (firstLoad.current) {
+      getAllDocumentList();
+      firstLoad.current = false;
+    }
+  }, []);
+
+  // =========================
 
   const handleDelete = async (rowData) => {
     Swal.fire({
@@ -227,7 +279,7 @@ const DocumentMaster = () => {
         setLoaderOpen(true);
         try {
           const response = await axios.delete(
-            `${BASE_URL}Document/${rowData.Id}`
+            `${BASE_URL}DocsMaster/${rowData.Id}`
           );
           setLoaderOpen(false);
           if (response.data && response.data.success) {
@@ -239,7 +291,8 @@ const DocumentMaster = () => {
               showConfirmButton: false,
               timer: 1500,
             });
-            getAllImgList(currentPage, searchText);
+            // getAllImgList(currentPage, searchText);
+            getAllDocumentList(currentPage, searchText);
           } else {
             Swal.fire({
               position: "center",
@@ -269,16 +322,18 @@ const DocumentMaster = () => {
     {
       field: "actions",
       headerName: "Action",
-      width: 150,headerAlign: "center", align: "center",
+      width: 150,
+      headerAlign: "center",
+      align: "center",
       sortable: false,
       renderCell: (params) => (
         <strong>
           <IconButton
             color="primary"
             sx={{
-              color: "rgb(0, 90, 91)", // Apply color to the icon
+              color: "rgb(0, 90, 91)", 
               "&:hover": {
-                backgroundColor: "rgba(0, 90, 91, 0.1)", // Optional hover effect
+                backgroundColor: "rgba(0, 90, 91, 0.1)", 
               },
             }}
             onClick={() => handleUpdate(params.row)}
@@ -295,19 +350,97 @@ const DocumentMaster = () => {
         </strong>
       ),
     },
-    { field: "id", headerName: "Sr.No", width: 100, sortable: true,headerAlign: "center", align: "center" },
-    {
-      field: "DocNameEN",
-      headerName: "Document Name",
-      width: 300,
-      sortable: false
+   
+     {
+      field: "srNo",
+      headerName: "SR NO",
+      width: 60,
+      sortable: false,
+      headerAlign: "center",
+      align: "center",
+      renderCell: (params) =>
+        params.api.getSortedRowIds().indexOf(params.id) + 1,
     },
+    // {
+    //   field: "NameEN",
+    //   headerName: "DOCUMENT NAME",
+    //   width: 300,
+    //   sortable: false,
+    // },
+    // {
+    //   field: "NameMR",
+    //   headerName: "DOCUMENT NAME MARATHI",
+    //   width: 300,
+    //   sortable: false,
+    // },
     {
-      field: "DocNameMR",
-      headerName: "Document Name Marathi",
-      width: 300,
-      sortable: false
-    },
+  field: "NameEN",
+  headerName: "DOCUMENT NAME",
+  width: 300,
+  headerAlign: "center",
+      align: "center",
+  sortable: false,
+  renderCell: (params) => (
+    <Tooltip title={params.value || ""} arrow placement="top-start">
+      <Typography
+        noWrap
+        sx={{
+          overflow: "hidden",
+          textOverflow: "ellipsis",
+          whiteSpace: "nowrap",
+          width: "100%",
+        }}
+      >
+        {params.value}
+      </Typography>
+    </Tooltip>
+  ),
+},
+{
+  field: "NameMR",
+  headerName: "DOCUMENT NAME MARATHI",
+  width: 300,
+  headerAlign: "center",
+      align: "center",
+  sortable: false,
+  renderCell: (params) => (
+    <Tooltip title={params.value || ""} arrow placement="top-start">
+      <Typography
+        noWrap
+        sx={{
+          overflow: "hidden",
+          textOverflow: "ellipsis",
+          whiteSpace: "nowrap",
+          width: "100%",
+        }}
+      >
+        {params.value}
+      </Typography>
+    </Tooltip>
+  ),
+},
+   
+    {
+  field: "Description",
+  headerName: "DOCUMENT DESCRIPTION",
+  width: 500,
+  sortable: false,
+  renderCell: (params) => (
+    <Tooltip title={params.value || ""} arrow placement="top-start">
+      <Typography
+        noWrap
+        sx={{
+          overflow: "hidden",
+          textOverflow: "ellipsis",
+          whiteSpace: "nowrap",
+          width: "100%",
+        }}
+      >
+        {params.value}
+      </Typography>
+    </Tooltip>
+  ),
+},
     // {
     //   field: "Status",
     //   headerName: "Status",
@@ -330,16 +463,25 @@ const DocumentMaster = () => {
     // },
   ];
 
-  const buttonStyles = {
-    border: "none",
-    borderRadius: "4px",
-    padding: "4px 8px",
-    fontSize: "12px",
-    cursor: "pointer",
-    color: "#fff",
-    width: 55,
-  };
+  //  const buttonStyles = {
+  //   border: "none",
+  //   borderRadius: "4px",
+  //   padding: "4px 8px",
+  //   fontSize: "12px",
+  //   cursor: "pointer",
+  //   color: "#fff",
+  //   width: 55,
+  // };
 
+  //   const activeButtonStyle = {
+  //   ...buttonStyles,
+  //   backgroundColor: "green",
+  // };
+
+  // const inactiveButtonStyle = {
+  //   ...buttonStyles,
+  //   backgroundColor: "#dc3545",
+  // };
 
   const handleUpdate = async (rowData) => {
     setSaveUpdateButton("UPDATE");
@@ -347,14 +489,15 @@ const DocumentMaster = () => {
     setOn(true);
     try {
       setLoading(true);
-      const apiUrl = `${BASE_URL}Document/ById/${rowData.Id}`;
+      const apiUrl = `${BASE_URL}DocsMaster/${rowData.Id}`;
       const response = await axios.get(apiUrl);
       if (response.data && response.data.values) {
         const Document = response.data.values;
         originalDataRef.current = Document;
         setValue("Id", Document.Id);
-        setValue("DocNameEN", Document.DocNameEN);
-        setValue("DocNameMR", Document.DocNameMR);
+        setValue("NameEN", Document.NameEN);
+        setValue("NameMR", Document.NameMR);
+        setValue("Description", Document.Description);
         setValue("Status", Document.Status);
       }
     } catch (error) {
@@ -388,7 +531,7 @@ const DocumentMaster = () => {
             transform: "translate(-50%, -50%)",
             justifyContent: "center",
             overflow: "auto", // <-- Add this
-            maxHeight: "90vh" 
+            maxHeight: "90vh",
           }}
         >
           <Grid
@@ -410,7 +553,7 @@ const DocumentMaster = () => {
               sx={{ display: "flex", justifyContent: "space-between" }}
             >
               <Typography fontWeight="bold" textAlign={"center"}>
-                Add Document
+                ADD DOCUMENT NAME
               </Typography>
               <IconButton onClick={handleClose}>
                 <CloseIcon />
@@ -420,27 +563,40 @@ const DocumentMaster = () => {
 
             <Grid item xs={12}>
               <TextField
-                label="Document Name (English)"
+                label="DOCUMENT NAME (ENGLISH)"
                 fullWidth
-                InputLabelProps={{ shrink: true }} 
-                {...register("DocNameEN", {
+                size="small"
+                InputLabelProps={{ shrink: true }}
+                {...register("NameEN", {
                   required: "This field is required",
                 })}
-                error={!!errors.DocNameEN}
-                helperText={errors.DocNameEN?.message}
+                error={!!errors.NameEN}
+                helperText={errors.NameEN?.message}
               />
             </Grid>
 
             <Grid item xs={12}>
               <TextField
-                label="Document Name (Marathi)"
+                label="DOCUMENT NAME (MARATHI)"
                 fullWidth
-                InputLabelProps={{ shrink: true }} 
-                {...register("DocNameMR", {
+                size="small"
+                InputLabelProps={{ shrink: true }}
+                {...register("NameMR", {
                   required: "This field is required",
                 })}
-                error={!!errors.DocNameMR}
-                helperText={errors.DocNameMR?.message}
+                error={!!errors.NameMR}
+                helperText={errors.NameMR?.message}
+              />
+            </Grid>
+            <Grid item xs={12}>
+              <TextField
+                label="DESCRIPTION"
+                fullWidth
+                multiline
+                rows={2}
+                minRows={2}
+                InputLabelProps={{ shrink: true }}
+                {...register("Description", {})}
               />
             </Grid>
 
@@ -448,7 +604,7 @@ const DocumentMaster = () => {
               <Controller
                 name="Status"
                 control={control}
-                defaultValue={1} // Default to checked (1)
+                defaultValue={1}
                 render={({ field }) => (
                   <FormControlLabel
                     control={
@@ -550,7 +706,6 @@ const DocumentMaster = () => {
           textAlign="center"
           textTransform="uppercase"
           fontWeight="bold"
-          // color={"#5C5CFF"}
           padding={1}
           noWrap
         >
@@ -601,7 +756,7 @@ const DocumentMaster = () => {
         <DataGrid
           className="datagrid-style"
           sx={{
-            height: "100%", // Set height in percentage
+            height: "100%",
             minHeight: "500px",
             "& .MuiDataGrid-columnHeaders": {
               backgroundColor: (theme) => theme.palette.custome.datagridcolor,
@@ -621,24 +776,23 @@ const DocumentMaster = () => {
           onPaginationModelChange={(newModel) => {
             console.log("New Pagination Model:", newModel);
             setCurrentPage(newModel.page);
-            getAllImgList(newModel.page, searchText);
+            // getAllImgList(newModel.page, searchText);
+            getAllDocumentList();
           }}
           loading={loading}
           initialState={{
             pagination: { paginationModel: { pageSize: 8 } },
-
             filter: {
               filterModel: {
                 items: [],
-
-                quickFilterValues: [], // Default empty
+                quickFilterValues: [], 
               },
             },
           }}
           disableColumnFilter
           disableColumnSelector
           disableDensitySelector
-          slots={{ toolbar: GridToolbar }} // Enables search & export
+          slots={{ toolbar: GridToolbar }} 
           slotProps={{
             toolbar: {
               showQuickFilter: true,
@@ -649,10 +803,11 @@ const DocumentMaster = () => {
           onFilterModelChange={(model) => {
             const quickFilterValue = model.quickFilterValues?.[0] || "";
             setSearchText(quickFilterValue);
-            setCurrentPage(0); // ✅ Always reset to first page when searching
-            getAllImgList(0, quickFilterValue);
+            setCurrentPage(0); 
+            // getAllImgList(0, quickFilterValue);
+            getAllDocumentList(0, quickFilterValue);
           }}
-          getRowId={(row) => row.Id} // Ensure unique row ID from database
+          getRowId={(row) => row.Id} 
         />
       </Grid>
     </>

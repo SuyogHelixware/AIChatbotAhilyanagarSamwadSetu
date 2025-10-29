@@ -53,7 +53,7 @@ export default function ManageUsers() {
   const [Image, setImage] = React.useState("");
   const [open, setOpen] = React.useState(false);
   const [totalRows, setTotalRows] = React.useState("");
-  const limit = 20; // Fixed page size
+  const limit = 35; // Fixed page size
   const [loading, setLoading] = React.useState(false);
   const [currentPage, setCurrentPage] = React.useState(0);
   const [searchText, setSearchText] = React.useState("");
@@ -482,10 +482,7 @@ export default function ManageUsers() {
     }
   };
 
-  const isValidPhoneNumber = (phoneNumber) => {
-    const phoneRegex = /^[0-9]{10}$/;
-    return phoneRegex.test(phoneNumber);
-  };
+
 
   const isValidUsername = (username) => {
     const usernameRegex = /^.{4,}$/;
@@ -1090,8 +1087,8 @@ export default function ManageUsers() {
               MenuProps: {
                 PaperProps: {
                   style: {
-                    maxHeight: 200, // 👈 Limit dropdown height
-                    overflowY: "auto", // 👈 Add scrollbar
+                    maxHeight: 200, 
+                    overflowY: "auto", 
                   },
                 },
               },
@@ -1104,7 +1101,7 @@ export default function ManageUsers() {
                 key={option.Name}
                 value={option.Name}
                 sx={{
-                  height: 35, // 👈 Fixed height
+                  height: 35, 
                   display: "flex",
                   alignItems: "center",
                 }}

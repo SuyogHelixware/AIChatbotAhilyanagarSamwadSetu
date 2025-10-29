@@ -45,6 +45,8 @@ const UploadDocument = () => {
   const originalDataRef = React.useRef(null);
   const [rows, setRows] = React.useState([]);
   const [gazeteList, setgazeteList] = React.useState([]);
+  const [DocmasterList, setDocmasterList] = React.useState([]);
+
   const [DeleteLineNums, setDeleteLineNums] = React.useState([]);
 
   const firstLoad = React.useRef(true);
@@ -422,18 +424,18 @@ const UploadDocument = () => {
                 },
               }}
             >
-              {DocopetionOptions.length > 0 ? (
-                DocopetionOptions.map((option) => (
+              {DocmasterList.length > 0 ? (
+                DocmasterList.map((option) => (
                   <MenuItem
                     key={option.value}
-                    value={option.value}
+                    value={option.NameMR}
                     sx={{
                       height: 35,
                       display: "flex",
                       alignItems: "center",
                     }}
                   >
-                    {option.label}
+                    {option.NameMR}
                   </MenuItem>
                 ))
               ) : (
@@ -1186,10 +1188,33 @@ const UploadDocument = () => {
     }
   };
 
+
+
+
+
+  const DocMasterList = async (params = {}) => {
+    setLoading(true);
+    try {
+       const queryParams = { Status: "1", ...params };
+
+       const { data } = await axios.get(`${BASE_URL}DocsMaster`, {
+        params: queryParams,
+      });
+
+      if (data.values) {
+        setDocmasterList(data.values);
+      }
+    } catch (error) {
+      console.error("Error fetching data:", error);
+    } finally {
+      setLoading(false);
+    }
+  };
+
   React.useEffect(() => {
     if (firstLoad.current) {
       getAllDocList();
-
+DocMasterList()
       // Parse userData
       const userDataStr = sessionStorage.getItem("userData");
       let userType = null;
