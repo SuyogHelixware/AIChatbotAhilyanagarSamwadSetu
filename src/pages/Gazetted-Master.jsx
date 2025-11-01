@@ -30,9 +30,11 @@ const GazettedMaster = () => {
   const [currentPage, setCurrentPage] = React.useState(0);
   const [loading, setLoading] = React.useState(false);
   const [searchText, setSearchText] = React.useState("");
-  const limit = 35; 
+  // const limit = 20; 
   const originalDataRef = React.useRef(null);
   const firstLoad = React.useRef(true);
+const [totalRows, setTotalRows] = React.useState(0);
+const [limit, setLimit] = React.useState(20);
 
    const {
     
@@ -171,6 +173,8 @@ const GazettedMaster = () => {
           }))
         );
         // setTotalRows(response.data.count);
+              setTotalRows(response.data.count || 0);
+
       }
     } catch (error) {
       console.error("Error fetching data:", error);
@@ -178,13 +182,17 @@ const GazettedMaster = () => {
       setLoading(false);
     }
   };
+ 
 
-  React.useEffect(() => {
-    if (firstLoad.current) {
-      getAllOfficerList();
-      firstLoad.current = false;
-    }
-  }, []);
+ React.useEffect(() => {
+   if (firstLoad.current) {
+     firstLoad.current = false;
+     return;
+   }
+  getAllOfficerList(currentPage, searchText, limit);
+  }, [currentPage, searchText, limit]);
+
+
   const handleDelete = async (rowData) => {
     Swal.fire({
       text: "Are you sure you want to delete?",
@@ -531,50 +539,48 @@ const GazettedMaster = () => {
         component={Paper}
         sx={{ height: "85vh", width: "100%" }}
       >
-        <DataGrid
-          className="datagrid-style"
-          sx={{
-            height: "100%",
-            minHeight: "500px",
-            "& .MuiDataGrid-columnHeaders": {
-              backgroundColor: (theme) => theme.palette.custome.datagridcolor,
-            },
-            "& .MuiDataGrid-row:hover": {
-              boxShadow: "0px 4px 20px rgba(0, 0, 0.2, 0.2)",
-            },
-          }}
-          rows={OfficersList}
-          columns={columns}
-          pagination
-          paginationMode="server"
-          // rowCount={totalRows}
-          // pageSizeOptions={[10, 20, 50]}
-          
-          paginationModel={{ page: currentPage, pageSize: limit }}
-          onPaginationModelChange={(newModel) => {
-            setCurrentPage(newModel.page);
-            getAllOfficerList(newModel.page, searchText, newModel.pageSize);
-          }}
-          loading={loading}
-          disableColumnFilter
-          hideFooterSelectedRowCount
-          disableColumnSelector
-          disableDensitySelector
-          slots={{ toolbar: GridToolbar }}
-          slotProps={{
-            toolbar: {
-              showQuickFilter: true,
-              quickFilterProps: { debounceMs: 500 },
-            },
-          }}
-          onFilterModelChange={(model) => {
-            const quickFilterValue = model.quickFilterValues?.[0] || "";
-            setSearchText(quickFilterValue);
-            setCurrentPage(0); // reset to first page when searching
-            getAllOfficerList(0, quickFilterValue, limit);
-          }}
-          getRowId={(row) => row.Id} // Use database Id
-        />
+    <DataGrid
+  className="datagrid-style"
+  sx={{
+    height: "100%",
+    minHeight: "500px",
+    "& .MuiDataGrid-columnHeaders": {
+      backgroundColor: (theme) => theme.palette.custome.datagridcolor,
+    },
+    "& .MuiDataGrid-row:hover": {
+      boxShadow: "0px 4px 20px rgba(0, 0, 0.2, 0.2)",
+    },
+  }}
+  rows={OfficersList}
+  columns={columns}
+  pagination
+  paginationMode="server"
+  rowCount={totalRows} // REQUIRED — tells grid how many total records exist
+  pageSizeOptions={[10, 20, 50]}
+  paginationModel={{ page: currentPage, pageSize: limit }}
+  onPaginationModelChange={(newModel) => {
+    setCurrentPage(newModel.page);
+    setLimit(newModel.pageSize);
+  }}
+  loading={loading}
+  disableColumnFilter
+  hideFooterSelectedRowCount
+  disableColumnSelector
+  disableDensitySelector
+  slots={{ toolbar: GridToolbar }}
+  slotProps={{
+    toolbar: {
+      showQuickFilter: true,
+      quickFilterProps: { debounceMs: 500 },
+    },
+  }}
+  onFilterModelChange={(model) => {
+    const quickFilterValue = model.quickFilterValues?.[0] || "";
+    setSearchText(quickFilterValue);
+    setCurrentPage(0); // reset page on search
+  }}
+  getRowId={(row) => row.Id}
+/>
       </Grid>
     </>
   );

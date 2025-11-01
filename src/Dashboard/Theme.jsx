@@ -36,24 +36,57 @@ export const ModeContextProvider = ({ children }) => {
 
     
   });
-    const storedUser = JSON.parse(sessionStorage.getItem("userData") || "{}");
+  //   const storedUser = JSON.parse(sessionStorage.getItem("userData") || "{}");
 
-  useEffect(() => {     
+  // useEffect(() => {     
       
-    //  const userId = sessionStorage.getItem("userId");
-     const userId = storedUser.Username;
-    const UserType = storedUser.UserType;
-    const CreatedBy = storedUser.Username;
-    setUserSession({ userId, UserType, CreatedBy });
+  //   //  const userId = sessionStorage.getItem("userId");
+  //    const userId = storedUser.Username;
+  //   const UserType = storedUser.UserType;
+  //   const CreatedBy = storedUser.Username;
+  //   setUserSession({ userId, UserType, CreatedBy });
+  // }, []);
+
+  // const refreshUserSession = () => {
+  //   const userId =  storedUser.Username;
+  //   const UserType = storedUser.UserType;
+  //   const CreatedBy = storedUser.Username;
+  //   setUserSession({ userId, UserType, CreatedBy });
+  // };
+ 
+    // Load user data once when component mounts
+
+    useEffect(() => {
+    const storedUserStr = sessionStorage.getItem("userData");
+    if (storedUserStr) {
+      try {
+        const storedUser = JSON.parse(storedUserStr);
+        const userId = storedUser.Username || "";
+        const UserType = storedUser.UserType || "";
+        const CreatedBy = storedUser.Username || "";
+        setUserSession({ userId, UserType, CreatedBy });
+      } catch (err) {
+        console.error("Failed to parse userData:", err);
+      }
+    }
   }, []);
 
+  // ✅ same here — always read fresh data
   const refreshUserSession = () => {
-    const userId =  storedUser.Username;
-    const UserType = storedUser.UserType;
-    const CreatedBy = storedUser.Username;
-    setUserSession({ userId, UserType, CreatedBy });
+    const storedUserStr = sessionStorage.getItem("userData");
+    if (storedUserStr) {
+      try {
+        const storedUser = JSON.parse(storedUserStr);
+        const userId = storedUser.Username || "";
+        const UserType = storedUser.UserType || "";
+        const CreatedBy = storedUser.Username || "";
+        setUserSession({ userId, UserType, CreatedBy });
+      } catch (err) {
+        console.error("Failed to parse userData:", err);
+      }
+    }
   };
- 
+
   return (
     <ModeContext.Provider
       value={{

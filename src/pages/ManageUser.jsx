@@ -20,10 +20,11 @@ import Paper from "@mui/material/Paper";
 import { DataGrid, GridToolbar } from "@mui/x-data-grid";
 import axios from "axios";
 import dayjs from "dayjs";
-import React, { useEffect } from "react";
+import React, { useEffect, useState } from "react";
 import { Controller, useForm } from "react-hook-form";
 import Swal from "sweetalert2";
 import avatar from "../../src/assets/avtar.png";
+
 import {
   BASE_URL
 } from "../Constant";
@@ -53,7 +54,7 @@ export default function ManageUsers() {
   const [Image, setImage] = React.useState("");
   const [open, setOpen] = React.useState(false);
   const [totalRows, setTotalRows] = React.useState("");
-  const limit = 35; // Fixed page size
+  const [limit, setLimit] = useState(20);
   const [loading, setLoading] = React.useState(false);
   const [currentPage, setCurrentPage] = React.useState(0);
   const [searchText, setSearchText] = React.useState("");
@@ -62,6 +63,8 @@ export default function ManageUsers() {
   const [gazeteList, setgazeteList] = React.useState();
 
   const theme = useTheme();
+    const firstLoad = React.useRef(true);
+  
 
   const handleClickShowPassword = () => setShowPassword(!showPassword);
 
@@ -85,7 +88,7 @@ export default function ManageUsers() {
   // };
 
   const clearFormData = () => {
-    console.log("ClearUpdateButton: ", ClearUpdateButton); // To debug
+    console.log("ClearUpdateButton: ", ClearUpdateButton); 
 
     if (ClearUpdateButton === "CLEAR") {
       // Reset to default values (empty or initial state)
@@ -505,7 +508,7 @@ export default function ManageUsers() {
             id: page * limit + index + 1,
           }))
         );
-        setTotalRows(response.data.count);
+         setTotalRows(response.data.count || 0);
 
         if (searchText) {
           setTotalRows(response.data.count);
@@ -516,11 +519,23 @@ export default function ManageUsers() {
     }
   };
 
-  useEffect(() => {
-    getUserData(currentPage, searchText);
-    handleonGazettedList();
-  }, [currentPage]);
+  // useEffect(() => {
+  //   getUserData(currentPage, searchText);
+  //   handleonGazettedList();
+  // }, [currentPage]);
 
+ 
+ 
+
+useEffect(() => {
+  if (firstLoad.current) {
+    firstLoad.current = false;
+    return;
+  }
+  getUserData(currentPage, searchText, limit);
+   handleonGazettedList();
+}, [currentPage, searchText, limit]);
+ 
   const columns = [
     {
       field: "Action",
@@ -1322,7 +1337,7 @@ export default function ManageUsers() {
         elevation={7}
       >
         <Box sx={{ height: "80vh", width: "100%" }}>
-          <DataGrid
+          {/* <DataGrid
             className="datagrid-style"
             rowHeight={70}
             getRowId={(row) => row.Id}
@@ -1376,7 +1391,49 @@ export default function ManageUsers() {
                 boxShadow: "0px 4px 20px rgba(0, 0, 0.2, 0.2)",
               },
             }}
-          />
+          /> */}
+          <DataGrid
+  className="datagrid-style"
+  rowHeight={70}
+  getRowId={(row) => row.Id}
+  rows={userData}
+  columns={columns}
+  pagination
+  paginationMode="server"
+  rowCount={totalRows}              
+  // pageSizeOptions={[10, 20, 50]}       
+  paginationModel={{ page: currentPage, pageSize: limit }}
+  onPaginationModelChange={(newModel) => {
+     setCurrentPage(newModel.page);
+    setLimit(newModel.pageSize);
+  }}
+  loading={loading}
+  hideFooterSelectedRowCount
+  disableColumnFilter
+  disableColumnSelector
+  disableDensitySelector
+  slots={{ toolbar: GridToolbar }}
+  slotProps={{
+    toolbar: {
+      showQuickFilter: true,
+      quickFilterProps: { debounceMs: 500 },
+    },
+  }}
+  onFilterModelChange={(model) => {
+    const quickFilterValue = model.quickFilterValues?.[0] || "";
+    setSearchText(quickFilterValue);
+    setCurrentPage(0); 
+  }}
+  sx={{
+    "& .MuiDataGrid-columnHeaders": {
+      backgroundColor: (theme) => theme.palette.custome.datagridcolor,
+    },
+    "& .MuiDataGrid-row:hover": {
+      boxShadow: "0px 4px 20px rgba(0, 0, 0.2, 0.2)",
+    },
+  }}
+/>
+
         </Box>
       </Paper>
     </>

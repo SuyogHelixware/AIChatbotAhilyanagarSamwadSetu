@@ -8,6 +8,7 @@ import { BASE_URL } from "../Constant";
 import { Visibility, VisibilityOff } from "@mui/icons-material";
 import Loader from "../components/Loader";
 import PersonIcon from '@mui/icons-material/Person';
+import { useThemeMode } from "./Theme";
 
 const Signin = () => {
   const [userId, setUserId] = useState("");
@@ -15,6 +16,8 @@ const Signin = () => {
   const navigate = useNavigate();
   const [showPassword, setShowPassword] = useState(false);
   const [loading, setLoading] = useState(false);
+  const { refreshUserSession } = useThemeMode();
+
 
   const handleSubmit = async () => {
     try {
@@ -26,12 +29,9 @@ const Signin = () => {
       axios
         .post(`${BASE_URL}Login`, body)
         .then((res) => {
-          if (res.data.success === true) {
-            
-
+          if (res.data.success === true) {           
             const data = res.data.values;
-            const userData = {
-              
+            const userData = {              
               Name: ` ${data.FirstName} ${data.LastName}`,
               Username: data.Username, 
               Address: data.Address,
@@ -47,7 +47,7 @@ const Signin = () => {
             sessionStorage.setItem("userId", userData.Username);
 
             sessionStorage.setItem("userData", JSON.stringify(userData));
-
+refreshUserSession();
             Swal.fire({
               position: "top-end",
               toast: true,

@@ -48,7 +48,7 @@ const UploadDocument = () => {
   const [DocmasterList, setDocmasterList] = React.useState([]);
 
   const [DeleteLineNums, setDeleteLineNums] = React.useState([]);
-
+ 
   const firstLoad = React.useRef(true);
   const fileInputRef = React.useRef(null);
   const handleClose = () => setOn(false);
@@ -96,58 +96,7 @@ const UploadDocument = () => {
       renderCell: (params) =>
         params.api.getSortedRowIds().indexOf(params.id) + 1,
     },
-    // {
-    //   field: "action",
-    //   headerName: "Action",
-    //   width: 120,
-    //   sortable: false,
-    //   headerAlign: "center",
-    //   align: "center",
-    //   renderCell: (params) => (
-    //     <div style={{ display: "flex", alignItems: "center", gap: 8 }}>
-    //       <Tooltip title="Open File">
-    //         <IconButton
-    //           size="small"
-    //           onClick={(e) => {
-    //             e.stopPropagation();
-    //             handleViewFile(params.row);
-    //           }}
-    //         >
-    //           <RemoveRedEyeIcon fontSize="small" />
-    //         </IconButton>
-    //       </Tooltip>
-
-    //       <Tooltip title="Remove">
-    //         <IconButton
-    //           size="small"
-    //           color="error"
-    //           onClick={(e) => {
-    //             e.stopPropagation();
-    //             handleRemove(params.row);
-    //           }}
-    //         >
-    //           <DeleteIcon fontSize="small" />
-    //         </IconButton>
-    //       </Tooltip>
-    //       <Tooltip title="replace file">
-    //         <IconButton
-    //           size="small"
-    //           color="primary"
-    //           component="label"
-    //           onClick={(e) => e.stopPropagation()}
-    //         >
-    //           <AttachFileIcon fontSize="small" />
-    //           <input
-    //             type="file"
-    //             hidden
-    //             onChange={(e) => handleChangeFile(e, params.row.id)}
-    //             accept=".jpg,.jpeg,.png,.pdf"
-    //           />
-    //         </IconButton>
-    //       </Tooltip>
-    //     </div>
-    //   ),
-    // },
+     
     {
       field: "action",
       headerName: "Action",
@@ -283,6 +232,7 @@ const UploadDocument = () => {
       headerName: "GAZETTED OFFICER",
       flex: 1,
       renderCell: (params) => {
+         
         const { id, field, value, api } = params;
         const isDisabled = params.row.isDisabled;
 
@@ -391,6 +341,7 @@ const UploadDocument = () => {
       headerName: "DOCUMENT TYPE",
       flex: 1,
       renderCell: (params) => {
+
         const { id, field, value, api, row } = params;
         const isDisabled = row.isDisabled;
 
@@ -1166,6 +1117,10 @@ const UploadDocument = () => {
       setLoading(false);
     }
   };
+  //  This makes pagination work correctly
+  React.useEffect(() => {
+    getAllDocList(currentPage, searchText, limit);
+  }, [currentPage, searchText]);
 
   const gazettedList = async (params = {}) => {
     setLoading(true);
@@ -1188,16 +1143,12 @@ const UploadDocument = () => {
     }
   };
 
-
-
-
-
   const DocMasterList = async (params = {}) => {
     setLoading(true);
     try {
-       const queryParams = { Status: "1", ...params };
+      const queryParams = { Status: "1", ...params };
 
-       const { data } = await axios.get(`${BASE_URL}DocsMaster`, {
+      const { data } = await axios.get(`${BASE_URL}DocsMaster`, {
         params: queryParams,
       });
 
@@ -1213,9 +1164,11 @@ const UploadDocument = () => {
 
   React.useEffect(() => {
     if (firstLoad.current) {
-      getAllDocList();
-DocMasterList()
-      // Parse userData
+      // getAllDocList();
+      firstLoad.current = false;
+
+      DocMasterList();
+
       const userDataStr = sessionStorage.getItem("userData");
       let userType = null;
       let gazOfficer = null;
@@ -1225,7 +1178,7 @@ DocMasterList()
           const userData = JSON.parse(userDataStr);
           userType = userData.UserType;
           gazOfficer = userData.GazOfficer || "";
-        } catch (error) {
+         } catch (error) {
           console.error("Failed to parse userData:", error);
         }
       }
@@ -1240,25 +1193,13 @@ DocMasterList()
   }, []);
 
   // ===================Username and CreatedBy are same in case Doc uploaded rows are enabled logic start============================
-
-  // const userData = JSON.parse(sessionStorage.getItem("userData") || "{}");
-  // const currentUserId = userData.Username;
-  // const currentUserType = userData.UserType;
-  // const updatedRows = rows.map((row) => ({
-  //   ...row,
-  //   isDisabled: !(row.CreatedBy === currentUserId || currentUserType === "A"),
-  // }));
-
-  // =================== Username and CreatedBy are same in case Doc uploaded rows are enabled logic start ============================
-
+ 
   const currentUser = userSession.userId || "";
   const currentUserType = userSession.UserType;
 
-  // Updated disable logic — new rows uploaded by current user will NOT be disabled
   const updatedRows = rows.map((row) => {
-    const createdBy = (row.CreatedBy || "").toString().trim();
+        const createdBy = (row.CreatedBy || "").toString().trim();
     const current = currentUser.toString().trim();
-
     const isAllowed = currentUserType === "A" || createdBy === current;
 
     return {
@@ -1266,7 +1207,22 @@ DocMasterList()
       isDisabled: !isAllowed,
     };
   });
+    // =================== Username and CreatedBy are same in case Doc uploaded rows are enabled logic start ============================
+// const updatedRows = React.useMemo(() => {
+//     if (!userSession || !userSession.UserType) return rows;
 
+//     const currentUser = userSession.userId || "";
+//     const currentUserType = userSession.UserType;
+
+//     return rows.map((row) => {
+//       debugger
+
+//       const createdBy = (row.CreatedBy || "").toString().trim();
+//       const current = currentUser.toString().trim();
+//       const isAllowed = currentUserType === "A" || createdBy === current;
+//       return { ...row, isDisabled: !isAllowed };
+//     });
+//   }, [rows, userSession]);
   // ====================End============================
   return (
     <>
@@ -1603,25 +1559,12 @@ DocMasterList()
           columns={Maincolumns}
           pagination
           paginationMode="server"
-          hideFooterSelectedRowCount
           rowCount={totalRows}
           pageSizeOptions={[limit]}
           paginationModel={{ page: currentPage, pageSize: limit }}
-          onPaginationModelChange={(newModel) => {
-            console.log("New Pagination Model:", newModel);
-            setCurrentPage(newModel.page);
-          }}
+          onPaginationModelChange={(newModel) => setCurrentPage(newModel.page)}
           loading={loading}
-          initialState={{
-            pagination: { paginationModel: { pageSize: 8 } },
-            filter: {
-              filterModel: {
-                items: [],
-
-                quickFilterValues: [],
-              },
-            },
-          }}
+          hideFooterSelectedRowCount
           disableColumnFilter
           disableColumnSelector
           disableDensitySelector
@@ -1629,7 +1572,6 @@ DocMasterList()
           slotProps={{
             toolbar: {
               showQuickFilter: true,
-
               quickFilterProps: { debounceMs: 500 },
             },
           }}
@@ -1637,7 +1579,6 @@ DocMasterList()
             const quickFilterValue = model.quickFilterValues?.[0] || "";
             setSearchText(quickFilterValue);
             setCurrentPage(0);
-            getAllDocList(0, quickFilterValue, limit);
           }}
           getRowId={(row) => row.Id}
         />
