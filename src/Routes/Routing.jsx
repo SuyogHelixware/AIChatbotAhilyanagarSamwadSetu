@@ -19,6 +19,7 @@ import DocumentMaster from "../pages/DocumentMaster";
 import EmailSetup from "../pages/EmailSetup";
 import UploadDocument from "../pages/Upload-Document";
 import GazettedMaster from "../pages/Gazetted-Master";
+import RoleCreation from "../pages/RoleCreation";
 
 export default function Routing() {
   return (
@@ -31,6 +32,7 @@ export default function Routing() {
           <Route path="dashboard" element={<Dashboard />}>
             <Route path="home" element={<Home />} />
             <Route path="manage-user" element={<ManageUser />} />
+            <Route path="RoleCreation" element={<RoleCreation />} />
             <Route path="department" element={<Department />} />
             <Route path="Services" element={<Services />} />
             <Route path="OfflineServices" element={<OfflineServices />} />

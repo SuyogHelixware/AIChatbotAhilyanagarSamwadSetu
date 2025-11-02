@@ -19,10 +19,9 @@ import Autocomplete from "@mui/material/Autocomplete";
 import axios from "axios";
 import { DatePicker, LocalizationProvider } from "@mui/x-date-pickers";
 import { AdapterDayjs } from "@mui/x-date-pickers/AdapterDayjs";
-import React from "react";
 import { Visibility, VisibilityOff } from "@mui/icons-material";
-
-export class DatePickerField extends React.Component {
+import React, { forwardRef } from "react";
+ export class DatePickerField extends React.Component {
   render(props) {
     return (
       <>
@@ -110,64 +109,60 @@ export class InputTextField1 extends React.Component {
   }
 }
 
-export class InputDescriptionField extends React.Component {
-  render(props) {
-    return (
-      <>
-        <TextField
-          // required
-          fullWidth
-          label={this.props.label}
-          onChange={this.props.onChange}
-          id={this.props.id}
-          name={this.props.id}
-          type={this.props.type}
-          value={this.props.value}
-          size="large"
-          sx={{ maxWidth: 220 }}
-          multiline
-          rows={2}
-          error={this.props.error}               // Add this line
-          helperText={this.props.helperText}   
-        />
-      </>
-    );
-  }
-}
-
-// export class InputPasswordField extends React.Component {
+// export class InputDescriptionField extends React.Component {
 //   render(props) {
 //     return (
 //       <>
 //         <TextField
 //           // required
+//           fullWidth
 //           label={this.props.label}
 //           onChange={this.props.onChange}
 //           id={this.props.id}
 //           name={this.props.id}
 //           type={this.props.type}
 //           value={this.props.value}
-//           size="small"
+//           size="large"
 //           sx={{ maxWidth: 220 }}
-//           InputProps={{
-//             endAdornment: (
-//               <InputAdornment position="end">
-//                 <IconButton
-//                   edge="end"
-//                   sx={{ color: "#5C5CFF " }}
-//                   onClick={this.props.onClick}
-//                   onMouseDown={this.props.onMouseDown}
-//                 >
-//                   {this.props.showPassword ? <VisibilityOff /> : <Visibility />}
-//                 </IconButton>
-//               </InputAdornment>
-//             ),
-//           }}
+//           multiline
+//           rows={2}
+//           error={this.props.error}               // Add this line
+//           helperText={this.props.helperText}   
 //         />
 //       </>
 //     );
 //   }
 // }
+
+
+ 
+
+ export const InputDescriptionField = forwardRef(
+  ({ label, id, type, value, onChange, error, helperText, ...rest }, ref) => {
+    return (
+      <TextField
+        fullWidth
+        label={label}
+        id={id}
+        name={id}
+        type={type}
+        value={value}
+        onChange={onChange}
+        inputRef={ref}  
+        size="small"
+        sx={{ maxWidth: 220 }}
+        multiline
+        rows={2}
+        error={!!error}
+        helperText={helperText}
+        {...rest}
+      />
+    );
+  }
+);
+
+ 
+
 
 export class InputPasswordField extends React.Component {
   render() {
