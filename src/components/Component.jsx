@@ -110,30 +110,66 @@ export class InputTextField1 extends React.Component {
   }
 }
 
-export class InputDescriptionField extends React.Component {
-  render(props) {
-    return (
-      <>
-        <TextField
-          // required
-          fullWidth
-          label={this.props.label}
-          onChange={this.props.onChange}
-          id={this.props.id}
-          name={this.props.id}
-          type={this.props.type}
-          value={this.props.value}
-          size="large"
-          sx={{ maxWidth: 220 }}
-          multiline
-          rows={2}
-          error={this.props.error}               // Add this line
-          helperText={this.props.helperText}   
-        />
-      </>
-    );
-  }
-}
+// export class InputDescriptionField extends React.Component {
+//   render(props) {
+//     return (
+//       <>
+//         <TextField
+//           // required
+//           fullWidth
+//           label={this.props.label}
+//           onChange={this.props.onChange}
+//           id={this.props.id}
+//           name={this.props.id}
+//           type={this.props.type}
+//           value={this.props.value}
+//           size="large"
+//           sx={{ maxWidth: 220 }}
+//           multiline
+//           rows={2}
+//           error={this.props.error}               // Add this line
+//           helperText={this.props.helperText}   
+//         />
+//       </>
+//     );
+//   }
+// }
+
+ export  const InputDescriptionField = ({
+  label,
+  onChange,
+  id,
+  name,
+  type,
+  value,
+  error,
+  helperText,
+  size = "small",
+  multiline = true,
+  rows = 2,
+  fullWidth = true,
+  sx = { maxWidth: 220 },
+}) => {
+  return (
+    <TextField
+      fullWidth={fullWidth}
+      label={label}
+      onChange={onChange}
+      id={id || name}
+      name={name || id}
+      type={type}
+      value={value}
+      size={size}
+      sx={sx}
+      multiline={multiline}
+      rows={rows}
+      error={error}
+      helperText={helperText}
+    />
+  );
+};
+
+// export default InputDescriptionField;
 
 // export class InputPasswordField extends React.Component {
 //   render(props) {

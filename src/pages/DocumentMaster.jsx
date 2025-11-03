@@ -23,7 +23,7 @@ import * as React from "react";
 import Swal from "sweetalert2";
 import { BASE_URL } from "../Constant";
 import Loader from "../components/Loader";
-import { CheckboxInputs } from "../components/Component";
+import { CheckboxInputs, InputDescriptionField } from "../components/Component";
 import { debounce } from "lodash"; // Debouncing helper function
 import { Controller, useForm } from "react-hook-form"; // Importing React Hook Form
 import dayjs from "dayjs";
@@ -44,7 +44,7 @@ const DocumentMaster = () => {
   const firstLoad = React.useRef(true);
   // const [CreateSubDocRows, setCreateSubDocRows] = React.useState([]);
   const [CreateSubDocRows, setCreateSubDocRows] = React.useState([
-    { id: 1, DocName: "",  isDisabled: false },
+    { id: 1, DocName: "", isDisabled: false },
   ]);
 
   // React Hook Form initialization
@@ -499,7 +499,6 @@ const DocumentMaster = () => {
       const apiUrl = `${BASE_URL}DocsMaster/${rowData.Id}`;
       const response = await axios.get(apiUrl);
       if (response.data.values) {
-        debugger
         const Document = response.data.values;
         originalDataRef.current = Document;
         setValue("Id", Document.Id);
@@ -535,7 +534,7 @@ const DocumentMaster = () => {
         sx={{
           backdropFilter: "blur(5px)",
           backgroundColor: "rgba(0, 0, 0, 0.3)",
-         }}
+        }}
       >
         <Paper
           elevation={10}
@@ -568,7 +567,7 @@ const DocumentMaster = () => {
               alignItems="center"
             >
               <Typography fontWeight="bold" variant="h6">
-                ADD DOCUMENT NAME
+                 DOCUMENT NAME
               </Typography>
               <IconButton onClick={handleClose}>
                 <CloseIcon />
@@ -578,7 +577,7 @@ const DocumentMaster = () => {
             {/* FORM FIELDS */}
             <Grid container item xs={12} spacing={2}>
               <Grid item xs={12} sm={6} lg={6}>
-                <TextField
+                {/* <TextField
                   fullWidth
                   label="DOCUMENT NAME (ENGLISH)"
                   size="small"
@@ -588,11 +587,27 @@ const DocumentMaster = () => {
                   })}
                   error={!!errors.NameEN}
                   helperText={errors.NameEN?.message}
+                /> */}
+                <Controller
+                  name="NameEN"
+                  control={control}
+                  rules={{ required: "This field is required" }}
+                  render={({ field, fieldState }) => (
+                    <TextField
+                      {...field}
+                      fullWidth
+                      label="DOCUMENT NAME (ENGLISH)"
+                      size="small"
+                      InputLabelProps={{ shrink: true }}
+                      error={!!fieldState.error}
+                      helperText={fieldState.error?.message}
+                    />
+                  )}
                 />
               </Grid>
 
               <Grid item xs={12} sm={6} lg={6}>
-                <TextField
+                {/* <TextField
                   fullWidth
                   label="DOCUMENT NAME (MARATHI)"
                   size="small"
@@ -602,20 +617,41 @@ const DocumentMaster = () => {
                   })}
                   error={!!errors.NameMR}
                   helperText={errors.NameMR?.message}
+                /> */}
+                <Controller
+                  name="NameMR"
+                  control={control}
+                  rules={{ required: "This field is required" }}
+                  render={({ field, fieldState }) => (
+                    <TextField
+                      {...field}
+                      fullWidth
+                      label="DOCUMENT NAME (MARATHI)"
+                      size="small"
+                      InputLabelProps={{ shrink: true }}
+                      error={!!fieldState.error}
+                      helperText={fieldState.error?.message}
+                    />
+                  )}
                 />
               </Grid>
 
-              {/* DESCRIPTION + BUTTON SIDE BY SIDE */}
-              <Grid item xs={12} sm={12}>
-                <TextField
-                  fullWidth
-                  multiline
-                  minRows={2}
-                  label="DESCRIPTION"
-                  size="small"
-                  InputLabelProps={{ shrink: true }}
-                  {...register("Description")}
+              <Grid item xs={12}>
+                <Controller
+                  name="Description"
+                  control={control}
+                  render={({ field }) => (
+                    <TextField
+                      {...field}
+                      fullWidth
+                      multiline
+                      minRows={2}
+                      label="DESCRIPTION"
+                      size="small"
+                    />
+                  )}
                 />
+             
               </Grid>
             </Grid>
 
@@ -806,7 +842,7 @@ const DocumentMaster = () => {
             }}
           >
             <AddIcon />
-            Add Documents
+            Add Document
           </Button>
         </Grid>
       </Grid>
@@ -879,5 +915,3 @@ const DocumentMaster = () => {
 };
 
 export default DocumentMaster;
-
-

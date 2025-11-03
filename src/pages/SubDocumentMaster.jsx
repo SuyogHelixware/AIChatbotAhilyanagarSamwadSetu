@@ -361,27 +361,27 @@ const SubDocumentMaster = () => {
       ),
     },
 
-    {
-      field: "Description",
-      headerName: "DOCUMENT DESCRIPTION",
-      width: 500,
-      sortable: false,
-      renderCell: (params) => (
-        <Tooltip title={params.value || ""} arrow placement="top-start">
-          <Typography
-            noWrap
-            sx={{
-              overflow: "hidden",
-              textOverflow: "ellipsis",
-              whiteSpace: "nowrap",
-              width: "100%",
-            }}
-          >
-            {params.value}
-          </Typography>
-        </Tooltip>
-      ),
-    },
+    // {
+    //   field: "Description",
+    //   headerName: "DOCUMENT DESCRIPTION",
+    //   width: 500,
+    //   sortable: false,
+    //   renderCell: (params) => (
+    //     <Tooltip title={params.value || ""} arrow placement="top-start">
+    //       <Typography
+    //         noWrap
+    //         sx={{
+    //           overflow: "hidden",
+    //           textOverflow: "ellipsis",
+    //           whiteSpace: "nowrap",
+    //           width: "100%",
+    //         }}
+    //       >
+    //         {params.value}
+    //       </Typography>
+    //     </Tooltip>
+    //   ),
+    // },
   ];
 
   const handleUpdate = async (rowData) => {
@@ -423,7 +423,7 @@ const SubDocumentMaster = () => {
           elevation={10}
           sx={{
             width: "90%",
-            maxWidth: 500,
+            maxWidth: 450,
             position: "absolute",
             top: "50%",
             left: "50%",
@@ -452,7 +452,7 @@ const SubDocumentMaster = () => {
               sx={{ display: "flex", justifyContent: "space-between" }}
             >
               <Typography fontWeight="bold" textAlign={"center"}>
-                ADD SUB DOCUMENT NAME
+                 SUB DOCUMENT NAME
               </Typography>
               <IconButton onClick={handleClose}>
                 <CloseIcon />
@@ -487,7 +487,7 @@ const SubDocumentMaster = () => {
                 helperText={errors.NameMR?.message}
               />
             </Grid>
-            <Grid item xs={12}>
+            {/* <Grid item xs={12}>
               <TextField
                 label="DESCRIPTION"
                 fullWidth
@@ -497,7 +497,7 @@ const SubDocumentMaster = () => {
                 InputLabelProps={{ shrink: true }}
                 {...register("Description", {})}
               />
-            </Grid>
+            </Grid> */}
 
             <Grid item xs={12} sm={4} textAlign={"center"}></Grid>
 
