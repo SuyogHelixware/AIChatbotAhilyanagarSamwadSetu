@@ -11,6 +11,28 @@ code {
   font-family: source-code-pro, Menlo, Monaco, Consolas, 'Courier New',
     monospace;
 }
+
+.mah-loader-container {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  height: 100vh;
+  background-color: #fff; 
+  color: black;
+  text-align: center;
+  font-family: "Arial", sans-serif;
+}
+
+
+.mah-subtext {
+  background-size: cover;
+  background-position: center;width: 50%; height: 100%;  
+   animation: flicker 3.5s infinite alternate ease-in-out;
+
+}
+
+
 .swal2-container {
   z-index: 25000 !important;
 }

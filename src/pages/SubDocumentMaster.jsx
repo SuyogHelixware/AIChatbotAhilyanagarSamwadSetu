@@ -1,34 +1,27 @@
 import AddIcon from "@mui/icons-material/Add";
+import CloseIcon from "@mui/icons-material/Close";
 import DeleteForeverIcon from "@mui/icons-material/DeleteForever";
 import EditNoteIcon from "@mui/icons-material/EditNote";
-import CloseIcon from "@mui/icons-material/Close";
-import { GridToolbar } from "@mui/x-data-grid";
 import {
   Button,
-  Checkbox,
-  FormControlLabel,
   Grid,
   IconButton,
-  MenuItem,
   Modal,
   Paper,
-  Select,
   TextField,
   Tooltip,
   Typography,
 } from "@mui/material";
-import { DataGrid } from "@mui/x-data-grid";
+import { DataGrid, GridToolbar } from "@mui/x-data-grid";
 import axios from "axios";
+import dayjs from "dayjs";
 import * as React from "react";
+import { useForm } from "react-hook-form";
 import Swal from "sweetalert2";
 import { BASE_URL } from "../Constant";
 import Loader from "../components/Loader";
-import { CheckboxInputs } from "../components/Component";
-import { debounce } from "lodash"; // Debouncing helper function
-import { Controller, useForm } from "react-hook-form"; // Importing React Hook Form
-import dayjs from "dayjs";
 
-const DocumentMaster = () => {
+const SubDocumentMaster = () => {
   const [loaderOpen, setLoaderOpen] = React.useState(false);
   const [DocumentData, setDocumentData] = React.useState([]);
   const [on, setOn] = React.useState(false);
@@ -40,15 +33,9 @@ const DocumentMaster = () => {
   const [searchText, setSearchText] = React.useState("");
   const limit = 35;
   const originalDataRef = React.useRef(null);
-
   const firstLoad = React.useRef(true);
-  // const [CreateSubDocRows, setCreateSubDocRows] = React.useState([]);
-  const [CreateSubDocRows, setCreateSubDocRows] = React.useState([
-    { id: 1, DocName: "",  isDisabled: false },
-  ]);
 
-  // React Hook Form initialization
-  const {
+   const {
     register,
     handleSubmit,
     control,
@@ -86,7 +73,6 @@ const DocumentMaster = () => {
     setValue("NameEN", "");
     setValue("NameMR", "");
     setValue("Description", "");
-
     setOn(true);
   };
 
@@ -122,7 +108,7 @@ const DocumentMaster = () => {
 
         NameEN: formData.NameEN,
         NameMR: formData.NameMR,
-        Description: formData.Description || "",
+        Description: formData.Description,
         Status: formData.Status || "1",
       };
       let response;
@@ -222,17 +208,13 @@ const DocumentMaster = () => {
       setLoading(false);
     }
   };
-  React.useEffect(() => {
-    if (on) DocMasterListTemp();
-  }, [on]);
 
-  React.useEffect(() => {
-    if (firstLoad.current) {
-      getAllDocumentList();
-      // DocMasterListTemp();
-      firstLoad.current = false;
-    }
-  }, []);
+//   React.useEffect(() => {
+//     if (firstLoad.current) {
+//       getAllDocumentList();
+//       firstLoad.current = false;
+//     }
+//   }, []);
 
   // =========================
 
@@ -401,94 +383,6 @@ const DocumentMaster = () => {
       ),
     },
   ];
-  // ===== Delete Row =====
-  const handleDeleteRow = (id) => {
-    setCreateSubDocRows((prev) => prev.filter((r) => r.id !== id));
-  };
-
-  const columnssubDoc = [
-    {
-      field: "srNo",
-      headerName: "SR NO",
-      width: 60,
-      sortable: false,
-      headerAlign: "center",
-      align: "center",
-      renderCell: (params) =>
-        params.api.getSortedRowIds().indexOf(params.id) + 1,
-    },
-    {
-      field: "actions",
-      headerName: "Action",
-      width: 80,
-      align: "center",
-      headerAlign: "center",
-      renderCell: (params) => (
-        <Button
-          size="small"
-          sx={{ color: "red" }}
-          onClick={() => handleDeleteRow(params.row.id)}
-        >
-          <DeleteForeverIcon />
-        </Button>
-      ),
-    },
-
-    {
-      field: "DocType",
-      headerName: "DOCUMENT NAME",
-      width: 300,
-      renderCell: (params) => {
-        const handleChange = (e) => {
-          const newValue = e.target.value;
-          setCreateSubDocRows((prev) =>
-            prev.map((r) =>
-              r.id === params.row.id ? { ...r, DocType: newValue } : r
-            )
-          );
-        };
-
-        return (
-          <Tooltip title={params.value || ""}>
-            <Select
-              value={params.value || ""}
-              onChange={handleChange}
-              fullWidth
-              variant="standard"
-              MenuProps={{
-                PaperProps: { style: { maxHeight: 200 } },
-              }}
-            >
-              {docOptions.length > 0 ? (
-                docOptions.map((opt, i) => (
-                  <MenuItem key={i} value={opt.NameMR}>
-                    {opt.NameMR}
-                  </MenuItem>
-                ))
-              ) : (
-                <MenuItem disabled>No options available</MenuItem>
-              )}
-            </Select>
-          </Tooltip>
-        );
-      },
-    },
-  ];
-  const [docOptions, setDocOptions] = React.useState([]);
-
-  const DocMasterListTemp = async (params = {}) => {
-    setLoading(true);
-    try {
-      const { data } = await axios.get(`${BASE_URL}DocsMaster`, {
-        params: { Status: "1" },
-      });
-      if (data?.values) setDocOptions(data.values);
-    } catch (error) {
-      console.error("Error fetching DocsMaster:", error);
-    } finally {
-      setLoading(false);
-    }
-  };
 
   const handleUpdate = async (rowData) => {
     setSaveUpdateButton("UPDATE");
@@ -498,8 +392,7 @@ const DocumentMaster = () => {
       setLoading(true);
       const apiUrl = `${BASE_URL}DocsMaster/${rowData.Id}`;
       const response = await axios.get(apiUrl);
-      if (response.data.values) {
-        debugger
+      if (response.data && response.data.values) {
         const Document = response.data.values;
         originalDataRef.current = Document;
         setValue("Id", Document.Id);
@@ -514,17 +407,6 @@ const DocumentMaster = () => {
       setLoading(false);
     }
   };
-  const handleAddRow = () => {
-    setCreateSubDocRows((prevRows) => [
-      ...prevRows,
-      {
-        id: prevRows.length + 1,
-        DocName: "",
-        Description: "",
-        isDisabled: false,
-      },
-    ]);
-  };
 
   return (
     <>
@@ -535,13 +417,13 @@ const DocumentMaster = () => {
         sx={{
           backdropFilter: "blur(5px)",
           backgroundColor: "rgba(0, 0, 0, 0.3)",
-         }}
+        }}
       >
         <Paper
           elevation={10}
           sx={{
-            width: "100%",
-            maxWidth: 550,
+            width: "90%",
+            maxWidth: 500,
             position: "absolute",
             top: "50%",
             left: "50%",
@@ -553,141 +435,72 @@ const DocumentMaster = () => {
         >
           <Grid
             container
-            component="form"
-            spacing={3}
+            item
+            xs={12}
+            spacing={4}
+            display={"flex"}
+            flexDirection={"column"}
             padding={3}
-            flexDirection="column"
+            justifyContent={"center"}
+            marginBottom={"14px"}
             onSubmit={handleSubmit(handleSubmitForm)}
+            component={"form"}
           >
-            {/* HEADER */}
             <Grid
               item
               xs={12}
-              display="flex"
-              justifyContent="space-between"
-              alignItems="center"
+              sx={{ display: "flex", justifyContent: "space-between" }}
             >
-              <Typography fontWeight="bold" variant="h6">
-                ADD DOCUMENT NAME
+              <Typography fontWeight="bold" textAlign={"center"}>
+                ADD SUB DOCUMENT NAME
               </Typography>
               <IconButton onClick={handleClose}>
                 <CloseIcon />
               </IconButton>
             </Grid>
+            {/* <form onSubmit={handleSubmit(handleSubmitForm)}> */}
 
-            {/* FORM FIELDS */}
-            <Grid container item xs={12} spacing={2}>
-              <Grid item xs={12} sm={6} lg={6}>
-                <TextField
-                  fullWidth
-                  label="DOCUMENT NAME (ENGLISH)"
-                  size="small"
-                  InputLabelProps={{ shrink: true }}
-                  {...register("NameEN", {
-                    required: "This field is required",
-                  })}
-                  error={!!errors.NameEN}
-                  helperText={errors.NameEN?.message}
-                />
-              </Grid>
-
-              <Grid item xs={12} sm={6} lg={6}>
-                <TextField
-                  fullWidth
-                  label="DOCUMENT NAME (MARATHI)"
-                  size="small"
-                  InputLabelProps={{ shrink: true }}
-                  {...register("NameMR", {
-                    required: "This field is required",
-                  })}
-                  error={!!errors.NameMR}
-                  helperText={errors.NameMR?.message}
-                />
-              </Grid>
-
-              {/* DESCRIPTION + BUTTON SIDE BY SIDE */}
-              <Grid item xs={12} sm={12}>
-                <TextField
-                  fullWidth
-                  multiline
-                  minRows={2}
-                  label="DESCRIPTION"
-                  size="small"
-                  InputLabelProps={{ shrink: true }}
-                  {...register("Description")}
-                />
-              </Grid>
-            </Grid>
-
-            {/* ========================================================== */}
-
-            <Grid
-              item
-              xs={12}
-              display="flex"
-              alignItems="center"
-              justifyContent="space-between"
-              sx={{ mt: 2 }}
-            >
-              <Typography
-                variant="subtitle1"
-                fontWeight="bold"
-                color="rgb(0, 90, 91)"
-              >
-                SUB DOCUMENTS LIST
-              </Typography>
-
-              <Button
-                variant="outlined"
+            <Grid item xs={12}>
+              <TextField
+                label="DOCUMENT NAME (ENGLISH)"
+                fullWidth
                 size="small"
-                sx={{
-                  height: "36px",
-                  color: "rgb(0, 90, 91)",
-                  border: "1px solid rgb(0, 90, 91)",
-                  borderRadius: "8px",
-                  "&:hover": {
-                    backgroundColor: "rgba(0,90,91,0.1)",
-                  },
-                }}
-                onClick={handleAddRow}
-              >
-                Add Document Row
-              </Button>
+                InputLabelProps={{ shrink: true }}
+                {...register("NameEN", {
+                  required: "This field is required",
+                })}
+                error={!!errors.NameEN}
+                helperText={errors.NameEN?.message}
+              />
             </Grid>
 
-            {/* DATAGRID SECTION */}
-
-            <div style={{ height: 300 }}>
-              <DataGrid
-                className="datagrid-style"
-                rows={CreateSubDocRows}
-                columns={columnssubDoc}
-                pageSize={5}
-                rowsPerPageOptions={[5]}
-                disableRowSelectionOnClick
-                hideFooter
-                onRowClick={(params, event) => {
-                  if (params.row.isDisabled) event.stopPropagation();
-                }}
-                getRowId={(row) =>
-                  row.DocEntry ||
-                  row.id ||
-                  `${row.NameMR}-${row.NameEN}-${Math.random()}`
-                }
-                sx={{
-                  "& .MuiDataGrid-columnHeaders": {
-                    backgroundColor: (theme) =>
-                      theme.palette.custome?.datagridcolor || "#f5f5f5",
-                  },
-                  "& .MuiDataGrid-row:hover": {
-                    boxShadow: "0px 4px 20px rgba(0,0,0,0.1)",
-                  },
-                }}
+            <Grid item xs={12}>
+              <TextField
+                label="DOCUMENT NAME (MARATHI)"
+                fullWidth
+                size="small"
+                InputLabelProps={{ shrink: true }}
+                {...register("NameMR", {
+                  required: "This field is required",
+                })}
+                error={!!errors.NameMR}
+                helperText={errors.NameMR?.message}
               />
-            </div>
+            </Grid>
+            <Grid item xs={12}>
+              <TextField
+                label="DESCRIPTION"
+                fullWidth
+                multiline
+                rows={2}
+                minRows={2}
+                InputLabelProps={{ shrink: true }}
+                {...register("Description", {})}
+              />
+            </Grid>
 
-            {/* ======================================== */}
-            <Grid item xs={12} sm={12}></Grid>
+            <Grid item xs={12} sm={4} textAlign={"center"}></Grid>
+
             <Grid
               item
               xs={12}
@@ -705,7 +518,7 @@ const DocumentMaster = () => {
             >
               <Button
                 size="small"
-                onClick={() => clearFormData()}
+                onClick={() => clearFormData()} // Cancel button functionality
                 sx={{
                   p: 1,
                   width: 80,
@@ -747,35 +560,7 @@ const DocumentMaster = () => {
           </Grid>
         </Paper>
       </Modal>
-      {/* <Grid
-        container
-        md={12}
-        lg={12}
-        component={Paper}
-        textAlign={"center"}
-        sx={{
-          width: "100%",
-          px: 5,
-          display: "flex",
-          flexDirection: "row",
-          alignItems: "center",
-          justifyContent: "space-between",
-          mb: 2,
-        }}
-        elevation={4}
-      >
-        <Typography
-          className="slide-in-text"
-          width={"100%"}
-          textAlign="center"
-          textTransform="uppercase"
-          fontWeight="bold"
-          padding={1}
-          noWrap
-        >
-          Manage Documents
-        </Typography>
-      </Grid> */}
+
       <Grid container spacing={2} marginBottom={1} justifyContent="flex-end">
         <Grid textAlign={"end"} marginBottom={1}>
           <Button
@@ -806,7 +591,7 @@ const DocumentMaster = () => {
             }}
           >
             <AddIcon />
-            Add Documents
+            Add Sub Document
           </Button>
         </Grid>
       </Grid>
@@ -831,7 +616,6 @@ const DocumentMaster = () => {
           }}
           rows={DocumentData}
           columns={columns}
-          // autoHeight
           pagination
           paginationMode="server"
           rowCount={totalRows}
@@ -840,7 +624,7 @@ const DocumentMaster = () => {
           onPaginationModelChange={(newModel) => {
             console.log("New Pagination Model:", newModel);
             setCurrentPage(newModel.page);
-            // getAllImgList(newModel.page, searchText);
+
             getAllDocumentList();
           }}
           loading={loading}
@@ -877,7 +661,4 @@ const DocumentMaster = () => {
     </>
   );
 };
-
-export default DocumentMaster;
-
-
+export default SubDocumentMaster;

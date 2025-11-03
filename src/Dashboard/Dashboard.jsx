@@ -765,10 +765,10 @@ export default function Dashboard() {
                 </ListItemButton>
               </Link>
                 {/* ===== Documents Master Creation ===== */}
-              <Link to="DocumentMaster" className="link_style">
+              <Link to="ManageDocumentsPage" className="link_style">
                 <ListItemButton
                   onClick={handleClickTransaction}
-                  selected={location.pathname === "/dashboard/DocumentMaster"}
+                  selected={location.pathname === "/dashboard/ManageDocumentsPage"}
                   sx={{
                     "&.Mui-selected": {
                       background:
@@ -819,6 +819,33 @@ export default function Dashboard() {
                     <DriveFolderUploadIcon />
                   </ListItemIcon>
                   <ListItemText primary="Upload Documents" />
+                </ListItemButton>
+              </Link>
+                  <Link to="Report" className="link_style">
+                <ListItemButton
+                  onClick={handleClickTransaction}
+                  selected={location.pathname === "/dashboard/Report"}
+                  sx={{
+                    "&.Mui-selected": {
+                      background:
+                        "linear-gradient(to right, rgb(0, 90, 91), rgb(22, 149, 153))",
+                      borderRadius: 1,
+                      "& .MuiListItemIcon-root, & .MuiTypography-root": {
+                        color: "#FFFFFF",
+                      },
+                    },
+                    "& .MuiListItemText-primary": {
+                      color: theme.palette.text.primary,
+                    },
+                  }}
+                >
+                  <ListItemIcon
+                    sx={{ minWidth: "33px", marginRight: "8px" }}
+                    onClick={handleDrawerOpen}
+                  >
+                    <DriveFolderUploadIcon />
+                  </ListItemIcon>
+                  <ListItemText primary="Report" />
                 </ListItemButton>
               </Link>
             </>
