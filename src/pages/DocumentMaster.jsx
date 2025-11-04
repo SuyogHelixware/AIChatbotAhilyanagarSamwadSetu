@@ -42,19 +42,16 @@ const DocumentMaster = () => {
   const originalDataRef = React.useRef(null);
 
   const firstLoad = React.useRef(true);
-  // const [CreateSubDocRows, setCreateSubDocRows] = React.useState([]);
-  // const [CreateSubDocRows, setCreateSubDocRows] = React.useState([
-  //   { id: 1, DocName: "", isDisabled: false },
-  // ]);
+
   const [CreateSubDocRows, setCreateSubDocRows] = React.useState([
-  {
-    id: Date.now(),
-    DocType: "",
-    srNo: "",
-    isDisabled: false,
-  },
-]);
-const [isEditing, setIsEditing] = React.useState(false);
+    {
+      id: Date.now(),
+      DocType: "",
+      srNo: "",
+      isDisabled: false,
+    },
+  ]);
+  const [isEditing, setIsEditing] = React.useState(false);
 
   // React Hook Form initialization
   const {
@@ -98,19 +95,16 @@ const [isEditing, setIsEditing] = React.useState(false);
 
     setOn(true);
 
-    
-
-      // setCreateSubDocRows([]);
-setIsEditing(false);
-        setCreateSubDocRows([
-    {
-      id: Date.now(),
-      DocType: "",
-      srNo: "",
-      isDisabled: false,
-    },
-  ]);
-
+    // setCreateSubDocRows([]);
+    setIsEditing(false);
+    setCreateSubDocRows([
+      {
+        id: Date.now(),
+        DocType: "",
+        srNo: "",
+        isDisabled: false,
+      },
+    ]);
   };
 
   const validationAlert = (message) => {
@@ -136,7 +130,6 @@ setIsEditing(false);
         return;
       }
 
-
       const payload = {
         Id: null || formData.Id,
         CreatedDate: dayjs().format("YYYY-MM-DD"),
@@ -149,21 +142,21 @@ setIsEditing(false);
         Description: formData.Description || "",
         Status: formData.Status || "1",
 
-          SubDocs: CreateSubDocRows
-    .filter((row) => row.DocType) 
-    .map((row, index) => ({
-      LineNum: index + 1,
-      Id: 0,
-      Status: 1,
-      CreatedDate: dayjs().format("YYYY-MM-DD"),
-      CreatedBy: sessionStorage.getItem("userId"),
-      ModifiedDate: dayjs().format("YYYY-MM-DD"),
-      ModifiedBy: sessionStorage.getItem("userId"),
-      // NameEN: row.DocType,
-      NameEN: "", 
-      NameMR: row.DocType, 
-      Description: row.Description || "",
-    })),
+        SubDocs: CreateSubDocRows.filter((row) => row.DocType).map(
+          (row, index) => ({
+            LineNum: index + 1,
+            Id: 0,
+            Status: 1,
+            CreatedDate: dayjs().format("YYYY-MM-DD"),
+            CreatedBy: sessionStorage.getItem("userId"),
+            ModifiedDate: dayjs().format("YYYY-MM-DD"),
+            ModifiedBy: sessionStorage.getItem("userId"),
+            // NameEN: row.DocType,
+            NameEN: "",
+            NameMR: row.DocType,
+            Description: row.Description || "",
+          })
+        ),
       };
       let response;
 
@@ -446,7 +439,7 @@ setIsEditing(false);
     setCreateSubDocRows((prev) => prev.filter((r) => r.id !== id));
   };
 
-  const columnssubDoc = [   
+  const columnssubDoc = [
     {
       field: "srNo",
       headerName: "SR NO",
@@ -487,14 +480,14 @@ setIsEditing(false);
         //     )
         //   );
         // };
-       const handleChange = (e) => {
-        const newValue = e.target.value;
-        setCreateSubDocRows((prev) =>
-          prev.map((r) =>
-            r.id === params.row.id ? { ...r, DocType: newValue } : r
-          )
-        );
-      };
+        const handleChange = (e) => {
+          const newValue = e.target.value;
+          setCreateSubDocRows((prev) =>
+            prev.map((r) =>
+              r.id === params.row.id ? { ...r, DocType: newValue } : r
+            )
+          );
+        };
 
         return (
           <Tooltip title={params.value || ""}>
@@ -539,7 +532,7 @@ setIsEditing(false);
   };
 
   const handleUpdate = async (rowData) => {
-      setIsEditing(true); // 🔹 Hide DataGrid section
+    setIsEditing(true); // 🔹 Hide DataGrid section
 
     setSaveUpdateButton("UPDATE");
     setClearUpdateButton("RESET");
@@ -556,8 +549,7 @@ setIsEditing(false);
         setValue("NameMR", Document.NameMR);
         setValue("Description", Document.Description);
         setValue("Status", Document.Status);
-              setCreateSubDocRows(Document.SubDocs || []);
-
+        setCreateSubDocRows(Document.SubDocs || []);
       }
     } catch (error) {
       console.error("Error fetching Document data:", error);
@@ -618,8 +610,8 @@ setIsEditing(false);
               justifyContent="space-between"
               alignItems="center"
             >
-                  <Typography fontWeight="bold" textAlign={"center"}>
-                 DOCUMENT NAME
+              <Typography fontWeight="bold" textAlign={"center"}>
+                DOCUMENT NAME
               </Typography>
               <IconButton onClick={handleClose}>
                 <CloseIcon />
@@ -629,7 +621,6 @@ setIsEditing(false);
             {/* FORM FIELDS */}
             <Grid container item xs={12} spacing={2}>
               <Grid item xs={12} sm={6} lg={6}>
-              
                 <Controller
                   name="NameEN"
                   control={control}
@@ -649,7 +640,6 @@ setIsEditing(false);
               </Grid>
 
               <Grid item xs={12} sm={6} lg={6}>
-        
                 <Controller
                   name="NameMR"
                   control={control}
@@ -683,80 +673,79 @@ setIsEditing(false);
                     />
                   )}
                 />
-             
               </Grid>
-               <Grid item xs={12}></Grid>
+              <Grid item xs={12}></Grid>
             </Grid>
 
             {/* ========================================================== */}
-{!isEditing && (
-  <>
-            <Grid
-              item
-              xs={12}
-              display="flex"
-              alignItems="center"
-              justifyContent="space-between"
-              sx={{ mt: 2 }}
-            >
-              <Typography
-                variant="subtitle1"
-                fontWeight="bold"
-                color="rgb(0, 90, 91)"
-              >
-                ADD SUB DOCUMENTS LIST
-              </Typography>
+            {!isEditing && (
+              <>
+                <Grid
+                  item
+                  xs={12}
+                  display="flex"
+                  alignItems="center"
+                  justifyContent="space-between"
+                  sx={{ mt: 2 }}
+                >
+                  <Typography
+                    variant="subtitle1"
+                    fontWeight="bold"
+                    color="rgb(0, 90, 91)"
+                  >
+                    ADD SUB DOCUMENTS LIST
+                  </Typography>
 
-              <Button
-                variant="outlined"
-                size="small"
-                sx={{
-                  height: "36px",
-                  color: "rgb(0, 90, 91)",
-                  border: "1px solid rgb(0, 90, 91)",
-                  borderRadius: "8px",
-                  "&:hover": {
-                    backgroundColor: "rgba(0,90,91,0.1)",
-                  },
-                }}
-                onClick={handleAddRow}
-              >
-                Add Document Row
-              </Button>
-            </Grid>
+                  <Button
+                    variant="outlined"
+                    size="small"
+                    sx={{
+                      height: "36px",
+                      color: "rgb(0, 90, 91)",
+                      border: "1px solid rgb(0, 90, 91)",
+                      borderRadius: "8px",
+                      "&:hover": {
+                        backgroundColor: "rgba(0,90,91,0.1)",
+                      },
+                    }}
+                    onClick={handleAddRow}
+                  >
+                    Add Document Row
+                  </Button>
+                </Grid>
 
-            {/* DATAGRID SECTION */}
+                {/* DATAGRID SECTION */}
 
-            <div style={{ height: 300 }}>
-              <DataGrid
-                className="datagrid-style"
-                rows={CreateSubDocRows}
-                columns={columnssubDoc}
-                pageSize={5}
-                rowsPerPageOptions={[5]}
-                disableRowSelectionOnClick
-                hideFooter
-                onRowClick={(params, event) => {
-                  if (params.row.isDisabled) event.stopPropagation();
-                }}
-                getRowId={(row) =>
-                  row.DocEntry ||
-                  row.id ||
-                  `${row.NameMR}-${row.NameEN}-${Math.random()}`
-                }
-                sx={{
-                  "& .MuiDataGrid-columnHeaders": {
-                    backgroundColor: (theme) =>
-                      theme.palette.custome?.datagridcolor || "#f5f5f5",
-                  },
-                  "& .MuiDataGrid-row:hover": {
-                    boxShadow: "0px 4px 20px rgba(0,0,0,0.1)",
-                  },
-                }}
-              />
-            </div>
-  </>
-)}
+                <div style={{ height: 300 }}>
+                  <DataGrid
+                    className="datagrid-style"
+                    rows={CreateSubDocRows}
+                    columns={columnssubDoc}
+                    pageSize={5}
+                    rowsPerPageOptions={[5]}
+                    disableRowSelectionOnClick
+                    hideFooter
+                    onRowClick={(params, event) => {
+                      if (params.row.isDisabled) event.stopPropagation();
+                    }}
+                    getRowId={(row) =>
+                      row.DocEntry ||
+                      row.id ||
+                      `${row.NameMR}-${row.NameEN}-${Math.random()}`
+                    }
+                    sx={{
+                      "& .MuiDataGrid-columnHeaders": {
+                        backgroundColor: (theme) =>
+                          theme.palette.custome?.datagridcolor || "#f5f5f5",
+                      },
+                      "& .MuiDataGrid-row:hover": {
+                        boxShadow: "0px 4px 20px rgba(0,0,0,0.1)",
+                      },
+                    }}
+                  />
+                </div>
+              </>
+            )}
             {/* ======================================== */}
             <Grid item xs={12} sm={12}></Grid>
             <Grid
