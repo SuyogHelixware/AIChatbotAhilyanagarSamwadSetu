@@ -7,8 +7,11 @@ import EditNoteIcon from "@mui/icons-material/EditNote";
 import RemoveRedEyeIcon from "@mui/icons-material/RemoveRedEye";
 import {
   Button,
+  Checkbox,
+  FormControlLabel,
   Grid,
   IconButton,
+  ListItemText,
   MenuItem,
   Modal,
   Paper,
@@ -48,9 +51,11 @@ const UploadDocument = () => {
   const [DocmasterList, setDocmasterList] = React.useState([]);
 
   const [DeleteLineNums, setDeleteLineNums] = React.useState([]);
- 
-  const firstLoad = React.useRef(true);
   const fileInputRef = React.useRef(null);
+  const [isAddMissing, setIsAddMissing] = React.useState(false);
+  const modeRef = React.useRef("upload"); // "upload" or "missing"
+
+  const firstLoad = React.useRef(true);
   const handleClose = () => setOn(false);
   const { userSession } = useThemeMode();
 
@@ -96,7 +101,7 @@ const UploadDocument = () => {
       renderCell: (params) =>
         params.api.getSortedRowIds().indexOf(params.id) + 1,
     },
-     
+
     {
       field: "action",
       headerName: "Action",
@@ -232,7 +237,6 @@ const UploadDocument = () => {
       headerName: "GAZETTED OFFICER",
       flex: 1,
       renderCell: (params) => {
-         
         const { id, field, value, api } = params;
         const isDisabled = params.row.isDisabled;
 
@@ -341,7 +345,6 @@ const UploadDocument = () => {
       headerName: "DOCUMENT TYPE",
       flex: 1,
       renderCell: (params) => {
-
         const { id, field, value, api, row } = params;
         const isDisabled = row.isDisabled;
 
@@ -397,6 +400,129 @@ const UploadDocument = () => {
         );
       },
     },
+    // {
+    //   field: "DocTypeS",
+    //   headerName: "MISSING DOC TYPE",
+    //   flex: 1,
+    //   renderCell: (params) => {
+    //     const { id, field, value, api, row } = params;
+    //     const isDisabled = row.isDisabled;
+
+    //     const handleChange = (e) => {
+    //       const newValue = e.target.value;
+
+    //       // update DataGrid UI
+    //       api.updateRows([{ id, [field]: newValue }]);
+
+    //       // also update rows state
+    //       setRows((prev) =>
+    //         prev.map((row) =>
+    //           row.id === id ? { ...row, [field]: newValue } : row
+    //         )
+    //       );
+    //     };
+    //     return (
+    //       <Tooltip title={value || ""} arrow placement="top">
+    //         <Select
+    //           value={value || ""}
+    //           onChange={handleChange}
+    //           fullWidth
+    //           disabled={isDisabled}
+    //           variant="standard"
+    //           MenuProps={{
+    //             PaperProps: {
+    //               style: {
+    //                 maxHeight: 200,
+    //                 overflowY: "auto",
+    //               },
+    //             },
+    //           }}
+    //         >
+    //           {DocmasterList.length > 0 ? (
+    //             DocmasterList.map((option) => (
+    //               <MenuItem
+    //                 key={option.value}
+    //                 value={option.NameMR}
+    //                 sx={{
+    //                   height: 35,
+    //                   display: "flex",
+    //                   alignItems: "center",
+    //                 }}
+    //               >
+    //                 {option.NameMR}
+    //               </MenuItem>
+    //             ))
+    //           ) : (
+    //             <MenuItem disabled>No options available</MenuItem>
+    //           )}
+    //         </Select>
+    //       </Tooltip>
+    //     );
+    //   },
+    // },
+    {
+  field: "DocTypeS",
+  headerName: "MISSING DOCUMENT",
+  flex: 1,
+  renderCell: (params) => {
+    const { id, field, value, api, row } = params;
+    const isDisabled = row.isDisabled;
+
+    // Ensure value is always an array for multi-select
+    const selectedValues = Array.isArray(value) ? value : [];
+
+    const handleChange = (event) => {
+      const newValues = event.target.value;
+
+      // Update DataGrid UI
+      api.updateRows([{ id, [field]: newValues }]);
+
+      // Update rows state
+      setRows((prev) =>
+        prev.map((r) =>
+          r.id === id ? { ...r, [field]: newValues } : r
+        )
+      );
+    };
+
+    return (
+      <Tooltip title={selectedValues.join(", ") || ""} arrow placement="top">
+        <Select
+          multiple
+          value={selectedValues}
+          onChange={handleChange}
+          fullWidth
+          disabled={isDisabled}
+          variant="standard"
+          renderValue={(selected) => selected.join(", ")} // show comma-separated values
+          MenuProps={{
+            PaperProps: {
+              style: {
+                maxHeight: 220,
+                overflowY: "auto",
+              },
+            },
+          }}
+        >
+          {DocmasterList.length > 0 ? (
+            DocmasterList.map((option) => (
+              <MenuItem key={option.value} value={option.NameMR}>
+                <Checkbox
+                  checked={selectedValues.indexOf(option.NameMR) > -1}
+                  size="small"
+                />
+                <ListItemText primary={option.NameMR} />
+              </MenuItem>
+            ))
+          ) : (
+            <MenuItem disabled>No options available</MenuItem>
+          )}
+        </Select>
+      </Tooltip>
+    );
+  },
+}
+
   ];
 
   const Maincolumns = [
@@ -1178,7 +1304,7 @@ const UploadDocument = () => {
           const userData = JSON.parse(userDataStr);
           userType = userData.UserType;
           gazOfficer = userData.GazOfficer || "";
-         } catch (error) {
+        } catch (error) {
           console.error("Failed to parse userData:", error);
         }
       }
@@ -1193,12 +1319,12 @@ const UploadDocument = () => {
   }, []);
 
   // ===================Username and CreatedBy are same in case Doc uploaded rows are enabled logic start============================
- 
+
   const currentUser = userSession.userId || "";
   const currentUserType = userSession.UserType;
 
   const updatedRows = rows.map((row) => {
-        const createdBy = (row.CreatedBy || "").toString().trim();
+    const createdBy = (row.CreatedBy || "").toString().trim();
     const current = currentUser.toString().trim();
     const isAllowed = currentUserType === "A" || createdBy === current;
 
@@ -1207,23 +1333,39 @@ const UploadDocument = () => {
       isDisabled: !isAllowed,
     };
   });
-    // =================== Username and CreatedBy are same in case Doc uploaded rows are enabled logic start ============================
-// const updatedRows = React.useMemo(() => {
-//     if (!userSession || !userSession.UserType) return rows;
+  // =================== Username and CreatedBy are same in case Doc uploaded rows are enabled logic start ============================
+  // const updatedRows = React.useMemo(() => {
+  //     if (!userSession || !userSession.UserType) return rows;
 
-//     const currentUser = userSession.userId || "";
-//     const currentUserType = userSession.UserType;
+  //     const currentUser = userSession.userId || "";
+  //     const currentUserType = userSession.UserType;
 
-//     return rows.map((row) => {
-//       debugger
+  //     return rows.map((row) => {
+  //       debugger
 
-//       const createdBy = (row.CreatedBy || "").toString().trim();
-//       const current = currentUser.toString().trim();
-//       const isAllowed = currentUserType === "A" || createdBy === current;
-//       return { ...row, isDisabled: !isAllowed };
-//     });
-//   }, [rows, userSession]);
+  //       const createdBy = (row.CreatedBy || "").toString().trim();
+  //       const current = currentUser.toString().trim();
+  //       const isAllowed = currentUserType === "A" || createdBy === current;
+  //       return { ...row, isDisabled: !isAllowed };
+  //     });
+  //   }, [rows, userSession]);
   // ====================End============================
+
+  const handleAddRow = () => {
+    const newRow = {
+      id: Date.now(), // unique id
+      srNo: "", // or auto-number later
+      FileName: "",
+      DocReqDate: dayjs().format("YYYY-MM-DD"),
+      IssuedBy: "",
+      DocType: "",
+      isDisabled: false,
+    };
+
+    // Update both state and grid
+    setRows((prev) => [...prev, newRow]);
+  };
+
   return (
     <>
       {loaderOpen && <Loader open={loaderOpen} />}
@@ -1400,8 +1542,59 @@ const UploadDocument = () => {
                 />
               </Button>
             </Grid>
-            <Grid item xs={12} md={4}></Grid>
-            <Grid item xs={12} style={{ height: 400, paddingBottom: 40 }}>
+            {/* <Grid item xs={6} md={4}>
+              <FormControlLabel
+                control={
+                  <Checkbox
+                    checked={isAddMissing}
+                    onChange={(e) => setIsAddMissing(e.target.checked)}
+                    size="small"
+                    sx={{ color: "rgb(0, 90, 91)" }}
+                  />
+                }
+                label="Add Missing File Name"
+              />
+            </Grid> */}
+            {/* <Grid container spacing={2} alignItems="center" sx={{ mb: 1 }}> */}
+            {/* Checkbox Field */}
+            {/* <Grid item xs={3} md={2}>
+    <FormControlLabel
+      control={
+        <Checkbox
+          checked={isAddMissing}
+          onChange={(e) => setIsAddMissing(e.target.checked)}
+          size="small"
+          sx={{ color: "rgb(0, 90, 91)" }}
+        />
+      }
+      label="Add Missing File"
+    />
+  </Grid> */}
+
+            {/* Add Row Button (placed beside checkbox) */}
+            <Grid item xs={6} md={4}>
+              <Button
+                variant="contained"
+                size="small"
+                component="label"
+                sx={{
+                  width: 120,
+                  height: 40,
+                  color: "white",
+                  background:
+                    "linear-gradient(to right, rgb(0, 90, 91), rgb(22, 149, 153))",
+                  fontSize: "0.79rem",
+                }}
+                onClick={handleAddRow}
+              >
+                {" "}
+                <AddIcon />
+                Add Row
+              </Button>
+            </Grid>
+            {/* </Grid> */}
+
+             <Grid item xs={12} style={{ height: 400, paddingBottom: 40 }}>
               <DataGrid
                 rows={updatedRows}
                 columns={DocColumns}
