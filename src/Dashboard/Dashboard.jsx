@@ -765,10 +765,10 @@ export default function Dashboard() {
                 </ListItemButton>
               </Link>
                 {/* ===== Documents Master Creation ===== */}
-              <Link to="ManageDocumentsPage" className="link_style">
+              <Link to="DocumentMaster" className="link_style">
                 <ListItemButton
                   onClick={handleClickTransaction}
-                  selected={location.pathname === "/dashboard/ManageDocumentsPage"}
+                  selected={location.pathname === "/dashboard/DocumentMaster"}
                   sx={{
                     "&.Mui-selected": {
                       background:
@@ -821,7 +821,7 @@ export default function Dashboard() {
                   <ListItemText primary="Upload Documents" />
                 </ListItemButton>
               </Link>
-                  <Link to="Report" className="link_style">
+                  {/* <Link to="Report" className="link_style">
                 <ListItemButton
                   onClick={handleClickTransaction}
                   selected={location.pathname === "/dashboard/Report"}
@@ -847,7 +847,7 @@ export default function Dashboard() {
                   </ListItemIcon>
                   <ListItemText primary="Report" />
                 </ListItemButton>
-              </Link>
+              </Link> */}
             </>
           ) : (
             <>

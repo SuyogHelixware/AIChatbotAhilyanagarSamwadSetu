@@ -36,8 +36,8 @@ export default function Routing() {
             <Route path="department" element={<Department />} />
             <Route path="Services" element={<Services />} />
             <Route path="OfflineServices" element={<OfflineServices />} />
-            {/* <Route path="DocumentMaster" element={<DocumentMaster />} /> */}
-            <Route path="ManageDocumentsPage" element={<ManageDocumentsPage />} />
+            <Route path="DocumentMaster" element={<DocumentMaster />} />
+            {/* <Route path="ManageDocumentsPage" element={<ManageDocumentsPage />} /> */}
             <Route path="EmailSetup" element={<EmailSetup />} />
             <Route path="Gazetted-Master" element={<GazettedMaster />} />
             <Route path="Upload-Document" element={<UploadDocument />} />
