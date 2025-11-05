@@ -1226,9 +1226,10 @@ const UploadDocument = () => {
         row.MissingDocs.forEach((docType, i) => {
           formData.append(`oDocLines[${index}].MissingDocs[${i}]`, docType);
         });
-      } else {
-        formData.append(`oDocLines[${index}].MissingDocs`, JSON.stringify([]));
-      }
+      } 
+      // else {
+      //   formData.append(`oDocLines[${index}].MissingDocs`, JSON.stringify([]));
+      // }
       // ============
     });
     try {
