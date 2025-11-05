@@ -19,6 +19,7 @@ import DocumentMaster from "../pages/DocumentMaster";
 import EmailSetup from "../pages/EmailSetup";
 import UploadDocument from "../pages/Upload-Document";
 import GazettedMaster from "../pages/Gazetted-Master";
+import SanjivGandhi from "../pages/SanjivGandhi/SanjivGandhi";
 
 export default function Routing() {
   return (
@@ -38,6 +39,8 @@ export default function Routing() {
             <Route path="EmailSetup" element={<EmailSetup />} />
             <Route path="Upload-Document" element={<UploadDocument />} />
             <Route path="Gazetted-Master" element={<GazettedMaster />} />
+                        <Route path="SanjivGandhi" element={<SanjivGandhi />} />
+
 
           </Route>
           {/* <Route path="/dashboard/special" element={<SpecialLayout />}> */}
