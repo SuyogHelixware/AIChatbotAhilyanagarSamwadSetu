@@ -231,7 +231,7 @@ const handleFileUpload = async (file, type) => {
   
     showToast("success", `${type === "S" ? "Success" : "Failure"} file uploaded successfully!`);
 
-    const failData = response.data?.values?.Success || [];
+    const failData = response.data?.values?.Fail  || [];
 
     const rowsWithIds = failData.map((item, index) => ({
       id: index + 1,
