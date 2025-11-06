@@ -7,7 +7,7 @@ import { useNavigate } from "react-router-dom";
 import { BASE_URL } from "../Constant";
 import { Visibility, VisibilityOff } from "@mui/icons-material";
 import Loader from "../components/Loader";
-import PersonIcon from '@mui/icons-material/Person';
+import PersonIcon from "@mui/icons-material/Person";
 
 const Signin = () => {
   const [userId, setUserId] = useState("");
@@ -17,23 +17,84 @@ const Signin = () => {
   const [loading, setLoading] = useState(false);
 
   const handleSubmit = async () => {
+    // try {
+    //   const body = {
+    //     Username: userId,
+    //     Password: password,
+    //   };
+    //   setLoading(true);
+    //   axios
+    //     .post(`${BASE_URL}Login`, body)
+    //     .then((res) => {
+    //       if (res.data.success === true) {
+
+    //         const data = res.data.values;
+    //         const userData = {
+
+    //           Name: ` ${data.FirstName} ${data.LastName}`,
+    //           Username: data.Username,
+    //           Address: data.Address,
+    //           Email: data.Email,
+    //           Phone: data.Phone,
+    //           UserType: data.UserType,
+    //           GazOfficer: data.GazOfficer,
+    //           BloodGroup: data.BloodGroup,
+    //           Avatar: data.Avatar,
+    //           _id: data._id,
+    //           Token: data.Token,
+    //         };
+    //         sessionStorage.setItem("userId", userData.Username);
+
+    //         sessionStorage.setItem("userData", JSON.stringify(userData));
+
+    //         Swal.fire({
+    //           position: "top-end",
+    //           toast: true,
+    //           title: "Login Success",
+    //           showConfirmButton: false,
+    //           timer: 1500,
+    //           icon: "success",
+    //         });
+
+    //         // Wait briefly to show loader, then navigate
+    //         setTimeout(() => {
+    //           navigate("/dashboard/home");
+    //         }, 1000);
+    //       } else {
+    //         setLoading(false);
+    //         Swal.fire({
+    //           position: "top-end",
+    //           icon: "error",
+    //           toast: true,
+    //           title: "Invalid username or password",
+    //           showConfirmButton: false,
+    //           timer: 1500,
+    //         });
+    //       }
+    //     })
+    //     .catch((e) => {
+    //       setLoading(false);
+    //       console.log(e);
+    //     });
+    // }
+
     try {
       const body = {
         Username: userId,
         Password: password,
       };
       setLoading(true);
+
       axios
         .post(`${BASE_URL}Login`, body)
-        .then((res) => {
-          if (res.data.success === true) {
-            
 
+        .then(async (res) => {
+          if (res.data.success === true) {
             const data = res.data.values;
+
             const userData = {
-              
-              Name: ` ${data.FirstName} ${data.LastName}`,
-              Username: data.Username, 
+              Name: `${data.FirstName} ${data.LastName}`,
+              Username: data.Username,
               Address: data.Address,
               Email: data.Email,
               Phone: data.Phone,
@@ -43,11 +104,63 @@ const Signin = () => {
               Avatar: data.Avatar,
               _id: data._id,
               Token: data.Token,
+              RoleName: "Super Admin",
             };
-            sessionStorage.setItem("userId", userData.Username);
 
+            // Save basic user info
+            sessionStorage.setItem("userId", userData.RoleName);
             sessionStorage.setItem("userData", JSON.stringify(userData));
+            try {
+              const roleNameToUse = data?.RoleName || "Manager";
+              const encodedRoleName = encodeURIComponent(roleNameToUse);
 
+              const roleResponse = await axios.get(
+                // `${BASE_URL}Role/${encodedRoleName}`,
+                `${BASE_URL}Role?RoleName=${encodedRoleName}`,
+
+                {
+                  headers: {
+                    // Authorization: `Bearer ${data.Token}`,
+                  },
+                }
+              );
+              debugger;
+              const resp = roleResponse.data.values;
+
+              if (resp.data.oLines && resp.oLines) {
+                // ✅ Store only oLines
+                localStorage.setItem(
+                  "roleAccess",
+
+                  JSON.stringify(roleResponse.data.oLines)
+                );
+
+              }
+            } catch (roleErr) {
+              console.error("Error fetching role access:", roleErr);
+            }
+            // try {
+            //   const roleNameToUse = data?.RoleName || "Manager";
+            //   const encodedRoleName = encodeURIComponent(roleNameToUse);
+
+            //   const roleResponse = await axios.get(
+            //     `${BASE_URL}Role?RoleName=${encodedRoleName}`
+            //   );
+
+            //   const resp = roleResponse.data.values; // this contains Id, RoleName, oLines, etc.
+
+            //   if (resp && resp.oLines) {
+            //     // ✅ Store only oLines in localStorage
+            //     localStorage.setItem("roleAccess", JSON.stringify(resp.oLines));
+            //     console.log("Role access stored:", resp.oLines);
+            //   } else {
+            //     console.warn("No oLines found in response");
+            //   }
+            // } catch (roleErr) {
+            //   console.error("Error fetching role access:", roleErr);
+            // }
+
+            // ✅ Show success message and redirect
             Swal.fire({
               position: "top-end",
               toast: true,
@@ -57,7 +170,6 @@ const Signin = () => {
               icon: "success",
             });
 
-            // Wait briefly to show loader, then navigate
             setTimeout(() => {
               navigate("/dashboard/home");
             }, 1000);
@@ -161,7 +273,6 @@ const Signin = () => {
             >
               <Box sx={{ position: "relative", mb: 2 }}>
                 <PersonIcon
-
                   style={{
                     position: "absolute",
                     top: "50%",
@@ -172,16 +283,16 @@ const Signin = () => {
                     color: "#888",
                   }}
                 />
-                  {/* 📧 */}                
+                {/* 📧 */}
 
                 <input
                   type="text"
                   placeholder="Username"
                   value={userId}
                   onChange={(e) => setUserId(e.target.value)}
-                  tabIndex={1} 
+                  tabIndex={1}
                   style={{
-                    width: "80%", 
+                    width: "80%",
                     padding: "12px 12px 12px 40px",
                     border: "none",
                     borderRadius: "20px",
@@ -213,12 +324,12 @@ const Signin = () => {
                   onChange={(e) => setPassword(e.target.value)}
                   onKeyDown={(e) => {
                     if (e.key === "Enter") {
-                      login(e); 
+                      login(e);
                     }
                   }}
                   tabIndex={2}
                   style={{
-                    width: "80%", 
+                    width: "80%",
                     padding: "12px 12px 12px 45px",
                     border: "none",
                     borderRadius: "20px",
@@ -242,7 +353,7 @@ const Signin = () => {
 
               <button
                 onClick={login}
-                tabIndex={3} 
+                tabIndex={3}
                 style={{
                   width: "100%",
                   background: "#00796b",

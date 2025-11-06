@@ -28,10 +28,10 @@ import Swal from "sweetalert2";
 import { InputDescriptionField } from "../components/Component";
 import Loader from "../components/Loader";
 import { BASE_URL } from "../Constant";
- 
+
 const RoleCreation = () => {
   const [loaderOpen, setLoaderOpen] = React.useState(false);
-  const [Documentlist, setDocumentlist] = React.useState([]);
+  const [GetRolelist, setGetRolelist] = React.useState([]);
   const [on, setOn] = React.useState(false);
   const [SaveUpdateButton, setSaveUpdateButton] = React.useState("UPDATE");
   const [ClearUpdateButton, setClearUpdateButton] = React.useState("RESET");
@@ -42,25 +42,22 @@ const RoleCreation = () => {
   const limit = 20;
   const originalDataRef = React.useRef(null);
   const [rows, setRows] = React.useState([]);
-      const handleClose = () => setOn(false);
-   const [docData, setDocData] = React.useState([]);
+  const handleClose = () => setOn(false);
   const [openMenu, setOpenMenu] = React.useState(false);
   const [selectedRows, setSelectedRows] = React.useState([]);
   const [mainTableData, setMainTableData] = React.useState([]);
   const handleOpenMenu = () => setOpenMenu(true);
   const handleCloseMenu = () => setOpenMenu(false);
-    const firstLoad = React.useRef(true);
-
+  const firstLoad = React.useRef(true);
 
   const initial = {
     CreatedDate: dayjs().format("YYYY-MM-DD"),
     ModifiedDate: dayjs().format("YYYY-MM-DD"),
     Id: "",
-     RoleName: "",
-     Remarks :"",
+    RoleName: "",
+    Remarks: "",
     Status: "",
-
-     oDocLines: [],
+    oLines: [],
   };
 
   const { handleSubmit, control, reset } = useForm({
@@ -68,14 +65,13 @@ const RoleCreation = () => {
       initial,
     },
   });
-  const columnsmenu = [
+  const columnsActivitymenu = [
     { field: "id", headerName: "ID", width: 80 },
     { field: "activity", headerName: "Activity", width: 200 },
     { field: "Status", headerName: "Status", width: 150 },
   ];
 
-  // 🔹 Example Rows
-  const rowsmenu = [
+   const rowsActivitymenu = [
     { id: 1, activity: "Login", Status: "Success" },
     { id: 2, activity: "Data Upload", Status: "Pending" },
     { id: 3, activity: "Report Download", Status: "Failed" },
@@ -83,7 +79,7 @@ const RoleCreation = () => {
   ];
 
   // 🔹 Track selected rows
-  const DocColumns = [
+  const RoleCrationColumns = [
     {
       field: "srNo",
       headerName: "SR NO",
@@ -247,8 +243,8 @@ const RoleCreation = () => {
       flex: 1,
       sortable: false,
     },
- 
-     {
+
+    {
       field: "Status",
       headerName: "Status",
       width: 80,
@@ -290,60 +286,58 @@ const RoleCreation = () => {
     backgroundColor: "#dc3545",
   };
 
-  const getAllDocList = async (page = 0, searchText = "", limit = 20) => {
-      try {
-        setLoading(true);
-  
-        // Build query params
-        const params = {
-          Status: "1",
-          Page: page,
-          Limit: limit,
-          ...(searchText ? { SearchText: searchText } : {}),
-        };
-  
-        const userData = sessionStorage.getItem("userData");
-        let userType = null;  
-        if (userData) {
-          try {
-            const parsedData = JSON.parse(userData);
-            userType = parsedData.UserType;
-          } catch (e) {
-            console.error("Error parsing userData:", e);
-          }
-        }
-  
-        const response = await axios.get(`${BASE_URL}Role`, { params });
-        if (response.data && response.data.values) {
-          setDocumentlist(
-            response.data.values.map((item, index) => ({
-              ...item,
-              id: page * limit + index + 1,
-            }))
-          );
-          setTotalRows(response.data.count);
-        }
-      } catch (error) {
-        console.error("Error fetching documents:", error);
-      } finally {
-        setLoading(false);
-      }
-    };
+  const getAllRoleList = async (page = 0, searchText = "", limit = 20) => {
+    try {
+      setLoading(true);
 
- React.useEffect(() => {
+      // Build query params
+      const params = {
+        Status: "1",
+        Page: page,
+        Limit: limit,
+        ...(searchText ? { SearchText: searchText } : {}),
+      };
+
+      const userData = sessionStorage.getItem("userData");
+      let userType = null;
+      if (userData) {
+        try {
+          const parsedData = JSON.parse(userData);
+          userType = parsedData.UserType;
+        } catch (e) {
+          console.error("Error parsing userData:", e);
+        }
+      }
+
+      const response = await axios.get(`${BASE_URL}Role`, { params });
+      if (response.data && response.data.values) {
+        setGetRolelist(
+          response.data.values.map((item, index) => ({
+            ...item,
+            id: page * limit + index + 1,
+          }))
+        );
+        setTotalRows(response.data.count);
+      }
+    } catch (error) {
+      console.error("Error fetching documents:", error);
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  React.useEffect(() => {
     if (firstLoad.current) {
-      getAllDocList();
+      getAllRoleList();
       firstLoad.current = false;
     }
   }, []);
 
-const handleCheckboxChange = (id, field, checked) => {
-  setMainTableData((prev) =>
-    prev.map((row) =>
-      row.id === id ? { ...row, [field]: checked } : row
-    )
-  );
-};
+  const handleCheckboxChange = (id, field, checked) => {
+    setMainTableData((prev) =>
+      prev.map((row) => (row.id === id ? { ...row, [field]: checked } : row))
+    );
+  };
 
   const handleRemove = (rowToRemove) => {
     setMainTableData((prev) => prev.filter((row) => row.id !== rowToRemove.id));
@@ -361,9 +355,7 @@ const handleCheckboxChange = (id, field, checked) => {
       if (result.isConfirmed) {
         setLoaderOpen(true);
         try {
-          const response = await axios.delete(
-            `${BASE_URL}Role/${rowData.Id}`
-          );
+          const response = await axios.delete(`${BASE_URL}Role/${rowData.Id}`);
           setLoaderOpen(false);
           if (response.data && response.data.success) {
             Swal.fire({
@@ -374,7 +366,7 @@ const handleCheckboxChange = (id, field, checked) => {
               showConfirmButton: false,
               timer: 1500,
             });
-            getAllDocList(currentPage, searchText);
+            getAllRoleList(currentPage, searchText);
           } else {
             Swal.fire({
               position: "center",
@@ -408,7 +400,7 @@ const handleCheckboxChange = (id, field, checked) => {
     try {
       setLoading(true);
 
-       const userData = sessionStorage.getItem("userData");
+      const userData = sessionStorage.getItem("userData");
       let userType = null;
       let userId = null;
 
@@ -421,33 +413,33 @@ const handleCheckboxChange = (id, field, checked) => {
           console.error("Error parsing userData:", e);
         }
       }
- 
-        const apiUrl = `${BASE_URL}Role/${rowData.Id}`;
-        const response = await axios.get(apiUrl);
-        if (response.data && response.data.values) {
-          const olddata = response.data.values;
-           
-          originalDataRef.current = olddata;
 
-          const formattedLines = Array.isArray(olddata.oDocLines)
-            ? olddata.oDocLines.map((line, index) => ({
-                ...line,
-                id: line.LineNum ?? index,
-              }))
-            : [];
+      const apiUrl = `${BASE_URL}Role/${rowData.Id}`;
+      const response = await axios.get(apiUrl);
+      if (response.data && response.data.values) {
+        const olddata = response.data.values;
 
-          reset({
-          
-            Id: olddata.Id ?? "",
-            RoleName: olddata.RoleName ?? "",
-            Remarks: olddata.Remarks ?? "",
-            Status:olddata.Status ?? "",
- 
-             oDocLines: formattedLines,
-          });
+         
+        originalDataRef.current = olddata;
 
-          setRows(formattedLines);
-        }
+        const formattedLines = Array.isArray(olddata.oLines)
+          ? olddata.oLines.map((line, index) => ({
+              ...line,
+              id: line.LineNum ?? index,
+            }))
+          : [];
+
+        reset({
+          Id: olddata.Id ?? "",
+          RoleName: olddata.RoleName ?? "",
+          Remarks: olddata.Remarks ?? "",
+          Status: olddata.Status ?? "",
+
+          oLines: formattedLines,
+        });
+
+        setRows(formattedLines);
+      }
     } catch (error) {
       console.error("Error in handleUpdate:", error);
     } finally {
@@ -463,7 +455,7 @@ const handleCheckboxChange = (id, field, checked) => {
         Status: 1,
 
         RoleName: "",
-        oDocLines: [],
+        oLines: [],
       });
     }
     if (ClearUpdateButton === "RESET") {
@@ -477,8 +469,8 @@ const handleCheckboxChange = (id, field, checked) => {
         reset(resetData);
 
         // also set rows for DataGrid
-        if (resetData.oDocLines && Array.isArray(resetData.oDocLines)) {
-          const formattedLines = resetData.oDocLines.map((line, index) => ({
+        if (resetData.oLines && Array.isArray(resetData.oLines)) {
+          const formattedLines = resetData.oLines.map((line, index) => ({
             ...line,
             id: line.LineNum ?? index,
           }));
@@ -491,7 +483,7 @@ const handleCheckboxChange = (id, field, checked) => {
           Status: 1,
 
           RoleName: "",
-          oDocLines: [],
+          oLines: [],
         });
         setRows([]);
       }
@@ -506,166 +498,131 @@ const handleCheckboxChange = (id, field, checked) => {
     reset({
       Status: 1,
       RoleName: "",
-      oDocLines: [],
+      oLines: [],
     });
     setRows([]); // clears table data
   };
-
-  const onSubmit = async (data) => {
-    // if (!rows || rows.length === 0) {
-    //   Swal.fire({
-    //     icon: "warning",
-    //     title: "Add RoleName",
-    //     text: `Please upload at least one document before submitting.`,
-    //   });
-    //   return;
-    // }
-
-
-    
-    // Validate FileName not just spaces
-    const invalidFileName = rows.find(
-      (row) => !row.FileName || row.FileName.trim() === ""
-    );
-    if (invalidFileName) {
-      Swal.fire({
-        toast: true,
-        icon: "warning",
-        title: "Invalid  RoleName",
-        text: "RoleName cannot be empty or just spaces.",
-        position: "center",
-        showConfirmButton: false,
-        timer: 5000,
-        timerProgressBar: true,
-      });
-      return;
-    }
-
-    const formData = new FormData();
-
-    formData.append("UserId", sessionStorage.getItem("userId") || "");
-    formData.append("CreatedBy", sessionStorage.getItem("userId") || "");
-    formData.append("ModifiedBy", sessionStorage.getItem("userId") || "");
-    formData.append("Status", "1");
-    formData.append("RoleName", data.RoleName || "");
-    formData.append("Id", data.Id || "");
-    formData.append("CreatedDate", dayjs().format("YYYY-MM-DD"));
-    formData.append("ModifiedDate", dayjs().format("YYYY-MM-DDTHH:mm:ss.SSS"));
-    rows.forEach((row, index) => {
-      formData.append(
-        `oDocLines[${index}].UserId`,
-        sessionStorage.getItem("UserId")
-      );
-      formData.append(
-        `oDocLines[${index}].CreatedBy`,
-        sessionStorage.getItem("userId")
-      );
-      formData.append(
-        `oDocLines[${index}].ModifiedBy`,
-        sessionStorage.getItem("userId")
-      );
-      formData.append(`oDocLines[${index}].Id`, row.Id || "");
-      formData.append(`oDocLines[${index}].LineNum`, row.LineNum || "");
-      formData.append(`oDocLines[${index}].FileExt`, row.FileExt || "");
-      formData.append(
-        `oDocLines[${index}].FileName`,
-        row.FileName
-          ? row.FileName.substring(0, row.FileName.lastIndexOf(".")) ||
-              row.FileName
-          : ""
-      );
-      formData.append(`oDocLines[${index}].SrcPath`, row.SrcPath || "");
-      formData.append(
-        `oDocLines[${index}].CreatedDate`,
-        row.CreatedDate
-          ? dayjs(row.CreatedDate).format("YYYY-MM-DD")
-          : dayjs().format("YYYY-MM-DD")
-      );
-      formData.append(
-        `oDocLines[${index}].DocReqDate`,
-        row.DocReqDate ? dayjs(row.DocReqDate).format("YYYY-MM-DD") : ""
-      );
-      formData.append(`oDocLines[${index}].IssuedBy`, row.IssuedBy || "");
-      formData.append(`oDocLines[${index}].DocType`, row.DocType || "");
-      if (row.File) {
-        formData.append(`oDocLines[${index}].File`, row.File);
-      }
-    });
-    try {
-      let response;
  
 
-      if (SaveUpdateButton === "SAVE") {
-        setLoaderOpen(true);
-        response = await axios.post(`${BASE_URL}Role`, formData, {
-          headers: { "Content-Type": "multipart/form-data" },
-        });
-      } else {
-        // PUT request
+  // 🔹 On Save — push selected rows into bottom DataGrid
+  
 
-        const result = await Swal.fire({
-          text: "Do you want to Update...?",
-          icon: "warning",
-          showCancelButton: true,
-          confirmButtonColor: "#3085d6",
-          cancelButtonColor: "#d33",
-          confirmButtonText: "Yes, Update it!",
-        });
+  const onSubmit = async (data) => {
+  // Validate FileName not just spaces
+ 
+  if (!data.RoleName || data.RoleName.trim() === "") {
+    Swal.fire({
+      toast: true,
+      icon: "warning",
+      title: "Invalid Role Name",
+      text: "Role Name cannot be empty or just spaces.",
+      position: "center",
+      showConfirmButton: false,
+      timer: 5000,
+      timerProgressBar: true,
+    });
+    return;
+  }
 
-        if (!result.isConfirmed) return;
-
-        setLoaderOpen(true);
-
-        response = await axios.put(`${BASE_URL}Role`, formData, {
-          headers: { "Content-Type": "multipart/form-data" },
-        });
-      }
-
-      setLoaderOpen(false);
-
-      if (response.data.success) {
-        Swal.fire({
-          icon: "success",
-          title:
-            SaveUpdateButton === "SAVE"
-              ? "RoleName Uploaded Successfully"
-              : "RoleName Updated Successfully",
-          timer: 1500,
-          showConfirmButton: false,
-        });
-        handleClose();
-        getAllDocList();
-      } else {
-        throw new Error(response.data.message || "Unexpected error");
-      }
-    } catch (error) {
-      setLoaderOpen(false);
-
-      if (error.response && error.Status === 413) {
-        Swal.fire({
-          icon: "error",
-          title: "File Too Large",
-          text: "One or more files exceed the maximum upload size allowed by the server.",
-          confirmButtonColor: "#d33",
-        });
-        return;
-      }
-
-      Swal.fire({
-        title: "Error!",
-        text: error.message || "Something went wrong while uploading.",
-        icon: "error",
-        confirmButtonText: "Ok",
-      });
-    }
+  // --- Construct Normal JSON Object (not FormData)
+ const payload = {
+    Id: data.Id || 0,
+    CreatedBy: sessionStorage.getItem("userId") || "",
+    CreatedDate: dayjs().format("YYYY-MM-DDTHH:mm:ss.SSS"),
+    ModifiedBy: sessionStorage.getItem("userId") || "",
+    ModifiedDate: dayjs().format("YYYY-MM-DDTHH:mm:ss.SSS"),
+    Status: 1,
+    RoleName: data.RoleName || "",
+    Remarks: data.Remarks || "",
+    oLines: rows.map((row, index) => ({
+      LineNum: 0,
+      Id: row.Id || 0,
+      CreatedDate: row.CreatedDate
+        ? dayjs(row.CreatedDate).format("YYYY-MM-DDTHH:mm:ss.SSS")
+        : dayjs().format("YYYY-MM-DDTHH:mm:ss.SSS"),
+      CreatedBy: sessionStorage.getItem("userId") || "",
+      ModifiedDate: dayjs().format("YYYY-MM-DDTHH:mm:ss.SSS"),
+      ModifiedBy: sessionStorage.getItem("userId") || "",
+      ParentMenuId: row.ParentMenuId || 0,
+      MenuId: row.MenuId || 0,
+      IsRead: row.IsRead ?? false,
+      IsAdd: row.IsAdd ?? false,
+      IsEdit: row.IsEdit ?? false,
+      IsDelete: row.IsDelete ?? false,
+      oSpecialAccess:
+        row.oSpecialAccess?.length > 0
+          ? row.oSpecialAccess.map((sp, i) => ({
+              LineNum: 0,
+              Id: sp.Id || 0,
+              LineId: sp.LineId || 0,
+              MenuId: sp.MenuId || 0,
+            }))
+          : [],
+    })),
   };
 
-  // 🔹 On Save — push selected rows into bottom DataGrid
+  try {
+    let response;
+
+    if (SaveUpdateButton === "SAVE") {
+      setLoaderOpen(true);
+      response = await axios.post(`${BASE_URL}Role`, payload);
+
+    } else {
+      const result = await Swal.fire({
+        text: "Do you want to Update...?",
+        icon: "warning",
+        showCancelButton: true,
+        confirmButtonColor: "#3085d6",
+        cancelButtonColor: "#d33",
+        confirmButtonText: "Yes, Update it!",
+      });
+
+      if (!result.isConfirmed) return;
+
+      setLoaderOpen(true);
+      response = await axios.put(`${BASE_URL}Role`, payload);
+    }
+
+    setLoaderOpen(false);
+
+    if (response.data.success) {
+      Swal.fire({
+        icon: "success",
+        title:
+          SaveUpdateButton === "SAVE"
+            ? "RoleName Uploaded Successfully"
+            : "RoleName Updated Successfully",
+        timer: 1500,
+        showConfirmButton: false,
+      });
+      handleClose();
+      getAllRoleList();
+    } else {
+      throw new Error(response.data.message || "Unexpected error");
+    }
+  } catch (error) {
+    setLoaderOpen(false);
+
+    Swal.fire({
+      title: "Error!",
+      text: error.message || "Something went wrong while uploading.",
+      icon: "error",
+      confirmButtonText: "Ok",
+    });
+  }
+};
+
+  
+  
+  
+  
+  
   const handleSaveSelection = () => {
     if (!Array.isArray(selectedRows) || selectedRows.length === 0) return;
 
     //  Filter selected rows from menu DataGrid
-    const selectedData = rowsmenu.filter((row) =>
+    const selectedData = rowsActivitymenu.filter((row) =>
       selectedRows.includes(row.id)
     );
 
@@ -711,8 +668,8 @@ const handleCheckboxChange = (id, field, checked) => {
                   boxShadow: "0px 4px 20px rgba(0, 0, 0.2, 0.2)",
                 },
               }}
-              rows={rowsmenu}
-              columns={columnsmenu}
+              rows={rowsActivitymenu}
+              columns={columnsActivitymenu}
               checkboxSelection
               hideFooter
               onRowSelectionModelChange={(ids) => setSelectedRows(ids)}
@@ -914,9 +871,11 @@ const handleCheckboxChange = (id, field, checked) => {
                     boxShadow: "0px 4px 20px rgba(0, 0, 0.2, 0.2)",
                   },
                 }}
+                // getRowId={(row) => row.id}
+                // rows={mainTableData}
                 getRowId={(row) => row.id}
-                rows={mainTableData}
-                columns={DocColumns}
+  rows={rows}  
+                columns={RoleCrationColumns}
                 pageSize={5}
                 rowsPerPageOptions={[5]}
                 hideFooter
@@ -1045,7 +1004,7 @@ const handleCheckboxChange = (id, field, checked) => {
               boxShadow: "0px 4px 20px rgba(0, 0, 0.2, 0.2)",
             },
           }}
-          rows={Documentlist}
+          rows={GetRolelist}
           columns={Maincolumns}
           pagination
           paginationMode="server"
@@ -1081,7 +1040,7 @@ const handleCheckboxChange = (id, field, checked) => {
             const quickFilterValue = model.quickFilterValues?.[0] || "";
             setSearchText(quickFilterValue);
             setCurrentPage(0);
-            getAllDocList(0, quickFilterValue, limit);
+            getAllRoleList(0, quickFilterValue, limit);
           }}
           getRowId={(row) => row.Id}
         />
