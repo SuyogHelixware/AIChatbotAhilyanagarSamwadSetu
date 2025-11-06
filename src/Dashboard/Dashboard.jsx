@@ -821,10 +821,10 @@ export default function Dashboard() {
                   <ListItemText primary="Upload Documents" />
                 </ListItemButton>
               </Link>
-              <Link to="SanjivGandhi" className="link_style">
+              <Link to="SanjayGandhi" className="link_style">
                 <ListItemButton
                   onClick={handleClickTransaction}
-                  selected={location.pathname === "/dashboard/SanjivGandhi"}
+                  selected={location.pathname === "/dashboard/SanjayGandhi"}
                   sx={{
                     "&.Mui-selected": {
                       background:
@@ -845,7 +845,7 @@ export default function Dashboard() {
                   >
                     <MarkChatReadIcon />
                   </ListItemIcon>
-                  <ListItemText primary="Sanjiv Gandhi Project" />
+                  <ListItemText primary="Sanjay Gandhi Module" />
                 </ListItemButton>
               </Link>
             </>
