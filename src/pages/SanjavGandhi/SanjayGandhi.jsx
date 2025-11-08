@@ -286,7 +286,7 @@ const handleFileUpload = async (file, type) => {
           padding={1}
           noWrap
         >
-          Sanjay Gandhi Module
+          Sanjay Gandhi
         </Typography>
       </Grid>
        

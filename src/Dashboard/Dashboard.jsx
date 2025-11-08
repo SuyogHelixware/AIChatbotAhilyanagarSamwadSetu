@@ -21,6 +21,7 @@ import SettingsIcon from "@mui/icons-material/Settings";
 import DriveFolderUploadIcon from "@mui/icons-material/DriveFolderUpload";
 import ChecklistIcon from "@mui/icons-material/Checklist";
 import MarkChatReadIcon from '@mui/icons-material/MarkChatRead';
+import CorporateFareIcon from '@mui/icons-material/CorporateFare';
 
 import {
   Avatar,
@@ -845,7 +846,34 @@ export default function Dashboard() {
                   >
                     <MarkChatReadIcon />
                   </ListItemIcon>
-                  <ListItemText primary="Sanjay Gandhi Module" />
+                  <ListItemText primary="Sanjay Gandhi" />
+                </ListItemButton>
+              </Link>
+                <Link to="Rehabilitation" className="link_style">
+                <ListItemButton
+                  onClick={handleClickTransaction}
+                  selected={location.pathname === "/dashboard/Rehabilitation"}
+                  sx={{
+                    "&.Mui-selected": {
+                      background:
+                        "linear-gradient(to right, rgb(0, 90, 91), rgb(22, 149, 153))",
+                      borderRadius: 1,
+                      "& .MuiListItemIcon-root, & .MuiTypography-root": {
+                        color: "#FFFFFF",
+                      },
+                    },
+                    "& .MuiListItemText-primary": {
+                      color: theme.palette.text.primary,
+                    },
+                  }}
+                >
+                  <ListItemIcon
+                    sx={{ minWidth: "33px", marginRight: "8px" }}
+                    onClick={handleDrawerOpen}
+                  > 
+                    <CorporateFareIcon />
+                  </ListItemIcon>
+                  <ListItemText primary="Rehabilitation" />
                 </ListItemButton>
               </Link>
             </>
