@@ -494,7 +494,7 @@ const handleFileUpload = async (file, type) => {
           pagination
           paginationMode="server"
           rowCount={totalRows} // REQUIRED — tells grid how many total records exist
-          pageSizeOptions={[10, 20, 50]}
+          pageSizeOptions={[20, 50,100]}
           paginationModel={{ page: currentPage, pageSize: limit }}
           onPaginationModelChange={(newModel) => {
             setCurrentPage(newModel.page);
