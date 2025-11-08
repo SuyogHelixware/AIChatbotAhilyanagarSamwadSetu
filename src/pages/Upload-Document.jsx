@@ -587,7 +587,7 @@ const UploadDocument = () => {
                       <ListItemText
                         primary={
                           isOptionDisabled
-                            ? `${option.NameMR} (selected as DocType)`
+                            ? `${option.NameMR}`
                             : option.NameMR
                         }
                       />
@@ -1141,23 +1141,37 @@ const UploadDocument = () => {
       return;
     }
 
-    // Validate FileName not just spaces
-    // const invalidFileName = rows.find(
-    //   (row) => !row.FileName || row.FileName.trim() === ""
-    // );
-    // if (invalidFileName) {
-    //   Swal.fire({
-    //     toast: true,
-    //     icon: "warning",
-    //     title: "Invalid Document Name",
-    //     text: "Document Name cannot be empty or just spaces.",
-    //     position: "center",
-    //     showConfirmButton: false,
-    //     timer: 5000,
-    //     timerProgressBar: true,
-    //   });
-    //   return;
-    // }
+  //   let hasConflict = false;
+
+  // rows.forEach((row, index) => {
+  //   debugger
+  //   const hasFile = !!row.FileName; // file uploaded
+  //   const hasMissingDocs =
+  //     Array.isArray(row.MissingDocs) && row.MissingDocs.length > 0;
+
+  //   if (hasFile && hasMissingDocs) {
+  //     hasConflict = true;
+  //     // alert(
+  //     //   `Row ${index + 1}: You cannot select Missing Documents when a file is uploaded.`
+  //     // );
+  //        Swal.fire({
+  //       toast: true,
+  //       position: "center",
+  //       icon: "warning",
+  //       title: `Row ${index + 1}: You cannot select Missing Documents when a file is uploaded.`,
+  //       showConfirmButton: false,
+  //       timer: 3000,
+  //       timerProgressBar: true,
+  //       // background: "#fff8e1",
+  //     });
+    
+  //   }
+  // });
+
+  // if (hasConflict) {
+  //   return; // Stop submission
+  // }
+
 
     const formData = new FormData();
 
