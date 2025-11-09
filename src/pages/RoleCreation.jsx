@@ -4,8 +4,10 @@ import DeleteIcon from "@mui/icons-material/Delete";
 import DeleteForeverIcon from "@mui/icons-material/DeleteForever";
 import EditNoteIcon from "@mui/icons-material/EditNote";
 import {
+  Box,
   Button,
   Checkbox,
+  Collapse,
   Dialog,
   DialogActions,
   DialogContent,
@@ -28,6 +30,9 @@ import Swal from "sweetalert2";
 import { InputDescriptionField } from "../components/Component";
 import Loader from "../components/Loader";
 import { BASE_URL } from "../Constant";
+import MenuWithOneCollapse from "../components/MenuWithOneCollapse";
+import CollapsibleMenuGrid from "../components/MenuWithOneCollapse";
+import { KeyboardArrowDown, KeyboardArrowRight } from "@mui/icons-material";
 
 const RoleCreation = () => {
   const [loaderOpen, setLoaderOpen] = React.useState(false);
@@ -44,13 +49,12 @@ const RoleCreation = () => {
   const [rows, setRows] = React.useState([]);
   const handleClose = () => setOn(false);
   const [openMenu, setOpenMenu] = React.useState(false);
-  const [selectedRows, setSelectedRows] = React.useState([]);
-  const [mainTableData, setMainTableData] = React.useState([]);
+   const [RoleTableData, setRoleTableData] = React.useState([]);
   const handleOpenMenu = () => setOpenMenu(true);
   const handleCloseMenu = () => setOpenMenu(false);
   const firstLoad = React.useRef(true);
-
-  const initial = {
+  const [MenuList, setMenuList] = React.useState([]);
+   const initial = {
     CreatedDate: dayjs().format("YYYY-MM-DD"),
     ModifiedDate: dayjs().format("YYYY-MM-DD"),
     Id: "",
@@ -65,25 +69,14 @@ const RoleCreation = () => {
       initial,
     },
   });
-  const columnsActivitymenu = [
-    { field: "id", headerName: "ID", width: 80 },
-    { field: "activity", headerName: "Activity", width: 200 },
-    { field: "Status", headerName: "Status", width: 150 },
-  ];
-
-   const rowsActivitymenu = [
-    { id: 1, activity: "Login", Status: "Success" },
-    { id: 2, activity: "Data Upload", Status: "Pending" },
-    { id: 3, activity: "Report Download", Status: "Failed" },
-    { id: 4, activity: "Profile Update", Status: "Success" },
-  ];
-
+   
   // 🔹 Track selected rows
-  const RoleCrationColumns = [
+  const RoleCrationColumns = [   
+
     {
       field: "srNo",
       headerName: "SR NO",
-      width: 55,
+      width: 50,
       sortable: false,
       headerAlign: "center",
       align: "center",
@@ -93,7 +86,7 @@ const RoleCreation = () => {
     {
       field: "action",
       headerName: "Action",
-      width: 140,
+      width: 120,
       sortable: false,
       headerAlign: "center",
       align: "center",
@@ -114,12 +107,42 @@ const RoleCreation = () => {
       },
     },
     {
-      field: "activity",
-      headerName: "Activity Name",
-      flex: 1,
-      headerAlign: "center",
-      align: "center",
+      field: "expand",
+      headerName: "",
+      width: 50,
       sortable: false,
+      renderCell: (params) => {
+        const hasChild = params.row.oSubMenusSpeAccess?.length > 0;
+        const isExpanded = expandedRowIds.includes(params.row.id);
+
+        return hasChild ? (
+          <IconButton
+            size="small"
+            onClick={() => toggleExpandRow(params.row.id)}
+          >
+            {isExpanded ? <KeyboardArrowDown /> : <KeyboardArrowRight />}
+          </IconButton>
+        ) : null;  
+      },
+    },
+     
+       {
+      field: "Name",
+      headerName: "Activity Name",
+      width: 350,
+      renderCell: (params) => (
+        <Typography
+          variant="body2"
+          sx={{
+            pl: params.row.isChild ? 5 : 0, // indent children visually
+            fontWeight: params.row.isChild ? 400 : 600,
+          }}
+        >
+          {params.row.isChild
+            ? `↳ ${params.row.Name}`
+            : `${params.row.ParentMenuName || ""} - ${params.row.SubMenuName || params.row.Name}`}
+        </Typography>
+      ),
     },
     {
       field: "IsRead",
@@ -128,11 +151,13 @@ const RoleCreation = () => {
       headerAlign: "center",
       align: "center",
       sortable: false,
+      
       renderCell: (params) => (
         <Checkbox
-          checked={Boolean(params.row.IsRead)}
+          checked={Boolean(params.row.IsRead)}          
           onChange={(e) =>
             handleCheckboxChange(params.row.id, "IsRead", e.target.checked)
+            
           }
           size="medium"
           color="primary"
@@ -333,16 +358,30 @@ const RoleCreation = () => {
     }
   }, []);
 
-  const handleCheckboxChange = (id, field, checked) => {
-    setMainTableData((prev) =>
-      prev.map((row) => (row.id === id ? { ...row, [field]: checked } : row))
+   
+const handleRemove = (displayRow) => {
+  const displayId = displayRow.id;
+
+  // if child
+  if (typeof displayId === "string" && displayId.includes("-child-")) {
+    const [parentIdStr, childIdxStr] = displayId.split("-child-");
+
+    setRoleTableData((prev) =>
+      prev.map((parent) => {
+        if (String(parent.id) !== parentIdStr) return parent;
+        const idx = Number(childIdxStr);
+        const childArr = Array.isArray(parent.oSubMenusSpeAccess)
+          ? parent.oSubMenusSpeAccess.filter((_, i) => i !== idx)
+          : [];
+        return { ...parent, oSubMenusSpeAccess: childArr };
+      })
     );
-  };
+    return;
+  }
 
-  const handleRemove = (rowToRemove) => {
-    setMainTableData((prev) => prev.filter((row) => row.id !== rowToRemove.id));
-  };
-
+  // otherwise parent row
+  setRoleTableData((prev) => prev.filter((r) => r.id !== displayId));
+};
   const handleDelete = async (rowData) => {
     Swal.fire({
       text: "Are you sure you want to delete?",
@@ -419,7 +458,6 @@ const RoleCreation = () => {
       if (response.data && response.data.values) {
         const olddata = response.data.values;
 
-         
         originalDataRef.current = olddata;
 
         const formattedLines = Array.isArray(olddata.oLines)
@@ -434,11 +472,10 @@ const RoleCreation = () => {
           RoleName: olddata.RoleName ?? "",
           Remarks: olddata.Remarks ?? "",
           Status: olddata.Status ?? "",
-
           oLines: formattedLines,
         });
 
-        setRows(formattedLines);
+        setRoleTableData(formattedLines);
       }
     } catch (error) {
       console.error("Error in handleUpdate:", error);
@@ -448,7 +485,7 @@ const RoleCreation = () => {
   };
 
   const clearFormData = () => {
-    setRows([]);
+    setRoleTableData([]);
 
     if (ClearUpdateButton === "CLEAR") {
       reset({
@@ -474,9 +511,9 @@ const RoleCreation = () => {
             ...line,
             id: line.LineNum ?? index,
           }));
-          setRows(formattedLines);
+          setRoleTableData(formattedLines);
         } else {
-          setRows([]);
+          setRoleTableData([]);
         }
       } else {
         reset({
@@ -485,7 +522,7 @@ const RoleCreation = () => {
           RoleName: "",
           oLines: [],
         });
-        setRows([]);
+        setRoleTableData([]);
       }
     }
   };
@@ -500,180 +537,295 @@ const RoleCreation = () => {
       RoleName: "",
       oLines: [],
     });
-    setRows([]); // clears table data
+    setRoleTableData([]); // clears table data
   };
  
-
-  // 🔹 On Save — push selected rows into bottom DataGrid
-  
-
   const onSubmit = async (data) => {
-  // Validate FileName not just spaces
- 
-  if (!data.RoleName || data.RoleName.trim() === "") {
-    Swal.fire({
-      toast: true,
-      icon: "warning",
-      title: "Invalid Role Name",
-      text: "Role Name cannot be empty or just spaces.",
-      position: "center",
-      showConfirmButton: false,
-      timer: 5000,
-      timerProgressBar: true,
-    });
-    return;
-  }
+    // Validate FileName not just spaces
 
-  // --- Construct Normal JSON Object (not FormData)
- const payload = {
-    Id: data.Id || 0,
-    CreatedBy: sessionStorage.getItem("userId") || "",
-    CreatedDate: dayjs().format("YYYY-MM-DDTHH:mm:ss.SSS"),
-    ModifiedBy: sessionStorage.getItem("userId") || "",
-    ModifiedDate: dayjs().format("YYYY-MM-DDTHH:mm:ss.SSS"),
-    Status: 1,
-    RoleName: data.RoleName || "",
-    Remarks: data.Remarks || "",
-    oLines: rows.map((row, index) => ({
-      LineNum: 0,
-      Id: row.Id || 0,
-      CreatedDate: row.CreatedDate
-        ? dayjs(row.CreatedDate).format("YYYY-MM-DDTHH:mm:ss.SSS")
-        : dayjs().format("YYYY-MM-DDTHH:mm:ss.SSS"),
-      CreatedBy: sessionStorage.getItem("userId") || "",
-      ModifiedDate: dayjs().format("YYYY-MM-DDTHH:mm:ss.SSS"),
-      ModifiedBy: sessionStorage.getItem("userId") || "",
-      ParentMenuId: row.ParentMenuId || 0,
-      MenuId: row.MenuId || 0,
-      IsRead: row.IsRead ?? false,
-      IsAdd: row.IsAdd ?? false,
-      IsEdit: row.IsEdit ?? false,
-      IsDelete: row.IsDelete ?? false,
-      oSpecialAccess:
-        row.oSpecialAccess?.length > 0
-          ? row.oSpecialAccess.map((sp, i) => ({
-              LineNum: 0,
-              Id: sp.Id || 0,
-              LineId: sp.LineId || 0,
-              MenuId: sp.MenuId || 0,
-            }))
-          : [],
-    })),
-  };
-
-  try {
-    let response;
-
-    if (SaveUpdateButton === "SAVE") {
-      setLoaderOpen(true);
-      response = await axios.post(`${BASE_URL}Role`, payload);
-
-    } else {
-      const result = await Swal.fire({
-        text: "Do you want to Update...?",
-        icon: "warning",
-        showCancelButton: true,
-        confirmButtonColor: "#3085d6",
-        cancelButtonColor: "#d33",
-        confirmButtonText: "Yes, Update it!",
-      });
-
-      if (!result.isConfirmed) return;
-
-      setLoaderOpen(true);
-      response = await axios.put(`${BASE_URL}Role`, payload);
-    }
-
-    setLoaderOpen(false);
-
-    if (response.data.success) {
+    if (!data.RoleName || data.RoleName.trim() === "") {
       Swal.fire({
-        icon: "success",
-        title:
-          SaveUpdateButton === "SAVE"
-            ? "RoleName Uploaded Successfully"
-            : "RoleName Updated Successfully",
-        timer: 1500,
+        toast: true,
+        icon: "warning",
+        title: "Invalid Role Name",
+        text: "Role Name cannot be empty or just spaces.",
+        position: "center",
         showConfirmButton: false,
+        timer: 5000,
+        timerProgressBar: true,
       });
-      handleClose();
-      getAllRoleList();
-    } else {
-      throw new Error(response.data.message || "Unexpected error");
+      return;
     }
-  } catch (error) {
-    setLoaderOpen(false);
 
-    Swal.fire({
-      title: "Error!",
-      text: error.message || "Something went wrong while uploading.",
-      icon: "error",
-      confirmButtonText: "Ok",
+    // --- Construct Normal JSON Object (not FormData)
+    const payload = {
+      Id: data.Id || 0,
+      CreatedBy: sessionStorage.getItem("userId") || "",
+      CreatedDate: dayjs().format("YYYY-MM-DDTHH:mm:ss.SSS"),
+      ModifiedBy: sessionStorage.getItem("userId") || "",
+      ModifiedDate: dayjs().format("YYYY-MM-DDTHH:mm:ss.SSS"),
+      Status: 1,
+      RoleName: data.RoleName || "",
+      Remarks: data.Remarks || "",
+      oLines: RoleTableData.map((row, index) => ({
+        LineNum: 0,
+        Id: row.Id || 0,
+        CreatedDate: row.CreatedDate
+          ? dayjs(row.CreatedDate).format("YYYY-MM-DDTHH:mm:ss.SSS")
+          : dayjs().format("YYYY-MM-DDTHH:mm:ss.SSS"),
+        CreatedBy: sessionStorage.getItem("userId") || "",
+        ModifiedDate: dayjs().format("YYYY-MM-DDTHH:mm:ss.SSS"),
+        ModifiedBy: sessionStorage.getItem("userId") || "",
+        ParentMenuId: row.ParentMenuId || 0,
+        MenuId: row.MenuId || 0,
+        IsRead: row.IsRead ?? false,
+        IsAdd: row.IsAdd ?? false,
+        IsEdit: row.IsEdit ?? false,
+        IsDelete: row.IsDelete ?? false,
+        oSpecialAccess:
+          row.oSpecialAccess?.length > 0
+            ? row.oSpecialAccess.map((sp, i) => ({
+                LineNum: 0,
+                Id: sp.Id || 0,
+                LineId: sp.LineId || 0,
+                MenuId: sp.MenuId || 0,
+              }))
+            : [],
+      })),
+    };
+
+    try {
+      let response;
+
+      if (SaveUpdateButton === "SAVE") {
+        setLoaderOpen(true);
+        response = await axios.post(`${BASE_URL}Role`, payload);
+      } else {
+        const result = await Swal.fire({
+          text: "Do you want to Update...?",
+          icon: "warning",
+          showCancelButton: true,
+          confirmButtonColor: "#3085d6",
+          cancelButtonColor: "#d33",
+          confirmButtonText: "Yes, Update it!",
+        });
+
+        if (!result.isConfirmed) return;
+
+        setLoaderOpen(true);
+        response = await axios.put(`${BASE_URL}Role`, payload);
+      }
+
+      setLoaderOpen(false);
+
+      if (response.data.success) {
+        Swal.fire({
+          icon: "success",
+          title:
+            SaveUpdateButton === "SAVE"
+              ? "RoleName Uploaded Successfully"
+              : "RoleName Updated Successfully",
+          timer: 1500,
+          showConfirmButton: false,
+        });
+        handleClose();
+        getAllRoleList();
+      } else {
+        throw new Error(response.data.message || "Unexpected error");
+      }
+    } catch (error) {
+      setLoaderOpen(false);
+
+      Swal.fire({
+        title: "Error!",
+        text: error.message || "Something went wrong while uploading.",
+        icon: "error",
+        confirmButtonText: "Ok",
+      });
+    }
+  };
+  const [selectedIds, setSelectedIds] = React.useState([]);
+
+  // const handleSelectedMenus = () => {
+  //   if (!Array.isArray(selectedIds) || selectedIds.length === 0) return;
+
+  //   const selectedData = [];
+
+  //   MenuList.forEach((menu) => {
+  //     (menu.oSubMenus || []).forEach((sub) => {
+  //       if (selectedIds.includes(sub.id)) {
+  //         selectedData.push({
+  //           id: `${sub.id}_${Date.now()}_${Math.random()
+  //             .toString(36)
+  //             .slice(2, 8)}`,
+  //           ParentMenuId: menu.Id,
+  //           ParentMenuName: menu.Name,
+  //           SubMenuId: sub.Id,
+  //           SubMenuName: sub.Name,
+  //           oSubMenusSpeAccess: sub.oSubMenusSpeAccess || [],
+  //         });
+  //       }
+  //     });
+  //   });
+
+  //   setRoleTableData((prev) => [...prev, ...selectedData]);
+  //   setOpenMenu(false);
+  // };
+  const handleSelectedMenus = () => {
+  if (!Array.isArray(selectedIds) || selectedIds.length === 0) return;
+
+  const selectedData = [];
+
+  MenuList.forEach((menu) => {
+    (menu.oSubMenus || []).forEach((sub) => {
+      if (selectedIds.includes(sub.id)) {
+        // Filter only selected special accesses
+        const filteredAccess = (sub.oSubMenusSpeAccess || []).filter((access) =>
+          selectedIds.includes(`${sub.id}_${access.LineNum}`)
+        );
+
+        // Push submenu only if submenu itself is selected
+        selectedData.push({
+          id: `${sub.id}_${Date.now()}_${Math.random()
+            .toString(36)
+            .slice(2, 8)}`,
+          ParentMenuId: menu.Id,
+          ParentMenuName: menu.Name,
+          SubMenuId: sub.Id,
+          SubMenuName: sub.Name,
+          // 👇 only push checked oSubMenusSpeAccess
+          oSubMenusSpeAccess: filteredAccess,
+        });
+      }
     });
-  }
+  });
+
+  // Merge with existing table data
+  setRoleTableData((prev) => [...prev, ...selectedData]);
+  setOpenMenu(false);
 };
 
-  
-  
-  
-  
-  
-  const handleSaveSelection = () => {
-    if (!Array.isArray(selectedRows) || selectedRows.length === 0) return;
 
-    //  Filter selected rows from menu DataGrid
-    const selectedData = rowsActivitymenu.filter((row) =>
-      selectedRows.includes(row.id)
-    );
+  const handleMenusList = async (params = {}) => {
+    setLoading(true);
+ 
+    try {
+      const token = sessionStorage.getItem("BearerTokan");
 
-    // 2 Create unique IDs for main table
-    const uniqueSelectedData = selectedData.map((item) => ({
-      ...item,
-      id: `${item.activity}_${Date.now()}_${Math.random()
-        .toString(36)
-        .slice(2, 8)}`,
-      IsRead: false,
-      IsAdd: false,
-      IsEdit: false,
-      IsDelete: false,
-    }));
+      if (!token) {
+        console.error("No token found! Please login first.");
+        return;
+      }
 
-    //  Merge without duplicates by activity name
-    setMainTableData((prev) => {
-      const existingActivities = prev.map((r) => r.activity);
-      const newRows = uniqueSelectedData.filter(
-        (r) => !existingActivities.includes(r.activity)
-      );
-      return [...prev, ...newRows];
-    });
-    setOpenMenu(false);
+      const { data } = await axios.get(`${BASE_URL}Menus`, {
+        params,
+        headers: {
+          Authorization: token.startsWith("Bearer ")
+            ? token
+            : `Bearer ${token}`,
+        },
+      });
+
+      if (data && data.success && Array.isArray(data.values)) {
+        const formatted = data.values.map((menuParent) => ({
+          ...menuParent,
+          id: menuParent.Id ?? Math.random(),
+          oSubMenus: Array.isArray(menuParent.oSubMenus)
+            ? menuParent.oSubMenus.map((sub) => ({
+                ...sub,
+                id: `sub_${menuParent.Id}_${sub.LineNum}`,
+                oSubMenusSpeAccess: Array.isArray(sub.oSubMenusSpeAccess)
+                  ? sub.oSubMenusSpeAccess
+                  : [],
+              }))
+            : [],
+        }));
+
+        setMenuList(formatted);
+      } else {
+        setMenuList([]);
+      }
+    } catch (err) {
+      console.error("Error fetching menus:", err);
+    } finally {
+      setLoading(false);
+    }
   };
+
+  // 🔹 Call when the component mounts
+  React.useEffect(() => {
+    handleMenusList();
+  }, []);
+
+   const [expandedRowIds, setExpandedRowIds] = React.useState([]);
+
+  const toggleExpandRow = (rowId) => {
+    setExpandedRowIds((prev) =>
+      prev.includes(rowId)
+        ? prev.filter((id) => id !== rowId)
+        : [...prev, rowId]
+    );
+  };
+
+ 
+
+ const handleCheckboxChange = (displayId, field, value) => {
+  setRoleTableData((prev) =>
+    prev.map((parent) => {
+      // 1) Parent row clicked (displayId === parent.id)
+      if (displayId === parent.id) {
+        return { ...parent, [field]: value };
+      }
+
+      // 2) Child clicked: expected format "<parentId>-child-<idx>"
+      if (typeof displayId === "string" && displayId.includes("-child-")) {
+        const [parentIdStr, childIdxStr] = displayId.split("-child-");
+        // parent ids may be numbers — compare as strings for safety
+        if (String(parent.id) === parentIdStr) {
+          const childIdx = Number(childIdxStr);
+          const childArr = Array.isArray(parent.oSubMenusSpeAccess)
+            ? [...parent.oSubMenusSpeAccess]
+            : [];
+
+          // guard index
+          if (childIdx >= 0 && childIdx < childArr.length) {
+            childArr[childIdx] = { ...childArr[childIdx], [field]: value };
+          }
+
+          return { ...parent, oSubMenusSpeAccess: childArr };
+        }
+      }
+
+       return parent;
+    })
+  );
+};
+
+    const displayRows = RoleTableData.flatMap((row) => {
+    const isExpanded = expandedRowIds.includes(row.id);
+    return [
+      row,
+      ...(isExpanded
+        ? (row.oSubMenusSpeAccess || []).map((child, idx) => ({
+            ...child,
+            id: `${row.id}-child-${idx}`, // ensure unique id
+            isChild: true,
+            parentId: row.id,
+            ParentMenuName: row.ParentMenuName,
+          }))
+        : []),
+    ];
+  });
 
   return (
     <>
       <Dialog open={openMenu} onClose={handleCloseMenu} fullWidth maxWidth="sm">
-        <DialogTitle>Search Activity</DialogTitle>
+        <DialogTitle>Menu Activity</DialogTitle>
         <DialogContent dividers>
           <div style={{ height: 350, width: "100%" }}>
-            <DataGrid
-              className="datagrid-style"
-              sx={{
-                height: "100%",
-                minHeight: "400px",
-                "& .MuiDataGrid-columnHeaders": {
-                  backgroundColor: (theme) =>
-                    theme.palette.custome.datagridcolor,
-                },
-                "& .MuiDataGrid-row:hover": {
-                  boxShadow: "0px 4px 20px rgba(0, 0, 0.2, 0.2)",
-                },
-              }}
-              rows={rowsActivitymenu}
-              columns={columnsActivitymenu}
-              checkboxSelection
-              hideFooter
-              onRowSelectionModelChange={(ids) => setSelectedRows(ids)}
-              rowSelectionModel={selectedRows}
+            <CollapsibleMenuGrid
+              menuList={MenuList}
+              onSelectionChange={setSelectedIds}
             />
           </div>
         </DialogContent>
@@ -681,7 +833,7 @@ const RoleCreation = () => {
           <Button
             variant="contained"
             size="small"
-            onClick={handleSaveSelection}
+            onClick={handleSelectedMenus}
             sx={{
               background:
                 "linear-gradient(to right, rgb(0, 90, 91), rgb(22, 149, 153))",
@@ -858,7 +1010,7 @@ const RoleCreation = () => {
             </Grid>
 
             <Grid item xs={12} style={{ height: 400, paddingBottom: 40 }}>
-              <DataGrid
+              {/* <DataGrid
                 className="datagrid-style"
                 sx={{
                   height: "100%",
@@ -871,15 +1023,45 @@ const RoleCreation = () => {
                     boxShadow: "0px 4px 20px rgba(0, 0, 0.2, 0.2)",
                   },
                 }}
-                // getRowId={(row) => row.id}
                 // rows={mainTableData}
                 getRowId={(row) => row.id}
-  rows={rows}  
+                rows={RoleTableData}
                 columns={RoleCrationColumns}
                 pageSize={5}
                 rowsPerPageOptions={[5]}
                 hideFooter
-              />
+              /> */}
+              {/* ==================================================================== */}
+ 
+              {/* 🔹 Collapse below rows (for oSubMenusSpeAccess) */}
+                  <DataGrid
+        className="datagrid-style"
+        rows={displayRows}
+        columns={RoleCrationColumns}
+          getRowId={(row) => (row.isChild ? `${row.parentId}-${row.id || row.LineNum}` : row.id)}
+
+        // getRowId={(row) => row.id}
+        hideFooter
+        disableRowSelectionOnClick
+        sx={{
+          "& .MuiDataGrid-columnHeaders": {
+            backgroundColor: (theme) => theme.palette.custome?.datagridcolor || "#f0f0f0",
+          },
+          "& .MuiDataGrid-row:hover": {
+            boxShadow: "0px 4px 20px rgba(0,0,0,0.2)",
+          },
+          "& .MuiDataGrid-cell": {
+            borderBottom: "none",
+          },
+          "& .MuiDataGrid-virtualScrollerRenderZone": {
+            "& .MuiDataGrid-row": {
+              borderBottom: "1px solid #ddd",
+            },
+          },
+        }}
+      />
+
+              {/* ========================================================================== */}
             </Grid>
             {/* Footer */}
             <Grid

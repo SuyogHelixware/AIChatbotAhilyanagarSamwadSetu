@@ -8,6 +8,7 @@ import { BASE_URL } from "../Constant";
 import { Visibility, VisibilityOff } from "@mui/icons-material";
 import Loader from "../components/Loader";
 import PersonIcon from "@mui/icons-material/Person";
+import CryptoJS from "crypto-js";
 
 const Signin = () => {
   const [userId, setUserId] = useState("");
@@ -15,6 +16,12 @@ const Signin = () => {
   const navigate = useNavigate();
   const [showPassword, setShowPassword] = useState(false);
   const [loading, setLoading] = useState(false);
+   const [role, setRole] = useState(() => {
+    const storedRole = localStorage.getItem("RoleDetails");
+    return storedRole ? JSON.parse(storedRole) : null;
+  });
+
+const SECRET_KEY = "YourStrongSecretKey123!"; 
 
   const handleSubmit = async () => {
     // try {
@@ -89,6 +96,8 @@ const Signin = () => {
         .post(`${BASE_URL}Login`, body)
 
         .then(async (res) => {
+console.log("tt=====", res.headers.authorization);
+
           if (res.data.success === true) {
             const data = res.data.values;
 
@@ -104,63 +113,50 @@ const Signin = () => {
               Avatar: data.Avatar,
               _id: data._id,
               Token: data.Token,
-              RoleName: "Super Admin",
+              RoleName: data.RoleName,
             };
 
             // Save basic user info
+            console.log("tt==+++++++++===", res.headers.authorization);
+            sessionStorage.setItem("BearerTokan", res.headers.authorization);
+
             sessionStorage.setItem("userId", userData.RoleName);
             sessionStorage.setItem("userData", JSON.stringify(userData));
-            try {
-              const roleNameToUse = data?.RoleName || "Manager";
-              const encodedRoleName = encodeURIComponent(roleNameToUse);
 
-              const roleResponse = await axios.get(
-                // `${BASE_URL}Role/${encodedRoleName}`,
-                `${BASE_URL}Role?RoleName=${encodedRoleName}`,
+            const roleNameToUse = data?.RoleName || "Manager";
+            const encodedRoleName = encodeURIComponent(roleNameToUse);
 
-                {
-                  headers: {
-                    // Authorization: `Bearer ${data.Token}`,
-                  },
-                }
-              );
-              debugger;
-              const resp = roleResponse.data.values;
+            const roleResponse = await axios.get(
+              `${BASE_URL}Role?RoleName=${encodedRoleName}`
+            );
 
-              if (resp.data.oLines && resp.oLines) {
-                // ✅ Store only oLines
-                localStorage.setItem(
-                  "roleAccess",
+            if (roleResponse.data.success === true) {
+              const roleData = roleResponse.data.values;
+              const oLines =
+                Array.isArray(roleData) && roleData.length > 0
+                  ? roleData[0].oLines || []
+                  : roleData.oLines || [];
 
-                  JSON.stringify(roleResponse.data.oLines)
-                );
+              const RoleDetails = {
+                oLines, 
+              };
 
-              }
-            } catch (roleErr) {
-              console.error("Error fetching role access:", roleErr);
-            }
-            // try {
-            //   const roleNameToUse = data?.RoleName || "Manager";
-            //   const encodedRoleName = encodeURIComponent(roleNameToUse);
 
-            //   const roleResponse = await axios.get(
-            //     `${BASE_URL}Role?RoleName=${encodedRoleName}`
+              const encryptedRoleDetails = CryptoJS.AES.encrypt(
+    JSON.stringify(RoleDetails),
+    SECRET_KEY
+  ).toString();
+
+    sessionStorage.setItem("RoleDetails", encryptedRoleDetails);
+
+
+            //   sessionStorage.setItem(
+            //     "RoleDetails",
+            //     JSON.stringify(RoleDetails)
             //   );
+             }
 
-            //   const resp = roleResponse.data.values; // this contains Id, RoleName, oLines, etc.
 
-            //   if (resp && resp.oLines) {
-            //     // ✅ Store only oLines in localStorage
-            //     localStorage.setItem("roleAccess", JSON.stringify(resp.oLines));
-            //     console.log("Role access stored:", resp.oLines);
-            //   } else {
-            //     console.warn("No oLines found in response");
-            //   }
-            // } catch (roleErr) {
-            //   console.error("Error fetching role access:", roleErr);
-            // }
-
-            // ✅ Show success message and redirect
             Swal.fire({
               position: "top-end",
               toast: true,

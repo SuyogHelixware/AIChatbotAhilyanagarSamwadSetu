@@ -20,6 +20,7 @@ import Swal from "sweetalert2";
 import { BASE_URL } from "../Constant";
 import Loader from "../components/Loader";
 import dayjs from "dayjs";
+import { useThemeMode } from "../Dashboard/Theme";
 
 const GazettedMaster = () => {
   const [loaderOpen, setLoaderOpen] = React.useState(false);
@@ -33,6 +34,11 @@ const GazettedMaster = () => {
   const limit = 20; 
   const originalDataRef = React.useRef(null);
   const firstLoad = React.useRef(true);
+
+      const { checkAccess  } = useThemeMode();
+
+     const canAdd = checkAccess(3, "IsAdd");
+
 
   // React Hook Form initialization
   const {
@@ -63,6 +69,7 @@ const GazettedMaster = () => {
   const handleClose = () => setOn(false);
 
   const handleOnSave = () => {
+    
     setSaveUpdateButton("SAVE");
     setClearUpdateButton("CLEAR");
     clearFormData();
@@ -494,6 +501,8 @@ const GazettedMaster = () => {
       <Grid container spacing={2} marginBottom={1} justifyContent="flex-end">
         <Grid textAlign={"end"} marginBottom={1}>
           <Button
+                disabled={!canAdd} // ✅ disable button if no access
+
             onClick={handleOnSave}
             type="text"
             size="medium"
