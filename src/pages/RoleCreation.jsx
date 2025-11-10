@@ -51,13 +51,11 @@ const RoleCreation = () => {
   const [openMenu, setOpenMenu] = React.useState(false);
   const [selectedIds, setSelectedIds] = React.useState([]);
 
- 
   const handleOpenMenu = () => setOpenMenu(true);
   const handleCloseMenu = () => setOpenMenu(false);
   const firstLoad = React.useRef(true);
   const [MenuList, setMenuList] = React.useState([]);
   const initial = {
-    Id: "",
     RoleName: "",
     Remarks: "",
     Status: "",
@@ -66,12 +64,11 @@ const RoleCreation = () => {
   const initialRole = {
     CreatedDate: dayjs().format("YYYY-MM-DD"),
     ModifiedDate: dayjs().format("YYYY-MM-DD"),
-    Id: "",
     RoleName: "",
     Remarks: "",
     Status: "",
     oSubMenus: [],
-    oSubMenusSpeAccess: [], // child rows
+    oSubMenusSpeAccess: [],
   };
   const { handleSubmit, control, reset } = useForm({
     defaultValues: initial,
@@ -80,15 +77,29 @@ const RoleCreation = () => {
   const [RoleTableData, setRoleTableData] = React.useState(() => [
     {
       ...initialRole,
-
+      id: `parent-${Date.now()}`,
       IsRead: true,
       IsAdd: true,
       IsEdit: true,
       IsDelete: true,
 
+      //     oSubMenusSpeAccess: (initialRole.oSubMenusSpeAccess || []).map(
+      //       (child) => ({
+      //         ...child,
+      //               id: `child-${Date.now()}-${idx}`, // ✅ unique id for each child
+
+      //         IsRead: true,
+      //         IsAdd: true,
+      //         IsEdit: true,
+      //         IsDelete: true,
+      //       })
+      //     ),
+      //   },
+      // ]);
       oSubMenusSpeAccess: (initialRole.oSubMenusSpeAccess || []).map(
-        (child) => ({
+        (child, idx) => ({
           ...child,
+          id: `child-${Date.now()}-${idx}`,
           IsRead: true,
           IsAdd: true,
           IsEdit: true,
@@ -281,7 +292,7 @@ const RoleCreation = () => {
         </strong>
       ),
     },
-       {
+    {
       field: "srNo",
       headerName: "SR NO",
       width: 80,
@@ -377,8 +388,7 @@ const RoleCreation = () => {
           response.data.values.map((item, index) => ({
             ...item,
             // id: page * limit + index + 1,
-                    id: item.Id || item.id || page * limit + index + 1,
-
+            id: item.Id || item.id || page * limit + index + 1,
           }))
         );
         setTotalRows(response.data.count);
@@ -484,7 +494,7 @@ const RoleCreation = () => {
 
       if (userData) {
         try {
-           const parsedData = JSON.parse(userData);
+          const parsedData = JSON.parse(userData);
           userType = parsedData.UserType;
           userId = parsedData.UserId;
         } catch (e) {
@@ -499,31 +509,60 @@ const RoleCreation = () => {
 
         originalDataRef.current = olddata;
 
+   
         const formattedLines = Array.isArray(olddata.oLines)
           ? olddata.oLines.map((line, index) => ({
               ...line,
-               id: line.LineNum || line.MenuId || `${index}-${Date.now()}`,
-              Name: `${line.ParentMenu || ""} - ${line.MenuName || ""}`.trim(),
-                          SubMenuId: line.SubMenuId,  
+              // 🔹 Stable ID priority order: LineNum > MenuId > index
+              id:
+                line.LineNum ||
+                line.MenuId ||
+                `${olddata.Id}-${index}-${Date.now()}`,
 
-                             oSpecialAccess: Array.isArray(line.oSpecialAccess)
+              // 🔹 Display Name
+              Name: `${line.ParentMenu || ""} - ${line.MenuName || ""}`.trim(),
+
+              SubMenuId: line.SubMenuId ?? null,
+
+              // ✅ Ensure nested oSpecialAccess also have unique IDs
+          //     oSpecialAccess: Array.isArray(line.oSpecialAccess)
+          //       ? line.oSpecialAccess.map((sa, saIndex) => ({
+          //           ...sa,
+          //           id:
+          //             sa.LineNum ||
+          //             `${
+          //               line.MenuId || line.LineNum || index
+          //             }-SA-${saIndex}-${Date.now()}`,
+          //           ParentLineId:
+          //             line.LineNum || line.MenuId || `${index}-${Date.now()}`,
+          //           Name: line.MenuName,
+          //         }))
+          //       : [],
+          //   }))
+          // : [];
+           oSubMenusSpeAccess: Array.isArray(line.oSpecialAccess)
               ? line.oSpecialAccess.map((sa, saIndex) => ({
                   ...sa,
-                  id: sa.LineNum || `${line.MenuId}-${saIndex}`,
-                  ParentLineId: line.LineNum,
-                  Name :line.MenuName
+                  id:
+                    sa.LineNum ||
+                    `${
+                      line.MenuId || line.LineNum || index
+                    }-SA-${saIndex}-${Date.now()}`,
+                  parentId:
+                    line.LineNum || `${index}-${Date.now()}`,
+                  Name: sa.MenuName ,
+                  IsAdd:sa.IsAdd,
+                  isChild: true,
                 }))
               : [],
-       
+          }))
+        : [];
 
-            }))
-          : [];
- 
         reset({
-          Id: olddata.Id ?? "",
-          RoleName: olddata.RoleName ?? "",
-          Remarks: olddata.Remarks ?? "",
-          Status: olddata.Status ?? "",
+          Id: olddata.Id,
+          RoleName: olddata.RoleName,
+          Remarks: olddata.Remarks,
+          Status: olddata.Status,
           oLines: formattedLines,
         });
 
@@ -735,8 +774,6 @@ const RoleCreation = () => {
               IsEdit: true,
               IsDelete: true,
             })),
-            // 👇 only push checked oSubMenusSpeAccess special menus
-            // oSubMenusSpeAccess: filteredAccess,   //*** */
           });
         }
       });
@@ -889,7 +926,9 @@ const RoleCreation = () => {
       ...(isExpanded
         ? (row.oSubMenusSpeAccess || []).map((child, idx) => ({
             ...child,
-            id: `${row.id}-child-${idx}`,
+            // id: `${row.id}-child-${idx}`,
+            id: `${row.id}-child-${idx}`, // ✅ guaranteed unique (includes parent id)
+
             isChild: true,
             parentId: row.id,
             ParentMenuName: row.ParentMenuName,
@@ -916,16 +955,16 @@ const RoleCreation = () => {
               ]}
             /> */}
             <CollapsibleMenuGrid
-  menuList={MenuList}
-  onSelectionChange={setSelectedIds}
-  existingSubMenus={[
-    ...new Set(
-      (RoleTableData || [])
-        .filter((r) => r.SubMenuId != null)
-        .map((r) => r.SubMenuId)
-    ),
-  ]}
-/>
+              menuList={MenuList}
+              onSelectionChange={setSelectedIds}
+              existingSubMenus={[
+                ...new Set(
+                  (RoleTableData || [])
+                    .filter((r) => r.SubMenuId != null)
+                    .map((r) => r.SubMenuId)
+                ),
+              ]}
+            />
           </div>
         </DialogContent>
         <DialogActions
@@ -1134,13 +1173,7 @@ const RoleCreation = () => {
                 className="datagrid-style"
                 rows={displayRows}
                 columns={RoleCrationColumns}
-                // getRowId={(row) =>
-                //   row.isChild
-                //     ? `${row.parentId}-${row.MenuId || row.LineNum}`
-                //     : row.MenuId
-                // }
-  // getRowId={(row) => row.Id}
-
+                getRowId={(row) => row.id}
                 hideFooter
                 disableRowSelectionOnClick
                 sx={{
@@ -1287,12 +1320,8 @@ const RoleCreation = () => {
               boxShadow: "0px 4px 20px rgba(0, 0, 0.2, 0.2)",
             },
           }}
-              getRowId={(row) => row.Id}
-
+          getRowId={(row) => row.Id}
           rows={GetRolelist}
-    
-
-           
           columns={Maincolumns}
           pagination
           paginationMode="server"
@@ -1331,7 +1360,7 @@ const RoleCreation = () => {
             getAllRoleList(0, quickFilterValue, limit);
           }}
           // getRowId={(row) => row.MenuId}
-            // getRowId={(row) => row.Id ?? row.id ?? row.MenuId ?? row.LineNum ?? `${row.RoleName}-${Math.random()}`}
+          // getRowId={(row) => row.Id ?? row.id ?? row.MenuId ?? row.LineNum ?? `${row.RoleName}-${Math.random()}`}
         />
       </Grid>
     </>
