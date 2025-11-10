@@ -22,10 +22,14 @@ export const ModeContext = createContext({
   userSession: { userId: "", UserType: "", CreatedBy: "" },
   refreshUserSession: () => {},
 
-   refreshRoleAccess: () => {},
+  refreshRoleAccess: () => {},
 
-     getAccessFor: () => ({ canAdd: false, canEdit: false, canRead: false, canDelete: false }),
-
+  getAccessFor: () => ({
+    canAdd: false,
+    canEdit: false,
+    canRead: false,
+    canDelete: false,
+  }),
 });
 
 export const ModeContextProvider = ({ children }) => {
@@ -34,15 +38,12 @@ export const ModeContextProvider = ({ children }) => {
   const DarkMode = () => setThemeMode("dark");
 
   const [roleAccess, setRoleAccess] = useState([]);
-   
+
   const SECRET_KEY =
     process.env.REACT_APP_SECRET_KEY || "YourStrongSecretKey123!";
 
- 
- 
   const loadRoleAccess = () => {
     try {
-       
       const encrypted = sessionStorage.getItem("RoleDetails");
       if (!encrypted) return [];
 
@@ -65,15 +66,12 @@ export const ModeContextProvider = ({ children }) => {
   const storedUser = JSON.parse(sessionStorage.getItem("userData") || "{}");
 
   useEffect(() => {
-    //  const userId = sessionStorage.getItem("userId");
     const userId = storedUser.Username;
     const UserType = storedUser.UserType;
     const CreatedBy = storedUser.Username;
     setUserSession({ userId, UserType, CreatedBy });
 
-
-     
-     const oLinesData = loadRoleAccess();
+    const oLinesData = loadRoleAccess();
     setRoleAccess(oLinesData);
   }, []);
 
@@ -84,30 +82,14 @@ export const ModeContextProvider = ({ children }) => {
     setUserSession({ userId, UserType, CreatedBy });
   };
 
- const refreshRoleAccess = () => {
+  const refreshRoleAccess = () => {
     const updatedData = loadRoleAccess();
     setRoleAccess(updatedData);
   };
 
-  // const getAccessFor = (MenuId=3) => {
-     
-  //   const found = roleAccess?.find((r) => r.MenuId === MenuId);
-     
-  //   return {
-  //     canAdd: found?.IsAdd,
-  //     canEdit: found?.IsEdit ,
-  //     canRead: found?.IsRead ,
-  //     canDelete: found?.IsDelete ,
-  //   };
-  // };
-
-    const checkAccess = (MenuId, permissionType) => {
-      
+  const checkAccess = (MenuId, permissionType) => {
     try {
-      
-      const found = roleAccess?.find(
-        (r) => r.MenuId === MenuId
-      );
+      const found = roleAccess?.find((r) => r.MenuId === MenuId);
       if (!found) return false;
 
       // permissionType can be one of: "IsAdd", "IsEdit", "IsDelete", "IsRead"
@@ -117,7 +99,6 @@ export const ModeContextProvider = ({ children }) => {
       return false;
     }
   };
- 
 
   return (
     <ModeContext.Provider
@@ -129,9 +110,7 @@ export const ModeContextProvider = ({ children }) => {
         refreshUserSession,
         roleAccess,
         refreshRoleAccess,
-                // getAccessFor, 
-                checkAccess
-
+        checkAccess,
       }}
     >
       {children}

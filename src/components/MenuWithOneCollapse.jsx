@@ -1,82 +1,33 @@
- 
-
- import React, { useState, useEffect } from "react";
-import {
-  Collapse,
-  IconButton,
-  Box,
-  Typography,
-  Checkbox,
-} from "@mui/material";
+import React, { useState, useEffect } from "react";
+import { Collapse, IconButton, Box, Typography, Checkbox } from "@mui/material";
 import { KeyboardArrowDown, KeyboardArrowRight } from "@mui/icons-material";
 
-const CollapsibleMenuGrid = ({ menuList = [], onSelectionChange , existingSubMenus = [] }) => {
-  const [expandedRow, setExpandedRow] = useState(null);
+const CollapsibleMenuGrid = ({
+  menuList = [],
+  onSelectionChange,
+  existingSubMenus = [],
+}) => {
+  const [expandedRow, setExpandedRow] = useState(new Set());
   const [selectedIds, setSelectedIds] = useState([]);
+  // const [expandedRows, setExpandedRows] = useState(new Set());
 
-  const toggleExpand = (id) => {
-    setExpandedRow(expandedRow === id ? null : id);
-  };
+  // const toggleExpand = (id) => {
+    // setExpandedRow(expandedRow === id ? null : id);
+    const toggleExpand = (id) => {
+       setExpandedRow((prev) => {
+        const newSet = new Set(prev);
+        if (newSet.has(id)) newSet.delete(id);
+        else newSet.add(id);
+        return newSet;
+      });
+    };
+  // };
 
-//   const handleCheck = (menu, subMenu = null, access = null) => {
-//   setSelectedIds((prev) => {
-//     let updated = new Set(prev);
-
-//     const toggleIds = (ids, checked) => {
-//       ids.forEach((id) => {
-//         if (checked) updated.add(id);
-//         else updated.delete(id);
-//       });
-//     };
-
-//     if (menu && !subMenu && !access) {
-//       // 🔹 Parent checked → toggle parent + all subMenus (❌ NOT special access)
-//       const subIds = (menu.oSubMenus || []).map((sub) => sub.id);
-//       const allIds = [menu.id, ...subIds];
-//       const isParentChecked = allIds.every((id) => updated.has(id));
-
-//       toggleIds(allIds, !isParentChecked);
-//     } 
-//     else if (subMenu && !access) {
-//       // 🔹 SubMenu checked → toggle only submenu (❌ NOT its special accesses)
-//       const allIds = [subMenu.id];
-//       const isSubChecked = allIds.every((id) => updated.has(id));
-
-//       toggleIds(allIds, !isSubChecked);
-
-//       // 🔹 Update parent checked status
-//       const allSubChecked = (menu.oSubMenus || []).every((sub) =>
-//         updated.has(sub.id)
-//       );
-//       if (allSubChecked) updated.add(menu.id);
-//       else updated.delete(menu.id);
-//     } 
-//     else if (access) {
-//       // 🔹 Single special access toggle only itself
-//       const accessId = `${subMenu.id}_${access.LineNum}`;
-//       if (updated.has(accessId)) updated.delete(accessId);
-//       else updated.add(accessId);
-
-//       // Optional: Update submenu checked state
-//       const allAccessIds = (subMenu.oSubMenusSpeAccess || []).map(
-//         (acc) => `${subMenu.id}_${acc.LineNum}`
-//       );
-//       const allAccessChecked = allAccessIds.every((id) => updated.has(id));
-//       if (allAccessChecked) updated.add(subMenu.id);
-//       else updated.delete(subMenu.id);
-//     }
-
-//     return Array.from(updated);
-//   });
-// };
-
-  // Notify parent when selection changes
  
   const handleCheck = (menu, subMenu = null, access = null) => {
   setSelectedIds((prev) => {
     let updated = new Set(prev);
 
-    // helper
     const toggleIds = (ids, checked) => {
       ids.forEach((id) => {
         if (checked) updated.add(id);
@@ -84,35 +35,40 @@ const CollapsibleMenuGrid = ({ menuList = [], onSelectionChange , existingSubMen
       });
     };
 
-    // ✅ Prevent selecting already pushed submenu
-    if (subMenu && existingSubMenus.includes(subMenu.Id)) {
-      return Array.from(updated); // do nothing if submenu already added
+    // 🧠 Prevent selecting already pushed submenu or its access
+    if (subMenu && existingSubMenus.includes(subMenu.LineNum)) {
+      return Array.from(updated);
+    }
+    if (access && subMenu && existingSubMenus.includes(subMenu.LineNum)) {
+      return Array.from(updated);
     }
 
+    // ✅ Parent Menu Clicked
     if (menu && !subMenu && !access) {
-      // Parent checked → toggle only submenus that are NOT already pushed
       const subIds = (menu.oSubMenus || [])
-        .filter((sub) => !existingSubMenus.includes(sub.Id))
+        .filter((sub) => !existingSubMenus.includes(sub.LineNum)) // skip disabled
         .map((sub) => sub.id);
       const allIds = [menu.id, ...subIds];
       const isParentChecked = allIds.every((id) => updated.has(id));
       toggleIds(allIds, !isParentChecked);
-    } 
+    }
+
+    // ✅ Submenu Clicked
     else if (subMenu && !access) {
-      // SubMenu checked → only if not already added
       const allIds = [subMenu.id];
       const isSubChecked = allIds.every((id) => updated.has(id));
       toggleIds(allIds, !isSubChecked);
 
       const allSubChecked = (menu.oSubMenus || [])
-        .filter((sub) => !existingSubMenus.includes(sub.Id))
+        .filter((sub) => !existingSubMenus.includes(sub.LineNum))
         .every((sub) => updated.has(sub.id));
 
       if (allSubChecked) updated.add(menu.id);
       else updated.delete(menu.id);
-    } 
+    }
+
+    // ✅ Access-level Clicked
     else if (access) {
-      // Special access toggle
       const accessId = `${subMenu.id}_${access.LineNum}`;
       if (updated.has(accessId)) updated.delete(accessId);
       else updated.add(accessId);
@@ -129,13 +85,19 @@ const CollapsibleMenuGrid = ({ menuList = [], onSelectionChange , existingSubMen
   });
 };
 
- 
- 
+
+
   useEffect(() => {
     if (onSelectionChange) {
       onSelectionChange(selectedIds);
     }
   }, [selectedIds]);
+
+  useEffect(() => {
+    // expand all parent menus by default
+    const allMenuIds = new Set(menuList.map((menu) => menu.id));
+    setExpandedRow(allMenuIds);
+  }, [menuList]);
 
   return (
     <Box sx={{ width: "100%" }}>
@@ -149,14 +111,13 @@ const CollapsibleMenuGrid = ({ menuList = [], onSelectionChange , existingSubMen
               border: "1px solid #ddd",
               borderRadius: 1,
               p: 1,
-              background: "#fafafa",
-            }}
+             }}
           >
             {/* Parent Menu */}
             <Box sx={{ display: "flex", alignItems: "center" }}>
               {Array.isArray(menu.oSubMenus) && menu.oSubMenus.length > 0 && (
                 <IconButton size="small" onClick={() => toggleExpand(menu.id)}>
-                  {expandedRow === menu.id ? (
+                  {expandedRow.has(menu.id) ? (
                     <KeyboardArrowDown />
                   ) : (
                     <KeyboardArrowRight />
@@ -173,7 +134,12 @@ const CollapsibleMenuGrid = ({ menuList = [], onSelectionChange , existingSubMen
             </Box>
 
             {/* SubMenus */}
-            <Collapse in={expandedRow === menu.id} timeout="auto" unmountOnExit>
+            <Collapse
+              in={expandedRow.has(menu.id)}
+              timeout="auto"
+              unmountOnExit
+            >
+              {/* <Collapse in={expandedRow === menu.id} timeout="auto" unmountOnExit> */}
               {(menu.oSubMenus || []).map((sub) => {
                 const isSubChecked = selectedIds.includes(sub.id);
                 return (
@@ -182,21 +148,36 @@ const CollapsibleMenuGrid = ({ menuList = [], onSelectionChange , existingSubMen
                       {/* <Checkbox
                         checked={isSubChecked}
                         onChange={() => handleCheck(menu, sub)}
-                        
+                        //  disabled={existingSubMenus.includes(sub.Id)}
+                        disabled={existingSubMenus.includes(sub.LineNum)}
                       />
-                      <Typography variant="body2">{sub.Name}</Typography> */}
+                      <Typography
+                        variant="body2"
+                        sx={{
+                          textDecoration: existingSubMenus.includes(sub.Id)
+                            ? "line-through"
+                            : "none",
+                          color: existingSubMenus.includes(sub.Id)
+                            ? "gray"
+                            : "inherit",
+                        }}
+                      >
+                        {sub.Name}
+                      </Typography> */}
                       <Checkbox
   checked={isSubChecked}
   onChange={() => handleCheck(menu, sub)}
-  disabled={existingSubMenus.includes(sub.Id)} 
+  disabled={existingSubMenus.includes(sub.LineNum)} // ✅ correct
 />
 <Typography
   variant="body2"
   sx={{
-    textDecoration: existingSubMenus.includes(sub.Id)
+    textDecoration: existingSubMenus.includes(sub.LineNum)
       ? "line-through"
       : "none",
-    color: existingSubMenus.includes(sub.Id) ? "gray" : "inherit",
+    color: existingSubMenus.includes(sub.LineNum)
+      ? "gray"
+      : "inherit",
   }}
 >
   {sub.Name}

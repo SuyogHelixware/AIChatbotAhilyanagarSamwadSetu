@@ -49,34 +49,61 @@ const RoleCreation = () => {
   const [rows, setRows] = React.useState([]);
   const handleClose = () => setOn(false);
   const [openMenu, setOpenMenu] = React.useState(false);
-   const [RoleTableData, setRoleTableData] = React.useState([]);
+  const [selectedIds, setSelectedIds] = React.useState([]);
+
+ 
   const handleOpenMenu = () => setOpenMenu(true);
   const handleCloseMenu = () => setOpenMenu(false);
   const firstLoad = React.useRef(true);
   const [MenuList, setMenuList] = React.useState([]);
-   const initial = {
-    CreatedDate: dayjs().format("YYYY-MM-DD"),
-    ModifiedDate: dayjs().format("YYYY-MM-DD"),
+  const initial = {
     Id: "",
     RoleName: "",
     Remarks: "",
     Status: "",
     oLines: [],
   };
-
+  const initialRole = {
+    CreatedDate: dayjs().format("YYYY-MM-DD"),
+    ModifiedDate: dayjs().format("YYYY-MM-DD"),
+    Id: "",
+    RoleName: "",
+    Remarks: "",
+    Status: "",
+    oSubMenus: [],
+    oSubMenusSpeAccess: [], // child rows
+  };
   const { handleSubmit, control, reset } = useForm({
-    defaultValues: {
-      initial,
-    },
+    defaultValues: initial,
   });
-   
-  // 🔹 Track selected rows
-  const RoleCrationColumns = [   
 
+  const [RoleTableData, setRoleTableData] = React.useState(() => [
+    {
+      ...initialRole,
+
+      IsRead: true,
+      IsAdd: true,
+      IsEdit: true,
+      IsDelete: true,
+
+      oSubMenusSpeAccess: (initialRole.oSubMenusSpeAccess || []).map(
+        (child) => ({
+          ...child,
+          IsRead: true,
+          IsAdd: true,
+          IsEdit: true,
+          IsDelete: true,
+        })
+      ),
+    },
+  ]);
+
+  // 🔹 Track selected rows
+  const RoleCrationColumns = [
     {
       field: "srNo",
       headerName: "SR NO",
-      width: 50,
+      width: 80,
       sortable: false,
       headerAlign: "center",
       align: "center",
@@ -122,11 +149,11 @@ const RoleCreation = () => {
           >
             {isExpanded ? <KeyboardArrowDown /> : <KeyboardArrowRight />}
           </IconButton>
-        ) : null;  
+        ) : null;
       },
     },
-     
-       {
+
+    {
       field: "Name",
       headerName: "Activity Name",
       width: 350,
@@ -135,12 +162,14 @@ const RoleCreation = () => {
           variant="body2"
           sx={{
             pl: params.row.isChild ? 5 : 0, // indent children visually
-            fontWeight: params.row.isChild ? 400 : 600,
+            fontWeight: params.row.isChild ? 350 : 450,
           }}
         >
           {params.row.isChild
             ? `↳ ${params.row.Name}`
-            : `${params.row.ParentMenuName || ""} - ${params.row.SubMenuName || params.row.Name}`}
+            : `${params.row.ParentMenuName || ""} - ${
+                params.row.SubMenuName || params.row.Name
+              }`}
         </Typography>
       ),
     },
@@ -151,13 +180,12 @@ const RoleCreation = () => {
       headerAlign: "center",
       align: "center",
       sortable: false,
-      
+
       renderCell: (params) => (
         <Checkbox
-          checked={Boolean(params.row.IsRead)}          
+          checked={Boolean(params.row.IsRead)}
           onChange={(e) =>
             handleCheckboxChange(params.row.id, "IsRead", e.target.checked)
-            
           }
           size="medium"
           color="primary"
@@ -253,7 +281,16 @@ const RoleCreation = () => {
         </strong>
       ),
     },
-    { field: "id", headerName: "Sr.No", width: 80, sortable: true },
+       {
+      field: "srNo",
+      headerName: "SR NO",
+      width: 80,
+      sortable: false,
+      headerAlign: "center",
+      align: "center",
+      renderCell: (params) =>
+        params.api.getSortedRowIds().indexOf(params.id) + 1,
+    },
     {
       field: "RoleName",
       headerName: " ROLE NAME",
@@ -339,7 +376,9 @@ const RoleCreation = () => {
         setGetRolelist(
           response.data.values.map((item, index) => ({
             ...item,
-            id: page * limit + index + 1,
+            // id: page * limit + index + 1,
+                    id: item.Id || item.id || page * limit + index + 1,
+
           }))
         );
         setTotalRows(response.data.count);
@@ -358,30 +397,29 @@ const RoleCreation = () => {
     }
   }, []);
 
-   
-const handleRemove = (displayRow) => {
-  const displayId = displayRow.id;
+  const handleRemove = (displayRow) => {
+    const displayId = displayRow.id;
 
-  // if child
-  if (typeof displayId === "string" && displayId.includes("-child-")) {
-    const [parentIdStr, childIdxStr] = displayId.split("-child-");
+    // if child
+    if (typeof displayId === "string" && displayId.includes("-child-")) {
+      const [parentIdStr, childIdxStr] = displayId.split("-child-");
 
-    setRoleTableData((prev) =>
-      prev.map((parent) => {
-        if (String(parent.id) !== parentIdStr) return parent;
-        const idx = Number(childIdxStr);
-        const childArr = Array.isArray(parent.oSubMenusSpeAccess)
-          ? parent.oSubMenusSpeAccess.filter((_, i) => i !== idx)
-          : [];
-        return { ...parent, oSubMenusSpeAccess: childArr };
-      })
-    );
-    return;
-  }
+      setRoleTableData((prev) =>
+        prev.map((parent) => {
+          if (String(parent.id) !== parentIdStr) return parent;
+          const idx = Number(childIdxStr);
+          const childArr = Array.isArray(parent.oSubMenusSpeAccess)
+            ? parent.oSubMenusSpeAccess.filter((_, i) => i !== idx)
+            : [];
+          return { ...parent, oSubMenusSpeAccess: childArr };
+        })
+      );
+      return;
+    }
 
-  // otherwise parent row
-  setRoleTableData((prev) => prev.filter((r) => r.id !== displayId));
-};
+    // otherwise parent row
+    setRoleTableData((prev) => prev.filter((r) => r.id !== displayId));
+  };
   const handleDelete = async (rowData) => {
     Swal.fire({
       text: "Are you sure you want to delete?",
@@ -432,6 +470,7 @@ const handleRemove = (displayRow) => {
   };
 
   const handleUpdate = async (rowData) => {
+    console.log("object ", rowData);
     setSaveUpdateButton("UPDATE");
     setClearUpdateButton("RESET");
     setOn(true);
@@ -445,7 +484,7 @@ const handleRemove = (displayRow) => {
 
       if (userData) {
         try {
-          const parsedData = JSON.parse(userData);
+           const parsedData = JSON.parse(userData);
           userType = parsedData.UserType;
           userId = parsedData.UserId;
         } catch (e) {
@@ -463,10 +502,23 @@ const handleRemove = (displayRow) => {
         const formattedLines = Array.isArray(olddata.oLines)
           ? olddata.oLines.map((line, index) => ({
               ...line,
-              id: line.LineNum ?? index,
+               id: line.LineNum || line.MenuId || `${index}-${Date.now()}`,
+              Name: `${line.ParentMenu || ""} - ${line.MenuName || ""}`.trim(),
+                          SubMenuId: line.SubMenuId,  
+
+                             oSpecialAccess: Array.isArray(line.oSpecialAccess)
+              ? line.oSpecialAccess.map((sa, saIndex) => ({
+                  ...sa,
+                  id: sa.LineNum || `${line.MenuId}-${saIndex}`,
+                  ParentLineId: line.LineNum,
+                  Name :line.MenuName
+                }))
+              : [],
+       
+
             }))
           : [];
-
+ 
         reset({
           Id: olddata.Id ?? "",
           RoleName: olddata.RoleName ?? "",
@@ -539,10 +591,8 @@ const handleRemove = (displayRow) => {
     });
     setRoleTableData([]); // clears table data
   };
- 
-  const onSubmit = async (data) => {
-    // Validate FileName not just spaces
 
+  const onSubmit = async (data) => {
     if (!data.RoleName || data.RoleName.trim() === "") {
       Swal.fire({
         toast: true,
@@ -557,7 +607,6 @@ const handleRemove = (displayRow) => {
       return;
     }
 
-    // --- Construct Normal JSON Object (not FormData)
     const payload = {
       Id: data.Id || 0,
       CreatedBy: sessionStorage.getItem("userId") || "",
@@ -571,28 +620,34 @@ const handleRemove = (displayRow) => {
         LineNum: 0,
         Id: row.Id || 0,
         CreatedDate: row.CreatedDate
-          ? dayjs(row.CreatedDate).format("YYYY-MM-DDTHH:mm:ss.SSS")
-          : dayjs().format("YYYY-MM-DDTHH:mm:ss.SSS"),
+          ? dayjs(row.CreatedDate).format("YYYY-MM-DDTHH:mm:ss")
+          : dayjs().format("YYYY-MM-DDTHH:mm:ss"),
         CreatedBy: sessionStorage.getItem("userId") || "",
         ModifiedDate: dayjs().format("YYYY-MM-DDTHH:mm:ss.SSS"),
         ModifiedBy: sessionStorage.getItem("userId") || "",
         ParentMenuId: row.ParentMenuId || 0,
-        MenuId: row.MenuId || 0,
-        IsRead: row.IsRead ?? false,
-        IsAdd: row.IsAdd ?? false,
-        IsEdit: row.IsEdit ?? false,
-        IsDelete: row.IsDelete ?? false,
+        ParentMenuName: row.ParentMenuName,
+        MenuId: row.SubMenuId || row.MenuId,
+        SubMenuName: row.SubMenuName,
+        IsRead: row.IsRead,
+        IsAdd: row.IsAdd,
+        IsEdit: row.IsEdit,
+        IsDelete: row.IsDelete,
         oSpecialAccess:
-          row.oSpecialAccess?.length > 0
-            ? row.oSpecialAccess.map((sp, i) => ({
-                LineNum: 0,
-                Id: sp.Id || 0,
-                LineId: sp.LineId || 0,
-                MenuId: sp.MenuId || 0,
+          row.oSubMenusSpeAccess?.length > 0
+            ? row.oSubMenusSpeAccess.map((sp, i) => ({
+                MenuId: sp.LineNum,
+                Name: sp.spName,
+                IsRead: sp.IsRead,
+                IsAdd: sp.IsAdd,
+                IsEdit: sp.IsEdit,
+                IsDelete: sp.IsDelete,
               }))
             : [],
       })),
     };
+    // console.log(" My object", payload);
+    // return
 
     try {
       let response;
@@ -613,7 +668,7 @@ const handleRemove = (displayRow) => {
         if (!result.isConfirmed) return;
 
         setLoaderOpen(true);
-        response = await axios.put(`${BASE_URL}Role`, payload);
+        response = await axios.put(`${BASE_URL}Role/${data.Id}`, payload);
       }
 
       setLoaderOpen(false);
@@ -644,8 +699,53 @@ const handleRemove = (displayRow) => {
       });
     }
   };
-  const [selectedIds, setSelectedIds] = React.useState([]);
 
+  const handleSelectedMenus = () => {
+    if (!Array.isArray(selectedIds) || selectedIds.length === 0) return;
+
+    const selectedData = [];
+
+    MenuList.forEach((menu) => {
+      (menu.oSubMenus || []).forEach((sub) => {
+        if (selectedIds.includes(sub.id)) {
+          // Filter only selected special accesses
+          const filteredAccess = (sub.oSubMenusSpeAccess || []).filter(
+            (access) => selectedIds.includes(`${sub.id}_${access.LineNum}`)
+          );
+
+          selectedData.push({
+            id: `${sub.id}_${Date.now()}_${Math.random()
+              .toString(36)
+              .slice(2, 8)}`,
+            ParentMenuId: menu.Id,
+            ParentMenuName: menu.Name,
+            SubMenuId: sub.LineNum,
+            SubMenuName: sub.Name,
+            IsRead: true,
+            IsAdd: true,
+            IsEdit: true,
+            IsDelete: true,
+            oSubMenusSpeAccess: filteredAccess.map((acc) => ({
+              ...acc,
+              LineNum: acc.LineNum,
+              spName: acc.Name,
+              isChild: true,
+              IsRead: true,
+              IsAdd: true,
+              IsEdit: true,
+              IsDelete: true,
+            })),
+            // 👇 only push checked oSubMenusSpeAccess special menus
+            // oSubMenusSpeAccess: filteredAccess,   //*** */
+          });
+        }
+      });
+    });
+
+    // Merge with existing table data
+    setRoleTableData((prev) => [...prev, ...selectedData]);
+    setOpenMenu(false);
+  };
   // const handleSelectedMenus = () => {
   //   if (!Array.isArray(selectedIds) || selectedIds.length === 0) return;
 
@@ -653,16 +753,33 @@ const handleRemove = (displayRow) => {
 
   //   MenuList.forEach((menu) => {
   //     (menu.oSubMenus || []).forEach((sub) => {
-  //       if (selectedIds.includes(sub.id)) {
+  //       if (selectedIds.includes(sub.Id)) {
+  //         const filteredAccess =
+  //           (sub.oSubMenusSpeAccess || []).filter((access) =>
+  //             selectedIds.includes(`${sub.Id}_${access.LineNum}`)
+  //           ) || [];
+
   //         selectedData.push({
-  //           id: `${sub.id}_${Date.now()}_${Math.random()
+  //           id: `${sub.Id}_${Date.now()}_${Math.random()
   //             .toString(36)
   //             .slice(2, 8)}`,
   //           ParentMenuId: menu.Id,
   //           ParentMenuName: menu.Name,
   //           SubMenuId: sub.Id,
   //           SubMenuName: sub.Name,
-  //           oSubMenusSpeAccess: sub.oSubMenusSpeAccess || [],
+  //           IsRead: true,
+  //           IsAdd: true,
+  //           IsEdit: true,
+  //           IsDelete: true,
+  //           oSubMenusSpeAccess: filteredAccess.map((acc) => ({
+  //             ...acc,
+  //             parentId: sub.Id,
+  //             isChild: true,
+  //             IsRead: true,
+  //             IsAdd: true,
+  //             IsEdit: true,
+  //             IsDelete: true,
+  //           })),
   //         });
   //       }
   //     });
@@ -671,44 +788,10 @@ const handleRemove = (displayRow) => {
   //   setRoleTableData((prev) => [...prev, ...selectedData]);
   //   setOpenMenu(false);
   // };
-  const handleSelectedMenus = () => {
-  if (!Array.isArray(selectedIds) || selectedIds.length === 0) return;
-
-  const selectedData = [];
-
-  MenuList.forEach((menu) => {
-    (menu.oSubMenus || []).forEach((sub) => {
-      if (selectedIds.includes(sub.id)) {
-        // Filter only selected special accesses
-        const filteredAccess = (sub.oSubMenusSpeAccess || []).filter((access) =>
-          selectedIds.includes(`${sub.id}_${access.LineNum}`)
-        );
-
-        // Push submenu only if submenu itself is selected
-        selectedData.push({
-          id: `${sub.id}_${Date.now()}_${Math.random()
-            .toString(36)
-            .slice(2, 8)}`,
-          ParentMenuId: menu.Id,
-          ParentMenuName: menu.Name,
-          SubMenuId: sub.Id,
-          SubMenuName: sub.Name,
-          // 👇 only push checked oSubMenusSpeAccess
-          oSubMenusSpeAccess: filteredAccess,
-        });
-      }
-    });
-  });
-
-  // Merge with existing table data
-  setRoleTableData((prev) => [...prev, ...selectedData]);
-  setOpenMenu(false);
-};
-
 
   const handleMenusList = async (params = {}) => {
     setLoading(true);
- 
+
     try {
       const token = sessionStorage.getItem("BearerTokan");
 
@@ -757,7 +840,7 @@ const handleRemove = (displayRow) => {
     handleMenusList();
   }, []);
 
-   const [expandedRowIds, setExpandedRowIds] = React.useState([]);
+  const [expandedRowIds, setExpandedRowIds] = React.useState([]);
 
   const toggleExpandRow = (rowId) => {
     setExpandedRowIds((prev) =>
@@ -767,48 +850,46 @@ const handleRemove = (displayRow) => {
     );
   };
 
- 
-
- const handleCheckboxChange = (displayId, field, value) => {
-  setRoleTableData((prev) =>
-    prev.map((parent) => {
-      // 1) Parent row clicked (displayId === parent.id)
-      if (displayId === parent.id) {
-        return { ...parent, [field]: value };
-      }
-
-      // 2) Child clicked: expected format "<parentId>-child-<idx>"
-      if (typeof displayId === "string" && displayId.includes("-child-")) {
-        const [parentIdStr, childIdxStr] = displayId.split("-child-");
-        // parent ids may be numbers — compare as strings for safety
-        if (String(parent.id) === parentIdStr) {
-          const childIdx = Number(childIdxStr);
-          const childArr = Array.isArray(parent.oSubMenusSpeAccess)
-            ? [...parent.oSubMenusSpeAccess]
-            : [];
-
-          // guard index
-          if (childIdx >= 0 && childIdx < childArr.length) {
-            childArr[childIdx] = { ...childArr[childIdx], [field]: value };
-          }
-
-          return { ...parent, oSubMenusSpeAccess: childArr };
+  const handleCheckboxChange = (displayId, field, value) => {
+    setRoleTableData((prev) =>
+      prev.map((parent) => {
+        // 1) Parent row clicked (displayId === parent.id)
+        if (displayId === parent.id) {
+          return { ...parent, [field]: value };
         }
-      }
 
-       return parent;
-    })
-  );
-};
+        // 2) Child clicked: expected format "<parentId>-child-<idx>"
+        if (typeof displayId === "string" && displayId.includes("-child-")) {
+          const [parentIdStr, childIdxStr] = displayId.split("-child-");
+          // parent ids may be numbers — compare as strings for safety
+          if (String(parent.id) === parentIdStr) {
+            const childIdx = Number(childIdxStr);
+            const childArr = Array.isArray(parent.oSubMenusSpeAccess)
+              ? [...parent.oSubMenusSpeAccess]
+              : [];
 
-    const displayRows = RoleTableData.flatMap((row) => {
+            // guard index
+            if (childIdx >= 0 && childIdx < childArr.length) {
+              childArr[childIdx] = { ...childArr[childIdx], [field]: value };
+            }
+
+            return { ...parent, oSubMenusSpeAccess: childArr };
+          }
+        }
+
+        return parent;
+      })
+    );
+  };
+
+  const displayRows = RoleTableData.flatMap((row) => {
     const isExpanded = expandedRowIds.includes(row.id);
     return [
       row,
       ...(isExpanded
         ? (row.oSubMenusSpeAccess || []).map((child, idx) => ({
             ...child,
-            id: `${row.id}-child-${idx}`, // ensure unique id
+            id: `${row.id}-child-${idx}`,
             isChild: true,
             parentId: row.id,
             ParentMenuName: row.ParentMenuName,
@@ -819,32 +900,68 @@ const handleRemove = (displayRow) => {
 
   return (
     <>
-      <Dialog open={openMenu} onClose={handleCloseMenu} fullWidth maxWidth="sm">
+      <Dialog open={openMenu} onClose={handleCloseMenu} fullWidth maxWidth="md">
         <DialogTitle>Menu Activity</DialogTitle>
         <DialogContent dividers>
-          <div style={{ height: 350, width: "100%" }}>
-            <CollapsibleMenuGrid
+          <div style={{ height: 550, width: "100%" }}>
+            {/* <CollapsibleMenuGrid
               menuList={MenuList}
               onSelectionChange={setSelectedIds}
-            />
+               existingSubMenus={[
+                ...new Set(
+                  RoleTableData.filter((r) => r.SubMenuId != null).map(
+                    (r) => r.SubMenuId
+                  ) // SubMenuId = LineNum
+                ),
+              ]}
+            /> */}
+            <CollapsibleMenuGrid
+  menuList={MenuList}
+  onSelectionChange={setSelectedIds}
+  existingSubMenus={[
+    ...new Set(
+      (RoleTableData || [])
+        .filter((r) => r.SubMenuId != null)
+        .map((r) => r.SubMenuId)
+    ),
+  ]}
+/>
           </div>
         </DialogContent>
-        <DialogActions>
+        <DialogActions
+          sx={{
+            display: "flex",
+            justifyContent: "space-between", // adds space between buttons
+            px: 3, // optional: adds some padding on left and right
+          }}
+        >
+          <Button
+            onClick={handleCloseMenu}
+            variant="outlined"
+            size="small"
+            sx={{
+              p: 1,
+              width: 80,
+              color: "rgb(0, 90, 91)",
+              border: "1px solid rgb(0, 90, 91)",
+              borderRadius: "8px",
+            }}
+          >
+            Cancle
+          </Button>
           <Button
             variant="contained"
             size="small"
             onClick={handleSelectedMenus}
             sx={{
+              p: 1,
+              width: 80,
+              color: "white",
               background:
                 "linear-gradient(to right, rgb(0, 90, 91), rgb(22, 149, 153))",
-              color: "white",
-              textTransform: "none",
             }}
           >
             Save
-          </Button>
-          <Button onClick={handleCloseMenu} variant="outlined" size="small">
-            Close
           </Button>
         </DialogActions>
       </Dialog>
@@ -860,8 +977,8 @@ const handleRemove = (displayRow) => {
           elevation={10}
           sx={{
             width: "100%",
-            maxWidth: 1100,
-            Height: 2500,
+            maxWidth: 1400,
+            Height: 4500,
             position: "absolute",
             top: "50%",
             left: "50%",
@@ -968,7 +1085,7 @@ const handleRemove = (displayRow) => {
                           {...field}
                           checked={field.value}
                           onChange={(e) => field.onChange(e.target.checked)}
-                          size="medium"
+                          size="large"
                           color="primary"
                         />
                       }
@@ -1010,56 +1127,40 @@ const handleRemove = (displayRow) => {
             </Grid>
 
             <Grid item xs={12} style={{ height: 400, paddingBottom: 40 }}>
-              {/* <DataGrid
+              {/* ==================================================================== */}
+
+              {/* 🔹 Collapse below rows (for oSubMenusSpeAccess) */}
+              <DataGrid
                 className="datagrid-style"
+                rows={displayRows}
+                columns={RoleCrationColumns}
+                // getRowId={(row) =>
+                //   row.isChild
+                //     ? `${row.parentId}-${row.MenuId || row.LineNum}`
+                //     : row.MenuId
+                // }
+  // getRowId={(row) => row.Id}
+
+                hideFooter
+                disableRowSelectionOnClick
                 sx={{
-                  height: "100%",
-                  minHeight: "400px",
                   "& .MuiDataGrid-columnHeaders": {
                     backgroundColor: (theme) =>
-                      theme.palette.custome.datagridcolor,
+                      theme.palette.custome?.datagridcolor || "#f0f0f0",
                   },
                   "& .MuiDataGrid-row:hover": {
-                    boxShadow: "0px 4px 20px rgba(0, 0, 0.2, 0.2)",
+                    boxShadow: "0px 4px 20px rgba(0,0,0,0.2)",
+                  },
+                  "& .MuiDataGrid-cell": {
+                    borderBottom: "none",
+                  },
+                  "& .MuiDataGrid-virtualScrollerRenderZone": {
+                    "& .MuiDataGrid-row": {
+                      borderBottom: "1px solid #ddd",
+                    },
                   },
                 }}
-                // rows={mainTableData}
-                getRowId={(row) => row.id}
-                rows={RoleTableData}
-                columns={RoleCrationColumns}
-                pageSize={5}
-                rowsPerPageOptions={[5]}
-                hideFooter
-              /> */}
-              {/* ==================================================================== */}
- 
-              {/* 🔹 Collapse below rows (for oSubMenusSpeAccess) */}
-                  <DataGrid
-        className="datagrid-style"
-        rows={displayRows}
-        columns={RoleCrationColumns}
-          getRowId={(row) => (row.isChild ? `${row.parentId}-${row.id || row.LineNum}` : row.id)}
-
-        // getRowId={(row) => row.id}
-        hideFooter
-        disableRowSelectionOnClick
-        sx={{
-          "& .MuiDataGrid-columnHeaders": {
-            backgroundColor: (theme) => theme.palette.custome?.datagridcolor || "#f0f0f0",
-          },
-          "& .MuiDataGrid-row:hover": {
-            boxShadow: "0px 4px 20px rgba(0,0,0,0.2)",
-          },
-          "& .MuiDataGrid-cell": {
-            borderBottom: "none",
-          },
-          "& .MuiDataGrid-virtualScrollerRenderZone": {
-            "& .MuiDataGrid-row": {
-              borderBottom: "1px solid #ddd",
-            },
-          },
-        }}
-      />
+              />
 
               {/* ========================================================================== */}
             </Grid>
@@ -1186,7 +1287,12 @@ const handleRemove = (displayRow) => {
               boxShadow: "0px 4px 20px rgba(0, 0, 0.2, 0.2)",
             },
           }}
+              getRowId={(row) => row.Id}
+
           rows={GetRolelist}
+    
+
+           
           columns={Maincolumns}
           pagination
           paginationMode="server"
@@ -1224,7 +1330,8 @@ const handleRemove = (displayRow) => {
             setCurrentPage(0);
             getAllRoleList(0, quickFilterValue, limit);
           }}
-          getRowId={(row) => row.Id}
+          // getRowId={(row) => row.MenuId}
+            // getRowId={(row) => row.Id ?? row.id ?? row.MenuId ?? row.LineNum ?? `${row.RoleName}-${Math.random()}`}
         />
       </Grid>
     </>

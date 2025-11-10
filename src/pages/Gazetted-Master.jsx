@@ -35,11 +35,7 @@ const GazettedMaster = () => {
   const originalDataRef = React.useRef(null);
   const firstLoad = React.useRef(true);
 
-      const { checkAccess  } = useThemeMode();
-
-     const canAdd = checkAccess(3, "IsAdd");
-
-
+     
   // React Hook Form initialization
   const {
     
@@ -501,8 +497,7 @@ const GazettedMaster = () => {
       <Grid container spacing={2} marginBottom={1} justifyContent="flex-end">
         <Grid textAlign={"end"} marginBottom={1}>
           <Button
-                disabled={!canAdd} // ✅ disable button if no access
-
+ 
             onClick={handleOnSave}
             type="text"
             size="medium"

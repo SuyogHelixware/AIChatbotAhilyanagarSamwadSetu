@@ -9,6 +9,7 @@ import { Visibility, VisibilityOff } from "@mui/icons-material";
 import Loader from "../components/Loader";
 import PersonIcon from "@mui/icons-material/Person";
 import CryptoJS from "crypto-js";
+import { useThemeMode } from "./Theme";
 
 const Signin = () => {
   const [userId, setUserId] = useState("");
@@ -16,12 +17,14 @@ const Signin = () => {
   const navigate = useNavigate();
   const [showPassword, setShowPassword] = useState(false);
   const [loading, setLoading] = useState(false);
-   const [role, setRole] = useState(() => {
+  const [role, setRole] = useState(() => {
     const storedRole = localStorage.getItem("RoleDetails");
     return storedRole ? JSON.parse(storedRole) : null;
   });
 
-const SECRET_KEY = "YourStrongSecretKey123!"; 
+   const { refreshRoleAccess } = useThemeMode();
+
+  const SECRET_KEY = "YourStrongSecretKey123!";
 
   const handleSubmit = async () => {
     // try {
@@ -96,7 +99,7 @@ const SECRET_KEY = "YourStrongSecretKey123!";
         .post(`${BASE_URL}Login`, body)
 
         .then(async (res) => {
-console.log("tt=====", res.headers.authorization);
+          console.log("tt=====", res.data.values);
 
           if (res.data.success === true) {
             const data = res.data.values;
@@ -109,21 +112,20 @@ console.log("tt=====", res.headers.authorization);
               Phone: data.Phone,
               UserType: data.UserType,
               GazOfficer: data.GazOfficer,
-              BloodGroup: data.BloodGroup,
               Avatar: data.Avatar,
               _id: data._id,
               Token: data.Token,
-              RoleName: data.RoleName,
+              RoleName: data.Role,
             };
 
             // Save basic user info
-            console.log("tt==+++++++++===", res.headers.authorization);
+            console.log("tt==+++++++++===", userData);
             sessionStorage.setItem("BearerTokan", res.headers.authorization);
 
             sessionStorage.setItem("userId", userData.RoleName);
             sessionStorage.setItem("userData", JSON.stringify(userData));
 
-            const roleNameToUse = data?.RoleName || "Manager";
+            const roleNameToUse = data?.Role;
             const encodedRoleName = encodeURIComponent(roleNameToUse);
 
             const roleResponse = await axios.get(
@@ -138,23 +140,18 @@ console.log("tt=====", res.headers.authorization);
                   : roleData.oLines || [];
 
               const RoleDetails = {
-                oLines, 
+                oLines,
               };
 
-
               const encryptedRoleDetails = CryptoJS.AES.encrypt(
-    JSON.stringify(RoleDetails),
-    SECRET_KEY
-  ).toString();
+                JSON.stringify(RoleDetails),
+                SECRET_KEY
+              ).toString();
 
-    sessionStorage.setItem("RoleDetails", encryptedRoleDetails);
-
-
-            //   sessionStorage.setItem(
-            //     "RoleDetails",
-            //     JSON.stringify(RoleDetails)
-            //   );
-             }
+              sessionStorage.setItem("RoleDetails", encryptedRoleDetails);            
+                refreshRoleAccess();
+ 
+            }
 
 
             Swal.fire({
