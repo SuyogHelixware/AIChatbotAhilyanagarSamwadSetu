@@ -21,6 +21,9 @@ import UploadDocument from "../pages/Upload-Document";
 import GazettedMaster from "../pages/Gazetted-Master";
 import RoleCreation from "../pages/RoleCreation";
 
+import SanjayGandhi from "../pages/SanjavGandhi/SanjayGandhi";
+import Rehabilitation from "../pages/Rehabilitation/Rehabilitation";
+ 
 export default function Routing() {
   return (
     <>
@@ -40,6 +43,10 @@ export default function Routing() {
             <Route path="EmailSetup" element={<EmailSetup />} />
             <Route path="Upload-Document" element={<UploadDocument />} />
             <Route path="Gazetted-Master" element={<GazettedMaster />} />
+                        <Route path="SanjayGandhi" element={<SanjayGandhi />} />
+                        <Route path="Rehabilitation" element={<Rehabilitation />} />
+
+
 
           </Route>
           {/* <Route path="/dashboard/special" element={<SpecialLayout />}> */}
