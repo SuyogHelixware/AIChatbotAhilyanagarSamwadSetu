@@ -8,6 +8,7 @@ import FullscreenExitIcon from "@mui/icons-material/FullscreenExit";
 // import GroupsIcon from "@mui/icons-material/Groups";
 import LightModeIcon from "@mui/icons-material/LightMode";
 import ManageAccountsIcon from "@mui/icons-material/ManageAccounts";
+import GroupIcon from '@mui/icons-material/Group';
 import MenuIcon from "@mui/icons-material/Menu";
 import ModeNightIcon from "@mui/icons-material/ModeNight";
 import logoDarkTheme from "../assets/darkThemeLogo.png";
@@ -196,8 +197,8 @@ export default function Dashboard() {
       allowed: ["A", "U"],
     },
     {
-      label: "User",
-      icon: <ManageAccountsIcon />,
+      label: "User", 
+      icon: <GroupIcon />,
       path: "manage-user",
       allowed: ["A"],
     },

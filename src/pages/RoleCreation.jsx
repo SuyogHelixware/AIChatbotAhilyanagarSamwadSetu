@@ -83,23 +83,11 @@ const RoleCreation = () => {
       IsEdit: true,
       IsDelete: true,
 
-      //     oSubMenusSpeAccess: (initialRole.oSubMenusSpeAccess || []).map(
-      //       (child) => ({
-      //         ...child,
-      //               id: `child-${Date.now()}-${idx}`, // ✅ unique id for each child
-
-      //         IsRead: true,
-      //         IsAdd: true,
-      //         IsEdit: true,
-      //         IsDelete: true,
-      //       })
-      //     ),
-      //   },
-      // ]);
       oSubMenusSpeAccess: (initialRole.oSubMenusSpeAccess || []).map(
         (child, idx) => ({
           ...child,
           id: `child-${Date.now()}-${idx}`,
+
           IsRead: true,
           IsAdd: true,
           IsEdit: true,
@@ -176,14 +164,96 @@ const RoleCreation = () => {
             fontWeight: params.row.isChild ? 350 : 450,
           }}
         >
-          {params.row.isChild
+          {/* {params.row.isChild
             ? `↳ ${params.row.Name}`
             : `${params.row.ParentMenuName || ""} - ${
                 params.row.SubMenuName || params.row.Name
-              }`}
+              }`} */}
+          {params.row.isChild
+            ? `↳ ${params.row.Name}`
+            : [
+                params.row.ParentMenuName,
+                params.row.SubMenuName || params.row.Name,
+              ]
+                .filter(Boolean)
+                .join(" - ")}
         </Typography>
       ),
     },
+    // {
+    //   field: "IsRead",
+    //   headerName: "READ",
+    //   flex: 1,
+    //   headerAlign: "center",
+    //   align: "center",
+    //   sortable: false,
+
+    //   renderCell: (params) => (
+    //     <Checkbox
+    //       checked={Boolean(params.row.IsRead)}
+    //       onChange={(e) =>
+    //         handleCheckboxChange(params.row.id, "IsRead", e.target.checked)
+    //       }
+    //       size="medium"
+    //       color="primary"
+    //     />
+    //   ),
+    // },
+
+    //     {
+    //       field: "IsAdd",
+    //       headerName: "ADD",
+    //       flex: 1,
+    //       headerAlign: "center",
+    //       align: "center",
+    //       sortable: false,
+    //       renderCell: (params) => (
+    //         <Checkbox
+    //           checked={Boolean(params.row.IsAdd)}
+    //           onChange={(e) =>
+    //             handleCheckboxChange(params.row.id, "IsAdd", e.target.checked)
+    //           }
+    //           size="medium"
+    //           color="success"
+    //         />
+    //       ),
+    //     },
+    //     {
+    //       field: "IsEdit",
+    //       headerName: "EDIT",
+    //       flex: 1,
+    //       headerAlign: "center",
+    //       align: "center",
+    //       sortable: false,
+    //       renderCell: (params) => (
+    //         <Checkbox
+    //           checked={Boolean(params.row.IsEdit)}
+    //           onChange={(e) =>
+    //             handleCheckboxChange(params.row.id, "IsEdit", e.target.checked)
+    //           }
+    //           size="medium"
+    //           color="info"
+    //         />
+    //       ),
+    //     },
+    //     {
+    //       field: "IsDelete",
+    //       headerName: "DELETE",
+    //       flex: 1,
+    //       headerAlign: "center",
+    //       align: "center",
+    //       sortable: false,
+    //       renderCell: (params) => (
+    //         <Checkbox
+    //           checked={Boolean(params.row.IsDelete)}
+    //           onChange={(e) =>
+    //             handleCheckboxChange(params.row.id, "IsDelete", e.target.checked)
+    //           }
+    //           size="medium"
+    //           color="error"
+    //         />
+    //       ),
+    //     },
     {
       field: "IsRead",
       headerName: "READ",
@@ -191,17 +261,17 @@ const RoleCreation = () => {
       headerAlign: "center",
       align: "center",
       sortable: false,
-
-      renderCell: (params) => (
-        <Checkbox
-          checked={Boolean(params.row.IsRead)}
-          onChange={(e) =>
-            handleCheckboxChange(params.row.id, "IsRead", e.target.checked)
-          }
-          size="medium"
-          color="primary"
-        />
-      ),
+      renderCell: (params) =>
+        params.row.isChild ? null : (
+          <Checkbox
+            checked={Boolean(params.row.IsRead)}
+            onChange={(e) =>
+              handleCheckboxChange(params.row.id, "IsRead", e.target.checked)
+            }
+            size="medium"
+            color="primary"
+          />
+        ),
     },
     {
       field: "IsAdd",
@@ -210,16 +280,17 @@ const RoleCreation = () => {
       headerAlign: "center",
       align: "center",
       sortable: false,
-      renderCell: (params) => (
-        <Checkbox
-          checked={Boolean(params.row.IsAdd)}
-          onChange={(e) =>
-            handleCheckboxChange(params.row.id, "IsAdd", e.target.checked)
-          }
-          size="medium"
-          color="success"
-        />
-      ),
+      renderCell: (params) =>
+        params.row.isChild ? null : (
+          <Checkbox
+            checked={Boolean(params.row.IsAdd)}
+            onChange={(e) =>
+              handleCheckboxChange(params.row.id, "IsAdd", e.target.checked)
+            }
+            size="medium"
+            color="success"
+          />
+        ),
     },
     {
       field: "IsEdit",
@@ -228,16 +299,17 @@ const RoleCreation = () => {
       headerAlign: "center",
       align: "center",
       sortable: false,
-      renderCell: (params) => (
-        <Checkbox
-          checked={Boolean(params.row.IsEdit)}
-          onChange={(e) =>
-            handleCheckboxChange(params.row.id, "IsEdit", e.target.checked)
-          }
-          size="medium"
-          color="info"
-        />
-      ),
+      renderCell: (params) =>
+        params.row.isChild ? null : (
+          <Checkbox
+            checked={Boolean(params.row.IsEdit)}
+            onChange={(e) =>
+              handleCheckboxChange(params.row.id, "IsEdit", e.target.checked)
+            }
+            size="medium"
+            color="info"
+          />
+        ),
     },
     {
       field: "IsDelete",
@@ -246,16 +318,17 @@ const RoleCreation = () => {
       headerAlign: "center",
       align: "center",
       sortable: false,
-      renderCell: (params) => (
-        <Checkbox
-          checked={Boolean(params.row.IsDelete)}
-          onChange={(e) =>
-            handleCheckboxChange(params.row.id, "IsDelete", e.target.checked)
-          }
-          size="medium"
-          color="error"
-        />
-      ),
+      renderCell: (params) =>
+        params.row.isChild ? null : (
+          <Checkbox
+            checked={Boolean(params.row.IsDelete)}
+            onChange={(e) =>
+              handleCheckboxChange(params.row.id, "IsDelete", e.target.checked)
+            }
+            size="medium"
+            color="error"
+          />
+        ),
     },
   ];
 
@@ -508,55 +581,28 @@ const RoleCreation = () => {
         const olddata = response.data.values;
 
         originalDataRef.current = olddata;
-
-   
-        const formattedLines = Array.isArray(olddata.oLines)
+         const formattedLines = Array.isArray(olddata.oLines)
           ? olddata.oLines.map((line, index) => ({
               ...line,
-              // 🔹 Stable ID priority order: LineNum > MenuId > index
-              id:
-                line.LineNum ||
-                line.MenuId ||
-                `${olddata.Id}-${index}-${Date.now()}`,
+              id: line.MenuId || `${olddata.Id}-${index}-${Date.now()}`,
 
               // 🔹 Display Name
               Name: `${line.ParentMenu || ""} - ${line.MenuName || ""}`.trim(),
 
               SubMenuId: line.SubMenuId ?? null,
 
-              // ✅ Ensure nested oSpecialAccess also have unique IDs
-          //     oSpecialAccess: Array.isArray(line.oSpecialAccess)
-          //       ? line.oSpecialAccess.map((sa, saIndex) => ({
-          //           ...sa,
-          //           id:
-          //             sa.LineNum ||
-          //             `${
-          //               line.MenuId || line.LineNum || index
-          //             }-SA-${saIndex}-${Date.now()}`,
-          //           ParentLineId:
-          //             line.LineNum || line.MenuId || `${index}-${Date.now()}`,
-          //           Name: line.MenuName,
-          //         }))
-          //       : [],
-          //   }))
-          // : [];
-           oSubMenusSpeAccess: Array.isArray(line.oSpecialAccess)
-              ? line.oSpecialAccess.map((sa, saIndex) => ({
-                  ...sa,
-                  id:
-                    sa.LineNum ||
-                    `${
-                      line.MenuId || line.LineNum || index
-                    }-SA-${saIndex}-${Date.now()}`,
-                  parentId:
-                    line.LineNum || `${index}-${Date.now()}`,
-                  Name: sa.MenuName ,
-                  IsAdd:sa.IsAdd,
-                  isChild: true,
-                }))
-              : [],
-          }))
-        : [];
+              oSubMenusSpeAccess: Array.isArray(line.oSpecialAccess)
+                ? line.oSpecialAccess.map((sa, saIndex) => ({
+                    ...sa,
+                    id: sa.MenuId,
+                    LineNum: sa.MenuId,
+                    parentId: line.MenuId,
+                    Name: sa.MenuName,
+                    isChild: true,
+                  }))
+                : [],
+            }))
+          : [];
 
         reset({
           Id: olddata.Id,
@@ -677,10 +723,6 @@ const RoleCreation = () => {
             ? row.oSubMenusSpeAccess.map((sp, i) => ({
                 MenuId: sp.LineNum,
                 Name: sp.spName,
-                IsRead: sp.IsRead,
-                IsAdd: sp.IsAdd,
-                IsEdit: sp.IsEdit,
-                IsDelete: sp.IsDelete,
               }))
             : [],
       })),
