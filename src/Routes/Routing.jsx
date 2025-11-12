@@ -22,6 +22,9 @@ import GazettedMaster from "../pages/Gazetted-Master";
 import ManageDocumentsPage from "../pages/ManageDocPage";
 import Report from "../pages/Report";
 
+import SanjayGandhi from "../pages/SanjavGandhi/SanjayGandhi";
+import Rehabilitation from "../pages/Rehabilitation/Rehabilitation";
+ 
 export default function Routing() {
   return (
     <>
@@ -42,6 +45,8 @@ export default function Routing() {
             <Route path="Gazetted-Master" element={<GazettedMaster />} />
             <Route path="Upload-Document" element={<UploadDocument />} />
             <Route path="Report" element={<Report />} />
+                        <Route path="SanjayGandhi" element={<SanjayGandhi />} />
+                        <Route path="Rehabilitation" element={<Rehabilitation />} />
 
 
 
