@@ -876,7 +876,7 @@ export default function Dashboard() {
                   <ListItemText primary="Sanjay Gandhi" />
                 </ListItemButton>
               </Link>
-                <Link to="Rehabilitation" className="link_style">
+                {/* <Link to="Rehabilitation" className="link_style">
                 <ListItemButton
                   onClick={handleClickTransaction}
                   selected={location.pathname === "/dashboard/Rehabilitation"}
@@ -902,7 +902,7 @@ export default function Dashboard() {
                   </ListItemIcon>
                   <ListItemText primary="Rehabilitation" />
                 </ListItemButton>
-              </Link>
+              </Link> */}
             </>
           ) : (
             <>

@@ -519,22 +519,22 @@ export default function ManageUsers() {
     }
   };
 
-  // useEffect(() => {
-  //   getUserData(currentPage, searchText);
-  //   handleonGazettedList();
-  // }, [currentPage]);
+  useEffect(() => {
+    getUserData(currentPage, searchText);
+    handleonGazettedList();
+  }, [currentPage]);
 
  
  
 
-useEffect(() => {
-  if (firstLoad.current) {
-    firstLoad.current = false;
-    return;
-  }
-  getUserData(currentPage, searchText, limit);
-   handleonGazettedList();
-}, [currentPage, searchText, limit]);
+// useEffect(() => {
+//   if (firstLoad.current) {
+//     firstLoad.current = false;
+//     return;
+//   }
+//   getUserData(currentPage, searchText, limit);
+//    handleonGazettedList();
+// }, [currentPage, searchText, limit]);
  
   const columns = [
     {

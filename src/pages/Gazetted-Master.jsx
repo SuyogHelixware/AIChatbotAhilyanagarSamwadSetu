@@ -182,15 +182,22 @@ const [limit, setLimit] = React.useState(20);
       setLoading(false);
     }
   };
- 
 
- React.useEffect(() => {
-   if (firstLoad.current) {
-     firstLoad.current = false;
-     return;
-   }
+
+  
+
+    React.useEffect(() => {
   getAllOfficerList(currentPage, searchText, limit);
-  }, [currentPage, searchText, limit]);
+}, [currentPage, searchText, limit]);
+
+
+//  React.useEffect(() => {
+//    if (firstLoad.current) {
+//      firstLoad.current = false;
+//      return;
+//    }
+//   getAllOfficerList(currentPage, searchText, limit);
+//   }, [currentPage, searchText, limit]);
 
 
   const handleDelete = async (rowData) => {

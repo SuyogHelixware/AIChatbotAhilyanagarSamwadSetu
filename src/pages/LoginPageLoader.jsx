@@ -19,7 +19,7 @@ const LoginPageLoader = () => {
   style={{
     fontWeight: "bold",
       textAlign: "center",
-    fontSize: "28px",
+    fontSize: "22px",
     letterSpacing: "1px",
    }}
 >

@@ -1,12 +1,9 @@
 import AddIcon from "@mui/icons-material/Add";
+import CloseIcon from "@mui/icons-material/Close";
 import DeleteForeverIcon from "@mui/icons-material/DeleteForever";
 import EditNoteIcon from "@mui/icons-material/EditNote";
-import CloseIcon from "@mui/icons-material/Close";
-import { GridToolbar } from "@mui/x-data-grid";
 import {
   Button,
-  Checkbox,
-  FormControlLabel,
   Grid,
   IconButton,
   MenuItem,
@@ -17,16 +14,14 @@ import {
   Tooltip,
   Typography,
 } from "@mui/material";
-import { DataGrid } from "@mui/x-data-grid";
+import { DataGrid, GridToolbar } from "@mui/x-data-grid";
 import axios from "axios";
+import dayjs from "dayjs";
 import * as React from "react";
+import { Controller, useForm } from "react-hook-form"; // Importing React Hook Form
 import Swal from "sweetalert2";
 import { BASE_URL } from "../Constant";
 import Loader from "../components/Loader";
-import { CheckboxInputs, InputDescriptionField } from "../components/Component";
-import { debounce } from "lodash"; // Debouncing helper function
-import { Controller, useForm } from "react-hook-form"; // Importing React Hook Form
-import dayjs from "dayjs";
 
 const DocumentMaster = () => {
   const [loaderOpen, setLoaderOpen] = React.useState(false);
@@ -42,7 +37,7 @@ const DocumentMaster = () => {
   const originalDataRef = React.useRef(null);
 
   const firstLoad = React.useRef(true);
-  
+
   const [CreateSubDocRows, setCreateSubDocRows] = React.useState([
     {
       id: Date.now(),
@@ -94,7 +89,7 @@ const DocumentMaster = () => {
 
     setOn(true);
 
-     setCreateSubDocRows([
+    setCreateSubDocRows([
       {
         id: Date.now(),
         NameMR: "",
@@ -138,7 +133,7 @@ const DocumentMaster = () => {
         NameMR: formData.NameMR,
         Description: formData.Description || "",
         Status: formData.Status || "1",
- 
+
         SubDocs: CreateSubDocRows.filter((row) => row.NameMR).map(
           (row, index) => ({
             // LineNum: index + 1,
@@ -261,7 +256,6 @@ const DocumentMaster = () => {
   React.useEffect(() => {
     if (firstLoad.current) {
       getAllDocumentList();
-      // DocMasterListTemp();
       firstLoad.current = false;
     }
   }, []);
@@ -471,7 +465,6 @@ const DocumentMaster = () => {
       headerName: "DOCUMENT NAME",
       width: 300,
       renderCell: (params) => {
-       
         const handleChange = (e) => {
           const newValue = e.target.value;
           setCreateSubDocRows((prev) =>
@@ -509,43 +502,86 @@ const DocumentMaster = () => {
   ];
   const [docOptions, setDocOptions] = React.useState([]);
 
-  const DocMasterListTemp = async (params = {}) => {
-    setLoading(true);
-    try {
-      const { data } = await axios.get(`${BASE_URL}DocsMaster`, {
-        params: { Status: "1" },
-      });
-      if (data?.values) setDocOptions(data.values);
-    } catch (error) {
-      console.error("Error fetching DocsMaster:", error);
-    } finally {
-      setLoading(false);
-    }
-  };
+  // const DocMasterListTemp = async (params = {}) => {
+  //   setLoading(true);
+  //   try {
+  //     const { data } = await axios.get(`${BASE_URL}DocsMaster`, {
+  //       params: { Status: "1" },
+  //     });
+  //     if (data?.values) setDocOptions(data.values);
+  //   } catch (error) {
+  //     console.error("Error fetching DocsMaster:", error);
+  //   } finally {
+  //     setLoading(false);
+  //   }
+  // };
 
+  // const handleUpdate = async (rowData) => {
+  //   setSaveUpdateButton("UPDATE");
+  //   setClearUpdateButton("RESET");
+  //   setOn(true);
+  //   try {
+  //     setLoading(true);
+  //     const apiUrl = `${BASE_URL}DocsMaster/${rowData.Id}`;
+  //     const response = await axios.get(apiUrl);
+  //     if (response.data.values) {
+  //       const Document = response.data.values;
+  //       originalDataRef.current = Document;
+  //       setValue("Id", Document.Id);
+  //       setValue("NameEN", Document.NameEN);
+  //       setValue("NameMR", Document.NameMR);
+  //       setValue("Description", Document.Description);
+  //       setValue("Status", Document.Status);
+
+  //         const subDocs = (Document.SubDocs || []).map((subDoc, index) => ({
+  //       id: subDoc.id || subDoc.DocEntry || index + 1,
+  //       ...subDoc,
+  //     }));
+
+  //     setCreateSubDocRows(subDocs);
+  //     }
+  //   } catch (error) {
+  //     console.error("Error fetching Document data:", error);
+  //   } finally {
+  //     setLoading(false);
+  //   }
+  // };
+
+  // 3️⃣ When updating a record, remember its Id and then fetch the list
+  // ✅ Load document by Id for editing
   const handleUpdate = async (rowData) => {
     setSaveUpdateButton("UPDATE");
     setClearUpdateButton("RESET");
     setOn(true);
+
     try {
       setLoading(true);
       const apiUrl = `${BASE_URL}DocsMaster/${rowData.Id}`;
       const response = await axios.get(apiUrl);
+
       if (response.data.values) {
         const Document = response.data.values;
         originalDataRef.current = Document;
+
+        // ✅ store current editing doc Id
+        // setCurrentDocId(Document.Id);
+
+        // ✅ set form fields
         setValue("Id", Document.Id);
         setValue("NameEN", Document.NameEN);
         setValue("NameMR", Document.NameMR);
         setValue("Description", Document.Description);
         setValue("Status", Document.Status);
- 
-          const subDocs = (Document.SubDocs || []).map((subDoc, index) => ({
-        id: subDoc.id || subDoc.DocEntry || index + 1,
-        ...subDoc,
-      }));
- 
-      setCreateSubDocRows(subDocs);
+
+        // ✅ map sub docs
+        const subDocs = (Document.SubDocs || []).map((subDoc, index) => ({
+          id: subDoc.LineNum || index + 1,
+          ...subDoc,
+        }));
+        setCreateSubDocRows(subDocs);
+
+        // ✅ now fetch all other docs EXCLUDING this one
+        await DocMasterListTemp(Document.Id);
       }
     } catch (error) {
       console.error("Error fetching Document data:", error);
@@ -553,6 +589,7 @@ const DocumentMaster = () => {
       setLoading(false);
     }
   };
+
   const handleAddRow = () => {
     setCreateSubDocRows((prevRows) => [
       ...prevRows,
@@ -563,6 +600,27 @@ const DocumentMaster = () => {
         isDisabled: false,
       },
     ]);
+  };
+
+  const DocMasterListTemp = async (excludeId = null) => {
+    setLoading(true);
+    try {
+      const { data } = await axios.get(`${BASE_URL}DocsMaster`, {
+        params: { Status: "1" },
+      });
+
+      if (data?.values) {
+        const filteredDocs = excludeId
+          ? data.values.filter((doc) => Number(doc.Id) !== Number(excludeId))
+          : data.values;
+
+        setDocOptions(filteredDocs);
+      }
+    } catch (error) {
+      console.error("Error fetching DocsMaster:", error);
+    } finally {
+      setLoading(false);
+    }
   };
 
   return (

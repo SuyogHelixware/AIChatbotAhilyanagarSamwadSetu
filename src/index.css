@@ -28,7 +28,7 @@ code {
 .mah-subtext {
   background-size: cover;
   background-position: center;width: 30%; height: 60%;  
-   animation: flicker 7.5s infinite alternate ease-in-out;
+   animation: flicker 3.5s infinite alternate ease-in-out;
 
 }
 
