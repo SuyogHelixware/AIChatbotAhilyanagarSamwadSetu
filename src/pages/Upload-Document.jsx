@@ -61,6 +61,8 @@ const UploadDocument = () => {
   const handleClose = () => setOn(false);
   const { userSession } = useThemeMode();
 
+ const [subDocMap, setSubDocMap] = React.useState({});
+
   const initial = {
     Status: "1",
     CreatedDate: dayjs().format("YYYY-MM-DD"),
@@ -465,143 +467,266 @@ const UploadDocument = () => {
     //     );
     //   },
     // }
+
+// ]]]]]]]]]]]]]]]]]]]]]]]]]]]
+    // {
+    //   field: "DocType",
+    //   headerName: "DOCUMENT TYPE",
+    //   flex: 1,
+    //   renderCell: (params) => {
+    //     const { id, field, value, api } = params;
+    //     const isDisabled = params.row.isDisabled;
+
+    //     const handleChange = (e) => {
+    //       const newValue = e.target.value;
+
+    //       setRows((prev) =>
+    //         prev.map((row) => {
+    //           if (row.id === id) {
+    //             // auto-remove this docType if it exists inside MissingDocs
+    //             const updatedMissingDocs = Array.isArray(row.MissingDocs)
+    //               ? row.MissingDocs.filter((doc) => doc !== newValue)
+    //               : [];
+    //             return {
+    //               ...row,
+    //               [field]: newValue,
+    //               MissingDocs: updatedMissingDocs,
+    //             };
+    //           }
+    //           return row;
+    //         })
+    //       );
+
+    //       api.updateRows([{ id, [field]: newValue }]);
+    //     };
+
+    //     return (
+    //       <Tooltip title={value || ""} arrow placement="top">
+    //         <Select
+    //           value={value || ""}
+    //           onChange={handleChange}
+    //           fullWidth
+    //           disabled={isDisabled}
+    //           variant="standard"
+    //           MenuProps={{
+    //             PaperProps: { style: { maxHeight: 200, overflowY: "auto" } },
+    //           }}
+    //         >
+    //           {DocmasterList.length > 0 ? (
+    //             DocmasterList.map((option) => (
+    //               <MenuItem
+    //                 key={option.value}
+    //                 value={option.NameMR}
+    //                 sx={{ height: 35, display: "flex", alignItems: "center" }}
+    //               >
+    //                 {option.NameMR}
+    //               </MenuItem>
+    //             ))
+    //           ) : (
+    //             <MenuItem disabled>No options available</MenuItem>
+    //           )}
+    //         </Select>
+    //       </Tooltip>
+    //     );
+    //   },
+    // },
+
     {
-      field: "DocType",
-      headerName: "DOCUMENT TYPE",
-      flex: 1,
-      renderCell: (params) => {
-        const { id, field, value, api } = params;
-        const isDisabled = params.row.isDisabled;
+  field: "DocType",
+  headerName: "DOCUMENT TYPE",
+  flex: 1,
+  renderCell: (params) => {
+    const { id, field, value, api, row } = params;
+    const isDisabled = row.isDisabled;
 
-        const handleChange = (e) => {
-          const newValue = e.target.value;
+    const handleChange = (e) => {
+      const newValue = e.target.value;
 
-          setRows((prev) =>
-            prev.map((row) => {
-              if (row.id === id) {
-                // auto-remove this docType if it exists inside MissingDocs
-                const updatedMissingDocs = Array.isArray(row.MissingDocs)
-                  ? row.MissingDocs.filter((doc) => doc !== newValue)
-                  : [];
-                return {
-                  ...row,
-                  [field]: newValue,
-                  MissingDocs: updatedMissingDocs,
-                };
-              }
-              return row;
-            })
-          );
+      // find selected document in master list
+      const selectedDoc = DocmasterList.find(
+        (doc) => doc.NameMR === newValue
+      );
 
-          api.updateRows([{ id, [field]: newValue }]);
-        };
+      // update subdoc list for that row
+      setSubDocMap((prev) => ({
+        ...prev,
+        [id]: selectedDoc?.SubDocs || [],
+      }));
 
-        return (
-          <Tooltip title={value || ""} arrow placement="top">
-            <Select
-              value={value || ""}
-              onChange={handleChange}
-              fullWidth
-              disabled={isDisabled}
-              variant="standard"
-              MenuProps={{
-                PaperProps: { style: { maxHeight: 200, overflowY: "auto" } },
-              }}
-            >
-              {DocmasterList.length > 0 ? (
-                DocmasterList.map((option) => (
-                  <MenuItem
-                    key={option.value}
-                    value={option.NameMR}
-                    sx={{ height: 35, display: "flex", alignItems: "center" }}
-                  >
-                    {option.NameMR}
-                  </MenuItem>
-                ))
-              ) : (
-                <MenuItem disabled>No options available</MenuItem>
-              )}
-            </Select>
-          </Tooltip>
-        );
-      },
-    },
+      // update DataGrid & rows
+      api.updateRows([{ id, [field]: newValue, MissingDocs: [] }]);
+      setRows((prev) =>
+        prev.map((row) =>
+          row.id === id
+            ? { ...row, [field]: newValue, MissingDocs: [] }
+            : row
+        )
+      );
+    };
 
+    return (
+      <Tooltip title={value || ""} arrow placement="top">
+        <Select
+          value={value || ""}
+          onChange={handleChange}
+          fullWidth
+          disabled={isDisabled}
+          variant="standard"
+          MenuProps={{
+            PaperProps: {
+              style: { maxHeight: 200, overflowY: "auto" },
+            },
+          }}
+        >
+          {DocmasterList.length > 0 ? (
+            DocmasterList.map((option) => (
+              <MenuItem
+                key={option.value}
+                value={option.NameMR}
+                sx={{ height: 35, display: "flex", alignItems: "center" }}
+              >
+                {option.NameMR}
+              </MenuItem>
+            ))
+          ) : (
+            <MenuItem disabled>No options available</MenuItem>
+          )}
+        </Select>
+      </Tooltip>
+    );
+  },
+},
+    // {
+    //   field: "MissingDocs",
+    //   headerName: "MISSING DOCUMENT",
+    //   flex: 1,
+    //   renderCell: (params) => {
+    //     const { id, field, value, api, row } = params;
+    //     const isDisabled = row.isDisabled;
+
+    //     const selectedValues = Array.isArray(value) ? value : [];
+    //     const selectedDocType = row.DocType;
+
+    //     const handleChange = (event) => {
+    //       const newValues = event.target.value;
+
+    //       setRows((prev) =>
+    //         prev.map((r) => (r.id === id ? { ...r, [field]: newValues } : r))
+    //       );
+
+    //       api.updateRows([{ id, [field]: newValues }]);
+    //     };
+
+    //     return (
+    //       <Tooltip
+    //         title={selectedValues.join(", ") || ""}
+    //         arrow
+    //         placement="top"
+    //       >
+    //         <Select
+    //           multiple
+    //           value={selectedValues}
+    //           onChange={handleChange}
+    //           fullWidth
+    //           disabled={isDisabled}
+    //           variant="standard"
+    //           renderValue={(selected) => selected.join(", ")}
+    //           MenuProps={{
+    //             PaperProps: {
+    //               style: {
+    //                 maxHeight: 220,
+    //                 overflowY: "auto",
+    //               },
+    //             },
+    //           }}
+    //         >
+    //           {DocmasterList.length > 0 ? (
+    //             DocmasterList.map((option) => {
+    //               const isOptionDisabled = selectedDocType === option.NameMR;
+    //               return (
+    //                 <MenuItem
+    //                   key={option.value}
+    //                   value={option.NameMR}
+    //                   disabled={isOptionDisabled}
+    //                 >
+    //                   <Checkbox
+    //                     checked={selectedValues.indexOf(option.NameMR) > -1}
+    //                     size="small"
+    //                   />
+    //                   <ListItemText
+    //                     primary={
+    //                       isOptionDisabled
+    //                         ? `${option.NameMR}`
+    //                         : option.NameMR
+    //                     }
+    //                   />
+    //                 </MenuItem>
+    //               );
+    //             })
+    //           ) : (
+    //             <MenuItem disabled>No options available</MenuItem>
+    //           )}
+    //         </Select>
+    //       </Tooltip>
+    //     );
+    //   },
+    // },
     {
-      field: "MissingDocs",
-      headerName: "MISSING DOCUMENT",
-      flex: 1,
-      renderCell: (params) => {
-        const { id, field, value, api, row } = params;
-        const isDisabled = row.isDisabled;
+  field: "MissingDocs",
+  headerName: "MISSING DOCUMENT",
+  flex: 1,
+  renderCell: (params) => {
+    const { id, field, value, api, row } = params;
+    const isDisabled = row.isDisabled;
 
-        const selectedValues = Array.isArray(value) ? value : [];
-        const selectedDocType = row.DocType;
+    const selectedValues = Array.isArray(value) ? value : [];
+    const availableSubDocs = subDocMap[id] || []; // get subdocs for this row
 
-        const handleChange = (event) => {
-          const newValues = event.target.value;
+    const handleChange = (event) => {
+      const newValues = event.target.value;
+      setRows((prev) =>
+        prev.map((r) => (r.id === id ? { ...r, [field]: newValues } : r))
+      );
+      api.updateRows([{ id, [field]: newValues }]);
+    };
 
-          setRows((prev) =>
-            prev.map((r) => (r.id === id ? { ...r, [field]: newValues } : r))
-          );
+    return (
+      <Tooltip
+        title={selectedValues.join(", ") || ""}
+        arrow
+        placement="top"
+      >
+        <Select
+          multiple
+          value={selectedValues}
+          onChange={handleChange}
+          fullWidth
+          disabled={isDisabled}
+          variant="standard"
+          renderValue={(selected) => selected.join(", ")}
+          MenuProps={{
+            PaperProps: { style: { maxHeight: 220, overflowY: "auto" } },
+          }}
+        >
+          {availableSubDocs.length > 0 ? (
+            availableSubDocs.map((option) => (
+              <MenuItem key={option.value} value={option.NameMR}>
+                <Checkbox
+                  checked={selectedValues.indexOf(option.NameMR) > -1}
+                  size="small"
+                />
+                <ListItemText primary={option.NameMR} />
+              </MenuItem>
+            ))
+          ) : (
+            <MenuItem disabled>No any sub document added</MenuItem>
+          )}
+        </Select>
+      </Tooltip>
+    );
+  },
+}
 
-          api.updateRows([{ id, [field]: newValues }]);
-        };
-
-        return (
-          <Tooltip
-            title={selectedValues.join(", ") || ""}
-            arrow
-            placement="top"
-          >
-            <Select
-              multiple
-              value={selectedValues}
-              onChange={handleChange}
-              fullWidth
-              disabled={isDisabled}
-              variant="standard"
-              renderValue={(selected) => selected.join(", ")}
-              MenuProps={{
-                PaperProps: {
-                  style: {
-                    maxHeight: 220,
-                    overflowY: "auto",
-                  },
-                },
-              }}
-            >
-              {DocmasterList.length > 0 ? (
-                DocmasterList.map((option) => {
-                  const isOptionDisabled = selectedDocType === option.NameMR;
-                  return (
-                    <MenuItem
-                      key={option.value}
-                      value={option.NameMR}
-                      disabled={isOptionDisabled}
-                    >
-                      <Checkbox
-                        checked={selectedValues.indexOf(option.NameMR) > -1}
-                        size="small"
-                      />
-                      <ListItemText
-                        primary={
-                          isOptionDisabled
-                            ? `${option.NameMR}`
-                            : option.NameMR
-                        }
-                      />
-                    </MenuItem>
-                  );
-                })
-              ) : (
-                <MenuItem disabled>No options available</MenuItem>
-              )}
-            </Select>
-          </Tooltip>
-        );
-      },
-    },
   ];       
 
   const visibleColumns = isAddMissing
