@@ -120,46 +120,19 @@ const SanjayGandhi = () => {
 
 
  
-
+const showuploadfileToast = (icon, title) => {
+    Swal.fire({
+      toast: true,
+      position: "top-end",
+      icon,
+      title,
+      showConfirmButton: false,
+      timer: 2500,
+      timerProgressBar: true,
+    });
+  };
    
-  // const handleFileUpload = async (file, type) => {
-     
-  //   const allowedTypes = [
-  //     "text/csv",
-  //     "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet",
-  //   ];
-
-  //   if (!allowedTypes.includes(file.type)) {
-  //     showToast("error", "Only CSV and Excel (.xlsx) files are allowed!");
-  //     return;
-  //   }
-
-  //   try {       
-  //     const formData = new FormData();
-  //     formData.append("File", file);   
-  //     formData.append("Type", type);       
-
-  //     const apiUrl =
-  //       type === "S"
-  //         ? `${BASE_URL}UploadSuccessList`
-  //         : `${BASE_URL}UploadFailureList`;
-
-  //     showToast("info", `Uploading ${type === "S" ? "Sucess" : "Fail"} file...`);
-
-  //     const response = await axios.post(apiUrl, formData, {
-  //       headers: { "Content-Type": "multipart/form-data" },
-  //     });
-
  
-  //     showToast("S", `${type === "S" ? "Sucess" : "Fail"} file uploaded successfully!`);
-
-  //         await fetchUploadList(type);
-
-  //   } catch (error) {
-
-  //     showToast("error", `Error uploading ${type} file. Please check the server.`);
-  //   }
-  // };
  
 const handleFileUpload = async (file, type) => {
   const allowedTypes = [
@@ -171,6 +144,7 @@ const handleFileUpload = async (file, type) => {
     showToast("error", "Only CSV and Excel (.xlsx) files are allowed!");
     return;
   }
+  setLoaderOpen(true);
 
   try {
     // 🔹 Step 1: Show confirmation alert before uploading
@@ -200,6 +174,7 @@ const handleFileUpload = async (file, type) => {
       showToast("info", "File upload cancelled.");
       return;
     }
+    setLoaderOpen(true);
 
     //  Proceed with actual upload if confirmed
     const formData = new FormData();
@@ -211,7 +186,7 @@ const handleFileUpload = async (file, type) => {
         ? `${BASE_URL}Beneficiary`
         : `${BASE_URL}Beneficiary`;
 
-    showToast("info", `Uploading ${type === "S" ? "Success" : "Failure"} file...`);
+    showuploadfileToast("info", `Uploading ${type === "S" ? "Success" : "Failure"} file...`);
 
     const response = await axios.post(apiUrl, formData, {
       headers: { "Content-Type": "multipart/form-data" },
@@ -251,6 +226,10 @@ const handleFileUpload = async (file, type) => {
                 showConfirmButton: true,
               });
     showToast("error", `Error uploading ${type} file. Please check the server.`);
+  }
+   finally {
+ 
+    setLoaderOpen(false);
   }
 };
 

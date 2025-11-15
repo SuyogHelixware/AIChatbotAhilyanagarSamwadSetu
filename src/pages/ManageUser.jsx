@@ -36,6 +36,7 @@ import InputTextField, {
 import Loader from "../components/Loader";
 // import CameraAltOutlinedIcon from "@mui/icons-material/CameraAltOutlined";
 import { useTheme } from "@mui/material/styles";
+import InputTextFieldNewUserMail from "../components/Component";
 
 export default function ManageUsers() {
   const {
@@ -118,10 +119,7 @@ export default function ManageUsers() {
             : undefined,
         };
         reset(resetData);
-        // setImage(
-        //   resetData.Avatar
-         //     : ""
-        // );
+ 
       } else {
         console.error("Original data is not available!");
       }
@@ -985,12 +983,12 @@ export default function ManageUsers() {
             </Grid>
 
             <Grid item md={6} sm={6} xs={12}>
-              <Controller
+              {/* <Controller
                 name="Email"
                 control={control}
                 defaultValue=""
                 render={({ field }) => (
-                  <InputTextField
+                  <InputTextFieldNewUserMail
                     {...field}
                     label="EMAIL ID "
                     id="Email"
@@ -999,7 +997,23 @@ export default function ManageUsers() {
                     className="custom-required-field"
                   />
                 )}
-              />
+              /> */}
+              <Controller
+  name="Email"
+  control={control}
+  defaultValue=""
+  render={({ field }) => (
+    <InputTextFieldNewUserMail
+      {...field}
+      label="EMAIL ID "
+      id="Email"
+      type="email"
+      required
+      className="custom-required-field"
+    />
+  )}
+/>
+
             </Grid>
 
             <Grid item md={6} sm={6} xs={12}>

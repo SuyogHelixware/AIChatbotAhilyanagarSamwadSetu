@@ -56,12 +56,12 @@ const UploadDocument = () => {
   const [DeleteLineNums, setDeleteLineNums] = React.useState([]);
   const fileInputRef = React.useRef(null);
   const [isAddMissing, setIsAddMissing] = React.useState(false);
- 
+
   const firstLoad = React.useRef(true);
   const handleClose = () => setOn(false);
   const { userSession } = useThemeMode();
 
- const [subDocMap, setSubDocMap] = React.useState({});
+  const [subDocMap, setSubDocMap] = React.useState({});
 
   const initial = {
     Status: "1",
@@ -468,7 +468,7 @@ const UploadDocument = () => {
     //   },
     // }
 
-// ]]]]]]]]]]]]]]]]]]]]]]]]]]]
+    // ]]]]]]]]]]]]]]]]]]]]]]]]]]]
     // {
     //   field: "DocType",
     //   headerName: "DOCUMENT TYPE",
@@ -532,70 +532,70 @@ const UploadDocument = () => {
     // },
 
     {
-  field: "DocType",
-  headerName: "DOCUMENT TYPE",
-  flex: 1,
-  renderCell: (params) => {
-    const { id, field, value, api, row } = params;
-    const isDisabled = row.isDisabled;
+      field: "DocType",
+      headerName: "DOCUMENT TYPE",
+      flex: 1,
+      renderCell: (params) => {
+        const { id, field, value, api, row } = params;
+        const isDisabled = row.isDisabled;
 
-    const handleChange = (e) => {
-      const newValue = e.target.value;
+        const handleChange = (e) => {
+          const newValue = e.target.value;
 
-      // find selected document in master list
-      const selectedDoc = DocmasterList.find(
-        (doc) => doc.NameMR === newValue
-      );
+          // find selected document in master list
+          const selectedDoc = DocmasterList.find(
+            (doc) => doc.NameMR === newValue
+          );
 
-      // update subdoc list for that row
-      setSubDocMap((prev) => ({
-        ...prev,
-        [id]: selectedDoc?.SubDocs || [],
-      }));
+          // update subdoc list for that row
+          setSubDocMap((prev) => ({
+            ...prev,
+            [id]: selectedDoc?.SubDocs || [],
+          }));
 
-      // update DataGrid & rows
-      api.updateRows([{ id, [field]: newValue, MissingDocs: [] }]);
-      setRows((prev) =>
-        prev.map((row) =>
-          row.id === id
-            ? { ...row, [field]: newValue, MissingDocs: [] }
-            : row
-        )
-      );
-    };
+          // update DataGrid & rows
+          api.updateRows([{ id, [field]: newValue, MissingDocs: [] }]);
+          setRows((prev) =>
+            prev.map((row) =>
+              row.id === id
+                ? { ...row, [field]: newValue, MissingDocs: [] }
+                : row
+            )
+          );
+        };
 
-    return (
-      <Tooltip title={value || ""} arrow placement="top">
-        <Select
-          value={value || ""}
-          onChange={handleChange}
-          fullWidth
-          disabled={isDisabled}
-          variant="standard"
-          MenuProps={{
-            PaperProps: {
-              style: { maxHeight: 200, overflowY: "auto" },
-            },
-          }}
-        >
-          {DocmasterList.length > 0 ? (
-            DocmasterList.map((option) => (
-              <MenuItem
-                key={option.value}
-                value={option.NameMR}
-                sx={{ height: 35, display: "flex", alignItems: "center" }}
-              >
-                {option.NameMR}
-              </MenuItem>
-            ))
-          ) : (
-            <MenuItem disabled>No options available</MenuItem>
-          )}
-        </Select>
-      </Tooltip>
-    );
-  },
-},
+        return (
+          <Tooltip title={value || ""} arrow placement="top">
+            <Select
+              value={value || ""}
+              onChange={handleChange}
+              fullWidth
+              disabled={isDisabled}
+              variant="standard"
+              MenuProps={{
+                PaperProps: {
+                  style: { maxHeight: 200, overflowY: "auto" },
+                },
+              }}
+            >
+              {DocmasterList.length > 0 ? (
+                DocmasterList.map((option) => (
+                  <MenuItem
+                    key={option.value}
+                    value={option.NameMR}
+                    sx={{ height: 35, display: "flex", alignItems: "center" }}
+                  >
+                    {option.NameMR}
+                  </MenuItem>
+                ))
+              ) : (
+                <MenuItem disabled>No options available</MenuItem>
+              )}
+            </Select>
+          </Tooltip>
+        );
+      },
+    },
     // {
     //   field: "MissingDocs",
     //   headerName: "MISSING DOCUMENT",
@@ -672,66 +672,65 @@ const UploadDocument = () => {
     //   },
     // },
     {
-  field: "MissingDocs",
-  headerName: "MISSING DOCUMENT",
-  flex: 1,
-  renderCell: (params) => {
-    const { id, field, value, api, row } = params;
-    const isDisabled = row.isDisabled;
+      field: "MissingDocs",
+      headerName: "MISSING DOCUMENT",
+      flex: 1,
+      renderCell: (params) => {
+        const { id, field, value, api, row } = params;
+        const isDisabled = row.isDisabled;
 
-    const selectedValues = Array.isArray(value) ? value : [];
-    const availableSubDocs = subDocMap[id] || []; // get subdocs for this row
+        const selectedValues = Array.isArray(value) ? value : [];
+        const availableSubDocs = subDocMap[id] || []; // get subdocs for this row
 
-    const handleChange = (event) => {
-      const newValues = event.target.value;
-      setRows((prev) =>
-        prev.map((r) => (r.id === id ? { ...r, [field]: newValues } : r))
-      );
-      api.updateRows([{ id, [field]: newValues }]);
-    };
+        const handleChange = (event) => {
+          const newValues = event.target.value;
+          setRows((prev) =>
+            prev.map((r) => (r.id === id ? { ...r, [field]: newValues } : r))
+          );
+          api.updateRows([{ id, [field]: newValues }]);
+        };
 
-    return (
-      <Tooltip
-        title={selectedValues.join(", ") || ""}
-        arrow
-        placement="top"
-      >
-        <Select
-          multiple
-          value={selectedValues}
-          onChange={handleChange}
-          fullWidth
-          disabled={isDisabled}
-          variant="standard"
-          renderValue={(selected) => selected.join(", ")}
-          MenuProps={{
-            PaperProps: { style: { maxHeight: 220, overflowY: "auto" } },
-          }}
-        >
-          {availableSubDocs.length > 0 ? (
-            availableSubDocs.map((option) => (
-              <MenuItem key={option.value} value={option.NameMR}>
-                <Checkbox
-                  checked={selectedValues.indexOf(option.NameMR) > -1}
-                  size="small"
-                />
-                <ListItemText primary={option.NameMR} />
-              </MenuItem>
-            ))
-          ) : (
-            <MenuItem disabled>No any sub document added</MenuItem>
-          )}
-        </Select>
-      </Tooltip>
-    );
-  },
-}
-
-  ];       
+        return (
+          <Tooltip
+            title={selectedValues.join(", ") || ""}
+            arrow
+            placement="top"
+          >
+            <Select
+              multiple
+              value={selectedValues}
+              onChange={handleChange}
+              fullWidth
+              disabled={isDisabled}
+              variant="standard"
+              renderValue={(selected) => selected.join(", ")}
+              MenuProps={{
+                PaperProps: { style: { maxHeight: 220, overflowY: "auto" } },
+              }}
+            >
+              {availableSubDocs.length > 0 ? (
+                availableSubDocs.map((option) => (
+                  <MenuItem key={option.value} value={option.NameMR}>
+                    <Checkbox
+                      checked={selectedValues.indexOf(option.NameMR) > -1}
+                      size="small"
+                    />
+                    <ListItemText primary={option.NameMR} />
+                  </MenuItem>
+                ))
+              ) : (
+                <MenuItem disabled>No any sub document added</MenuItem>
+              )}
+            </Select>
+          </Tooltip>
+        );
+      },
+    },
+  ];
 
   const visibleColumns = isAddMissing
-  ? DocColumns
-  : DocColumns.filter((col) => col.field !== "MissingDocs");
+    ? DocColumns
+    : DocColumns.filter((col) => col.field !== "MissingDocs");
 
   const Maincolumns = [
     {
@@ -868,8 +867,7 @@ const UploadDocument = () => {
     setSaveUpdateButton("UPDATE");
     setClearUpdateButton("RESET");
     setOn(true);
-    setIsAddMissing(false)
-
+    setIsAddMissing(false);
 
     try {
       setLoading(true);
@@ -983,19 +981,60 @@ const UploadDocument = () => {
         Name: "",
         oDocLines: [],
       });
+      setIsAddMissing(false);
     }
+    // if (ClearUpdateButton === "RESET") {
+    //   if (originalDataRef.current) {
+    //     const resetData = { ...originalDataRef.current };
+
+    //     // Remove +91 from MobileNo if it exists
+    //     if (resetData.MobileNo && resetData.MobileNo.startsWith("+91")) {
+    //       resetData.MobileNo = resetData.MobileNo.slice(3);
+    //     }
+    //     reset(resetData);
+
+    //     // also set rows for DataGrid
+    //     if (resetData.oDocLines && Array.isArray(resetData.oDocLines)) {
+    //       const formattedLines = resetData.oDocLines.map((line, index) => ({
+    //         ...line,
+    //         id: line.LineNum ?? index,
+    //         Email:line.Email,
+    //        }));
+    //       setRows(formattedLines);
+    //     } else {
+    //       setRows([]);
+    //     }
+    //   } else {
+    //     reset({
+    //       Status: 1,
+    //       Address: "",
+    //       Email: "",
+    //       MobileNo: "",
+    //       Name: "",
+    //       oDocLines: [],
+    //     });
+    //     setRows([]);
+    //   }
+    // }
     if (ClearUpdateButton === "RESET") {
       if (originalDataRef.current) {
         const resetData = { ...originalDataRef.current };
 
-        // Remove +91 from MobileNo if it exists
-        if (resetData.MobileNo && resetData.MobileNo.startsWith("+91")) {
+        // Format before resetting
+        if (resetData.MobileNo?.startsWith("+91")) {
           resetData.MobileNo = resetData.MobileNo.slice(3);
         }
-        reset(resetData);
 
-        // also set rows for DataGrid
-        if (resetData.oDocLines && Array.isArray(resetData.oDocLines)) {
+        reset({
+          Status: resetData.Status ?? 1,
+          Address: resetData.Address ?? "",
+          Email: resetData.Email ?? "",
+          MobileNo: resetData.MobileNo ?? "",
+          Name: resetData.Name ?? "",
+          oDocLines: resetData.oDocLines ?? [],
+        });
+
+        if (Array.isArray(resetData.oDocLines)) {
           const formattedLines = resetData.oDocLines.map((line, index) => ({
             ...line,
             id: line.LineNum ?? index,
@@ -1004,16 +1043,7 @@ const UploadDocument = () => {
         } else {
           setRows([]);
         }
-      } else {
-        reset({
-          Status: 1,
-          Address: "",
-          Email: "",
-          MobileNo: "",
-          Name: "",
-          oDocLines: [],
-        });
-        setRows([]);
+        setIsAddMissing(resetData.IsAddMissing ?? false);
       }
     }
   };
@@ -1032,7 +1062,7 @@ const UploadDocument = () => {
       oDocLines: [],
     });
     setRows([]); // clears table data
-    setIsAddMissing(false)
+    setIsAddMissing(false);
   };
 
   const handleRemove = (rowToRemove) => {
@@ -1266,37 +1296,36 @@ const UploadDocument = () => {
       return;
     }
 
-  //   let hasConflict = false;
+    //   let hasConflict = false;
 
-  // rows.forEach((row, index) => {
-  //   debugger
-  //   const hasFile = !!row.FileName; // file uploaded
-  //   const hasMissingDocs =
-  //     Array.isArray(row.MissingDocs) && row.MissingDocs.length > 0;
+    // rows.forEach((row, index) => {
+    //   debugger
+    //   const hasFile = !!row.FileName; // file uploaded
+    //   const hasMissingDocs =
+    //     Array.isArray(row.MissingDocs) && row.MissingDocs.length > 0;
 
-  //   if (hasFile && hasMissingDocs) {
-  //     hasConflict = true;
-  //     // alert(
-  //     //   `Row ${index + 1}: You cannot select Missing Documents when a file is uploaded.`
-  //     // );
-  //        Swal.fire({
-  //       toast: true,
-  //       position: "center",
-  //       icon: "warning",
-  //       title: `Row ${index + 1}: You cannot select Missing Documents when a file is uploaded.`,
-  //       showConfirmButton: false,
-  //       timer: 3000,
-  //       timerProgressBar: true,
-  //       // background: "#fff8e1",
-  //     });
-    
-  //   }
-  // });
+    //   if (hasFile && hasMissingDocs) {
+    //     hasConflict = true;
+    //     // alert(
+    //     //   `Row ${index + 1}: You cannot select Missing Documents when a file is uploaded.`
+    //     // );
+    //        Swal.fire({
+    //       toast: true,
+    //       position: "center",
+    //       icon: "warning",
+    //       title: `Row ${index + 1}: You cannot select Missing Documents when a file is uploaded.`,
+    //       showConfirmButton: false,
+    //       timer: 3000,
+    //       timerProgressBar: true,
+    //       // background: "#fff8e1",
+    //     });
 
-  // if (hasConflict) {
-  //   return; // Stop submission
-  // }
+    //   }
+    // });
 
+    // if (hasConflict) {
+    //   return; // Stop submission
+    // }
 
     const formData = new FormData();
 
@@ -1365,7 +1394,7 @@ const UploadDocument = () => {
         row.MissingDocs.forEach((docType, i) => {
           formData.append(`oDocLines[${index}].MissingDocs[${i}]`, docType);
         });
-      } 
+      }
       // else {
       //   formData.append(`oDocLines[${index}].MissingDocs`, JSON.stringify([]));
       // }
@@ -1875,7 +1904,7 @@ const UploadDocument = () => {
               <DataGrid
                 rows={updatedRows}
                 // columns={DocColumns}
-                columns={visibleColumns }
+                columns={visibleColumns}
                 pageSize={5}
                 rowsPerPageOptions={[5]}
                 disableRowSelectionOnClick

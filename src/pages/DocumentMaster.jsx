@@ -70,11 +70,31 @@ const DocumentMaster = () => {
         NameMR: "",
         Description: "",
         Status: 1,
+        CreateSubDocRows :[]
       });
+          setCreateSubDocRows([]);
+
     }
-    if (ClearUpdateButton === "RESET") {
-      reset(originalDataRef.current);
-    }
+    // if (ClearUpdateButton === "RESET") {
+    //   reset(originalDataRef.current);
+
+    // }
+      if (ClearUpdateButton === "RESET") {
+    const old = originalDataRef.current;
+    if (!old) return;
+
+    // Restore form fields
+    reset(old);
+
+    // Restore datagrid rows
+    const oldRows = (old.SubDocs || []).map((s, index) => ({
+      id: s.LineNum || index + 1,
+      ...s,
+    }));
+
+    setCreateSubDocRows(oldRows); // 🔥 Important
+  }
+
   };
 
   const handleClose = () => setOn(false);
@@ -463,7 +483,7 @@ const DocumentMaster = () => {
     {
       field: "NameMR",
       headerName: "DOCUMENT NAME",
-      width: 300,
+      width: 250,
       renderCell: (params) => {
         const handleChange = (e) => {
           const newValue = e.target.value;
@@ -501,51 +521,7 @@ const DocumentMaster = () => {
     },
   ];
   const [docOptions, setDocOptions] = React.useState([]);
-
-  // const DocMasterListTemp = async (params = {}) => {
-  //   setLoading(true);
-  //   try {
-  //     const { data } = await axios.get(`${BASE_URL}DocsMaster`, {
-  //       params: { Status: "1" },
-  //     });
-  //     if (data?.values) setDocOptions(data.values);
-  //   } catch (error) {
-  //     console.error("Error fetching DocsMaster:", error);
-  //   } finally {
-  //     setLoading(false);
-  //   }
-  // };
-
-  // const handleUpdate = async (rowData) => {
-  //   setSaveUpdateButton("UPDATE");
-  //   setClearUpdateButton("RESET");
-  //   setOn(true);
-  //   try {
-  //     setLoading(true);
-  //     const apiUrl = `${BASE_URL}DocsMaster/${rowData.Id}`;
-  //     const response = await axios.get(apiUrl);
-  //     if (response.data.values) {
-  //       const Document = response.data.values;
-  //       originalDataRef.current = Document;
-  //       setValue("Id", Document.Id);
-  //       setValue("NameEN", Document.NameEN);
-  //       setValue("NameMR", Document.NameMR);
-  //       setValue("Description", Document.Description);
-  //       setValue("Status", Document.Status);
-
-  //         const subDocs = (Document.SubDocs || []).map((subDoc, index) => ({
-  //       id: subDoc.id || subDoc.DocEntry || index + 1,
-  //       ...subDoc,
-  //     }));
-
-  //     setCreateSubDocRows(subDocs);
-  //     }
-  //   } catch (error) {
-  //     console.error("Error fetching Document data:", error);
-  //   } finally {
-  //     setLoading(false);
-  //   }
-  // };
+ 
 
   // 3️⃣ When updating a record, remember its Id and then fetch the list
   // ✅ Load document by Id for editing
@@ -638,7 +614,7 @@ const DocumentMaster = () => {
           elevation={10}
           sx={{
             width: "100%",
-            maxWidth: 500,
+            maxWidth: 450,
             position: "absolute",
             top: "50%",
             left: "50%",
@@ -808,10 +784,10 @@ const DocumentMaster = () => {
               alignItems="center"
               sx={{
                 position: "absolute",
-                bottom: 10,
+                bottom: 5,
                 left: 10,
                 right: 10,
-                mt: "10px",
+                // mt: "10px",
               }}
             >
               <Button

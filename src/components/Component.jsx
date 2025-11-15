@@ -67,31 +67,70 @@ export default class InputTextField extends React.Component {
           value={this.props.value}
           size="small"
           sx={{ maxWidth: 250 }}
-           inputProps={{
-          // maxLength: 16,
-           
-          ...(this.props.inputProps || {}), // allow parent to override/extend
-        }}
-           error={this.props.error}               // Add this line
-          helperText={this.props.helperText} 
+          inputProps={{
+            // maxLength: 16,
+
+            ...(this.props.inputProps || {}), // allow parent to override/extend
+          }}
+          error={this.props.error} // Add this line
+          helperText={this.props.helperText}
         />
       </>
     );
   }
 }
-export const InputTextFieldmd = React.forwardRef(({ label, error, helperText, ...props }, ref) => {
+
+export function InputTextFieldNewUserMail({
+  label,
+  value,
+  onChange,
+  onBlur,
+  name,
+  id,
+  type = "text",
+  disabled,
+  error,
+  helperText,
+  inputProps,
+  ...rest
+}) {
   return (
     <TextField
       label={label}
-      size="small"
-      sx={{ width: "100%", maxWidth: 350 }}
-      error={!!error}
+      name={name}
+      id={id || name}
+      value={value}
+      onChange={onChange}
+      onBlur={onBlur}
+      type={type}
+      disabled={disabled}
+      error={error}
       helperText={helperText}
-      inputRef={ref} // Forward ref for react-hook-form
-      {...props}
+      size="small"
+      sx={{ maxWidth: 250 }}
+      inputProps={{
+        ...(inputProps || {}),
+      }}
+      {...rest}
     />
   );
-});
+}
+
+export const InputTextFieldmd = React.forwardRef(
+  ({ label, error, helperText, ...props }, ref) => {
+    return (
+      <TextField
+        label={label}
+        size="small"
+        sx={{ width: "100%", maxWidth: 350 }}
+        error={!!error}
+        helperText={helperText}
+        inputRef={ref} // Forward ref for react-hook-form
+        {...props}
+      />
+    );
+  }
+);
 
 export class InputTextField1 extends React.Component {
   render() {
@@ -128,14 +167,14 @@ export class InputTextField1 extends React.Component {
 //           multiline
 //           rows={2}
 //           error={this.props.error}               // Add this line
-//           helperText={this.props.helperText}   
+//           helperText={this.props.helperText}
 //         />
 //       </>
 //     );
 //   }
 // }
 
- export  const InputDescriptionField = ({
+export const InputDescriptionField = ({
   label,
   onChange,
   id,
@@ -219,7 +258,7 @@ export class InputPasswordField extends React.Component {
         sx={{ maxWidth: 240 }}
         inputProps={{
           maxLength: 16,
-           
+
           ...(this.props.inputProps || {}), // allow parent to override/extend
         }}
         InputProps={{
@@ -242,8 +281,6 @@ export class InputPasswordField extends React.Component {
   }
 }
 
-
-
 export class InputPasswordFieldmd extends React.Component {
   render(props) {
     return (
@@ -257,7 +294,7 @@ export class InputPasswordFieldmd extends React.Component {
           type={this.props.type}
           value={this.props.value}
           size="small"
-          sx={{ width: "100%", maxWidth: 350 }} 
+          sx={{ width: "100%", maxWidth: 350 }}
           InputProps={{
             endAdornment: (
               <InputAdornment position="end">
@@ -506,9 +543,13 @@ class DepartmentDropdown extends React.Component {
         getOptionLabel={(option) => option.DeptNameEN || ""}
         loading={this.state.loading}
         filterOptions={(options, { inputValue }) =>
-          options.filter((option) => option.DeptNameEN.toLowerCase().includes(inputValue.toLowerCase()))
+          options.filter((option) =>
+            option.DeptNameEN.toLowerCase().includes(inputValue.toLowerCase())
+          )
         }
-        onChange={(event, newValue) => this.props.onChange && this.props.onChange(newValue)}
+        onChange={(event, newValue) =>
+          this.props.onChange && this.props.onChange(newValue)
+        }
         renderInput={(params) => (
           <TextField
             {...params}
@@ -517,7 +558,9 @@ class DepartmentDropdown extends React.Component {
             fullWidth
             InputProps={{
               ...params.InputProps,
-              endAdornment: this.state.loading ? "Loading..." : params.InputProps.endAdornment,
+              endAdornment: this.state.loading
+                ? "Loading..."
+                : params.InputProps.endAdornment,
             }}
           />
         )}
