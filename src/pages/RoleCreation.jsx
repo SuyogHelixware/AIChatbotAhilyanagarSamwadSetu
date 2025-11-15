@@ -51,7 +51,10 @@ const RoleCreation = () => {
   const [openMenu, setOpenMenu] = React.useState(false);
   const [selectedIds, setSelectedIds] = React.useState([]);
 
-  const handleOpenMenu = () => setOpenMenu(true);
+  // const handleOpenMenu = () => setOpenMenu(true);
+  const [pickerInitialSelectedIds, setPickerInitialSelectedIds] = React.useState([]);
+const [pickerDisabledSubmenuIds, setPickerDisabledSubmenuIds] = React.useState([]);
+  
   const handleCloseMenu = () => setOpenMenu(false);
   const firstLoad = React.useRef(true);
   const [MenuList, setMenuList] = React.useState([]);
@@ -97,8 +100,7 @@ const RoleCreation = () => {
     },
   ]);
 
-  // 🔹 Track selected rows
-  const RoleCrationColumns = [
+   const RoleCrationColumns = [
     {
       field: "srNo",
       headerName: "SR NO",
@@ -164,11 +166,7 @@ const RoleCreation = () => {
             fontWeight: params.row.isChild ? 350 : 450,
           }}
         >
-          {/* {params.row.isChild
-            ? `↳ ${params.row.Name}`
-            : `${params.row.ParentMenuName || ""} - ${
-                params.row.SubMenuName || params.row.Name
-              }`} */}
+        
           {params.row.isChild
             ? `↳ ${params.row.Name}`
             : [
@@ -480,29 +478,71 @@ const RoleCreation = () => {
     }
   }, []);
 
+  // const handleRemove = (displayRow) => {
+  //   const displayId = displayRow.id;
+
+  //   // if child
+  //   if (typeof displayId === "string" && displayId.includes("-child-")) {
+  //     const [parentIdStr, childIdxStr] = displayId.split("-child-");
+
+  //     setRoleTableData((prev) =>
+  //       prev.map((parent) => {
+  //         if (String(parent.id) !== parentIdStr) return parent;
+  //         const idx = Number(childIdxStr);
+  //         const childArr = Array.isArray(parent.oSubMenusSpeAccess)
+  //           ? parent.oSubMenusSpeAccess.filter((_, i) => i !== idx)
+  //           : [];
+  //         return { ...parent, oSubMenusSpeAccess: childArr };
+  //       })
+  //     );
+  //     return;
+  //   }
+
+  //   // otherwise parent row
+  //   setRoleTableData((prev) => prev.filter((r) => r.id !== displayId));
+  // };
   const handleRemove = (displayRow) => {
-    const displayId = displayRow.id;
+  const displayId = displayRow.id;
 
-    // if child
-    if (typeof displayId === "string" && displayId.includes("-child-")) {
-      const [parentIdStr, childIdxStr] = displayId.split("-child-");
+  // --- If it's a child row ---
+  if (typeof displayId === "string" && displayId.includes("-child-")) {
+    const [parentIdStr, childIdxStr] = displayId.split("-child-");
+    const parentId = Number(parentIdStr);
+    const childIndex = Number(childIdxStr);
 
-      setRoleTableData((prev) =>
-        prev.map((parent) => {
-          if (String(parent.id) !== parentIdStr) return parent;
-          const idx = Number(childIdxStr);
-          const childArr = Array.isArray(parent.oSubMenusSpeAccess)
-            ? parent.oSubMenusSpeAccess.filter((_, i) => i !== idx)
-            : [];
-          return { ...parent, oSubMenusSpeAccess: childArr };
-        })
+    setRoleTableData((prev) => {
+      // 1️⃣ Update parent’s internal array
+      const updatedData = prev.map((row) => {
+        if (String(row.id) !== String(parentId)) return row;
+
+        const updatedChildren = Array.isArray(row.oSubMenusSpeAccess)
+          ? row.oSubMenusSpeAccess.filter((_, i) => i !== childIndex)
+          : [];
+
+        return { ...row, oSubMenusSpeAccess: updatedChildren };
+      });
+
+      // 2️⃣ Remove the child’s flattened row from DataGrid
+      const filtered = updatedData.filter(
+        (r) => String(r.id) !== displayId // remove this exact flattened child row
       );
-      return;
-    }
 
-    // otherwise parent row
-    setRoleTableData((prev) => prev.filter((r) => r.id !== displayId));
-  };
+      return filtered;
+    });
+
+    return;
+  }
+
+  // --- If it's a parent row ---
+  setRoleTableData((prev) =>
+    prev.filter(
+      (r) =>
+        String(r.id) !== String(displayId) && // remove parent itself
+        !String(r.id).startsWith(`${displayId}-child-`) // also remove all its children
+    )
+  );
+};
+
   const handleDelete = async (rowData) => {
     Swal.fire({
       text: "Are you sure you want to delete?",
@@ -581,12 +621,13 @@ const RoleCreation = () => {
         const olddata = response.data.values;
 
         originalDataRef.current = olddata;
-         const formattedLines = Array.isArray(olddata.oLines)
+        debugger;
+        const formattedLines = Array.isArray(olddata.oLines)
           ? olddata.oLines.map((line, index) => ({
               ...line,
               id: line.MenuId || `${olddata.Id}-${index}-${Date.now()}`,
 
-              // 🔹 Display Name
+
               Name: `${line.ParentMenu || ""} - ${line.MenuName || ""}`.trim(),
 
               SubMenuId: line.SubMenuId ?? null,
@@ -621,48 +662,121 @@ const RoleCreation = () => {
     }
   };
 
-  const clearFormData = () => {
-    setRoleTableData([]);
+  // const clearFormData = () => {
+  //   setRoleTableData([]);
 
-    if (ClearUpdateButton === "CLEAR") {
+  //   if (ClearUpdateButton === "CLEAR") {
+  //     reset({
+  //       Status: 1,
+
+  //       RoleName: "",
+  //       oLines: [],
+  //     });
+  //   }
+  //   if (ClearUpdateButton === "RESET") {
+  //     if (originalDataRef.current) {
+  //       const resetData = { ...originalDataRef.current };
+
+  //       // Remove +91 from MobileNo if it exists
+  //       if (resetData.MobileNo && resetData.MobileNo.startsWith("+91")) {
+  //         resetData.MobileNo = resetData.MobileNo.slice(3);
+  //       }
+  //       reset(resetData);
+
+  //       // also set rows for DataGrid
+  //       if (resetData.oLines && Array.isArray(resetData.oLines)) {
+  //         const formattedLines = resetData.oLines.map((line, index) => ({
+  //           ...line,
+  //           id: line.LineNum ?? index,
+  //         }));
+  //         setRoleTableData(formattedLines);
+  //       }
+  //        else {
+  //         setRoleTableData([]);
+  //       }
+  //     } else {
+  //       reset({
+  //         Status: 1,
+
+  //         RoleName: "",
+  //         oLines: [],
+  //       });
+  //       setRoleTableData([]);
+  //     }
+  //   }
+  // };
+
+const clearFormData = () => {
+  setRoleTableData([]);
+
+  if (ClearUpdateButton === "CLEAR") {
+    reset({
+      Status: 1,
+      RoleName: "",
+      oLines: [],
+    });
+    return;
+  }
+
+  if (ClearUpdateButton === "RESET") {
+    if (originalDataRef.current) {
+      const resetData = { ...originalDataRef.current };
+
+      // Remove +91 from MobileNo if it exists
+      if (resetData.MobileNo && resetData.MobileNo.startsWith("+91")) {
+        resetData.MobileNo = resetData.MobileNo.slice(3);
+      }
+
+      // Reset the form
+      reset(resetData);
+
+      // Rebuild datagrid rows (parent + children)
+      if (Array.isArray(resetData.oLines)) {
+        const formattedLines = [];
+
+        resetData.oLines.forEach((line, index) => {
+          // --- parent row ---
+          const parentRow = {
+            ...line,
+            id: line.LineNum ?? index,
+            isChild: false,
+            ParentMenuName: line.ParentMenu ?? "",
+            SubMenuName: line.MenuName ?? "",
+            Name: line.MenuName ?? "",
+          };
+
+          formattedLines.push(parentRow);
+
+          // --- child rows (oSpecialAccess) ---
+          if (Array.isArray(line.oSpecialAccess) && line.oSpecialAccess.length) {
+            line.oSpecialAccess.forEach((child, cIndex) => {
+              formattedLines.push({
+                ...child,
+                id: `${line.LineNum}-child-${cIndex}`,
+                isChild: true,
+                ParentMenuName: line.ParentMenu ?? "",
+                SubMenuName: line.MenuName ?? "",
+                Name: child.MenuName ?? "",
+              });
+            });
+          }
+        });
+
+        setRoleTableData(formattedLines);
+      } else {
+        setRoleTableData([]);
+      }
+    } else {
       reset({
         Status: 1,
-
         RoleName: "",
         oLines: [],
       });
+      setRoleTableData([]);
     }
-    if (ClearUpdateButton === "RESET") {
-      if (originalDataRef.current) {
-        const resetData = { ...originalDataRef.current };
+  }
+};
 
-        // Remove +91 from MobileNo if it exists
-        if (resetData.MobileNo && resetData.MobileNo.startsWith("+91")) {
-          resetData.MobileNo = resetData.MobileNo.slice(3);
-        }
-        reset(resetData);
-
-        // also set rows for DataGrid
-        if (resetData.oLines && Array.isArray(resetData.oLines)) {
-          const formattedLines = resetData.oLines.map((line, index) => ({
-            ...line,
-            id: line.LineNum ?? index,
-          }));
-          setRoleTableData(formattedLines);
-        } else {
-          setRoleTableData([]);
-        }
-      } else {
-        reset({
-          Status: 1,
-
-          RoleName: "",
-          oLines: [],
-        });
-        setRoleTableData([]);
-      }
-    }
-  };
 
   const handleOnSave = () => {
     setSaveUpdateButton("SAVE");
@@ -781,50 +895,6 @@ const RoleCreation = () => {
     }
   };
 
-  const handleSelectedMenus = () => {
-    if (!Array.isArray(selectedIds) || selectedIds.length === 0) return;
-
-    const selectedData = [];
-
-    MenuList.forEach((menu) => {
-      (menu.oSubMenus || []).forEach((sub) => {
-        if (selectedIds.includes(sub.id)) {
-          // Filter only selected special accesses
-          const filteredAccess = (sub.oSubMenusSpeAccess || []).filter(
-            (access) => selectedIds.includes(`${sub.id}_${access.LineNum}`)
-          );
-
-          selectedData.push({
-            id: `${sub.id}_${Date.now()}_${Math.random()
-              .toString(36)
-              .slice(2, 8)}`,
-            ParentMenuId: menu.Id,
-            ParentMenuName: menu.Name,
-            SubMenuId: sub.LineNum,
-            SubMenuName: sub.Name,
-            IsRead: true,
-            IsAdd: true,
-            IsEdit: true,
-            IsDelete: true,
-            oSubMenusSpeAccess: filteredAccess.map((acc) => ({
-              ...acc,
-              LineNum: acc.LineNum,
-              spName: acc.Name,
-              isChild: true,
-              IsRead: true,
-              IsAdd: true,
-              IsEdit: true,
-              IsDelete: true,
-            })),
-          });
-        }
-      });
-    });
-
-    // Merge with existing table data
-    setRoleTableData((prev) => [...prev, ...selectedData]);
-    setOpenMenu(false);
-  };
   // const handleSelectedMenus = () => {
   //   if (!Array.isArray(selectedIds) || selectedIds.length === 0) return;
 
@@ -832,19 +902,19 @@ const RoleCreation = () => {
 
   //   MenuList.forEach((menu) => {
   //     (menu.oSubMenus || []).forEach((sub) => {
-  //       if (selectedIds.includes(sub.Id)) {
-  //         const filteredAccess =
-  //           (sub.oSubMenusSpeAccess || []).filter((access) =>
-  //             selectedIds.includes(`${sub.Id}_${access.LineNum}`)
-  //           ) || [];
+  //       if (selectedIds.includes(sub.id)) {
+  //         // Filter only selected special accesses
+  //         const filteredAccess = (sub.oSubMenusSpeAccess || []).filter(
+  //           (access) => selectedIds.includes(`${sub.id}_${access.LineNum}`)
+  //         );
 
   //         selectedData.push({
-  //           id: `${sub.Id}_${Date.now()}_${Math.random()
+  //           id: `${sub.id}_${Date.now()}_${Math.random()
   //             .toString(36)
   //             .slice(2, 8)}`,
   //           ParentMenuId: menu.Id,
   //           ParentMenuName: menu.Name,
-  //           SubMenuId: sub.Id,
+  //           SubMenuId: sub.LineNum,
   //           SubMenuName: sub.Name,
   //           IsRead: true,
   //           IsAdd: true,
@@ -852,7 +922,8 @@ const RoleCreation = () => {
   //           IsDelete: true,
   //           oSubMenusSpeAccess: filteredAccess.map((acc) => ({
   //             ...acc,
-  //             parentId: sub.Id,
+  //             LineNum: acc.LineNum,
+  //             spName: acc.Name,
   //             isChild: true,
   //             IsRead: true,
   //             IsAdd: true,
@@ -864,9 +935,49 @@ const RoleCreation = () => {
   //     });
   //   });
 
+  //   // Merge with existing table data
   //   setRoleTableData((prev) => [...prev, ...selectedData]);
   //   setOpenMenu(false);
   // };
+  const handleSelectedMenus = () => {
+  if (!Array.isArray(selectedIds) || selectedIds.length === 0) return;
+
+  const existingSubMenus = new Set(
+    (RoleTableData || []).map((r) => Number(r.SubMenuId))
+  );
+
+  const selectedData = [];
+
+  MenuList.forEach((menu) => {
+    (menu.oSubMenus || []).forEach((sub) => {
+      if (selectedIds.includes(sub.id) && !existingSubMenus.has(sub.LineNum)) {
+        const filteredAccess = (sub.oSubMenusSpeAccess || []).filter((acc) =>
+          selectedIds.includes(`${sub.id}_${acc.LineNum}`)
+        );
+
+        selectedData.push({
+          id: `${sub.id}_${Date.now()}`,
+          ParentMenuId: menu.Id,
+          ParentMenuName: menu.Name,
+          SubMenuId: sub.LineNum,
+          SubMenuName: sub.Name,
+          IsRead: true,
+          IsAdd: true,
+          IsEdit: true,
+          IsDelete: true,
+          oSubMenusSpeAccess: filteredAccess.map((acc) => ({
+            ...acc,
+            isChild: true,
+          })),
+        });
+      }
+    });
+  });
+
+  setRoleTableData((prev) => [...prev, ...selectedData]);
+  setOpenMenu(false);
+};
+
 
   const handleMenusList = async (params = {}) => {
     setLoading(true);
@@ -979,6 +1090,39 @@ const RoleCreation = () => {
     ];
   });
 
+  const handleOpenMenu = () => {
+  const { initialSelectedIds, disabledSubmenuIds } = prepareExistingMenus(RoleTableData);
+  setPickerInitialSelectedIds(initialSelectedIds);
+  setPickerDisabledSubmenuIds(disabledSubmenuIds);
+  setOpenMenu(true);
+};
+
+  const prepareExistingMenus = (roleTableData) => {
+  const selectedIds = new Set();
+  const disabledSubMenus = new Set();
+
+  roleTableData.forEach((row) => {
+    // For parent/submenu rows
+    if (row.SubMenuId) {
+      disabledSubMenus.add(Number(row.SubMenuId)); // used for disabling submenu checkbox
+      selectedIds.add(row.SubMenuId); // used for marking selected
+    }
+
+    // For child special access
+    if (Array.isArray(row.oSubMenusSpeAccess)) {
+      row.oSubMenusSpeAccess.forEach((acc) => {
+        const accessId = `${row.SubMenuId}_${acc.LineNum}`;
+        selectedIds.add(accessId);
+      });
+    }
+  });
+
+  return {
+    initialSelectedIds: Array.from(selectedIds),
+    disabledSubmenuIds: Array.from(disabledSubMenus),
+  };
+};
+
   return (
     <>
       <Dialog open={openMenu} onClose={handleCloseMenu} fullWidth maxWidth="md">
@@ -999,13 +1143,15 @@ const RoleCreation = () => {
             <CollapsibleMenuGrid
               menuList={MenuList}
               onSelectionChange={setSelectedIds}
-              existingSubMenus={[
-                ...new Set(
-                  (RoleTableData || [])
-                    .filter((r) => r.SubMenuId != null)
-                    .map((r) => r.SubMenuId)
-                ),
-              ]}
+              // existingSubMenus={[
+              //   ...new Set(
+              //     (RoleTableData || [])
+              //       .filter((r) => r.SubMenuId != null)
+              //       .map((r) => r.SubMenuId)
+              //   ),
+              // ]}
+   initialSelectedIds={pickerInitialSelectedIds}
+  disabledSubmenuIds={pickerDisabledSubmenuIds}
             />
           </div>
         </DialogContent>

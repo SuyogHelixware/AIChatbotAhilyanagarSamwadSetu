@@ -63,6 +63,8 @@ import { keyframes } from "@mui/system";
 import { useState } from "react";
 import LoginPageLoader from "../pages/LoginPageLoader";
 
+ 
+
 const drawerWidth = 250;
 const openedMixin = (theme) => ({
   width: drawerWidth,
@@ -181,6 +183,7 @@ export default function Dashboard() {
   const [openProcessTransactions, setOpenProcessTransactions] =
     React.useState(false);
   const [userType, setUserType] = useState(null);
+  const { roleAccess } = useThemeMode();
 
   // const [drawerOpen, setDrawerOpen] = React.useState(false);
   const [userData, setUserData] = React.useState({
@@ -191,30 +194,105 @@ export default function Dashboard() {
     Avatar: "",
     _id: "",
   });
+  // const allMenus = [
+  //   {
+  //     label: "Dashboard",
+  //     icon: <DashboardIcon />,
+  //     path: "home",
+  //     allowed: ["A", "U"],
+  //   },
+  //   {
+  //     label: "User", 
+  //     icon: <GroupIcon />,
+  //     path: "manage-user",
+  //     allowed: ["A"],
+  //   },
+  //   {
+  //     label: "Role Creation",
+  //     icon: <ManageAccountsIcon />,
+  //     path: "RoleCreation",
+  //     allowed: ["A"],
+  //   },
+  //   //   {
+  //   //   label: "Department",
+  //   //   icon: <BusinessIcon />,
+  //   //   path: "department",
+  //   //   allowed: ["A"],
+  //   // },
+  //   //  {
+  //   //   label: "Services",
+  //   //   icon: <SmartphoneIcon />,
+  //   //   path: "Services",
+  //   //   allowed: ["A"],
+  //   // },
+  //   //  {
+  //   //   label: "Offline Services",
+  //   //   icon: <MiscellaneousServicesIcon />,
+  //   //   path: "OfflineServices",
+  //   //   allowed: ["A"],
+  //   // },
+  //   //  {
+  //   //   label: "Email Configuration",
+  //   //   icon: <EmailIcon />,
+  //   //   path: "EmailSetup",
+  //   //   allowed: ["A"],
+  //   // },
+    
+  //   {
+  //     label: "Documents Master",
+  //     icon: <DescriptionIcon />,
+  //     path: "DocumentMaster",
+  //     allowed: ["A"],
+  //   },
+  //   {
+  //     label: "Gazetted Master",
+  //     icon: <ChecklistIcon />,
+  //     path: "Gazetted-Master",
+  //     allowed: ["A"],
+  //   },
+  //   {
+  //     label: "Upload Documents",
+  //     icon: <DriveFolderUploadIcon />,
+  //     path: "Upload-Document",
+  //     allowed: ["A", "U"],
+  //   },
+  //       {
+  //     label: "SanjayGandhi",
+  //     icon: <MarkChatReadIcon />,
+  //     path: "SanjayGandhi",
+  //     allowed: ["A"],
+  //   },
+  //   {
+  //     label: "Rehabilitation",
+  //     icon: <CorporateFareIcon />,
+  //     path: "Rehabilitation",
+  //     allowed: ["A", "U"],
+  //   },
+  // ];
   const allMenus = [
     {
       label: "Dashboard",
       icon: <DashboardIcon />,
       path: "home",
-      allowed: ["A", "U"],
+       menuId: 1,
     },
     {
-      label: "User", 
-      icon: <GroupIcon />,
+      label: "User",
+      icon: <ManageAccountsIcon />,
       path: "manage-user",
-      allowed: ["A"],
+      menuId: 3,
     },
     {
       label: "Role Creation",
       icon: <ManageAccountsIcon />,
       path: "RoleCreation",
-      allowed: ["A"],
+        // menuId: 1,
     },
     //   {
     //   label: "Department",
     //   icon: <BusinessIcon />,
     //   path: "department",
-    //   allowed: ["A"],
+    //    menuId: 6,
     // },
     //  {
     //   label: "Services",
@@ -226,32 +304,50 @@ export default function Dashboard() {
     //   label: "Offline Services",
     //   icon: <MiscellaneousServicesIcon />,
     //   path: "OfflineServices",
-    //   allowed: ["A"],
+    //    menuId: 8,
+    // },
+    //  {
+    //   label: "Online Services",
+    //   icon: <MiscellaneousServicesIcon />,
+    //   path: "OfflineServices",
+    //    menuId: 7,
     // },
     //  {
     //   label: "Email Configuration",
     //   icon: <EmailIcon />,
     //   path: "EmailSetup",
-    //   allowed: ["A"],
+    //   menuId: 2,
     // },
-    
+
     {
       label: "Documents Master",
       icon: <DescriptionIcon />,
       path: "DocumentMaster",
-      allowed: ["A"],
-    },
+      menuId:5,
+     },
     {
       label: "Gazetted Master",
       icon: <ChecklistIcon />,
       path: "Gazetted-Master",
-      allowed: ["A"],
+      menuId: 4,
     },
     {
       label: "Upload Documents",
       icon: <DriveFolderUploadIcon />,
       path: "Upload-Document",
-      allowed: ["A", "U"],
+      menuId: 9,
+    },
+     {
+      label: "SanjayGandhi",
+      icon: <MarkChatReadIcon />,
+      path: "SanjayGandhi",
+       menuId: 4,
+    },
+    {
+      label: "Rehabilitation",
+      icon: <CorporateFareIcon />,
+      path: "Rehabilitation",
+      menuId: 4,
     },
   ];
 
@@ -395,10 +491,32 @@ export default function Dashboard() {
     }
   }, []);
 
-  const visibleMenus = React.useMemo(() => {
-    if (!userType) return [];
-    return allMenus.filter((menu) => menu.allowed.includes(userType));
-  }, [userType]);
+
+  //   const visibleMenus = React.useMemo(() => {
+  //   if (!Array.isArray(roleAccess) || roleAccess.length === 0) return [];
+
+  //   const allowedMenuIds = roleAccess
+  //     .filter((item) => item.IsRead)
+  //     .map((item) => item.MenuId);
+
+  //   return allMenus.filter((menu) => allowedMenuIds.includes(menu.menuId));
+  // }, [roleAccess]);
+  // ===(below logic are if menuId not present in case visible menu)=======(Above logic if menuId not present to not visible all user this menu)===============
+const visibleMenus = React.useMemo(() => {
+  if (!Array.isArray(roleAccess) || roleAccess.length === 0) return [];
+
+  const allowedMenuIds = roleAccess
+    .filter((item) => item.IsRead)
+    .map((item) => item.MenuId);
+
+  
+  //  - OR have no menuId at all (undefined / null)
+  return allMenus.filter(
+    (menu) =>
+      !menu.menuId || allowedMenuIds.includes(menu.menuId)
+  );
+}, [roleAccess]);
+
 
   const getButtonStyle = (isSelected) => ({
     "&.Mui-selected": {
