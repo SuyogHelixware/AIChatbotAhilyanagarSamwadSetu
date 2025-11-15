@@ -8,6 +8,8 @@ import { BASE_URL } from "../Constant";
 import { Visibility, VisibilityOff } from "@mui/icons-material";
 import Loader from "../components/Loader";
 import PersonIcon from '@mui/icons-material/Person';
+// import PersonIcon from "@mui/icons-material/Person";
+import CryptoJS from "crypto-js";
 import { useThemeMode } from "./Theme";
 
 const Signin = () => {
@@ -18,36 +20,144 @@ const Signin = () => {
   const [loading, setLoading] = useState(false);
   const { refreshUserSession } = useThemeMode();
 
+  const [role, setRole] = useState(() => {
+    const storedRole = localStorage.getItem("RoleDetails");
+    return storedRole ? JSON.parse(storedRole) : null;
+  });
+
+   const { refreshRoleAccess } = useThemeMode();
+
+  const SECRET_KEY = "YourStrongSecretKey123!";
 
   const handleSubmit = async () => {
+    // try {
+    //   const body = {
+    //     Username: userId,
+    //     Password: password,
+    //   };
+    //   setLoading(true);
+    //   axios
+    //     .post(`${BASE_URL}Login`, body)
+    //     .then((res) => {
+    //       if (res.data.success === true) {
+
+    //         const data = res.data.values;
+    //         const userData = {
+
+    //           Name: ` ${data.FirstName} ${data.LastName}`,
+    //           Username: data.Username,
+    //           Address: data.Address,
+    //           Email: data.Email,
+    //           Phone: data.Phone,
+    //           UserType: data.UserType,
+    //           GazOfficer: data.GazOfficer,
+    //           BloodGroup: data.BloodGroup,
+    //           Avatar: data.Avatar,
+    //           _id: data._id,
+    //           Token: data.Token,
+    //         };
+    //         sessionStorage.setItem("userId", userData.Username);
+
+    //         sessionStorage.setItem("userData", JSON.stringify(userData));
+
+    //         Swal.fire({
+    //           position: "top-end",
+    //           toast: true,
+    //           title: "Login Success",
+    //           showConfirmButton: false,
+    //           timer: 1500,
+    //           icon: "success",
+    //         });
+
+    //         // Wait briefly to show loader, then navigate
+    //         setTimeout(() => {
+    //           navigate("/dashboard/home");
+    //         }, 1000);
+    //       } else {
+    //         setLoading(false);
+    //         Swal.fire({
+    //           position: "top-end",
+    //           icon: "error",
+    //           toast: true,
+    //           title: "Invalid username or password",
+    //           showConfirmButton: false,
+    //           timer: 1500,
+    //         });
+    //       }
+    //     })
+    //     .catch((e) => {
+    //       setLoading(false);
+    //       console.log(e);
+    //     });
+    // }
+
     try {
       const body = {
         Username: userId,
         Password: password,
       };
       setLoading(true);
+
       axios
         .post(`${BASE_URL}Login`, body)
-        .then((res) => {
-          if (res.data.success === true) {           
+
+        .then(async (res) => {
+          console.log("tt=====", res.data.values);
+
+          if (res.data.success === true) {
             const data = res.data.values;
-            const userData = {              
-              Name: ` ${data.FirstName} ${data.LastName}`,
-              Username: data.Username, 
+
+            const userData = {
+              Name: `${data.FirstName} ${data.LastName}`,
+              Username: data.Username,
               Address: data.Address,
               Email: data.Email,
               Phone: data.Phone,
               UserType: data.UserType,
               GazOfficer: data.GazOfficer,
-              BloodGroup: data.BloodGroup,
               Avatar: data.Avatar,
               _id: data._id,
               Token: data.Token,
+              RoleName: data.Role,
             };
-            sessionStorage.setItem("userId", userData.Username);
 
+            // Save basic user info
+            console.log("tt==+++++++++===", userData);
+            sessionStorage.setItem("BearerTokan", res.headers.authorization);
+
+            sessionStorage.setItem("userId", userData.RoleName);
             sessionStorage.setItem("userData", JSON.stringify(userData));
 refreshUserSession();
+
+            const roleNameToUse = data?.Role;
+            const encodedRoleName = encodeURIComponent(roleNameToUse);
+
+            const roleResponse = await axios.get(
+              `${BASE_URL}Role?RoleName=${encodedRoleName}`
+            );
+
+            if (roleResponse.data.success === true) {
+              const roleData = roleResponse.data.values;
+              const oLines =
+                Array.isArray(roleData) && roleData.length > 0
+                  ? roleData[0].oLines || []
+                  : roleData.oLines || [];
+
+              const RoleDetails = {
+                oLines,
+              };
+
+              const encryptedRoleDetails = CryptoJS.AES.encrypt(
+                JSON.stringify(RoleDetails),
+                SECRET_KEY
+              ).toString();
+
+              sessionStorage.setItem("RoleDetails", encryptedRoleDetails);            
+                refreshRoleAccess();
+ 
+            }
+
+
             Swal.fire({
               position: "top-end",
               toast: true,
@@ -57,7 +167,6 @@ refreshUserSession();
               icon: "success",
             });
 
-            // Wait briefly to show loader, then navigate
             setTimeout(() => {
               navigate("/dashboard/home");
             }, 1000);
@@ -161,7 +270,6 @@ refreshUserSession();
             >
               <Box sx={{ position: "relative", mb: 2 }}>
                 <PersonIcon
-
                   style={{
                     position: "absolute",
                     top: "50%",
@@ -172,16 +280,16 @@ refreshUserSession();
                     color: "#888",
                   }}
                 />
-                  {/* 📧 */}                
+                {/* 📧 */}
 
                 <input
                   type="text"
                   placeholder="Username"
                   value={userId}
                   onChange={(e) => setUserId(e.target.value)}
-                  tabIndex={1} 
+                  tabIndex={1}
                   style={{
-                    width: "80%", 
+                    width: "80%",
                     padding: "12px 12px 12px 40px",
                     border: "none",
                     borderRadius: "20px",
@@ -213,12 +321,12 @@ refreshUserSession();
                   onChange={(e) => setPassword(e.target.value)}
                   onKeyDown={(e) => {
                     if (e.key === "Enter") {
-                      login(e); 
+                      login(e);
                     }
                   }}
                   tabIndex={2}
                   style={{
-                    width: "80%", 
+                    width: "80%",
                     padding: "12px 12px 12px 45px",
                     border: "none",
                     borderRadius: "20px",
@@ -242,7 +350,7 @@ refreshUserSession();
 
               <button
                 onClick={login}
-                tabIndex={3} 
+                tabIndex={3}
                 style={{
                   width: "100%",
                   background: "#00796b",

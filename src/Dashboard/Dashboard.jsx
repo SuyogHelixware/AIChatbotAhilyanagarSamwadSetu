@@ -8,6 +8,7 @@ import FullscreenExitIcon from "@mui/icons-material/FullscreenExit";
 // import GroupsIcon from "@mui/icons-material/Groups";
 import LightModeIcon from "@mui/icons-material/LightMode";
 import ManageAccountsIcon from "@mui/icons-material/ManageAccounts";
+import GroupIcon from '@mui/icons-material/Group';
 import MenuIcon from "@mui/icons-material/Menu";
 import ModeNightIcon from "@mui/icons-material/ModeNight";
 import logoDarkTheme from "../assets/darkThemeLogo.png";
@@ -61,6 +62,8 @@ import SpeedDialAction from "@mui/material/SpeedDialAction";
 import { keyframes } from "@mui/system";
 import { useState } from "react";
 import LoginPageLoader from "../pages/LoginPageLoader";
+
+ 
 
 const drawerWidth = 250;
 const openedMixin = (theme) => ({
@@ -164,7 +167,6 @@ const RotatingIcon = styled(SettingsIcon)(({ theme }) => ({
 export default function Dashboard() {
   const [fullscreen, setFullscreen] = React.useState(false);
   const Navigate = useNavigate();
-
   const router = useLocation();
   const [open, setOpen] = React.useState(true);
   const [openList, setOpenList] = React.useState(false);
@@ -175,6 +177,13 @@ export default function Dashboard() {
     const CurrentTheme = localStorage.getItem("Theme");
     return CurrentTheme === "dark" ? false : true;
   });
+  const [list, setList] = React.useState(false);
+    const location = useLocation();
+
+  const [openProcessTransactions, setOpenProcessTransactions] =
+    React.useState(false);
+  const [userType, setUserType] = useState(null);
+  const { roleAccess } = useThemeMode();
 
   // const [drawerOpen, setDrawerOpen] = React.useState(false);
   const [userData, setUserData] = React.useState({
@@ -182,20 +191,168 @@ export default function Dashboard() {
     Phone: "",
     Address: "",
     Email: "",
-    BloodGroup: "",
     Avatar: "",
     _id: "",
   });
+  // const allMenus = [
+  //   {
+  //     label: "Dashboard",
+  //     icon: <DashboardIcon />,
+  //     path: "home",
+  //     allowed: ["A", "U"],
+  //   },
+  //   {
+  //     label: "User", 
+  //     icon: <GroupIcon />,
+  //     path: "manage-user",
+  //     allowed: ["A"],
+  //   },
+  //   {
+  //     label: "Role Creation",
+  //     icon: <ManageAccountsIcon />,
+  //     path: "RoleCreation",
+  //     allowed: ["A"],
+  //   },
+  //   //   {
+  //   //   label: "Department",
+  //   //   icon: <BusinessIcon />,
+  //   //   path: "department",
+  //   //   allowed: ["A"],
+  //   // },
+  //   //  {
+  //   //   label: "Services",
+  //   //   icon: <SmartphoneIcon />,
+  //   //   path: "Services",
+  //   //   allowed: ["A"],
+  //   // },
+  //   //  {
+  //   //   label: "Offline Services",
+  //   //   icon: <MiscellaneousServicesIcon />,
+  //   //   path: "OfflineServices",
+  //   //   allowed: ["A"],
+  //   // },
+  //   //  {
+  //   //   label: "Email Configuration",
+  //   //   icon: <EmailIcon />,
+  //   //   path: "EmailSetup",
+  //   //   allowed: ["A"],
+  //   // },
+    
+  //   {
+  //     label: "Documents Master",
+  //     icon: <DescriptionIcon />,
+  //     path: "DocumentMaster",
+  //     allowed: ["A"],
+  //   },
+  //   {
+  //     label: "Gazetted Master",
+  //     icon: <ChecklistIcon />,
+  //     path: "Gazetted-Master",
+  //     allowed: ["A"],
+  //   },
+  //   {
+  //     label: "Upload Documents",
+  //     icon: <DriveFolderUploadIcon />,
+  //     path: "Upload-Document",
+  //     allowed: ["A", "U"],
+  //   },
+  //       {
+  //     label: "SanjayGandhi",
+  //     icon: <MarkChatReadIcon />,
+  //     path: "SanjayGandhi",
+  //     allowed: ["A"],
+  //   },
+  //   {
+  //     label: "Rehabilitation",
+  //     icon: <CorporateFareIcon />,
+  //     path: "Rehabilitation",
+  //     allowed: ["A", "U"],
+  //   },
+  // ];
+  const allMenus = [
+    {
+      label: "Dashboard",
+      icon: <DashboardIcon />,
+      path: "home",
+       menuId: 1,
+    },
+    {
+      label: "User",
+      icon: <ManageAccountsIcon />,
+      path: "manage-user",
+      menuId: 3,
+    },
+    {
+      label: "Role Creation",
+      icon: <ManageAccountsIcon />,
+      path: "RoleCreation",
+        // menuId: 1,
+    },
+    //   {
+    //   label: "Department",
+    //   icon: <BusinessIcon />,
+    //   path: "department",
+    //    menuId: 6,
+    // },
+    //  {
+    //   label: "Services",
+    //   icon: <SmartphoneIcon />,
+    //   path: "Services",
+    //   allowed: ["A"],
+    // },
+    //  {
+    //   label: "Offline Services",
+    //   icon: <MiscellaneousServicesIcon />,
+    //   path: "OfflineServices",
+    //    menuId: 8,
+    // },
+    //  {
+    //   label: "Online Services",
+    //   icon: <MiscellaneousServicesIcon />,
+    //   path: "OfflineServices",
+    //    menuId: 7,
+    // },
+    //  {
+    //   label: "Email Configuration",
+    //   icon: <EmailIcon />,
+    //   path: "EmailSetup",
+    //   menuId: 2,
+    // },
 
-  // const [openMenu, setOpenMenu] = React.useState(false);
-  const [list, setList] = React.useState(false);
-
-  const [openProcessTransactions, setOpenProcessTransactions] =
-    React.useState(false);
+    {
+      label: "Documents Master",
+      icon: <DescriptionIcon />,
+      path: "DocumentMaster",
+      menuId:5,
+     },
+    {
+      label: "Gazetted Master",
+      icon: <ChecklistIcon />,
+      path: "Gazetted-Master",
+      menuId: 4,
+    },
+    {
+      label: "Upload Documents",
+      icon: <DriveFolderUploadIcon />,
+      path: "Upload-Document",
+      menuId: 9,
+    },
+     {
+      label: "SanjayGandhi",
+      icon: <MarkChatReadIcon />,
+      path: "SanjayGandhi",
+       menuId: 4,
+    },
+    {
+      label: "Rehabilitation",
+      icon: <CorporateFareIcon />,
+      path: "Rehabilitation",
+      menuId: 4,
+    },
+  ];
 
   const handleOn = () => {
-    // console.log(`${Bunny_Image_URL}/Users/${userData._id}/${userData.Avatar}`);
-    setOn(true);
+     setOn(true);
   };
   const handleClose = () => {
     setOn(false);
@@ -257,7 +414,6 @@ export default function Dashboard() {
     }
   };
 
-  const location = useLocation();
 
   const handleDrawerOpen = () => {
     // setDrawerOpen(true);
@@ -295,14 +451,6 @@ export default function Dashboard() {
       Navigate("/");
     }
   });
-  // const themeChange = (e) => {
-  //   const themestatus = e.currentTarget.checked;
-  //   if (themestatus) {
-  //     DarkMode();
-  //   } else {
-  //     LightMode();
-  //   }
-  // };
 
   const actions = [
     {
@@ -329,10 +477,63 @@ export default function Dashboard() {
     },
   ];
 
+  React.useEffect(() => {
+    const dataStr = sessionStorage.getItem("userData");
+    if (dataStr) {
+      try {
+        const data = JSON.parse(dataStr);
+        setUserType(data.UserType || "U");
+      } catch {
+        setUserType("U");
+      }
+    } else {
+      setUserType("U");
+    }
+  }, []);
 
- 
-    const sessionData = JSON.parse(sessionStorage.getItem("userData") || "{}");
-  const userType = sessionData.UserType;
+
+  //   const visibleMenus = React.useMemo(() => {
+  //   if (!Array.isArray(roleAccess) || roleAccess.length === 0) return [];
+
+  //   const allowedMenuIds = roleAccess
+  //     .filter((item) => item.IsRead)
+  //     .map((item) => item.MenuId);
+
+  //   return allMenus.filter((menu) => allowedMenuIds.includes(menu.menuId));
+  // }, [roleAccess]);
+  // ===(below logic are if menuId not present in case visible menu)=======(Above logic if menuId not present to not visible all user this menu)===============
+const visibleMenus = React.useMemo(() => {
+  if (!Array.isArray(roleAccess) || roleAccess.length === 0) return [];
+
+  const allowedMenuIds = roleAccess
+    .filter((item) => item.IsRead)
+    .map((item) => item.MenuId);
+
+  
+  //  - OR have no menuId at all (undefined / null)
+  return allMenus.filter(
+    (menu) =>
+      !menu.menuId || allowedMenuIds.includes(menu.menuId)
+  );
+}, [roleAccess]);
+
+
+  const getButtonStyle = (isSelected) => ({
+    "&.Mui-selected": {
+      background:
+        "linear-gradient(to right, rgb(0, 90, 91), rgb(22, 149, 153))",
+      borderRadius: 1,
+      "& .MuiListItemIcon-root, & .MuiTypography-root": {
+        color: "#FFFFFF",
+      },
+    },
+    "& .MuiListItemText-primary": {
+      color: theme.palette.text.primary,
+    },
+  });
+
+  //  Show loader or nothing until userType known
+  if (!userType) return null;
 
   return (
     <>
@@ -406,14 +607,12 @@ export default function Dashboard() {
                       <MenuItem sx={{ fontSize: 13, paddingTop: 0 }}>
                         <b>Mob :</b> {userData.Phone}
                       </MenuItem>
-                       <MenuItem sx={{ fontSize: 13, paddingTop: 0 }}>
+                      <MenuItem sx={{ fontSize: 13, paddingTop: 0 }}>
                         <b>Email :</b> {userData.Email}
                       </MenuItem>
                       <MenuItem sx={{ fontSize: 13, paddingTop: 0 }}>
                         <b>Gaz Officer :</b> {userData.GazOfficer}
                       </MenuItem>
-
-                     
                     </Grid>
 
                     <Grid
@@ -517,18 +716,16 @@ export default function Dashboard() {
             <Grid
               style={{
                 height: 90,
-                // backgroundColor: "white",
               }}
             >
               <img
-                src={themestatus ? logo : logoDarkTheme} // Use logoDarkTheme for dark mode and logo for light mode
+                src={themestatus ? logo : logoDarkTheme}
                 alt="logo"
                 style={{
                   maxWidth: "100%",
                   maxHeight: "100%",
                   objectFit: "contain",
                   paddingTop: 10,
-                  // borderRadius:30,
                 }}
               />
             </Grid>
@@ -546,429 +743,25 @@ export default function Dashboard() {
                 },
               }}
             >
-               
-    <List
-      sx={{
-        width: "100%",
-        maxWidth: 340,
-        height: "100%",
-        ...(open && { margin: "0 0" }),
-      }}
-      component="nav"
-      aria-labelledby="nested-list-subheader"
-    >
-      <div className="dashboard-menu">
-        {/*  Show all menus if UserType = "A", else show only Upload Documents */}
-        <>
-          {userType === "A" ? (
-            <>
-              {/* ===== Dashboard ===== */}
-              <Link to="home" className="link_style">
-                <ListItemButton
-                  onClick={handleClickTransaction}
-                  selected={location.pathname === "/dashboard/home"}
-                  sx={{
-                    "&.Mui-selected": {
-                      background:
-                        "linear-gradient(to right, rgb(0, 90, 91), rgb(22, 149, 153))",
-                      borderRadius: 1,
-                      "& .MuiListItemIcon-root, & .MuiTypography-root": {
-                        color: "#FFFFFF",
-                      },
-                    },
-                    "& .MuiListItemText-primary": {
-                      color: theme.palette.text.primary,
-                    },
-                  }}
-                >
-                  <ListItemIcon
-                    sx={{ minWidth: "33px", marginRight: "8px" }}
-                    onClick={handleDrawerOpen}
+              {visibleMenus.map(({ label, icon, path }) => (
+                <Link key={path} to={path} className="link_style">
+                  <ListItemButton
+                    onClick={handleClickTransaction}
+                    selected={location.pathname === `/dashboard/${path}`}
+                    sx={getButtonStyle(
+                      location.pathname === `/dashboard/${path}`
+                    )}
                   >
-                    <DashboardIcon />
-                  </ListItemIcon>
-                  <ListItemText primary="Dashboard" />
-                </ListItemButton>
-              </Link>
-
-              {/* ===== Manage User ===== */}
-              <Link to="manage-user" className="link_style">
-                <ListItemButton
-                  onClick={handleClickTransaction}
-                  selected={location.pathname === "/dashboard/manage-user"}
-                  sx={{
-                    "&.Mui-selected": {
-                      background:
-                        "linear-gradient(to right, rgb(0, 90, 91), rgb(22, 149, 153))",
-                      borderRadius: 1,
-                      "& .MuiListItemIcon-root, & .MuiTypography-root": {
-                        color: "#FFFFFF",
-                      },
-                    },
-                    "& .MuiListItemText-primary": {
-                      color: theme.palette.text.primary,
-                    },
-                  }}
-                >
-                  <ListItemIcon
-                    sx={{ minWidth: "33px", marginRight: "8px" }}
-                    onClick={handleDrawerOpen}
-                  >
-                    <ManageAccountsIcon />
-                  </ListItemIcon>
-                  <ListItemText primary="User" />
-                </ListItemButton>
-              </Link>
-
-              {/* ===== Department ===== */}
-              {/* <Link to="department" className="link_style">
-                <ListItemButton
-                  onClick={handleClickTransaction}
-                  selected={location.pathname === "/dashboard/department"}
-                  sx={{
-                    "&.Mui-selected": {
-                      background:
-                        "linear-gradient(to right, rgb(0, 90, 91), rgb(22, 149, 153))",
-                      borderRadius: 1,
-                      "& .MuiListItemIcon-root, & .MuiTypography-root": {
-                        color: "#FFFFFF",
-                      },
-                    },
-                    "& .MuiListItemText-primary": {
-                      color: theme.palette.text.primary,
-                    },
-                  }}
-                >
-                  <ListItemIcon
-                    sx={{ minWidth: "33px", marginRight: "8px" }}
-                    onClick={handleDrawerOpen}
-                  >
-                    <BusinessIcon />
-                  </ListItemIcon>
-                  <ListItemText primary="Department" />
-                </ListItemButton>
-              </Link> */}
-
-              {/* ===== Online Services ===== */}
-              {/* <Link to="Services" className="link_style">
-                <ListItemButton
-                  onClick={handleClickTransaction}
-                  selected={location.pathname === "/dashboard/Services"}
-                  sx={{
-                    "&.Mui-selected": {
-                      background:
-                        "linear-gradient(to right, rgb(0, 90, 91), rgb(22, 149, 153))",
-                      borderRadius: 1,
-                      "& .MuiListItemIcon-root, & .MuiTypography-root": {
-                        color: "#FFFFFF",
-                      },
-                    },
-                    "& .MuiListItemText-primary": {
-                      color: theme.palette.text.primary,
-                    },
-                  }}
-                >
-                  <ListItemIcon
-                    sx={{ minWidth: "33px", marginRight: "8px" }}
-                    onClick={handleDrawerOpen}
-                  >
-                    <SmartphoneIcon />
-                  </ListItemIcon>
-                  <ListItemText primary="Online Services" />
-                </ListItemButton>
-              </Link> */}
-
-              {/* ===== Offline Services ===== */}
-              {/* <Link to="OfflineServices" className="link_style">
-                <ListItemButton
-                  onClick={handleClickTransaction}
-                  selected={location.pathname === "/dashboard/OfflineServices"}
-                  sx={{
-                    "&.Mui-selected": {
-                      background:
-                        "linear-gradient(to right, rgb(0, 90, 91), rgb(22, 149, 153))",
-                      borderRadius: 1,
-                      "& .MuiListItemIcon-root, & .MuiTypography-root": {
-                        color: "#FFFFFF",
-                      },
-                    },
-                    "& .MuiListItemText-primary": {
-                      color: theme.palette.text.primary,
-                    },
-                  }}
-                >
-                  <ListItemIcon
-                    sx={{ minWidth: "33px", marginRight: "8px" }}
-                    onClick={handleDrawerOpen}
-                  >
-                    <MiscellaneousServicesIcon />
-                  </ListItemIcon>
-                  <ListItemText primary="Offline Services" />
-                </ListItemButton>
-              </Link> */}
-
-            
-
-              {/* ===== Email Configuration ===== */}
-              {/* <Link to="EmailSetup" className="link_style">
-                <ListItemButton
-                  onClick={handleClickTransaction}
-                  selected={location.pathname === "/dashboard/EmailSetup"}
-                  sx={{
-                    "&.Mui-selected": {
-                      background:
-                        "linear-gradient(to right, rgb(0, 90, 91), rgb(22, 149, 153))",
-                      borderRadius: 1,
-                      "& .MuiListItemIcon-root, & .MuiTypography-root": {
-                        color: "#FFFFFF",
-                      },
-                    },
-                    "& .MuiListItemText-primary": {
-                      color: theme.palette.text.primary,
-                    },
-                  }}
-                >
-                  <ListItemIcon
-                    sx={{ minWidth: "33px", marginRight: "8px" }}
-                    onClick={handleDrawerOpen}
-                  >
-                    <EmailIcon />
-                  </ListItemIcon>
-                  <ListItemText primary="Email Configuration" />
-                </ListItemButton>
-              </Link> */}
-
-              {/* ===== Gazetted Master ===== */}
-              <Link to="Gazetted-Master" className="link_style">
-                <ListItemButton
-                  onClick={handleClickTransaction}
-                  selected={location.pathname === "/dashboard/Gazetted-Master"}
-                  sx={{
-                    "&.Mui-selected": {
-                      background:
-                        "linear-gradient(to right, rgb(0, 90, 91), rgb(22, 149, 153))",
-                      borderRadius: 1,
-                      "& .MuiListItemIcon-root, & .MuiTypography-root": {
-                        color: "#FFFFFF",
-                      },
-                    },
-                    "& .MuiListItemText-primary": {
-                      color: theme.palette.text.primary,
-                    },
-                  }}
-                >
-                  <ListItemIcon
-                    sx={{ minWidth: "33px", marginRight: "8px" }}
-                    onClick={handleDrawerOpen}
-                  >
-                    <ChecklistIcon />
-                  </ListItemIcon>
-                  <ListItemText primary="Gazetted Master" />
-                </ListItemButton>
-              </Link>
-                {/* ===== Documents Master Creation ===== */}
-              <Link to="DocumentMaster" className="link_style">
-                <ListItemButton
-                  onClick={handleClickTransaction}
-                  selected={location.pathname === "/dashboard/DocumentMaster"}
-                  sx={{
-                    "&.Mui-selected": {
-                      background:
-                        "linear-gradient(to right, rgb(0, 90, 91), rgb(22, 149, 153))",
-                      borderRadius: 1,
-                      "& .MuiListItemIcon-root, & .MuiTypography-root": {
-                        color: "#FFFFFF",
-                      },
-                    },
-                    "& .MuiListItemText-primary": {
-                      color: theme.palette.text.primary,
-                    },
-                  }}
-                >
-                  <ListItemIcon
-                    sx={{ minWidth: "33px", marginRight: "8px" }}
-                    onClick={handleDrawerOpen}
-                  >
-                    <DescriptionIcon />
-                  </ListItemIcon>
-                  <ListItemText primary="Documents Master" />
-                </ListItemButton>
-              </Link>
-
-              {/* ===== Upload Documents ===== */}
-              <Link to="Upload-Document" className="link_style">
-                <ListItemButton
-                  onClick={handleClickTransaction}
-                  selected={location.pathname === "/dashboard/Upload-Document"}
-                  sx={{
-                    "&.Mui-selected": {
-                      background:
-                        "linear-gradient(to right, rgb(0, 90, 91), rgb(22, 149, 153))",
-                      borderRadius: 1,
-                      "& .MuiListItemIcon-root, & .MuiTypography-root": {
-                        color: "#FFFFFF",
-                      },
-                    },
-                    "& .MuiListItemText-primary": {
-                      color: theme.palette.text.primary,
-                    },
-                  }}
-                >
-                  <ListItemIcon
-                    sx={{ minWidth: "33px", marginRight: "8px" }}
-                    onClick={handleDrawerOpen}
-                  >
-                    <DriveFolderUploadIcon />
-                  </ListItemIcon>
-                  <ListItemText primary="Upload Documents" />
-                </ListItemButton>
-              </Link>
-                  {/* <Link to="Report" className="link_style">
-                <ListItemButton
-                  onClick={handleClickTransaction}
-                  selected={location.pathname === "/dashboard/Report"}
-                  sx={{
-                    "&.Mui-selected": {
-                      background:
-                        "linear-gradient(to right, rgb(0, 90, 91), rgb(22, 149, 153))",
-                      borderRadius: 1,
-                      "& .MuiListItemIcon-root, & .MuiTypography-root": {
-                        color: "#FFFFFF",
-                      },
-                    },
-                    "& .MuiListItemText-primary": {
-                      color: theme.palette.text.primary,
-                    },
-                  }}
-                >
-                  <ListItemIcon
-                    sx={{ minWidth: "33px", marginRight: "8px" }}
-                    onClick={handleDrawerOpen}
-                  >
-                    <DriveFolderUploadIcon />
-                  </ListItemIcon>
-                  <ListItemText primary="Report" />
-                </ListItemButton>
-              </Link> */}
-                  <Link to="SanjayGandhi" className="link_style">
-                <ListItemButton
-                  onClick={handleClickTransaction}
-                  selected={location.pathname === "/dashboard/SanjayGandhi"}
-                  sx={{
-                    "&.Mui-selected": {
-                      background:
-                        "linear-gradient(to right, rgb(0, 90, 91), rgb(22, 149, 153))",
-                      borderRadius: 1,
-                      "& .MuiListItemIcon-root, & .MuiTypography-root": {
-                        color: "#FFFFFF",
-                      },
-                    },
-                    "& .MuiListItemText-primary": {
-                      color: theme.palette.text.primary,
-                    },
-                  }}
-                >
-                  <ListItemIcon
-                    sx={{ minWidth: "33px", marginRight: "8px" }}
-                    onClick={handleDrawerOpen}
-                  >   <MarkChatReadIcon />
-                  </ListItemIcon>
-                  <ListItemText primary="Sanjay Gandhi" />
-                </ListItemButton>
-              </Link>
-                {/* <Link to="Rehabilitation" className="link_style">
-                <ListItemButton
-                  onClick={handleClickTransaction}
-                  selected={location.pathname === "/dashboard/Rehabilitation"}
-                  sx={{
-                    "&.Mui-selected": {
-                      background:
-                        "linear-gradient(to right, rgb(0, 90, 91), rgb(22, 149, 153))",
-                      borderRadius: 1,
-                      "& .MuiListItemIcon-root, & .MuiTypography-root": {
-                        color: "#FFFFFF",
-                      },
-                    },
-                    "& .MuiListItemText-primary": {
-                      color: theme.palette.text.primary,
-                    },
-                  }}
-                >
-                  <ListItemIcon
-                    sx={{ minWidth: "33px", marginRight: "8px" }}
-                    onClick={handleDrawerOpen}
-                  > 
-                    <CorporateFareIcon />
-                  </ListItemIcon>
-                  <ListItemText primary="Rehabilitation" />
-                </ListItemButton>
-              </Link> */}
-            </>
-          ) : (
-            <>
-              {/* ===== For UserType = U → Show Only Upload Documents ===== */}
-
-                <Link to="home" className="link_style">
-                <ListItemButton
-                  onClick={handleClickTransaction}
-                  selected={location.pathname === "/dashboard/home"}
-                  sx={{
-                    "&.Mui-selected": {
-                      background:
-                        "linear-gradient(to right, rgb(0, 90, 91), rgb(22, 149, 153))",
-                      borderRadius: 1,
-                      "& .MuiListItemIcon-root, & .MuiTypography-root": {
-                        color: "#FFFFFF",
-                      },
-                    },
-                    "& .MuiListItemText-primary": {
-                      color: theme.palette.text.primary,
-                    },
-                  }}
-                >
-                  <ListItemIcon
-                    sx={{ minWidth: "33px", marginRight: "8px" }}
-                    onClick={handleDrawerOpen}
-                  >
-                    <DashboardIcon />
-                  </ListItemIcon>
-                  <ListItemText primary="Dashboard" />
-                </ListItemButton>
-              </Link>
-
-
-              <Link to="Upload-Document" className="link_style">
-                <ListItemButton
-                  onClick={handleClickTransaction}
-                  selected={location.pathname === "/dashboard/Upload-Document"}
-                  sx={{
-                    "&.Mui-selected": {
-                      background:
-                        "linear-gradient(to right, rgb(0, 90, 91), rgb(22, 149, 153))",
-                      borderRadius: 1,
-                      "& .MuiListItemIcon-root, & .MuiTypography-root": {
-                        color: "#FFFFFF",
-                      },
-                    },
-                    "& .MuiListItemText-primary": {
-                      color: theme.palette.text.primary,
-                    },
-                  }}
-                >
-                  <ListItemIcon
-                    sx={{ minWidth: "33px", marginRight: "8px" }}
-                    onClick={handleDrawerOpen}
-                  >
-                    <DriveFolderUploadIcon />
-                  </ListItemIcon>
-                  <ListItemText primary="Upload Documents" />
-                </ListItemButton>
-              </Link>
-            </>
-          )}
-        </>
-      </div>
-    </List>
+                    <ListItemIcon
+                      sx={{ minWidth: "33px", marginRight: "8px" }}
+                      onClick={handleDrawerOpen}
+                    >
+                      {icon}
+                    </ListItemIcon>
+                    <ListItemText primary={label}/>
+                  </ListItemButton>
+                </Link>
+              ))}
             </Grid>
           </Drawer>
           <Box
@@ -1011,10 +804,10 @@ export default function Dashboard() {
                   sx: {
                     background:
                       "linear-gradient(to right, rgb(0, 90, 91), rgb(22, 149, 153))",
-                    color: "white", // Ensures the icon is visible
+                    color: "white",
                     "&:hover": {
                       background:
-                        "linear-gradient(to right, rgb(0, 80, 81), rgb(20, 130, 135))", // Slightly darker on hover
+                        "linear-gradient(to right, rgb(0, 80, 81), rgb(20, 130, 135))",
                     },
                   },
                 }}
@@ -1037,7 +830,6 @@ export default function Dashboard() {
                 ))}
               </SpeedDial>
             </Grid>
-
             <Outlet />
           </Box>
         </Box>

@@ -21,10 +21,11 @@ import UploadDocument from "../pages/Upload-Document";
 import GazettedMaster from "../pages/Gazetted-Master";
 import ManageDocumentsPage from "../pages/ManageDocPage";
 import Report from "../pages/Report";
+import RoleCreation from "../pages/RoleCreation";
 
 import SanjayGandhi from "../pages/SanjavGandhi/SanjayGandhi";
 import Rehabilitation from "../pages/Rehabilitation/Rehabilitation";
- 
+
 export default function Routing() {
   return (
     <>
@@ -36,6 +37,7 @@ export default function Routing() {
           <Route path="dashboard" element={<Dashboard />}>
             <Route path="home" element={<Home />} />
             <Route path="manage-user" element={<ManageUser />} />
+            <Route path="RoleCreation" element={<RoleCreation />} />
             <Route path="department" element={<Department />} />
             <Route path="Services" element={<Services />} />
             <Route path="OfflineServices" element={<OfflineServices />} />
@@ -50,6 +52,8 @@ export default function Routing() {
 
 
 
+            <Route path="SanjayGandhi" element={<SanjayGandhi />} />
+            <Route path="Rehabilitation" element={<Rehabilitation />} />
           </Route>
           {/* <Route path="/dashboard/special" element={<SpecialLayout />}> */}
           <Route path="LoginPage1" element={<LoginPage1 />} />

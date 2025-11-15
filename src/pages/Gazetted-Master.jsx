@@ -20,6 +20,7 @@ import Swal from "sweetalert2";
 import { BASE_URL } from "../Constant";
 import Loader from "../components/Loader";
 import dayjs from "dayjs";
+import { useThemeMode } from "../Dashboard/Theme";
 
 const GazettedMaster = () => {
   const [loaderOpen, setLoaderOpen] = React.useState(false);
@@ -64,6 +65,7 @@ const [limit, setLimit] = React.useState(20);
   const handleClose = () => setOn(false);
 
   const handleOnSave = () => {
+    
     setSaveUpdateButton("SAVE");
     setClearUpdateButton("CLEAR");
     clearFormData();
@@ -508,6 +510,7 @@ const [limit, setLimit] = React.useState(20);
       <Grid container spacing={2} marginBottom={1} justifyContent="flex-end">
         <Grid textAlign={"end"} marginBottom={1}>
           <Button
+ 
             onClick={handleOnSave}
             type="text"
             size="medium"

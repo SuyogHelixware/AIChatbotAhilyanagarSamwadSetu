@@ -1,12 +1,5 @@
 import AddIcon from "@mui/icons-material/Add";
-import {
-  Box,
-  Button,
-  Grid,
-  Paper,
-  Tooltip,
-  Typography
-} from "@mui/material";
+import { Box, Button, Grid, Paper, Tooltip, Typography } from "@mui/material";
 import { DataGrid, GridToolbar } from "@mui/x-data-grid";
 import axios from "axios";
 import * as React from "react";
@@ -14,12 +7,12 @@ import Swal from "sweetalert2";
 import { BASE_URL } from "../../Constant";
 import Loader from "../../components/Loader";
 import InfoOutlinedIcon from "@mui/icons-material/InfoOutlined";
-
+import { useThemeMode } from "../../Dashboard/Theme";
 
 const SanjayGandhi = () => {
   const [loaderOpen, setLoaderOpen] = React.useState(false);
   const [DocumentList, setDocumentList] = React.useState([]);
-     const [currentPage, setCurrentPage] = React.useState(0);
+  const [currentPage, setCurrentPage] = React.useState(0);
   const [loading, setLoading] = React.useState(false);
   const [searchText, setSearchText] = React.useState("");
   // const limit = 20;
@@ -27,10 +20,11 @@ const SanjayGandhi = () => {
   // const firstLoad = React.useRef(true);
   const [totalRows, setTotalRows] = React.useState(0);
   const [limit, setLimit] = React.useState(20);
- 
-  
 
- 
+  const { checkAccess } = useThemeMode();
+
+  const canAdd = checkAccess(4, "IsAdd");
+
   // const getAllOfficerList = async (page = 0, searchText = "") => {
   //   try {
   //     setLoading(true);
@@ -103,7 +97,7 @@ const SanjayGandhi = () => {
     },
   ];
 
-   const successFileRef = React.useRef(null);
+  const successFileRef = React.useRef(null);
   const failFileRef = React.useRef(null);
 
   const showToast = (icon, title) => {
@@ -118,9 +112,7 @@ const SanjayGandhi = () => {
     });
   };
 
-
- 
-const showuploadfileToast = (icon, title) => {
+  const showuploadfileToast = (icon, title) => {
     Swal.fire({
       toast: true,
       position: "top-end",
@@ -131,26 +123,24 @@ const showuploadfileToast = (icon, title) => {
       timerProgressBar: true,
     });
   };
-   
- 
- 
-const handleFileUpload = async (file, type) => {
-  const allowedTypes = [
-    "text/csv",
-    "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet",
-  ];
 
-  if (!allowedTypes.includes(file.type)) {
-    showToast("error", "Only CSV and Excel (.xlsx) files are allowed!");
-    return;
-  }
-  setLoaderOpen(true);
+  const handleFileUpload = async (file, type) => {
+    const allowedTypes = [
+      "text/csv",
+      "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet",
+    ];
 
-  try {
-    // 🔹 Step 1: Show confirmation alert before uploading
-    const result = await Swal.fire({
-      title: "Confirm File Upload",
-      html: `
+    if (!allowedTypes.includes(file.type)) {
+      showToast("error", "Only CSV and Excel (.xlsx) files are allowed!");
+      return;
+    }
+    setLoaderOpen(true);
+
+    try {
+      // 🔹 Step 1: Show confirmation alert before uploading
+      const result = await Swal.fire({
+        title: "Confirm File Upload",
+        html: `
         <div style="font-size:15px; text-align:center;">
           <p><b>Selected File:</b> ${file.name}</p>
           <p>Are you sure you want to upload this 
@@ -160,79 +150,82 @@ const handleFileUpload = async (file, type) => {
             file?</p>
         </div>
       `,
-      icon: "question",
-      showCancelButton: true,
-      confirmButtonText: "Yes, Upload",
-      cancelButtonText: "No, Cancel",
-      confirmButtonColor: "#3085d6",
-      cancelButtonColor: "#d33",
-      // reverseButtons: true,
-    });
-
-    //  If user cancels → stop here
-    if (!result.isConfirmed) {
-      showToast("info", "File upload cancelled.");
-      return;
-    }
-    setLoaderOpen(true);
-
-    //  Proceed with actual upload if confirmed
-    const formData = new FormData();
-    formData.append("File", file);
-    formData.append("Type", type);
-
-    const apiUrl =
-      type === "S"  
-        ? `${BASE_URL}Beneficiary`
-        : `${BASE_URL}Beneficiary`;
-
-    showuploadfileToast("info", `Uploading ${type === "S" ? "Success" : "Failure"} file...`);
-
-    const response = await axios.post(apiUrl, formData, {
-      headers: { "Content-Type": "multipart/form-data" },
-    });
-
-    // ===========
-    if (response.data?.success === false) {
-      await Swal.fire({
-        icon: "error",
-        title: "Upload Failed",
-        html: `<p style="text-align:left;">${response.data.message}</p>`,
-        confirmButtonText: "OK",
+        icon: "question",
+        showCancelButton: true,
+        confirmButtonText: "Yes, Upload",
+        cancelButtonText: "No, Cancel",
+        confirmButtonColor: "#3085d6",
+        cancelButtonColor: "#d33",
+        // reverseButtons: true,
       });
-      return; 
-    }
-    // ========
-  
-    showToast("success", `${type === "S" ? "Success" : "Failure"} file uploaded successfully!`);
 
-    const failData = response.data?.values?.Fail  || [];
+      //  If user cancels → stop here
+      if (!result.isConfirmed) {
+        showToast("info", "File upload cancelled.");
+        return;
+      }
+      setLoaderOpen(true);
 
-    const rowsWithIds = failData.map((item, index) => ({
-      id: index + 1,
-      ...item,
-    }));
+      //  Proceed with actual upload if confirmed
+      const formData = new FormData();
+      formData.append("File", file);
+      formData.append("Type", type);
 
-    setDocumentList(rowsWithIds);
-    setTotalRows(rowsWithIds.length);
-  
-  } catch (error) {
+      const apiUrl =
+        type === "S" ? `${BASE_URL}Beneficiary` : `${BASE_URL}Beneficiary`;
+
+      showuploadfileToast(
+        "info",
+        `Uploading ${type === "S" ? "Success" : "Failure"} file...`
+      );
+
+      const response = await axios.post(apiUrl, formData, {
+        headers: { "Content-Type": "multipart/form-data" },
+      });
+
+      // ===========
+      if (response.data?.success === false) {
+        await Swal.fire({
+          icon: "error",
+          title: "Upload Failed",
+          html: `<p style="text-align:left;">${response.data.message}</p>`,
+          confirmButtonText: "OK",
+        });
+        return;
+      }
+      // ========
+
+      showToast(
+        "success",
+        `${type === "S" ? "Success" : "Failure"} file uploaded successfully!`
+      );
+
+      const failData = response.data?.values?.Fail || [];
+
+      const rowsWithIds = failData.map((item, index) => ({
+        id: index + 1,
+        ...item,
+      }));
+
+      setDocumentList(rowsWithIds);
+      setTotalRows(rowsWithIds.length);
+    } catch (error) {
       Swal.fire({
-                position: "center",
-                icon: "error",
-                toast: true,
-                title: "Failed",
-                text: error.message ,
-                showConfirmButton: true,
-              });
-    showToast("error", `Error uploading ${type} file. Please check the server.`);
-  }
-   finally {
- 
-    setLoaderOpen(false);
-  }
-};
-
+        position: "center",
+        icon: "error",
+        toast: true,
+        title: "Failed",
+        text: error.message,
+        showConfirmButton: true,
+      });
+      showToast(
+        "error",
+        `Error uploading ${type} file. Please check the server.`
+      );
+    } finally {
+      setLoaderOpen(false);
+    }
+  };
 
   return (
     <>
@@ -268,185 +261,225 @@ const handleFileUpload = async (file, type) => {
           Sanjay Gandhi
         </Typography>
       </Grid>
-       
+
       <Grid container spacing={2} justifyContent="flex-start" marginBottom={1}>
-      {/* Success Upload */}
-      <Grid item>
-        <input
-          type="file"
-          accept=".csv, .xlsx"
-          ref={successFileRef}
-          style={{ display: "none" }}
-          onChange={(e) => {
-            const file = e.target.files[0];
-            if (file) handleFileUpload(file, "S");
-            
-            e.target.value = null;
-          }}
-        />
- 
-<Tooltip
-  title={
-    <Box
-      sx={{
-        bgcolor: "#1e293b", 
-        color: "white",
-        p: 1.5,
-        borderRadius: 1.5,
-        boxShadow: "0 3px 8px rgba(0,0,0,0.25)",
-        minWidth: 220,
-      }}
-    >
-      <Box sx={{ display: "flex", alignItems: "center", mb: 0.5 }}>
-        <InfoOutlinedIcon sx={{ fontSize: 20, mr: 0.8, color: "#38bdf8" }} />
-        <Typography sx={{ fontWeight: 500, fontSize: 14 }}>
-          Required Columns In File 
-        </Typography>
+        {/* Success Upload */}
        
-      </Box>
-            <Typography
-        sx={{
-          fontWeight: 400,
-          fontSize: 12,
-          mb: 0.8,
-          color: "#cbd5e1",
-          fontStyle: "italic",
-        }}
-      >
-        File type allowed: <b>CSV</b>, <b>Excel</b>
-      </Typography>
-      <ul
-        style={{
-          margin: 0,
-          paddingLeft: "20px",
-          fontSize: "13px",
-          lineHeight: "1.6",
-        }}
-      >
-        <li><b> Beneficiary Name</b></li>
-        <li><b>Mobile Number</b></li>
-        <li><b>Amount</b></li>
-        <li><b>Bank Name</b></li>
-      </ul>
-    </Box>
-  }
-  arrow
-  placement="left-end"
->
-        <Button
-          onClick={() => successFileRef.current.click()}
-          type="text"
-          size="medium"
+<Grid item>
+  <input
+    type="file"
+    accept=".csv, .xlsx"
+    ref={successFileRef}
+    style={{ display: "none" }}
+    onChange={(e) => {
+      const file = e.target.files[0];
+      if (file) handleFileUpload(file, "S");
+      e.target.value = null;
+    }}
+  />
+
+  <Tooltip
+    title={
+      !canAdd ? (
+        // 🔸 Tooltip when user does not have permission
+        <Typography sx={{ fontSize: 13, p: 0.5 }}>
+          You don’t have permission to upload files.
+        </Typography>
+      ) : (
+        // 🔸 Tooltip when allowed
+        <Box
           sx={{
-            pr: 2,
-            mb: 0,
-            mt: 2,
+            bgcolor: "#1e293b",
             color: "white",
-            fontWeight: "bold",
-            background: "linear-gradient(to right, #0b7a3e, #16a34a)",
-            borderRadius: "8px",
-            transition: "all 0.2s ease-in-out",
-            boxShadow: "0 4px 8px rgba(0, 90, 91, 0.3)",
-            "&:hover": {
-              transform: "translateY(2px)",
-              boxShadow: "0 2px 4px rgba(0, 90, 91, 0.2)",
-            },
+            p: 1.5,
+            borderRadius: 1.5,
+            boxShadow: "0 3px 8px rgba(0,0,0,0.25)",
+            minWidth: 220,
           }}
         >
-          <AddIcon />
-          UPLOAD SUCCESS FILE
-        </Button>
-        </Tooltip>
+          <Box sx={{ display: "flex", alignItems: "center", mb: 0.5 }}>
+            <InfoOutlinedIcon
+              sx={{ fontSize: 20, mr: 0.8, color: "#38bdf8" }}
+            />
+            <Typography sx={{ fontWeight: 500, fontSize: 14 }}>
+              Required Columns In File
+            </Typography>
+          </Box>
+          <Typography
+            sx={{
+              fontWeight: 400,
+              fontSize: 12,
+              mb: 0.8,
+              color: "#cbd5e1",
+              fontStyle: "italic",
+            }}
+          >
+            File type allowed: <b>CSV</b>, <b>Excel</b>
+          </Typography>
+          <ul
+            style={{
+              margin: 0,
+              paddingLeft: "20px",
+              fontSize: "13px",
+              lineHeight: "1.6",
+            }}
+          >
+            <li>
+              <b>Beneficiary Name</b>
+            </li>
+            <li>
+              <b>Mobile Number</b>
+            </li>
+            <li>
+              <b>Amount</b>
+            </li>
+            <li>
+              <b>Bank Name</b>
+            </li>
+          </ul>
+        </Box>
+      )
+    }
+    arrow
+    placement="left-end"
+  >
+    {/* ✅ span wrapper needed for tooltip on disabled button */}
+    <span>
+      <Button
+        onClick={() => successFileRef.current.click()}
+        disabled={!canAdd}
+        type="text"
+        size="medium"
+        sx={{
+          pr: 2,
+          mb: 0,
+          mt: 2,
+          color: "white",
+          fontWeight: "bold",
+          background: !canAdd
+            ? "linear-gradient(to right, #0b7a3e, #16a34a)"// greyed-out gradient
+            : "linear-gradient(to right, #0b7a3e, #16a34a)",
+          borderRadius: "8px",
+          transition: "all 0.2s ease-in-out",
+          boxShadow: "0 4px 8px rgba(0, 90, 91, 0.3)",
+          "&:hover": {
+            transform: canAdd ? "translateY(2px)" : "none",
+            boxShadow: canAdd
+              ? "0 2px 4px rgba(0, 90, 91, 0.2)"
+              : "0 4px 8px rgba(0,0,0,0.1)",
+          },
+        }}
+      >
+        <AddIcon />
+        UPLOAD SUCCESS FILE
+      </Button>
+    </span>
+  </Tooltip>
+</Grid>
+
+        {/* Failure Upload */}
+        <Grid item>
+          <input
+            type="file"
+            accept=".csv, .xlsx"
+            ref={failFileRef}
+            style={{ display: "none" }}
+            onChange={(e) => {
+              const file = e.target.files[0];
+              if (file) handleFileUpload(file, "F");
+              e.target.value = null;
+            }}
+          />
+          <Tooltip
+            title={
+              <Box
+                sx={{
+                  bgcolor: "#1e293b",
+                  color: "white",
+                  p: 1.5,
+                  borderRadius: 1.5,
+                  boxShadow: "0 3px 8px rgba(0,0,0,0.25)",
+                  minWidth: 220,
+                }}
+              >
+                <Box sx={{ display: "flex", alignItems: "center", mb: 0.5 }}>
+                  <InfoOutlinedIcon
+                    sx={{ fontSize: 20, mr: 0.8, color: "#38bdf8" }}
+                  />
+                  <Typography sx={{ fontWeight: 500, fontSize: 14 }}>
+                    Required Columns In File
+                  </Typography>
+                </Box>
+                <Typography
+                  sx={{
+                    fontWeight: 400,
+                    fontSize: 12,
+                    mb: 0.8,
+                    color: "#cbd5e1",
+                    fontStyle: "italic",
+                  }}
+                >
+                  File type allowed: <b>CSV</b>, <b>Excel</b>
+                </Typography>
+                <ul
+                  style={{
+                    margin: 0,
+                    paddingLeft: "20px",
+                    fontSize: "13px",
+                    lineHeight: "1.6",
+                  }}
+                >
+                  <li>
+                    <b>Beneficiary Name</b>
+                  </li>
+                  <li>
+                    <b>Mobile Number</b>
+                  </li>
+                  <li>
+                    <b>Amount</b>
+                  </li>
+                  <li>
+                    <b>Failure Reason</b>
+                  </li>
+                </ul>
+              </Box>
+            }
+            arrow
+            placement="right-end"
+          >
+            <Button
+              onClick={() => failFileRef.current.click()}
+              disabled={!canAdd}
+              type="text"
+              size="medium"
+              sx={{
+                pr: 2,
+                mb: 0,
+                mt: 2,
+                color: "white",
+                fontWeight: "bold",
+                background: "linear-gradient(to right, #a12b2bff, #ee4949ff)", // red theme
+                borderRadius: "8px",
+                transition: "all 0.2s ease-in-out",
+                boxShadow: "0 4px 8px rgba(161, 43, 43, 0.3)",
+                "&:hover": {
+                  transform: "translateY(2px)",
+                  boxShadow: "0 2px 4px rgba(161, 43, 43, 0.2)",
+                },
+              }}
+            >
+              <AddIcon />
+              UPLOAD FAILURE FILE
+            </Button>
+          </Tooltip>
+        </Grid>
+
+
+
+
+
       </Grid>
 
-      {/* Failure Upload */}
-      <Grid item>
-        <input
-          type="file"
-          accept=".csv, .xlsx"
-          ref={failFileRef}
-          style={{ display: "none" }}
-          onChange={(e) => {
-            const file = e.target.files[0];
-            if (file) handleFileUpload(file, "F");
-            e.target.value = null;
-          }}
-        />
-<Tooltip
-  title={
-    <Box
-      sx={{
-        bgcolor: "#1e293b", 
-        color: "white",
-        p: 1.5,
-        borderRadius: 1.5,
-        boxShadow: "0 3px 8px rgba(0,0,0,0.25)",
-        minWidth: 220,
-      }}
-    >
-      <Box sx={{ display: "flex", alignItems: "center", mb: 0.5 }}>
-        <InfoOutlinedIcon sx={{ fontSize: 20, mr: 0.8, color: "#38bdf8" }} />
-        <Typography sx={{ fontWeight: 500, fontSize: 14 }}>
-          Required Columns In File 
-        </Typography>
-       
-      </Box>
-            <Typography
-        sx={{
-          fontWeight: 400,
-          fontSize: 12,
-          mb: 0.8,
-          color: "#cbd5e1",
-          fontStyle: "italic",
-        }}
-      >
-        File type allowed: <b>CSV</b>, <b>Excel</b>
-      </Typography>
-      <ul
-        style={{
-          margin: 0,
-          paddingLeft: "20px",
-          fontSize: "13px",
-          lineHeight: "1.6",
-        }}
-      >
-        <li><b>Beneficiary Name</b></li>
-        <li><b>Mobile Number</b></li>
-        <li><b>Amount</b></li>
-        <li><b>Failure Reason</b></li>
-      </ul>
-    </Box>
-  }
-  arrow
-  placement="right-end"
->
-        <Button
-          onClick={() => failFileRef.current.click()}
-          type="text"
-          size="medium"
-          sx={{
-            pr: 2,
-            mb: 0,
-            mt: 2,
-            color: "white",
-            fontWeight: "bold",
-            background: "linear-gradient(to right, #a12b2bff, #ee4949ff)", // red theme
-            borderRadius: "8px",
-            transition: "all 0.2s ease-in-out",
-            boxShadow: "0 4px 8px rgba(161, 43, 43, 0.3)",
-            "&:hover": {
-              transform: "translateY(2px)",
-              boxShadow: "0 2px 4px rgba(161, 43, 43, 0.2)",
-            },
-          }}
-        >
-          <AddIcon />
-          UPLOAD FAILURE FILE
-        </Button>
-        </Tooltip>
-      </Grid>
-    </Grid>
- 
       <Grid
         container
         item
@@ -468,12 +501,11 @@ const handleFileUpload = async (file, type) => {
           }}
           rows={DocumentList}
           columns={columns}
-            getRowId={(row) => row.Id || `${row.Name}-${row.MobileNumber}`}
-
+          getRowId={(row) => row.Id || `${row.Name}-${row.MobileNumber}`}
           pagination
           paginationMode="server"
           rowCount={totalRows} // REQUIRED — tells grid how many total records exist
-          pageSizeOptions={[20, 50,100]}
+          pageSizeOptions={[20, 50, 100]}
           paginationModel={{ page: currentPage, pageSize: limit }}
           onPaginationModelChange={(newModel) => {
             setCurrentPage(newModel.page);
@@ -496,7 +528,7 @@ const handleFileUpload = async (file, type) => {
             setSearchText(quickFilterValue);
             setCurrentPage(0); // reset page on search
           }}
-         />
+        />
       </Grid>
     </>
   );
