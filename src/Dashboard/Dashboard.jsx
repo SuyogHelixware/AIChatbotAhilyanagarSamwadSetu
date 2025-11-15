@@ -269,7 +269,57 @@ export default function Dashboard() {
   //     allowed: ["A", "U"],
   //   },
   // ];
-  const allMenus = [
+//   const allMenus = [
+//     {
+//       label: "Dashboard",
+//       icon: <DashboardIcon />,
+//       path: "home",
+//       allowed: ["A", "U"],
+//     },
+//     {
+//       label: "User",
+//       icon: <ManageAccountsIcon />,
+//       path: "manage-user",
+// allowed: ["A"],    },
+//     {
+//       label: "Role Creation",
+//       icon: <ManageAccountsIcon />,
+//       path: "RoleCreation",
+// allowed: ["A"],    },
+     
+
+//     {
+//       label: "Documents Master",
+//       icon: <DescriptionIcon />,
+//       path: "DocumentMaster",
+// allowed: ["A"],     },
+//     {
+//       label: "Gazetted Master",
+//       icon: <ChecklistIcon />,
+//       path: "Gazetted-Master",
+//        allowed: ["A"],
+//     },
+//     {
+//       label: "Upload Documents",
+//       icon: <DriveFolderUploadIcon />,
+//       path: "Upload-Document",
+//        allowed: ["A", "U"],
+//     },
+//      {
+//       label: "SanjayGandhi",
+//       icon: <MarkChatReadIcon />,
+//       path: "SanjayGandhi",
+//        menuId: 10,
+//     },
+//     {
+//       label: "Rehabilitation",
+//       icon: <CorporateFareIcon />,
+//       path: "Rehabilitation",
+//       menuId: 11,
+//     },
+//   ];
+
+const allMenus = [
     {
       label: "Dashboard",
       icon: <DashboardIcon />,
@@ -286,7 +336,7 @@ export default function Dashboard() {
       label: "Role Creation",
       icon: <ManageAccountsIcon />,
       path: "RoleCreation",
-        // menuId: 1,
+        menuId: 12,
     },
     //   {
     //   label: "Department",
@@ -341,13 +391,13 @@ export default function Dashboard() {
       label: "SanjayGandhi",
       icon: <MarkChatReadIcon />,
       path: "SanjayGandhi",
-       menuId: 4,
+       menuId: 10,
     },
     {
       label: "Rehabilitation",
       icon: <CorporateFareIcon />,
       path: "Rehabilitation",
-      menuId: 4,
+      menuId: 11,
     },
   ];
 
@@ -492,30 +542,59 @@ export default function Dashboard() {
   }, []);
 
 
-  //   const visibleMenus = React.useMemo(() => {
-  //   if (!Array.isArray(roleAccess) || roleAccess.length === 0) return [];
+    const visibleMenus = React.useMemo(() => {
+    if (!Array.isArray(roleAccess) || roleAccess.length === 0) return [];
 
-  //   const allowedMenuIds = roleAccess
-  //     .filter((item) => item.IsRead)
-  //     .map((item) => item.MenuId);
+    const allowedMenuIds = roleAccess
+      .filter((item) => item.IsRead)
+      .map((item) => item.MenuId);
 
-  //   return allMenus.filter((menu) => allowedMenuIds.includes(menu.menuId));
-  // }, [roleAccess]);
+    return allMenus.filter((menu) => allowedMenuIds.includes(menu.menuId));
+  }, [roleAccess]);
   // ===(below logic are if menuId not present in case visible menu)=======(Above logic if menuId not present to not visible all user this menu)===============
-const visibleMenus = React.useMemo(() => {
-  if (!Array.isArray(roleAccess) || roleAccess.length === 0) return [];
+// const visibleMenus = React.useMemo(() => {
+//   if (!Array.isArray(roleAccess) || roleAccess.length === 0) return [];
 
-  const allowedMenuIds = roleAccess
-    .filter((item) => item.IsRead)
-    .map((item) => item.MenuId);
+//   const allowedMenuIds = roleAccess
+//     .filter((item) => item.IsRead)
+//     .map((item) => item.MenuId);
 
   
-  //  - OR have no menuId at all (undefined / null)
-  return allMenus.filter(
-    (menu) =>
-      !menu.menuId || allowedMenuIds.includes(menu.menuId)
-  );
-}, [roleAccess]);
+//   //  - OR have no menuId at all (undefined / null)
+//   return allMenus.filter(
+//     (menu) =>
+//       !menu.menuId || allowedMenuIds.includes(menu.menuId)
+//   );
+// }, [roleAccess]);
+// =============================
+
+// const visibleMenus = React.useMemo(() => {
+//   if (!userType) return [];
+
+//   const allowedMenuIds = roleAccess
+//   ?.filter((r) => r.IsRead)
+//   .map((r) => r.MenuId);
+
+
+//   return allMenus.filter((menu) => {
+
+//     // 🔹 CASE 1: Menus having menuId → Apply Role Based Logic
+//     if (menu.menuId) {
+//       return allowedMenuIds?.includes(menu.menuId);
+//     }
+
+//     // 🔹 CASE 2: Menus without menuId → Apply UserType logic
+//     if (menu.allowed) {
+//       return menu.allowed.includes(userType);
+//     }
+
+//     // Default show (if no rule defined)
+//     return true;
+//   });
+
+// }, [roleAccess, userType]);
+
+// ================
 
 
   const getButtonStyle = (isSelected) => ({

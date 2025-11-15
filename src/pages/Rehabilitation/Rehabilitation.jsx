@@ -27,6 +27,7 @@ import { Controller, useForm } from "react-hook-form"; // Importing React Hook F
 import dayjs from "dayjs";
 import Loader from "../../components/Loader";
 import { BASE_URL } from "../../Constant";
+import { useThemeMode } from "../../Dashboard/Theme";
 
 const Rehabilitation = () => {
   const [loaderOpen, setLoaderOpen] = React.useState(false);
@@ -45,14 +46,18 @@ const Rehabilitation = () => {
 
   const [CreateSubDocRows, setCreateSubDocRows] = React.useState([]);
   const [selectionModel, setSelectionModel] = React.useState([]);
-const [selectedRows, setSelectedRows] = React.useState([]);
+  const [selectedRows, setSelectedRows] = React.useState([]);
+
+  const { checkAccess } = useThemeMode();
+
+   
+  const canAdd = checkAccess(11, "IsAdd");
 
   const [DammyData, setDammyData] = React.useState([
     { id: 1, NameMR: "Driving License", isNew: false },
     { id: 2, NameMR: "Aadhar Card", isNew: false },
     { id: 3, NameMR: "Pan Card", isNew: false },
-        { id: "custom-1", NameMR: "", isNew: true }, // 👈 default empty editable row
-
+    { id: "custom-1", NameMR: "", isNew: true },
   ]);
 
   // React Hook Form initialization
@@ -114,7 +119,7 @@ const [selectedRows, setSelectedRows] = React.useState([]);
 
   const handleSubmitForm = async (formData) => {
     try {
-      const requiredFields = ["NameEN",  "MobileNo"];
+      const requiredFields = ["NameEN", "MobileNo"];
       const emptyRequiredFields = requiredFields.filter(
         (field) => !formData[field]?.trim()
       );
@@ -124,17 +129,15 @@ const [selectedRows, setSelectedRows] = React.useState([]);
         return;
       }
 
-     // 🔹 Validate DataGrid checked rows (selectedRows)
-    const emptyCheckedRows = DammyData.filter(
-      (row) => selectedRows.includes(row.id) && !row.NameMR?.trim()
-    );
+      // 🔹 Validate DataGrid checked rows (selectedRows)
+      const emptyCheckedRows = DammyData.filter(
+        (row) => selectedRows.includes(row.id) && !row.NameMR?.trim()
+      );
 
-    if (emptyCheckedRows.length > 0) {
-      validationAlert("Please Type issue for selected rows");
-      return;
-    }
-
-
+      if (emptyCheckedRows.length > 0) {
+        validationAlert("Please Type issue for selected rows");
+        return;
+      }
 
       const payload = {
         Id: null || formData.Id,
@@ -169,7 +172,7 @@ const [selectedRows, setSelectedRows] = React.useState([]);
 
       if (SaveUpdateButton === "SAVE") {
         setLoaderOpen(true);
-        response = await axios.post(`${BASE_URL}DocsMaster`, payload);
+        response = await axios.post(`${BASE_URL}DocsMastertemp`, payload);
       } else {
         if (!formData.Id) {
           Swal.fire({
@@ -247,7 +250,7 @@ const [selectedRows, setSelectedRows] = React.useState([]);
         ...(searchText ? { SearchText: searchText } : {}),
       };
 
-      const response = await axios.get(`${BASE_URL}DocsMaster`, { params });
+      const response = await axios.get(`${BASE_URL}DocsMastertemp`, { params });
       //   if (response.data && response.data.values) {
       //     setDocumentData(
       //       response.data.values.map((item, index) => ({
@@ -449,13 +452,13 @@ const [selectedRows, setSelectedRows] = React.useState([]);
       renderCell: (params) =>
         params.api.getSortedRowIds().indexOf(params.id) + 1,
     },
- 
+
     {
       field: "NameMR",
       headerName: "ISSUES ",
       flex: 1,
-          sortable: false, // ⛔ disable sorting here
-alignItems:"center",
+      sortable: false, // ⛔ disable sorting here
+      alignItems: "center",
       renderCell: (params) => {
         const { row } = params;
         if (row.isNew) {
@@ -662,12 +665,7 @@ alignItems:"center",
             </Grid>
 
             {/* ========================================================== */}
-            <Grid
-              item
-              xs={12}
-              display="flex"
-              alignItems="center"
-                   >
+            <Grid item xs={12} display="flex" alignItems="center">
               <Button
                 variant="outlined"
                 size="small"
@@ -696,10 +694,11 @@ alignItems:"center",
                 columns={columnssubDoc}
                 pageSize={5}
                 rowsPerPageOptions={[5]}
-                  onRowSelectionModelChange={(newSelection) => setSelectedRows(newSelection)}
-                 checkboxSelection
-                 hideFooter
- 
+                onRowSelectionModelChange={(newSelection) =>
+                  setSelectedRows(newSelection)
+                }
+                checkboxSelection
+                hideFooter
                 getRowId={(row) => row.id}
                 sx={{
                   "& .MuiDataGrid-columnHeaders": {
@@ -807,6 +806,8 @@ alignItems:"center",
         <Grid textAlign={"end"} marginBottom={1}>
           <Button
             onClick={handleOnSave}
+                     disabled={canAdd}
+
             type="text"
             size="medium"
             sx={{
@@ -820,8 +821,12 @@ alignItems:"center",
               transition: "all 0.2s ease-in-out",
               boxShadow: "0 4px 8px rgba(0, 90, 91, 0.3)",
               "&:hover": {
-                transform: "translateY(2px)",
-                boxShadow: "0 2px 4px rgba(0, 90, 91, 0.2)",
+                //  boxShadow: "0 2px 4px rgba(0, 90, 91, 0.2)",
+
+                transform: canAdd ? "translateY(2px)" : "none",
+                boxShadow: canAdd
+                  ? "0 2px 4px rgba(0, 90, 91, 0.2)"
+                  : "0 4px 8px rgba(0,0,0,0.1)",
               },
               "& .MuiButton-label": {
                 display: "flex",

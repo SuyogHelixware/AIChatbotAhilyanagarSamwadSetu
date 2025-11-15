@@ -23,7 +23,7 @@ const SanjayGandhi = () => {
 
   const { checkAccess } = useThemeMode();
 
-  const canAdd = checkAccess(4, "IsAdd");
+  const canAdd = checkAccess(10, "IsAdd");
 
   // const getAllOfficerList = async (page = 0, searchText = "") => {
   //   try {

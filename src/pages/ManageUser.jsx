@@ -25,13 +25,11 @@ import { Controller, useForm } from "react-hook-form";
 import Swal from "sweetalert2";
 import avatar from "../../src/assets/avtar.png";
 
-import {
-  BASE_URL
-} from "../Constant";
+import { BASE_URL } from "../Constant";
 import InputTextField, {
   DatePickerField,
   //   DatePickerField,
-  InputPasswordField
+  InputPasswordField,
 } from "../components/Component";
 import Loader from "../components/Loader";
 // import CameraAltOutlinedIcon from "@mui/icons-material/CameraAltOutlined";
@@ -39,13 +37,7 @@ import { useTheme } from "@mui/material/styles";
 import InputTextFieldNewUserMail from "../components/Component";
 
 export default function ManageUsers() {
-  const {
-  
-    control,
-    handleSubmit,
-    getValues,
-    reset,
-  } = useForm();
+  const { control, handleSubmit, getValues, reset } = useForm();
   const [loaderOpen, setLoaderOpen] = React.useState(false);
   const [userData, setUserData] = React.useState([]);
   const [SaveUpdateButton, setSaveUpdateButton] = React.useState("UPDATE");
@@ -62,10 +54,10 @@ export default function ManageUsers() {
   const [ClearUpdateButton, setClearUpdateButton] = React.useState("RESET");
   const originalDataRef = React.useRef(null);
   const [gazeteList, setgazeteList] = React.useState();
+  const [RoleList, setRoleList] = React.useState();
 
   const theme = useTheme();
-    const firstLoad = React.useRef(true);
-  
+  const firstLoad = React.useRef(true);
 
   const handleClickShowPassword = () => setShowPassword(!showPassword);
 
@@ -89,7 +81,7 @@ export default function ManageUsers() {
   // };
 
   const clearFormData = () => {
-    console.log("ClearUpdateButton: ", ClearUpdateButton); 
+    console.log("ClearUpdateButton: ", ClearUpdateButton);
 
     if (ClearUpdateButton === "CLEAR") {
       // Reset to default values (empty or initial state)
@@ -103,7 +95,6 @@ export default function ManageUsers() {
         Phone: "",
         Status: 1,
         Email: "",
-        // GazOfficer:"",
         UserType: "U",
         Avatar: "",
       });
@@ -119,7 +110,6 @@ export default function ManageUsers() {
             : undefined,
         };
         reset(resetData);
- 
       } else {
         console.error("Original data is not available!");
       }
@@ -162,19 +152,8 @@ export default function ManageUsers() {
           Status: data.Status ?? "",
           UserType: data.UserType ?? "",
           GazOfficer: data.GazOfficer ?? "",
+          Role: data.Role ?? "",
         });
-
-        // setValue("Id", data.Id);
-        // setValue("FirstName", data.FirstName);
-        // setValue("Username", data.Username);
-        // setValue("LastName", data.LastName);
-        // // setValue("DOB", dayjs(data.DOB) );
-        // setValue("DOB", data.DOB ? dayjs(data.DOB) : null);
-        // setValue("Phone", data.Phone);
-        // setValue("Email", data.Email);
-        // setValue("Status", data.Status);
-        // setValue("UserType", data.UserType);
-        // setValue("GazOfficer", data.GazOfficer);
       }
     } catch (error) {
       console.error("Error fetching user data:", error);
@@ -297,9 +276,9 @@ export default function ManageUsers() {
       Phone: getValues("Phone") || "",
       Email: getValues("Email") || "",
       CreatedDate: dayjs().format("YYYY-MM-DD"),
-
       UserType: getValues("UserType") || "U",
       GazOfficer: getValues("GazOfficer") || null,
+      Role: getValues("Role") || null,
 
       // Avatar: uploadedImg !== "" ? filename : "",
       Status: getValues("Status"),
@@ -311,7 +290,6 @@ export default function ManageUsers() {
       ModifiedBy: sessionStorage.getItem("userId"),
       CreatedBy: sessionStorage.getItem("userId"),
       ModifiedDate: dayjs().format("YYYY-MM-DD"),
-
       FirstName: getValues("FirstName") || "",
       Username: getValues("Username"),
       LastName: getValues("LastName") || "",
@@ -320,11 +298,13 @@ export default function ManageUsers() {
       Email: getValues("Email") || "",
       UserType: getValues("UserType") || "U",
       GazOfficer: getValues("GazOfficer") || null,
+      Role: getValues("Role") || null,
 
       Status: getValues("Status"),
       // Avatar: uploadedImg === "" ? getValues("Avatar") : filename,
     };
-
+    // console.log("object",saveObj)
+    // return
     setLoaderOpen(true);
     if (getValues("Password") !== "" || getValues("Password") !== undefined) {
       saveObj.Password = getValues("Password");
@@ -483,8 +463,6 @@ export default function ManageUsers() {
     }
   };
 
-
-
   const isValidUsername = (username) => {
     const usernameRegex = /^.{4,}$/;
     return usernameRegex.test(username);
@@ -506,7 +484,7 @@ export default function ManageUsers() {
             id: page * limit + index + 1,
           }))
         );
-         setTotalRows(response.data.count || 0);
+        setTotalRows(response.data.count || 0);
 
         if (searchText) {
           setTotalRows(response.data.count);
@@ -520,20 +498,18 @@ export default function ManageUsers() {
   useEffect(() => {
     getUserData(currentPage, searchText);
     handleonGazettedList();
+    handleonRoleList();
   }, [currentPage]);
 
- 
- 
+  // useEffect(() => {
+  //   if (firstLoad.current) {
+  //     firstLoad.current = false;
+  //     return;
+  //   }
+  //   getUserData(currentPage, searchText, limit);
+  //    handleonGazettedList();
+  // }, [currentPage, searchText, limit]);
 
-// useEffect(() => {
-//   if (firstLoad.current) {
-//     firstLoad.current = false;
-//     return;
-//   }
-//   getUserData(currentPage, searchText, limit);
-//    handleonGazettedList();
-// }, [currentPage, searchText, limit]);
- 
   const columns = [
     {
       field: "Action",
@@ -564,7 +540,6 @@ export default function ManageUsers() {
               color: "red",
             }}
             onClick={() => deluser(params.row.Id)}
-          
           >
             <DeleteForeverIcon />
           </IconButton>
@@ -604,7 +579,7 @@ export default function ManageUsers() {
       headerAlign: "center",
       align: "center",
     },
- 
+
     {
       field: "DOB",
       headerName: "DOB",
@@ -618,7 +593,6 @@ export default function ManageUsers() {
       align: "center",
     },
 
- 
     {
       field: "Phone",
       headerName: "Phone",
@@ -641,18 +615,18 @@ export default function ManageUsers() {
     //   align: "center",
     // },
     {
-  field: "Email",
-  headerName: "Email",
-  width: 200,
-  sortable: false,
-  headerAlign: "center",
-  align: "center",
-  valueFormatter: (params) => {
-    const value = params.value?.trim();
-    return value ? value : "NA";
-  },
-},
- 
+      field: "Email",
+      headerName: "Email",
+      width: 200,
+      sortable: false,
+      headerAlign: "center",
+      align: "center",
+      valueFormatter: (params) => {
+        const value = params.value?.trim();
+        return value ? value : "NA";
+      },
+    },
+
     {
       field: "UserType",
       headerName: "User Type",
@@ -753,6 +727,49 @@ export default function ManageUsers() {
     }
   };
 
+  //   const handleonRoleList = async (params = {}) => {
+  //   setLoading(true);
+  //   try {
+  //      const queryParams = { Status: "1", ...params };
+
+  //     // Fetch data
+  //     const { data } = await axios.get(`${BASE_URL}Role`, {
+  //       params: queryParams,
+  //     });
+
+  //     if (data.values) {
+  //       setRoleList(data.values);
+  //     }
+  //   } catch (error) {
+  //     console.error("Error fetching data:", error);
+  //   } finally {
+  //     setLoading(false);
+  //   }
+  // };
+  const handleonRoleList = async (params = {}) => {
+    setLoading(true);
+    try {
+      // Fetch ALL records, do not filter Status
+      const { data } = await axios.get(`${BASE_URL}Role`, {
+        params: params,
+      });
+
+      if (data.values) {
+        // Add disabled flag for Status=0
+        const updated = data.values.map((item) => ({
+          ...item,
+          isDisabled: item.Status === 0,
+        }));
+
+        setRoleList(updated);
+      }
+    } catch (error) {
+      console.error("Error fetching data:", error);
+    } finally {
+      setLoading(false);
+    }
+  };
+
   return (
     <>
       {loaderOpen && <Loader open={loaderOpen} />}
@@ -768,8 +785,8 @@ export default function ManageUsers() {
           elevation={10}
           sx={{
             width: "90%",
-            maxWidth: 600,
-            height: 500,
+            maxWidth: 650,
+            height: 600,
             // bgcolor: "#E6E6FA",
             position: "absolute",
             top: "50%",
@@ -999,21 +1016,20 @@ export default function ManageUsers() {
                 )}
               /> */}
               <Controller
-  name="Email"
-  control={control}
-  defaultValue=""
-  render={({ field }) => (
-    <InputTextFieldNewUserMail
-      {...field}
-      label="EMAIL ID "
-      id="Email"
-      type="email"
-      required
-      className="custom-required-field"
-    />
-  )}
-/>
-
+                name="Email"
+                control={control}
+                defaultValue=""
+                render={({ field }) => (
+                  <InputTextFieldNewUserMail
+                    {...field}
+                    label="EMAIL ID "
+                    id="Email"
+                    type="email"
+                    required
+                    className="custom-required-field"
+                  />
+                )}
+              />
             </Grid>
 
             <Grid item md={6} sm={6} xs={12}>
@@ -1021,10 +1037,13 @@ export default function ManageUsers() {
                 name="UserType"
                 control={control}
                 defaultValue="U"
+ 
                 render={({ field }) => (
                   <TextField
                     select
                     label="USER TYPE "
+                                sx={{ width: "90%" }}  
+
                     fullWidth
                     size="small"
                     {...field}
@@ -1033,6 +1052,180 @@ export default function ManageUsers() {
                     <MenuItem value="A">ADMIN</MenuItem>
                   </TextField>
                 )}
+              />
+            </Grid>
+
+            {/* ==================== */}
+
+            {/* <Grid item md={6} sm={6} xs={12}>
+              <Controller
+                name="Role"
+                control={control}
+                defaultValue=""
+                render={({ field }) => {
+                  const selectedValue =
+                    field.value && field.value.trim() !== ""
+                      ? field.value
+                      : "No Role";
+
+                  return (
+                    <Tooltip title={selectedValue} arrow placement="bottom">
+                      <TextField
+                        select
+                        label="ROLE"
+                        fullWidth
+                        size="small"
+ 
+                        {...field}
+                        InputLabelProps={{
+                          shrink: Boolean(field.value),
+                        }}
+                        SelectProps={{
+                          MenuProps: {
+                            PaperProps: {
+                              style: {
+                                maxHeight: 200,
+                                overflowY: "auto",
+                                 width: 100,  
+                              },
+                            },
+                          },
+                        }}
+                      >
+                        <MenuItem value="">No Role</MenuItem>
+
+                        {RoleList.map((option) => (
+                          <MenuItem
+                          sx={{
+                              height: 35,
+                              display: "flex",
+                              alignItems: "center",
+                            }}
+                           key={option.RoleName}
+                           value={option.RoleName}
+                            disabled={option.isDisabled}
+                          >
+                           {option.RoleName}
+                          </MenuItem>
+                        ))}
+                      </TextField>
+                    </Tooltip>
+                  );
+                }}
+              />
+            </Grid> */}
+<Grid item md={6} sm={6} xs={12}>
+  <Controller
+    name="Role"
+    control={control}
+    defaultValue=""
+    render={({ field }) => {
+      const selectedValue =
+        field.value && field.value.trim() !== "" ? field.value : "No Role";
+
+      return (
+        <Tooltip title={selectedValue} arrow placement="bottom">
+          <TextField
+            select
+            label="ROLE"
+            size="small"
+            fullWidth
+            sx={{ width: "78%" }}  
+            {...field}
+            InputLabelProps={{
+              shrink: Boolean(field.value),
+            }}
+            SelectProps={{
+              MenuProps: {
+                PaperProps: {
+                  style: {
+                    maxHeight: 200,
+                    overflowY: "auto",
+                    width: 250,  
+                  },
+                },
+              },
+            }}
+          >
+            <MenuItem value="">No Role</MenuItem>
+
+            {RoleList.map((option) => (
+              <MenuItem
+                key={option.RoleName}
+                value={option.RoleName}
+                disabled={option.isDisabled}
+                sx={{
+                  height: 35,
+                  display: "flex",
+                  alignItems: "center",
+                }}
+              >
+                {option.RoleName}
+              </MenuItem>
+            ))}
+          </TextField>
+        </Tooltip>
+      );
+    }}
+  />
+</Grid>
+
+            {/* =========================== */}
+
+            <Grid item md={6} sm={6} xs={12}>
+              <Controller
+                name="GazOfficer"
+                control={control}
+                defaultValue=""
+                render={({ field }) => {
+                  const selectedValue =
+                    field.value && field.value.trim() !== ""
+                      ? field.value
+                      : "No Officer";
+
+                  return (
+                    <Tooltip title={selectedValue} arrow placement="bottom">
+                      <TextField
+                        select
+                        label="Gaz Officer"
+                         
+                                    sx={{ width: "90%" }}  
+
+                        size="small"
+                        {...field}
+                        InputLabelProps={{
+                          shrink: Boolean(field.value),
+                        }}
+                        SelectProps={{
+                          MenuProps: {
+                            PaperProps: {
+                              style: {
+                                maxHeight: 200,
+                                overflowY: "auto",
+                              },
+                            },
+                          },
+                        }}
+                      >
+                        <MenuItem value="">No Officer</MenuItem>
+
+                        {gazeteList.map((option) => (
+                          <MenuItem
+                            key={option.Name}
+                            value={option.Name}
+                            sx={{
+                              height: 35,
+                              display: "flex",
+                              alignItems: "center",
+                            }}
+                          >
+                            {option.Name}
+                          </MenuItem>
+                        ))}
+                      </TextField>
+                    </Tooltip>
+                  );
+                }}
               />
             </Grid>
 
@@ -1057,93 +1250,6 @@ export default function ManageUsers() {
                 )}
               />
             </Grid>
-
-            {/* <Grid item md={6} sm={6} xs={12}>
-              <Controller
-                name="GazOfficer"
-                control={control}
-                defaultValue=""
-                render={({ field }) => (
-                  <TextField
-                    select
-                    label="Gaz Officer"
-                    fullWidth
-                    size="small"
-                    {...field}
-                    InputLabelProps={{
-                      shrink: Boolean(field.value),
-                    }}
-                  >
-                    <MenuItem value="">No Officer</MenuItem>
-
-                    {gazeteList.map((option) => (
-                      <MenuItem key={option.Name} value={option.Name}>
-                        {option.Name}
-                      </MenuItem>
-                    ))}
-                  </TextField>
-                )}
-              />
-            </Grid> */}
-
-<Grid item md={6} sm={6} xs={12}>
-  <Controller
-    name="GazOfficer"
-    control={control}
-    defaultValue=""
-    render={({ field }) => {
-      const selectedValue =
-        field.value && field.value.trim() !== ""
-          ? field.value
-          : "No Officer";
-
-      return (
-        <Tooltip
-          title={selectedValue} 
-          arrow
-          placement="bottom"
-        >
-          <TextField
-            select
-            label="Gaz Officer"
-            fullWidth
-            size="small"
-            {...field}
-            InputLabelProps={{
-              shrink: Boolean(field.value),
-            }}
-            SelectProps={{
-              MenuProps: {
-                PaperProps: {
-                  style: {
-                    maxHeight: 200, 
-                    overflowY: "auto", 
-                  },
-                },
-              },
-            }}
-          >
-            <MenuItem value="">No Officer</MenuItem>
-
-            {gazeteList.map((option) => (
-              <MenuItem
-                key={option.Name}
-                value={option.Name}
-                sx={{
-                  height: 35, 
-                  display: "flex",
-                  alignItems: "center",
-                }}
-              >
-                {option.Name}
-              </MenuItem>
-            ))}
-          </TextField>
-        </Tooltip>
-      );
-    }}
-  />
-</Grid>
 
             <Grid
               item
@@ -1407,47 +1513,46 @@ export default function ManageUsers() {
             }}
           /> */}
           <DataGrid
-  className="datagrid-style"
-  rowHeight={70}
-  getRowId={(row) => row.Id}
-  rows={userData}
-  columns={columns}
-  pagination
-  paginationMode="server"
-  rowCount={totalRows}              
-  // pageSizeOptions={[10, 20, 50]}       
-  paginationModel={{ page: currentPage, pageSize: limit }}
-  onPaginationModelChange={(newModel) => {
-     setCurrentPage(newModel.page);
-    setLimit(newModel.pageSize);
-  }}
-  loading={loading}
-  hideFooterSelectedRowCount
-  disableColumnFilter
-  disableColumnSelector
-  disableDensitySelector
-  slots={{ toolbar: GridToolbar }}
-  slotProps={{
-    toolbar: {
-      showQuickFilter: true,
-      quickFilterProps: { debounceMs: 500 },
-    },
-  }}
-  onFilterModelChange={(model) => {
-    const quickFilterValue = model.quickFilterValues?.[0] || "";
-    setSearchText(quickFilterValue);
-    setCurrentPage(0); 
-  }}
-  sx={{
-    "& .MuiDataGrid-columnHeaders": {
-      backgroundColor: (theme) => theme.palette.custome.datagridcolor,
-    },
-    "& .MuiDataGrid-row:hover": {
-      boxShadow: "0px 4px 20px rgba(0, 0, 0.2, 0.2)",
-    },
-  }}
-/>
-
+            className="datagrid-style"
+            rowHeight={70}
+            getRowId={(row) => row.Id}
+            rows={userData}
+            columns={columns}
+            pagination
+            paginationMode="server"
+            rowCount={totalRows}
+            // pageSizeOptions={[10, 20, 50]}
+            paginationModel={{ page: currentPage, pageSize: limit }}
+            onPaginationModelChange={(newModel) => {
+              setCurrentPage(newModel.page);
+              setLimit(newModel.pageSize);
+            }}
+            loading={loading}
+            hideFooterSelectedRowCount
+            disableColumnFilter
+            disableColumnSelector
+            disableDensitySelector
+            slots={{ toolbar: GridToolbar }}
+            slotProps={{
+              toolbar: {
+                showQuickFilter: true,
+                quickFilterProps: { debounceMs: 500 },
+              },
+            }}
+            onFilterModelChange={(model) => {
+              const quickFilterValue = model.quickFilterValues?.[0] || "";
+              setSearchText(quickFilterValue);
+              setCurrentPage(0);
+            }}
+            sx={{
+              "& .MuiDataGrid-columnHeaders": {
+                backgroundColor: (theme) => theme.palette.custome.datagridcolor,
+              },
+              "& .MuiDataGrid-row:hover": {
+                boxShadow: "0px 4px 20px rgba(0, 0, 0.2, 0.2)",
+              },
+            }}
+          />
         </Box>
       </Paper>
     </>

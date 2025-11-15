@@ -7,7 +7,7 @@ import { useNavigate } from "react-router-dom";
 import { BASE_URL } from "../Constant";
 import { Visibility, VisibilityOff } from "@mui/icons-material";
 import Loader from "../components/Loader";
-import PersonIcon from '@mui/icons-material/Person';
+import PersonIcon from "@mui/icons-material/Person";
 // import PersonIcon from "@mui/icons-material/Person";
 import CryptoJS from "crypto-js";
 import { useThemeMode } from "./Theme";
@@ -25,7 +25,7 @@ const Signin = () => {
     return storedRole ? JSON.parse(storedRole) : null;
   });
 
-   const { refreshRoleAccess } = useThemeMode();
+  const { refreshRoleAccess } = useThemeMode();
 
   const SECRET_KEY = "YourStrongSecretKey123!";
 
@@ -102,8 +102,7 @@ const Signin = () => {
         .post(`${BASE_URL}Login`, body)
 
         .then(async (res) => {
-          console.log("tt=====", res.data.values);
-
+ 
           if (res.data.success === true) {
             const data = res.data.values;
 
@@ -125,9 +124,9 @@ const Signin = () => {
             console.log("tt==+++++++++===", userData);
             sessionStorage.setItem("BearerTokan", res.headers.authorization);
 
-            sessionStorage.setItem("userId", userData.RoleName);
+            sessionStorage.setItem("userId", userData.Username);
             sessionStorage.setItem("userData", JSON.stringify(userData));
-refreshUserSession();
+            refreshUserSession();
 
             const roleNameToUse = data?.Role;
             const encodedRoleName = encodeURIComponent(roleNameToUse);
@@ -152,11 +151,9 @@ refreshUserSession();
                 SECRET_KEY
               ).toString();
 
-              sessionStorage.setItem("RoleDetails", encryptedRoleDetails);            
-                refreshRoleAccess();
- 
+              sessionStorage.setItem("RoleDetails", encryptedRoleDetails);
+              refreshRoleAccess();
             }
-
 
             Swal.fire({
               position: "top-end",

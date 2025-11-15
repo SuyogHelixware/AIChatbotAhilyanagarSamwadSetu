@@ -436,7 +436,7 @@ const [pickerDisabledSubmenuIds, setPickerDisabledSubmenuIds] = React.useState([
 
       // Build query params
       const params = {
-        Status: "1",
+        // Status: "1",
         Page: page,
         Limit: limit,
         ...(searchText ? { SearchText: searchText } : {}),
@@ -621,8 +621,7 @@ const [pickerDisabledSubmenuIds, setPickerDisabledSubmenuIds] = React.useState([
         const olddata = response.data.values;
 
         originalDataRef.current = olddata;
-        debugger;
-        const formattedLines = Array.isArray(olddata.oLines)
+         const formattedLines = Array.isArray(olddata.oLines)
           ? olddata.oLines.map((line, index) => ({
               ...line,
               id: line.MenuId || `${olddata.Id}-${index}-${Date.now()}`,
@@ -805,14 +804,15 @@ const clearFormData = () => {
       });
       return;
     }
-
+ 
     const payload = {
       Id: data.Id || 0,
       CreatedBy: sessionStorage.getItem("userId") || "",
       CreatedDate: dayjs().format("YYYY-MM-DDTHH:mm:ss.SSS"),
       ModifiedBy: sessionStorage.getItem("userId") || "",
       ModifiedDate: dayjs().format("YYYY-MM-DDTHH:mm:ss.SSS"),
-      Status: 1,
+      Status: data.Status === false ? 0 : 1,
+      
       RoleName: data.RoleName || "",
       Remarks: data.Remarks || "",
       oLines: RoleTableData.map((row, index) => ({
@@ -1126,7 +1126,19 @@ const clearFormData = () => {
   return (
     <>
       <Dialog open={openMenu} onClose={handleCloseMenu} fullWidth maxWidth="md">
-        <DialogTitle>Menu Activity</DialogTitle>
+        {/* <DialogTitle>Menu Activity</DialogTitle> */}
+         <Grid
+              item
+              xs={12}
+              sx={{ display: "flex", justifyContent: "space-between" }}
+            >
+              <DialogTitle>ROLE CREATION</DialogTitle> 
+              {/* <Typography fontWeight="bold"> ROLE CREATION</Typography> */}
+              <IconButton onClick={handleCloseMenu}>
+                <CloseIcon /> 
+              </IconButton>
+            </Grid>
+
         <DialogContent dividers>
           <div style={{ height: 550, width: "100%" }}>
             {/* <CollapsibleMenuGrid
@@ -1162,7 +1174,7 @@ const clearFormData = () => {
             px: 3, // optional: adds some padding on left and right
           }}
         >
-          <Button
+          {/* <Button
             onClick={handleCloseMenu}
             variant="outlined"
             size="small"
@@ -1175,7 +1187,7 @@ const clearFormData = () => {
             }}
           >
             Cancle
-          </Button>
+          </Button> */}
           <Button
             variant="contained"
             size="small"
@@ -1312,7 +1324,7 @@ const clearFormData = () => {
                           {...field}
                           checked={field.value}
                           onChange={(e) => field.onChange(e.target.checked)}
-                          size="large"
+                          size="medium"
                           color="primary"
                         />
                       }
