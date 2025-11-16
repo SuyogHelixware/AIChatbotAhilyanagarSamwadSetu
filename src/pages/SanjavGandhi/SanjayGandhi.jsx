@@ -264,118 +264,118 @@ const SanjayGandhi = () => {
 
       <Grid container spacing={2} justifyContent="flex-start" marginBottom={1}>
         {/* Success Upload */}
-       
-<Grid item>
-  <input
-    type="file"
-    accept=".csv, .xlsx"
-    ref={successFileRef}
-    style={{ display: "none" }}
-    onChange={(e) => {
-      const file = e.target.files[0];
-      if (file) handleFileUpload(file, "S");
-      e.target.value = null;
-    }}
-  />
 
-  <Tooltip
-    title={
-      !canAdd ? (
-        // 🔸 Tooltip when user does not have permission
-        <Typography sx={{ fontSize: 13, p: 0.5 }}>
-          You don’t have permission to upload files.
-        </Typography>
-      ) : (
-        // 🔸 Tooltip when allowed
-        <Box
-          sx={{
-            bgcolor: "#1e293b",
-            color: "white",
-            p: 1.5,
-            borderRadius: 1.5,
-            boxShadow: "0 3px 8px rgba(0,0,0,0.25)",
-            minWidth: 220,
-          }}
-        >
-          <Box sx={{ display: "flex", alignItems: "center", mb: 0.5 }}>
-            <InfoOutlinedIcon
-              sx={{ fontSize: 20, mr: 0.8, color: "#38bdf8" }}
-            />
-            <Typography sx={{ fontWeight: 500, fontSize: 14 }}>
-              Required Columns In File
-            </Typography>
-          </Box>
-          <Typography
-            sx={{
-              fontWeight: 400,
-              fontSize: 12,
-              mb: 0.8,
-              color: "#cbd5e1",
-              fontStyle: "italic",
+        <Grid item>
+          <input
+            type="file"
+            accept=".csv, .xlsx"
+            ref={successFileRef}
+            style={{ display: "none" }}
+            onChange={(e) => {
+              const file = e.target.files[0];
+              if (file) handleFileUpload(file, "S");
+              e.target.value = null;
             }}
+          />
+
+          <Tooltip
+            title={
+              !canAdd ? (
+                // 🔸 Tooltip when user does not have permission
+                <Typography sx={{ fontSize: 13, p: 0.5 }}>
+                  You don’t have permission to upload files.
+                </Typography>
+              ) : (
+                // 🔸 Tooltip when allowed
+                <Box
+                  sx={{
+                    bgcolor: "#1e293b",
+                    color: "white",
+                    p: 1.5,
+                    borderRadius: 1.5,
+                    boxShadow: "0 3px 8px rgba(0,0,0,0.25)",
+                    minWidth: 220,
+                  }}
+                >
+                  <Box sx={{ display: "flex", alignItems: "center", mb: 0.5 }}>
+                    <InfoOutlinedIcon
+                      sx={{ fontSize: 20, mr: 0.8, color: "#38bdf8" }}
+                    />
+                    <Typography sx={{ fontWeight: 500, fontSize: 14 }}>
+                      Required Columns In File
+                    </Typography>
+                  </Box>
+                  <Typography
+                    sx={{
+                      fontWeight: 400,
+                      fontSize: 12,
+                      mb: 0.8,
+                      color: "#cbd5e1",
+                      fontStyle: "italic",
+                    }}
+                  >
+                    File type allowed: <b>CSV</b>, <b>Excel</b>
+                  </Typography>
+                  <ul
+                    style={{
+                      margin: 0,
+                      paddingLeft: "20px",
+                      fontSize: "13px",
+                      lineHeight: "1.6",
+                    }}
+                  >
+                    <li>
+                      <b>Beneficiary Name</b>
+                    </li>
+                    <li>
+                      <b>Mobile Number</b>
+                    </li>
+                    <li>
+                      <b>Amount</b>
+                    </li>
+                    <li>
+                      <b>Bank Name</b>
+                    </li>
+                  </ul>
+                </Box>
+              )
+            }
+            arrow
+            placement="left-end"
           >
-            File type allowed: <b>CSV</b>, <b>Excel</b>
-          </Typography>
-          <ul
-            style={{
-              margin: 0,
-              paddingLeft: "20px",
-              fontSize: "13px",
-              lineHeight: "1.6",
-            }}
-          >
-            <li>
-              <b>Beneficiary Name</b>
-            </li>
-            <li>
-              <b>Mobile Number</b>
-            </li>
-            <li>
-              <b>Amount</b>
-            </li>
-            <li>
-              <b>Bank Name</b>
-            </li>
-          </ul>
-        </Box>
-      )
-    }
-    arrow
-    placement="left-end"
-  >
-    {/* ✅ span wrapper needed for tooltip on disabled button */}
-    <span>
-      <Button
-        onClick={() => successFileRef.current.click()}
-        disabled={!canAdd}
-        type="text"
-        size="medium"
-        sx={{
-          pr: 2,
-          mb: 0,
-          mt: 2,
-          color: "white",
-          fontWeight: "bold",
-          background: !canAdd
-            ? "linear-gradient(to right, #0b7a3e, #16a34a)"// greyed-out gradient
-            : "linear-gradient(to right, #0b7a3e, #16a34a)",
-          borderRadius: "8px",
-          transition: "all 0.2s ease-in-out",
-          boxShadow: "0 4px 8px rgba(0, 90, 91, 0.3)",
-          "&:hover": {
-            transform: canAdd ? "translateY(2px)" : "none",
-            boxShadow: canAdd
-              ? "0 2px 4px rgba(0, 90, 91, 0.2)"
-              : "0 4px 8px rgba(0,0,0,0.1)",
-          },
-        }}
-      >
-        <AddIcon />
-        UPLOAD SUCCESS FILE
-      </Button>
-    </span>
-  </Tooltip>
-</Grid>
+            {/* ✅ span wrapper needed for tooltip on disabled button */}
+            <span>
+              <Button
+                onClick={() => successFileRef.current.click()}
+                disabled={!canAdd}
+                type="text"
+                size="medium"
+                sx={{
+                  pr: 2,
+                  mb: 0,
+                  mt: 2,
+                  color: "white",
+                  fontWeight: "bold",
+                  background: !canAdd
+                    ? "linear-gradient(to right, #0b7a3e, #16a34a)" // greyed-out gradient
+                    : "linear-gradient(to right, #0b7a3e, #16a34a)",
+                  borderRadius: "8px",
+                  transition: "all 0.2s ease-in-out",
+                  boxShadow: "0 4px 8px rgba(0, 90, 91, 0.3)",
+                  "&:hover": {
+                    transform: canAdd ? "translateY(2px)" : "none",
+                    boxShadow: canAdd
+                      ? "0 2px 4px rgba(0, 90, 91, 0.2)"
+                      : "0 4px 8px rgba(0,0,0,0.1)",
+                  },
+                }}
+              >
+                <AddIcon />
+                UPLOAD SUCCESS FILE
+              </Button>
+            </span>
+          </Tooltip>
+        </Grid>
 
         {/* Failure Upload */}
         <Grid item>
@@ -390,63 +390,72 @@ const SanjayGandhi = () => {
               e.target.value = null;
             }}
           />
+        
           <Tooltip
             title={
-              <Box
-                sx={{
-                  bgcolor: "#1e293b",
-                  color: "white",
-                  p: 1.5,
-                  borderRadius: 1.5,
-                  boxShadow: "0 3px 8px rgba(0,0,0,0.25)",
-                  minWidth: 220,
-                }}
-              >
-                <Box sx={{ display: "flex", alignItems: "center", mb: 0.5 }}>
-                  <InfoOutlinedIcon
-                    sx={{ fontSize: 20, mr: 0.8, color: "#38bdf8" }}
-                  />
-                  <Typography sx={{ fontWeight: 500, fontSize: 14 }}>
-                    Required Columns In File
-                  </Typography>
-                </Box>
-                <Typography
-                  sx={{
-                    fontWeight: 400,
-                    fontSize: 12,
-                    mb: 0.8,
-                    color: "#cbd5e1",
-                    fontStyle: "italic",
-                  }}
-                >
-                  File type allowed: <b>CSV</b>, <b>Excel</b>
+              !canAdd ? (
+                 <Typography sx={{ fontSize: 13, p: 0.5 }}>
+                  You don’t have permission to upload files.
                 </Typography>
-                <ul
-                  style={{
-                    margin: 0,
-                    paddingLeft: "20px",
-                    fontSize: "13px",
-                    lineHeight: "1.6",
+              ) : (
+                <Box
+                  sx={{
+                    bgcolor: "#1e293b",
+                    color: "white",
+                    p: 1.5,
+                    borderRadius: 1.5,
+                    boxShadow: "0 3px 8px rgba(0,0,0,0.25)",
+                    minWidth: 220,
                   }}
                 >
-                  <li>
-                    <b>Beneficiary Name</b>
-                  </li>
-                  <li>
-                    <b>Mobile Number</b>
-                  </li>
-                  <li>
-                    <b>Amount</b>
-                  </li>
-                  <li>
-                    <b>Failure Reason</b>
-                  </li>
-                </ul>
-              </Box>
+                  <Box sx={{ display: "flex", alignItems: "center", mb: 0.5 }}>
+                    <InfoOutlinedIcon
+                      sx={{ fontSize: 20, mr: 0.8, color: "#38bdf8" }}
+                    />
+                    <Typography sx={{ fontWeight: 500, fontSize: 14 }}>
+                      Required Columns In File
+                    </Typography>
+                  </Box>
+                  <Typography
+                    sx={{
+                      fontWeight: 400,
+                      fontSize: 12,
+                      mb: 0.8,
+                      color: "#cbd5e1",
+                      fontStyle: "italic",
+                    }}
+                  >
+                    File type allowed: <b>CSV</b>, <b>Excel</b>
+                  </Typography>
+                  <ul
+                    style={{
+                      margin: 0,
+                      paddingLeft: "20px",
+                      fontSize: "13px",
+                      lineHeight: "1.6",
+                    }}
+                  >
+                    <li>
+                      <b>Beneficiary Name</b>
+                    </li>
+                    <li>
+                      <b>Mobile Number</b>
+                    </li>
+                    <li>
+                      <b>Amount</b>
+                    </li>
+                    <li>
+                      <b>Failure Reason</b>
+                    </li>
+                  </ul>
+                </Box>
+              )
             }
             arrow
             placement="right-end"
           >
+            <span>
+
             <Button
               onClick={() => failFileRef.current.click()}
               disabled={!canAdd}
@@ -463,21 +472,21 @@ const SanjayGandhi = () => {
                 transition: "all 0.2s ease-in-out",
                 boxShadow: "0 4px 8px rgba(161, 43, 43, 0.3)",
                 "&:hover": {
-                  transform: "translateY(2px)",
-                  boxShadow: "0 2px 4px rgba(161, 43, 43, 0.2)",
+                     transform: canAdd ? "translateY(2px)" : "none",
+                  // boxShadow: "0 2px 4px rgba(161, 43, 43, 0.2)",
+
+                  boxShadow: canAdd
+                      ? "0 2px 4px rgba(161, 43, 43, 0.2)"
+                      : "0 4px 8px rgba(0,0,0,0.1)",
                 },
               }}
             >
               <AddIcon />
               UPLOAD FAILURE FILE
             </Button>
+            </span>
           </Tooltip>
         </Grid>
-
-
-
-
-
       </Grid>
 
       <Grid

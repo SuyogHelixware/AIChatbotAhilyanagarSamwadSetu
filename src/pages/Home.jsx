@@ -4,6 +4,7 @@ import Paper from "@mui/material/Paper";
 import { BarChart, LineChart, PieChart } from "@mui/x-charts";
 import * as React from "react";
 import CountUp from "react-countup";
+import { useThemeMode } from "../Dashboard/Theme";
 
 const uData = [4000, 3000, 2000, 2780, 1890, 2390, 3490];
 const pData = [2400, 1398, 9800, 3908, 4800, 3800, 4300];
@@ -18,6 +19,12 @@ const xLabels = [
 ];
 
 export default function Home() {
+    const { checkAccess } = useThemeMode();
+  
+    const canAdd = checkAccess(11, "IsAdd");
+    // const canEdit = checkAccess(11, "IsEdit");
+    // const canDelete = checkAccess(11, "IsDelete");
+
   return (
     <>
       <Box sx={{ width: "100%" }}>

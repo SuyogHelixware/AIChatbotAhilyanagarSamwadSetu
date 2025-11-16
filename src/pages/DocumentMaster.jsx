@@ -22,6 +22,7 @@ import { Controller, useForm } from "react-hook-form"; // Importing React Hook F
 import Swal from "sweetalert2";
 import { BASE_URL } from "../Constant";
 import Loader from "../components/Loader";
+import { useThemeMode } from "../Dashboard/Theme";
 
 const DocumentMaster = () => {
   const [loaderOpen, setLoaderOpen] = React.useState(false);
@@ -37,6 +38,12 @@ const DocumentMaster = () => {
   const originalDataRef = React.useRef(null);
 
   const firstLoad = React.useRef(true);
+
+  const { checkAccess } = useThemeMode();
+
+  const canAdd = checkAccess(5, "IsAdd");
+  const canEdit = checkAccess(5, "IsEdit");
+  const canDelete = checkAccess(5, "IsDelete");
 
   const [CreateSubDocRows, setCreateSubDocRows] = React.useState([
     {
@@ -70,31 +77,29 @@ const DocumentMaster = () => {
         NameMR: "",
         Description: "",
         Status: 1,
-        CreateSubDocRows :[]
+        CreateSubDocRows: [],
       });
-          setCreateSubDocRows([]);
-
+      setCreateSubDocRows([]);
     }
     // if (ClearUpdateButton === "RESET") {
     //   reset(originalDataRef.current);
 
     // }
-      if (ClearUpdateButton === "RESET") {
-    const old = originalDataRef.current;
-    if (!old) return;
+    if (ClearUpdateButton === "RESET") {
+      const old = originalDataRef.current;
+      if (!old) return;
 
-    // Restore form fields
-    reset(old);
+      // Restore form fields
+      reset(old);
 
-    // Restore datagrid rows
-    const oldRows = (old.SubDocs || []).map((s, index) => ({
-      id: s.LineNum || index + 1,
-      ...s,
-    }));
+      // Restore datagrid rows
+      const oldRows = (old.SubDocs || []).map((s, index) => ({
+        id: s.LineNum || index + 1,
+        ...s,
+      }));
 
-    setCreateSubDocRows(oldRows); // 🔥 Important
-  }
-
+      setCreateSubDocRows(oldRows); // 🔥 Important
+    }
   };
 
   const handleClose = () => setOn(false);
@@ -344,25 +349,44 @@ const DocumentMaster = () => {
       sortable: false,
       renderCell: (params) => (
         <strong>
-          <IconButton
-            color="primary"
-            sx={{
-              color: "rgb(0, 90, 91)",
-              "&:hover": {
-                backgroundColor: "rgba(0, 90, 91, 0.1)",
-              },
-            }}
-            onClick={() => handleUpdate(params.row)}
+          <Tooltip
+            title={!canEdit ? "You don't have Edit permission" : ""}
+            placement="top"
           >
-            <EditNoteIcon />
-          </IconButton>
-          <Button
-            size="medium"
-            sx={{ color: "red" }}
-            onClick={() => handleDelete(params.row)}
+            <span>
+              <IconButton
+                color="primary"
+                sx={{
+                  color: "rgb(0, 90, 91)",
+                  "&:hover": {
+                    backgroundColor: "rgba(0, 90, 91, 0.1)",
+                  },
+                }}
+                onClick={() => handleUpdate(params.row)}
+                            disabled={!canEdit}
+
+              >
+                <EditNoteIcon />
+              </IconButton>
+            </span>
+          </Tooltip>
+
+          <Tooltip
+            title={!canDelete ? "You don't have Delete permission" : ""}
+            placement="top"
           >
-            <DeleteForeverIcon />
-          </Button>
+            <span>
+              <Button
+                size="medium"
+                sx={{ color: "red" }}
+                onClick={() => handleDelete(params.row)}
+                            disabled={!canDelete}
+
+              >
+                <DeleteForeverIcon />
+              </Button>
+            </span>
+          </Tooltip>
         </strong>
       ),
     },
@@ -521,7 +545,6 @@ const DocumentMaster = () => {
     },
   ];
   const [docOptions, setDocOptions] = React.useState([]);
- 
 
   // 3️⃣ When updating a record, remember its Id and then fetch the list
   // ✅ Load document by Id for editing
@@ -865,36 +888,44 @@ const DocumentMaster = () => {
       </Grid>
       <Grid container spacing={2} marginBottom={1} justifyContent="flex-end">
         <Grid textAlign={"end"} marginBottom={1}>
-          <Button
-            onClick={handleOnSave}
-            type="text"
-            size="medium"
-            sx={{
-              pr: 2,
-              mb: 0,
-              mt: 2,
-              color: "white",
-              background:
-                "linear-gradient(to right, rgb(0, 90, 91), rgb(22, 149, 153))",
-              borderRadius: "8px",
-              transition: "all 0.2s ease-in-out",
-              boxShadow: "0 4px 8px rgba(0, 90, 91, 0.3)",
-              "&:hover": {
-                transform: "translateY(2px)",
-                boxShadow: "0 2px 4px rgba(0, 90, 91, 0.2)",
-              },
-              "& .MuiButton-label": {
-                display: "flex",
-                alignItems: "center",
-              },
-              "& .MuiSvgIcon-root": {
-                marginRight: "10px",
-              },
-            }}
+          <Tooltip
+            title={!canAdd ? "You don't have Add permission" : ""}
+            placement="top"
           >
-            <AddIcon />
-            Add Document
-          </Button>
+            <span>
+              <Button
+                onClick={handleOnSave}
+                disabled={!canAdd}
+                type="text"
+                size="medium"
+                sx={{
+                  pr: 2,
+                  mb: 0,
+                  mt: 2,
+                  color: "white",
+                  background:
+                    "linear-gradient(to right, rgb(0, 90, 91), rgb(22, 149, 153))",
+                  borderRadius: "8px",
+                  transition: "all 0.2s ease-in-out",
+                  boxShadow: "0 4px 8px rgba(0, 90, 91, 0.3)",
+                  "&:hover": {
+                    transform: "translateY(2px)",
+                    boxShadow: "0 2px 4px rgba(0, 90, 91, 0.2)",
+                  },
+                  "& .MuiButton-label": {
+                    display: "flex",
+                    alignItems: "center",
+                  },
+                  "& .MuiSvgIcon-root": {
+                    marginRight: "10px",
+                  },
+                }}
+              >
+                <AddIcon />
+                Add Document
+              </Button>
+            </span>
+          </Tooltip>
         </Grid>
       </Grid>
       <Grid

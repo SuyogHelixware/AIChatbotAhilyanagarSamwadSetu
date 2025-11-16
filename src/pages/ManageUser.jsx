@@ -35,6 +35,7 @@ import Loader from "../components/Loader";
 // import CameraAltOutlinedIcon from "@mui/icons-material/CameraAltOutlined";
 import { useTheme } from "@mui/material/styles";
 import InputTextFieldNewUserMail from "../components/Component";
+import { useThemeMode } from "../Dashboard/Theme";
 
 export default function ManageUsers() {
   const { control, handleSubmit, getValues, reset } = useForm();
@@ -58,6 +59,12 @@ export default function ManageUsers() {
 
   const theme = useTheme();
   const firstLoad = React.useRef(true);
+    const { checkAccess } = useThemeMode();
+
+   
+  const canAdd = checkAccess(3, "IsAdd");
+     const canEdit = checkAccess(3, "IsEdit");
+    const canDelete= checkAccess(3, "IsDelete");
 
   const handleClickShowPassword = () => setShowPassword(!showPassword);
 
@@ -126,7 +133,7 @@ export default function ManageUsers() {
   //   setOpen(false);
   // };
 
-  const handleClick = async (row) => {
+  const handleUpdate = async (row) => {
     setSaveUpdateButton("UPDATE");
     setClearUpdateButton("RESET");
     setOn(true);
@@ -520,8 +527,16 @@ export default function ManageUsers() {
       sortable: false,
       renderCell: (params) => (
         <>
+         <Tooltip
+                title={!canEdit ? "You don't have Edit permission" : ""}
+                placement="top"
+              >
+                <span> 
           <IconButton
-            onClick={() => handleClick(params.row)}
+            onClick={() => handleUpdate(params.row)}
+            disabled={!canEdit}
+
+
             sx={{
               color: "rgb(0, 90, 91)", // Apply color to the icon
               "&:hover": {
@@ -531,6 +546,13 @@ export default function ManageUsers() {
           >
             <EditNoteIcon />
           </IconButton>
+          </span>
+          </Tooltip>
+          <Tooltip
+                  title={!canDelete ? "You don't have delete permission" : ""}
+                  placement="top"
+                >
+                  <span> 
           <IconButton
             sx={{
               "& .MuiButtonBase-root,": {
@@ -540,9 +562,14 @@ export default function ManageUsers() {
               color: "red",
             }}
             onClick={() => deluser(params.row.Id)}
+                        disabled={!canDelete}
+
           >
             <DeleteForeverIcon />
+
           </IconButton>
+          </span>
+          </Tooltip>
         </>
       ),
     },
@@ -1417,8 +1444,14 @@ export default function ManageUsers() {
         </Typography>
       </Grid>
       <Grid textAlign={"end"} marginBottom={1}>
+          <Tooltip 
+          title={!canAdd ? "You don't have Add permission" : ""} 
+          placement="top"
+        >
+          <span> 
         <Button
           onClick={handleOnSave}
+          disabled={!canAdd}
           type="text"
           size="medium"
           sx={{
@@ -1445,6 +1478,8 @@ export default function ManageUsers() {
           <AddIcon />
           Add User
         </Button>
+        </span>
+        </Tooltip>
       </Grid>
       <Paper
         sx={{

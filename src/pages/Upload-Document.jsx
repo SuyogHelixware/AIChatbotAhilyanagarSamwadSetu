@@ -56,12 +56,21 @@ const UploadDocument = () => {
   const [DeleteLineNums, setDeleteLineNums] = React.useState([]);
   const fileInputRef = React.useRef(null);
   const [isAddMissing, setIsAddMissing] = React.useState(false);
+  
 
   const firstLoad = React.useRef(true);
   const handleClose = () => setOn(false);
   const { userSession } = useThemeMode();
 
   const [subDocMap, setSubDocMap] = React.useState({});
+  const [isMobileDisabled, setIsMobileDisabled] = React.useState(false);
+
+
+  const { checkAccess } = useThemeMode();
+
+  const canAdd = checkAccess(9, "IsAdd");
+  const canEdit = checkAccess(9, "IsEdit");
+  const canDelete = checkAccess(9, "IsDelete");
 
   const initial = {
     Status: "1",
@@ -572,6 +581,7 @@ const UploadDocument = () => {
               fullWidth
               disabled={isDisabled}
               variant="standard"
+               
               MenuProps={{
                 PaperProps: {
                   style: { maxHeight: 200, overflowY: "auto" },
@@ -733,6 +743,38 @@ const UploadDocument = () => {
     : DocColumns.filter((col) => col.field !== "MissingDocs");
 
   const Maincolumns = [
+    // {
+    //   field: "actions",
+    //   headerName: "Action",
+    //   width: 150,
+    //   sortable: false,
+    //   renderCell: (params) => (
+    //     <strong>
+    //       <IconButton
+    //         color="primary"
+    //         onClick={() => handleUpdate(params.row)}
+    //         sx={{
+    //           color: "rgb(0, 90, 91)",
+    //           "&:hover": { backgroundColor: "rgba(0, 90, 91, 0.1)" },
+    //         }}
+    //       >
+    //         <EditNoteIcon />
+    //       </IconButton>
+    //       <IconButton
+    //         size="medium"
+    //         sx={{ color: "red" }}
+    //         onClick={() => handleDelete(params.row)}
+    //         disabled={
+    //           JSON.parse(sessionStorage.getItem("userData") || "{}")
+    //             ?.UserType?.trim()
+    //             .toUpperCase() !== "A"
+    //         }
+    //       >
+    //         <DeleteForeverIcon />
+    //       </IconButton>
+    //     </strong>
+    //   ),
+    // },
     {
       field: "actions",
       headerName: "Action",
@@ -740,31 +782,50 @@ const UploadDocument = () => {
       sortable: false,
       renderCell: (params) => (
         <strong>
-          <IconButton
-            color="primary"
-            onClick={() => handleUpdate(params.row)}
-            sx={{
-              color: "rgb(0, 90, 91)",
-              "&:hover": { backgroundColor: "rgba(0, 90, 91, 0.1)" },
-            }}
+          {/* ---- EDIT BUTTON ---- */}
+          <Tooltip
+            title={!canEdit ? "You don't have Edit permission" : ""}
+            placement="top"
           >
-            <EditNoteIcon />
-          </IconButton>
-          <IconButton
-            size="medium"
-            sx={{ color: "red" }}
-            onClick={() => handleDelete(params.row)}
-            disabled={
-              JSON.parse(sessionStorage.getItem("userData") || "{}")
-                ?.UserType?.trim()
-                .toUpperCase() !== "A"
-            }
+            <span>
+              <IconButton
+                color="primary"
+                onClick={() => handleUpdate(params.row)}
+                disabled={!canEdit}
+                sx={{
+                  color: canEdit ? "rgb(0, 90, 91)" : "grey",
+                  "&:hover": {
+                    backgroundColor: canEdit
+                      ? "rgba(0, 90, 91, 0.1)"
+                      : "transparent",
+                  },
+                }}
+              >
+                <EditNoteIcon />
+              </IconButton>
+            </span>
+          </Tooltip>
+
+          {/* ---- DELETE BUTTON ---- */}
+          <Tooltip
+            title={!canDelete ? "You don't have Delete permission" : ""}
+            placement="top"
           >
-            <DeleteForeverIcon />
-          </IconButton>
+            <span>
+              <IconButton
+                size="medium"
+                sx={{ color: canDelete ? "red" : "grey" }}
+                onClick={() => handleDelete(params.row)}
+                disabled={!canDelete}
+              >
+                <DeleteForeverIcon />
+              </IconButton>
+            </span>
+          </Tooltip>
         </strong>
       ),
     },
+
     { field: "id", headerName: "Sr.No", width: 80, sortable: true },
     {
       field: "Name",
@@ -868,6 +929,7 @@ const UploadDocument = () => {
     setClearUpdateButton("RESET");
     setOn(true);
     setIsAddMissing(false);
+setIsMobileDisabled(true);
 
     try {
       setLoading(true);
@@ -971,6 +1033,7 @@ const UploadDocument = () => {
 
   const clearFormData = () => {
     setRows([]);
+  setIsMobileDisabled(false);    
 
     if (ClearUpdateButton === "CLEAR") {
       reset({
@@ -1606,6 +1669,9 @@ const UploadDocument = () => {
       isDisabled: !isAllowed,
     };
   });
+
+
+  
   // =================== Username and CreatedBy are same in case Doc uploaded rows are enabled logic start ============================
   // const updatedRows = React.useMemo(() => {
   //     if (!userSession || !userSession.UserType) return rows;
@@ -1614,7 +1680,7 @@ const UploadDocument = () => {
   //     const currentUserType = userSession.UserType;
 
   //     return rows.map((row) => {
-  //       debugger
+        
 
   //       const createdBy = (row.CreatedBy || "").toString().trim();
   //       const current = currentUser.toString().trim();
@@ -1741,6 +1807,8 @@ const UploadDocument = () => {
                     {...field}
                     label=" ENTER MOBILE NO"
                     // fullWidth
+                      disabled={isMobileDisabled}    
+
                     size="small"
                     error={!!fieldState.error}
                     helperText={fieldState.error?.message}
@@ -2007,34 +2075,42 @@ const UploadDocument = () => {
         </Typography>
       </Grid>
       <Grid container xs={12} md={12} lg={12} justifyContent="flex-end">
-        <Button
-          onClick={handleOnSave}
-          type="text"
-          size="medium"
-          sx={{
-            pr: 2,
-            color: "white",
-            background:
-              "linear-gradient(to right, rgb(0, 90, 91), rgb(22, 149, 153))",
-            borderRadius: "8px",
-            transition: "all 0.2s ease-in-out",
-            boxShadow: "0 4px 8px rgba(0, 90, 91, 0.3)",
-            "&:hover": {
-              transform: "translateY(2px)",
-              boxShadow: "0 2px 4px rgba(0, 90, 91, 0.2)",
-            },
-            "& .MuiButton-label": {
-              display: "flex",
-              alignItems: "center",
-            },
-            "& .MuiSvgIcon-root": {
-              marginRight: "10px",
-            },
-          }}
+        <Tooltip
+          title={!canAdd ? "You don't have Add permission" : ""}
+          placement="top"
         >
-          <AddIcon />
-          Add Document
-        </Button>
+          <span>
+            <Button
+              onClick={handleOnSave}
+              disabled={!canAdd}
+              type="text"
+              size="medium"
+              sx={{
+                pr: 2,
+                color: "white",
+                background:
+                  "linear-gradient(to right, rgb(0, 90, 91), rgb(22, 149, 153))",
+                borderRadius: "8px",
+                transition: "all 0.2s ease-in-out",
+                boxShadow: "0 4px 8px rgba(0, 90, 91, 0.3)",
+                "&:hover": {
+                  transform: "translateY(2px)",
+                  boxShadow: "0 2px 4px rgba(0, 90, 91, 0.2)",
+                },
+                "& .MuiButton-label": {
+                  display: "flex",
+                  alignItems: "center",
+                },
+                "& .MuiSvgIcon-root": {
+                  marginRight: "10px",
+                },
+              }}
+            >
+              <AddIcon />
+              Add Document
+            </Button>
+          </span>
+        </Tooltip>
       </Grid>
       <Grid
         container

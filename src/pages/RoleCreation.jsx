@@ -33,6 +33,7 @@ import { BASE_URL } from "../Constant";
 import MenuWithOneCollapse from "../components/MenuWithOneCollapse";
 import CollapsibleMenuGrid from "../components/MenuWithOneCollapse";
 import { KeyboardArrowDown, KeyboardArrowRight } from "@mui/icons-material";
+import { useThemeMode } from "../Dashboard/Theme";
 
 const RoleCreation = () => {
   const [loaderOpen, setLoaderOpen] = React.useState(false);
@@ -52,9 +53,17 @@ const RoleCreation = () => {
   const [selectedIds, setSelectedIds] = React.useState([]);
 
   // const handleOpenMenu = () => setOpenMenu(true);
-  const [pickerInitialSelectedIds, setPickerInitialSelectedIds] = React.useState([]);
-const [pickerDisabledSubmenuIds, setPickerDisabledSubmenuIds] = React.useState([]);
-  
+  const [pickerInitialSelectedIds, setPickerInitialSelectedIds] =
+    React.useState([]);
+  const [pickerDisabledSubmenuIds, setPickerDisabledSubmenuIds] =
+    React.useState([]);
+
+  const { checkAccess } = useThemeMode();
+
+  const canAdd = checkAccess(12, "IsAdd");
+  const canEdit = checkAccess(12, "IsEdit");
+  const canDelete = checkAccess(12, "IsDelete");
+
   const handleCloseMenu = () => setOpenMenu(false);
   const firstLoad = React.useRef(true);
   const [MenuList, setMenuList] = React.useState([]);
@@ -100,7 +109,7 @@ const [pickerDisabledSubmenuIds, setPickerDisabledSubmenuIds] = React.useState([
     },
   ]);
 
-   const RoleCrationColumns = [
+  const RoleCrationColumns = [
     {
       field: "srNo",
       headerName: "SR NO",
@@ -166,7 +175,6 @@ const [pickerDisabledSubmenuIds, setPickerDisabledSubmenuIds] = React.useState([
             fontWeight: params.row.isChild ? 350 : 450,
           }}
         >
-        
           {params.row.isChild
             ? `↳ ${params.row.Name}`
             : [
@@ -338,28 +346,47 @@ const [pickerDisabledSubmenuIds, setPickerDisabledSubmenuIds] = React.useState([
       sortable: false,
       renderCell: (params) => (
         <strong>
-          <IconButton
-            color="primary"
-            onClick={() => handleUpdate(params.row)}
-            sx={{
-              color: "rgb(0, 90, 91)",
-              "&:hover": { backgroundColor: "rgba(0, 90, 91, 0.1)" },
-            }}
+          <Tooltip
+            title={!canEdit ? "You don't have Edit permission" : ""}
+            placement="top"
           >
-            <EditNoteIcon />
-          </IconButton>
-          <IconButton
-            size="medium"
-            sx={{ color: "red" }}
-            onClick={() => handleDelete(params.row)}
-            disabled={
-              JSON.parse(sessionStorage.getItem("userData") || "{}")
-                ?.UserType?.trim()
-                .toUpperCase() !== "A"
-            }
+            <span>
+              <IconButton
+                color="primary"
+                onClick={() => handleUpdate(params.row)}
+                            disabled={!canEdit}
+
+                sx={{
+                  color: "rgb(0, 90, 91)",
+                  "&:hover": { backgroundColor: "rgba(0, 90, 91, 0.1)" },
+                }}
+              >
+                <EditNoteIcon />
+              </IconButton>
+            </span>
+          </Tooltip>
+
+          <Tooltip
+            title={!canDelete ? "You don't have Delete permission" : ""}
+            placement="top"
           >
-            <DeleteForeverIcon />
-          </IconButton>
+            <span>
+              <IconButton
+                size="medium"
+                sx={{ color: "red" }}
+                onClick={() => handleDelete(params.row)}
+                            disabled={!canDelete}
+
+                // disabled={
+                //   JSON.parse(sessionStorage.getItem("userData") || "{}")
+                //     ?.UserType?.trim()
+                //     .toUpperCase() !== "A"
+                // }
+              >
+                <DeleteForeverIcon />
+              </IconButton>
+            </span>
+          </Tooltip>
         </strong>
       ),
     },
@@ -502,46 +529,46 @@ const [pickerDisabledSubmenuIds, setPickerDisabledSubmenuIds] = React.useState([
   //   setRoleTableData((prev) => prev.filter((r) => r.id !== displayId));
   // };
   const handleRemove = (displayRow) => {
-  const displayId = displayRow.id;
+    const displayId = displayRow.id;
 
-  // --- If it's a child row ---
-  if (typeof displayId === "string" && displayId.includes("-child-")) {
-    const [parentIdStr, childIdxStr] = displayId.split("-child-");
-    const parentId = Number(parentIdStr);
-    const childIndex = Number(childIdxStr);
+    // --- If it's a child row ---
+    if (typeof displayId === "string" && displayId.includes("-child-")) {
+      const [parentIdStr, childIdxStr] = displayId.split("-child-");
+      const parentId = Number(parentIdStr);
+      const childIndex = Number(childIdxStr);
 
-    setRoleTableData((prev) => {
-      // 1️⃣ Update parent’s internal array
-      const updatedData = prev.map((row) => {
-        if (String(row.id) !== String(parentId)) return row;
+      setRoleTableData((prev) => {
+        // 1️⃣ Update parent’s internal array
+        const updatedData = prev.map((row) => {
+          if (String(row.id) !== String(parentId)) return row;
 
-        const updatedChildren = Array.isArray(row.oSubMenusSpeAccess)
-          ? row.oSubMenusSpeAccess.filter((_, i) => i !== childIndex)
-          : [];
+          const updatedChildren = Array.isArray(row.oSubMenusSpeAccess)
+            ? row.oSubMenusSpeAccess.filter((_, i) => i !== childIndex)
+            : [];
 
-        return { ...row, oSubMenusSpeAccess: updatedChildren };
+          return { ...row, oSubMenusSpeAccess: updatedChildren };
+        });
+
+        // 2️⃣ Remove the child’s flattened row from DataGrid
+        const filtered = updatedData.filter(
+          (r) => String(r.id) !== displayId // remove this exact flattened child row
+        );
+
+        return filtered;
       });
 
-      // 2️⃣ Remove the child’s flattened row from DataGrid
-      const filtered = updatedData.filter(
-        (r) => String(r.id) !== displayId // remove this exact flattened child row
-      );
+      return;
+    }
 
-      return filtered;
-    });
-
-    return;
-  }
-
-  // --- If it's a parent row ---
-  setRoleTableData((prev) =>
-    prev.filter(
-      (r) =>
-        String(r.id) !== String(displayId) && // remove parent itself
-        !String(r.id).startsWith(`${displayId}-child-`) // also remove all its children
-    )
-  );
-};
+    // --- If it's a parent row ---
+    setRoleTableData((prev) =>
+      prev.filter(
+        (r) =>
+          String(r.id) !== String(displayId) && // remove parent itself
+          !String(r.id).startsWith(`${displayId}-child-`) // also remove all its children
+      )
+    );
+  };
 
   const handleDelete = async (rowData) => {
     Swal.fire({
@@ -621,11 +648,10 @@ const [pickerDisabledSubmenuIds, setPickerDisabledSubmenuIds] = React.useState([
         const olddata = response.data.values;
 
         originalDataRef.current = olddata;
-         const formattedLines = Array.isArray(olddata.oLines)
+        const formattedLines = Array.isArray(olddata.oLines)
           ? olddata.oLines.map((line, index) => ({
               ...line,
               id: line.MenuId || `${olddata.Id}-${index}-${Date.now()}`,
-
 
               Name: `${line.ParentMenu || ""} - ${line.MenuName || ""}`.trim(),
 
@@ -705,77 +731,79 @@ const [pickerDisabledSubmenuIds, setPickerDisabledSubmenuIds] = React.useState([
   //   }
   // };
 
-const clearFormData = () => {
-  setRoleTableData([]);
+  const clearFormData = () => {
+    setRoleTableData([]);
 
-  if (ClearUpdateButton === "CLEAR") {
-    reset({
-      Status: 1,
-      RoleName: "",
-      oLines: [],
-    });
-    return;
-  }
-
-  if (ClearUpdateButton === "RESET") {
-    if (originalDataRef.current) {
-      const resetData = { ...originalDataRef.current };
-
-      // Remove +91 from MobileNo if it exists
-      if (resetData.MobileNo && resetData.MobileNo.startsWith("+91")) {
-        resetData.MobileNo = resetData.MobileNo.slice(3);
-      }
-
-      // Reset the form
-      reset(resetData);
-
-      // Rebuild datagrid rows (parent + children)
-      if (Array.isArray(resetData.oLines)) {
-        const formattedLines = [];
-
-        resetData.oLines.forEach((line, index) => {
-          // --- parent row ---
-          const parentRow = {
-            ...line,
-            id: line.LineNum ?? index,
-            isChild: false,
-            ParentMenuName: line.ParentMenu ?? "",
-            SubMenuName: line.MenuName ?? "",
-            Name: line.MenuName ?? "",
-          };
-
-          formattedLines.push(parentRow);
-
-          // --- child rows (oSpecialAccess) ---
-          if (Array.isArray(line.oSpecialAccess) && line.oSpecialAccess.length) {
-            line.oSpecialAccess.forEach((child, cIndex) => {
-              formattedLines.push({
-                ...child,
-                id: `${line.LineNum}-child-${cIndex}`,
-                isChild: true,
-                ParentMenuName: line.ParentMenu ?? "",
-                SubMenuName: line.MenuName ?? "",
-                Name: child.MenuName ?? "",
-              });
-            });
-          }
-        });
-
-        setRoleTableData(formattedLines);
-      } else {
-        setRoleTableData([]);
-      }
-    } else {
+    if (ClearUpdateButton === "CLEAR") {
       reset({
         Status: 1,
         RoleName: "",
         oLines: [],
       });
-      setRoleTableData([]);
+      return;
     }
-  }
-};
 
+    if (ClearUpdateButton === "RESET") {
+      if (originalDataRef.current) {
+        const resetData = { ...originalDataRef.current };
+
+        // Remove +91 from MobileNo if it exists
+        if (resetData.MobileNo && resetData.MobileNo.startsWith("+91")) {
+          resetData.MobileNo = resetData.MobileNo.slice(3);
+        }
+
+        // Reset the form
+        reset(resetData);
+
+        // Rebuild datagrid rows (parent + children)
+        if (Array.isArray(resetData.oLines)) {
+          const formattedLines = [];
+
+          resetData.oLines.forEach((line, index) => {
+            // --- parent row ---
+            const parentRow = {
+              ...line,
+              id: line.LineNum ?? index,
+              isChild: false,
+              ParentMenuName: line.ParentMenu ?? "",
+              SubMenuName: line.MenuName ?? "",
+              Name: line.MenuName ?? "",
+            };
+
+            formattedLines.push(parentRow);
+
+            // --- child rows (oSpecialAccess) ---
+            if (
+              Array.isArray(line.oSpecialAccess) &&
+              line.oSpecialAccess.length
+            ) {
+              line.oSpecialAccess.forEach((child, cIndex) => {
+                formattedLines.push({
+                  ...child,
+                  id: `${line.LineNum}-child-${cIndex}`,
+                  isChild: true,
+                  ParentMenuName: line.ParentMenu ?? "",
+                  SubMenuName: line.MenuName ?? "",
+                  Name: child.MenuName ?? "",
+                });
+              });
+            }
+          });
+
+          setRoleTableData(formattedLines);
+        } else {
+          setRoleTableData([]);
+        }
+      } else {
+        reset({
+          Status: 1,
+          RoleName: "",
+          oLines: [],
+        });
+        setRoleTableData([]);
+      }
+    }
+  };
 
   const handleOnSave = () => {
     setSaveUpdateButton("SAVE");
@@ -804,7 +832,7 @@ const clearFormData = () => {
       });
       return;
     }
- 
+
     const payload = {
       Id: data.Id || 0,
       CreatedBy: sessionStorage.getItem("userId") || "",
@@ -812,7 +840,7 @@ const clearFormData = () => {
       ModifiedBy: sessionStorage.getItem("userId") || "",
       ModifiedDate: dayjs().format("YYYY-MM-DDTHH:mm:ss.SSS"),
       Status: data.Status === false ? 0 : 1,
-      
+
       RoleName: data.RoleName || "",
       Remarks: data.Remarks || "",
       oLines: RoleTableData.map((row, index) => ({
@@ -940,44 +968,46 @@ const clearFormData = () => {
   //   setOpenMenu(false);
   // };
   const handleSelectedMenus = () => {
-  if (!Array.isArray(selectedIds) || selectedIds.length === 0) return;
+    if (!Array.isArray(selectedIds) || selectedIds.length === 0) return;
 
-  const existingSubMenus = new Set(
-    (RoleTableData || []).map((r) => Number(r.SubMenuId))
-  );
+    const existingSubMenus = new Set(
+      (RoleTableData || []).map((r) => Number(r.SubMenuId))
+    );
 
-  const selectedData = [];
+    const selectedData = [];
 
-  MenuList.forEach((menu) => {
-    (menu.oSubMenus || []).forEach((sub) => {
-      if (selectedIds.includes(sub.id) && !existingSubMenus.has(sub.LineNum)) {
-        const filteredAccess = (sub.oSubMenusSpeAccess || []).filter((acc) =>
-          selectedIds.includes(`${sub.id}_${acc.LineNum}`)
-        );
+    MenuList.forEach((menu) => {
+      (menu.oSubMenus || []).forEach((sub) => {
+        if (
+          selectedIds.includes(sub.id) &&
+          !existingSubMenus.has(sub.LineNum)
+        ) {
+          const filteredAccess = (sub.oSubMenusSpeAccess || []).filter((acc) =>
+            selectedIds.includes(`${sub.id}_${acc.LineNum}`)
+          );
 
-        selectedData.push({
-          id: `${sub.id}_${Date.now()}`,
-          ParentMenuId: menu.Id,
-          ParentMenuName: menu.Name,
-          SubMenuId: sub.LineNum,
-          SubMenuName: sub.Name,
-          IsRead: true,
-          IsAdd: true,
-          IsEdit: true,
-          IsDelete: true,
-          oSubMenusSpeAccess: filteredAccess.map((acc) => ({
-            ...acc,
-            isChild: true,
-          })),
-        });
-      }
+          selectedData.push({
+            id: `${sub.id}_${Date.now()}`,
+            ParentMenuId: menu.Id,
+            ParentMenuName: menu.Name,
+            SubMenuId: sub.LineNum,
+            SubMenuName: sub.Name,
+            IsRead: true,
+            IsAdd: true,
+            IsEdit: true,
+            IsDelete: true,
+            oSubMenusSpeAccess: filteredAccess.map((acc) => ({
+              ...acc,
+              isChild: true,
+            })),
+          });
+        }
+      });
     });
-  });
 
-  setRoleTableData((prev) => [...prev, ...selectedData]);
-  setOpenMenu(false);
-};
-
+    setRoleTableData((prev) => [...prev, ...selectedData]);
+    setOpenMenu(false);
+  };
 
   const handleMenusList = async (params = {}) => {
     setLoading(true);
@@ -1091,53 +1121,54 @@ const clearFormData = () => {
   });
 
   const handleOpenMenu = () => {
-  const { initialSelectedIds, disabledSubmenuIds } = prepareExistingMenus(RoleTableData);
-  setPickerInitialSelectedIds(initialSelectedIds);
-  setPickerDisabledSubmenuIds(disabledSubmenuIds);
-  setOpenMenu(true);
-};
+    const { initialSelectedIds, disabledSubmenuIds } =
+      prepareExistingMenus(RoleTableData);
+    setPickerInitialSelectedIds(initialSelectedIds);
+    setPickerDisabledSubmenuIds(disabledSubmenuIds);
+    setOpenMenu(true);
+  };
 
   const prepareExistingMenus = (roleTableData) => {
-  const selectedIds = new Set();
-  const disabledSubMenus = new Set();
+    const selectedIds = new Set();
+    const disabledSubMenus = new Set();
 
-  roleTableData.forEach((row) => {
-    // For parent/submenu rows
-    if (row.SubMenuId) {
-      disabledSubMenus.add(Number(row.SubMenuId)); // used for disabling submenu checkbox
-      selectedIds.add(row.SubMenuId); // used for marking selected
-    }
+    roleTableData.forEach((row) => {
+      // For parent/submenu rows
+      if (row.SubMenuId) {
+        disabledSubMenus.add(Number(row.SubMenuId)); // used for disabling submenu checkbox
+        selectedIds.add(row.SubMenuId); // used for marking selected
+      }
 
-    // For child special access
-    if (Array.isArray(row.oSubMenusSpeAccess)) {
-      row.oSubMenusSpeAccess.forEach((acc) => {
-        const accessId = `${row.SubMenuId}_${acc.LineNum}`;
-        selectedIds.add(accessId);
-      });
-    }
-  });
+      // For child special access
+      if (Array.isArray(row.oSubMenusSpeAccess)) {
+        row.oSubMenusSpeAccess.forEach((acc) => {
+          const accessId = `${row.SubMenuId}_${acc.LineNum}`;
+          selectedIds.add(accessId);
+        });
+      }
+    });
 
-  return {
-    initialSelectedIds: Array.from(selectedIds),
-    disabledSubmenuIds: Array.from(disabledSubMenus),
+    return {
+      initialSelectedIds: Array.from(selectedIds),
+      disabledSubmenuIds: Array.from(disabledSubMenus),
+    };
   };
-};
 
   return (
     <>
       <Dialog open={openMenu} onClose={handleCloseMenu} fullWidth maxWidth="md">
         {/* <DialogTitle>Menu Activity</DialogTitle> */}
-         <Grid
-              item
-              xs={12}
-              sx={{ display: "flex", justifyContent: "space-between" }}
-            >
-              <DialogTitle>ROLE CREATION</DialogTitle> 
-              {/* <Typography fontWeight="bold"> ROLE CREATION</Typography> */}
-              <IconButton onClick={handleCloseMenu}>
-                <CloseIcon /> 
-              </IconButton>
-            </Grid>
+        <Grid
+          item
+          xs={12}
+          sx={{ display: "flex", justifyContent: "space-between" }}
+        >
+          <DialogTitle>ROLE CREATION</DialogTitle>
+          {/* <Typography fontWeight="bold"> ROLE CREATION</Typography> */}
+          <IconButton onClick={handleCloseMenu}>
+            <CloseIcon />
+          </IconButton>
+        </Grid>
 
         <DialogContent dividers>
           <div style={{ height: 550, width: "100%" }}>
@@ -1162,8 +1193,8 @@ const clearFormData = () => {
               //       .map((r) => r.SubMenuId)
               //   ),
               // ]}
-   initialSelectedIds={pickerInitialSelectedIds}
-  disabledSubmenuIds={pickerDisabledSubmenuIds}
+              initialSelectedIds={pickerInitialSelectedIds}
+              disabledSubmenuIds={pickerDisabledSubmenuIds}
             />
           </div>
         </DialogContent>
@@ -1472,8 +1503,15 @@ const clearFormData = () => {
         </Typography>
       </Grid>
       <Grid container xs={12} md={12} lg={12} justifyContent="flex-end">
+      <Tooltip 
+      title={!canAdd ? "You don't have Add permission" : ""} 
+      placement="top"
+    >
+      <span> 
         <Button
           onClick={handleOnSave}
+                               disabled={!canAdd}
+
           type="text"
           size="medium"
           sx={{
@@ -1500,6 +1538,8 @@ const clearFormData = () => {
           <AddIcon />
           Add Role
         </Button>
+        </span>
+        </Tooltip>
       </Grid>
       <Grid
         container

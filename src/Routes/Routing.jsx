@@ -25,35 +25,131 @@ import RoleCreation from "../pages/RoleCreation";
 
 import SanjayGandhi from "../pages/SanjavGandhi/SanjayGandhi";
 import Rehabilitation from "../pages/Rehabilitation/Rehabilitation";
+import { useThemeMode } from "../Dashboard/Theme";
+import ProtectedRoute from "./ProtectedRoute";
 
 export default function Routing() {
+  const { roleAccess } = useThemeMode();
+
   return (
     <>
       <BrowserRouter>
         <Routes>
           <Route path="/" element={<Signin />} />
-          <Route path="forgot-password" element={<ForgotPassword />} />{" "}
+          <Route path="forgot-password" element={<ForgotPassword />} />
           {/* 👈 Add this route */}
           <Route path="dashboard" element={<Dashboard />}>
             <Route path="home" element={<Home />} />
-            <Route path="manage-user" element={<ManageUser />} />
-            <Route path="RoleCreation" element={<RoleCreation />} />
-            <Route path="department" element={<Department />} />
-            <Route path="Services" element={<Services />} />
-            <Route path="OfflineServices" element={<OfflineServices />} />
-            <Route path="DocumentMaster" element={<DocumentMaster />} />
+            {/* <Route
+              path="home"
+              element={
+                <ProtectedRoute menuId={1} roleAccess={roleAccess}>
+                  <Home />
+                </ProtectedRoute>
+              }
+            /> */}
+
+            {/* <Route path="manage-user" element={<ManageUser />} /> */}
+            <Route
+              path="manage-user"
+              element={
+                <ProtectedRoute menuId={3} roleAccess={roleAccess}>
+                  <ManageUser />
+                </ProtectedRoute>
+              }
+            />
+            {/* <Route path="RoleCreation" element={<RoleCreation />} /> */}
+            <Route
+              path="RoleCreation"
+              element={
+                <ProtectedRoute menuId={12} roleAccess={roleAccess}>
+                  <RoleCreation />
+                </ProtectedRoute>
+              }
+            />
+            {/* <Route path="department" element={<Department />} /> */}
+            <Route
+              path="department"
+              element={
+                <ProtectedRoute menuId={6} roleAccess={roleAccess}>
+                  <Department />
+                </ProtectedRoute>
+              }
+            />
+            {/* <Route path="Services" element={<Services />} /> */}
+            <Route
+              path="Services"
+              element={
+                <ProtectedRoute menuId={7} roleAccess={roleAccess}>
+                  <Services />
+                </ProtectedRoute>
+              }
+            />
+            {/* <Route path="OfflineServices" element={<OfflineServices />} /> */}
+            <Route
+              path="OfflineServices"
+              element={
+                <ProtectedRoute menuId={8} roleAccess={roleAccess}>
+                  <OfflineServices />
+                </ProtectedRoute>
+              }
+            />
+            {/* <Route path="DocumentMaster" element={<DocumentMaster />} /> */}
+            <Route
+              path="DocumentMaster"
+              element={
+                <ProtectedRoute menuId={5} roleAccess={roleAccess}>
+                  <DocumentMaster />
+                </ProtectedRoute>
+              }
+            />
             {/* <Route path="ManageDocumentsPage" element={<ManageDocumentsPage />} /> */}
-            <Route path="EmailSetup" element={<EmailSetup />} />
-            <Route path="Gazetted-Master" element={<GazettedMaster />} />
-            <Route path="Upload-Document" element={<UploadDocument />} />
-            <Route path="Report" element={<Report />} />
-                        <Route path="SanjayGandhi" element={<SanjayGandhi />} />
-                        <Route path="Rehabilitation" element={<Rehabilitation />} />
-
-
-
-            <Route path="SanjayGandhi" element={<SanjayGandhi />} />
-            <Route path="Rehabilitation" element={<Rehabilitation />} />
+            {/* <Route path="EmailSetup" element={<EmailSetup />} /> */}
+            <Route
+              path="EmailSetup"
+              element={
+                <ProtectedRoute menuId={2} roleAccess={roleAccess}>
+                  <EmailSetup />
+                </ProtectedRoute>
+              }
+            />
+            {/* <Route path="Gazetted-Master" element={<GazettedMaster />} /> */}
+            <Route
+              path="Gazetted-Master"
+              element={
+                <ProtectedRoute menuId={4} roleAccess={roleAccess}>
+                  <GazettedMaster />
+                </ProtectedRoute>
+              }
+            />
+            {/* <Route path="Upload-Document" element={<UploadDocument />} /> */}
+            {/* <Route path="Report" element={<Report />} /> */}
+            <Route
+              path="Upload-Document"
+              element={
+                <ProtectedRoute menuId={9} roleAccess={roleAccess}>
+                  <UploadDocument />
+                </ProtectedRoute>
+              }
+            />
+            <Route
+              path="SanjayGandhi"
+              element={
+                <ProtectedRoute menuId={10} roleAccess={roleAccess}>
+                  <SanjayGandhi />
+                </ProtectedRoute>
+              }
+            />
+            {/* <Route path="SanjayGandhi" element={<SanjayGandhi />} /> */}
+            <Route
+              path="Rehabilitation"
+              element={
+                <ProtectedRoute menuId={11} roleAccess={roleAccess}>
+                  <Rehabilitation />
+                </ProtectedRoute>
+              }
+            />
+            {/* <Route path="Rehabilitation" element={<Rehabilitation />} /> */}
           </Route>
           {/* <Route path="/dashboard/special" element={<SpecialLayout />}> */}
           <Route path="LoginPage1" element={<LoginPage1 />} />

@@ -194,81 +194,7 @@ export default function Dashboard() {
     Avatar: "",
     _id: "",
   });
-  // const allMenus = [
-  //   {
-  //     label: "Dashboard",
-  //     icon: <DashboardIcon />,
-  //     path: "home",
-  //     allowed: ["A", "U"],
-  //   },
-  //   {
-  //     label: "User", 
-  //     icon: <GroupIcon />,
-  //     path: "manage-user",
-  //     allowed: ["A"],
-  //   },
-  //   {
-  //     label: "Role Creation",
-  //     icon: <ManageAccountsIcon />,
-  //     path: "RoleCreation",
-  //     allowed: ["A"],
-  //   },
-  //   //   {
-  //   //   label: "Department",
-  //   //   icon: <BusinessIcon />,
-  //   //   path: "department",
-  //   //   allowed: ["A"],
-  //   // },
-  //   //  {
-  //   //   label: "Services",
-  //   //   icon: <SmartphoneIcon />,
-  //   //   path: "Services",
-  //   //   allowed: ["A"],
-  //   // },
-  //   //  {
-  //   //   label: "Offline Services",
-  //   //   icon: <MiscellaneousServicesIcon />,
-  //   //   path: "OfflineServices",
-  //   //   allowed: ["A"],
-  //   // },
-  //   //  {
-  //   //   label: "Email Configuration",
-  //   //   icon: <EmailIcon />,
-  //   //   path: "EmailSetup",
-  //   //   allowed: ["A"],
-  //   // },
-    
-  //   {
-  //     label: "Documents Master",
-  //     icon: <DescriptionIcon />,
-  //     path: "DocumentMaster",
-  //     allowed: ["A"],
-  //   },
-  //   {
-  //     label: "Gazetted Master",
-  //     icon: <ChecklistIcon />,
-  //     path: "Gazetted-Master",
-  //     allowed: ["A"],
-  //   },
-  //   {
-  //     label: "Upload Documents",
-  //     icon: <DriveFolderUploadIcon />,
-  //     path: "Upload-Document",
-  //     allowed: ["A", "U"],
-  //   },
-  //       {
-  //     label: "SanjayGandhi",
-  //     icon: <MarkChatReadIcon />,
-  //     path: "SanjayGandhi",
-  //     allowed: ["A"],
-  //   },
-  //   {
-  //     label: "Rehabilitation",
-  //     icon: <CorporateFareIcon />,
-  //     path: "Rehabilitation",
-  //     allowed: ["A", "U"],
-  //   },
-  // ];
+   
 //   const allMenus = [
 //     {
 //       label: "Dashboard",
@@ -544,11 +470,9 @@ const allMenus = [
 
     const visibleMenus = React.useMemo(() => {
     if (!Array.isArray(roleAccess) || roleAccess.length === 0) return [];
-
     const allowedMenuIds = roleAccess
       .filter((item) => item.IsRead)
       .map((item) => item.MenuId);
-
     return allMenus.filter((menu) => allowedMenuIds.includes(menu.menuId));
   }, [roleAccess]);
   // ===(below logic are if menuId not present in case visible menu)=======(Above logic if menuId not present to not visible all user this menu)===============

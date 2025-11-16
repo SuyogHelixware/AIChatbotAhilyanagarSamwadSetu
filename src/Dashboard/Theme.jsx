@@ -42,6 +42,9 @@ export const ModeContextProvider = ({ children }) => {
   const SECRET_KEY =
     process.env.REACT_APP_SECRET_KEY || "YourStrongSecretKey123!";
 
+  const SECRET_KEYU =
+    process.env.REACT_APP_SECRET_KEY || "KT@12345_MY_SECRET_KEY";
+
   const loadRoleAccess = () => {
     try {
       const encrypted = sessionStorage.getItem("RoleDetails");
@@ -64,6 +67,28 @@ export const ModeContextProvider = ({ children }) => {
     CreatedBy: "",
   });
   const storedUser = JSON.parse(sessionStorage.getItem("userData") || "{}");
+
+  // const encrypted = sessionStorage.getItem("userData");
+
+  // let storedUser = {};
+
+  // if (encrypted) {
+  //   try {
+  //     const bytes = CryptoJS.AES.decrypt(encrypted, SECRET_KEYU);
+
+  //     // Convert decrypted bytes to UTF-8 string
+  //     const decryptedString = bytes.toString(CryptoJS.enc.Utf8);
+
+  //     if (decryptedString && decryptedString.trim() !== "") {
+  //       storedUser = JSON.parse(decryptedString);
+  //     } else {
+  //       console.error("❌ SECRET_KEY incorrect OR encrypted data invalid");
+  //     }
+  //   } catch (err) {
+  //     console.error("❌ Failed to decrypt userData:", err);
+  //   }
+  //   console.log("Decrypted String:", decryptedString);
+  // }
 
   useEffect(() => {
     const userId = storedUser.Username;

@@ -28,69 +28,7 @@ const Signin = () => {
   const { refreshRoleAccess } = useThemeMode();
 
   const SECRET_KEY = "YourStrongSecretKey123!";
-
-  const handleSubmit = async () => {
-    // try {
-    //   const body = {
-    //     Username: userId,
-    //     Password: password,
-    //   };
-    //   setLoading(true);
-    //   axios
-    //     .post(`${BASE_URL}Login`, body)
-    //     .then((res) => {
-    //       if (res.data.success === true) {
-
-    //         const data = res.data.values;
-    //         const userData = {
-
-    //           Name: ` ${data.FirstName} ${data.LastName}`,
-    //           Username: data.Username,
-    //           Address: data.Address,
-    //           Email: data.Email,
-    //           Phone: data.Phone,
-    //           UserType: data.UserType,
-    //           GazOfficer: data.GazOfficer,
-    //           BloodGroup: data.BloodGroup,
-    //           Avatar: data.Avatar,
-    //           _id: data._id,
-    //           Token: data.Token,
-    //         };
-    //         sessionStorage.setItem("userId", userData.Username);
-
-    //         sessionStorage.setItem("userData", JSON.stringify(userData));
-
-    //         Swal.fire({
-    //           position: "top-end",
-    //           toast: true,
-    //           title: "Login Success",
-    //           showConfirmButton: false,
-    //           timer: 1500,
-    //           icon: "success",
-    //         });
-
-    //         // Wait briefly to show loader, then navigate
-    //         setTimeout(() => {
-    //           navigate("/dashboard/home");
-    //         }, 1000);
-    //       } else {
-    //         setLoading(false);
-    //         Swal.fire({
-    //           position: "top-end",
-    //           icon: "error",
-    //           toast: true,
-    //           title: "Invalid username or password",
-    //           showConfirmButton: false,
-    //           timer: 1500,
-    //         });
-    //       }
-    //     })
-    //     .catch((e) => {
-    //       setLoading(false);
-    //       console.log(e);
-    //     });
-    // }
-
+   const handleSubmit = async () => {
     try {
       const body = {
         Username: userId,
@@ -102,7 +40,6 @@ const Signin = () => {
         .post(`${BASE_URL}Login`, body)
 
         .then(async (res) => {
- 
           if (res.data.success === true) {
             const data = res.data.values;
 
@@ -123,7 +60,6 @@ const Signin = () => {
             // Save basic user info
             console.log("tt==+++++++++===", userData);
             sessionStorage.setItem("BearerTokan", res.headers.authorization);
-
             sessionStorage.setItem("userId", userData.Username);
             sessionStorage.setItem("userData", JSON.stringify(userData));
             refreshUserSession();

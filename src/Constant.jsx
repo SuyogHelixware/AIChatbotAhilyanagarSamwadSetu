@@ -2,14 +2,14 @@
 
 // =============================================
 // local IP
-export const BASE_URL = "http://hwaceri5:8077/api/";
+// export const BASE_URL = "http://hwaceri5:8077/api/";
 
 // VPS Server URI below
 // export const BASE_URL = "http://srv957718.hstgr.cloud:8072/api/";
 
 
 // hostiger URl
-//  export const BASE_URL = "https://portalapp.ahilyanagarsamwadsetu.com/api/";
+ export const BASE_URL = "https://portalapp.ahilyanagarsamwadsetu.com/api/";
 
 
 // HTTPS IP below

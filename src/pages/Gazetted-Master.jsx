@@ -31,14 +31,19 @@ const GazettedMaster = () => {
   const [currentPage, setCurrentPage] = React.useState(0);
   const [loading, setLoading] = React.useState(false);
   const [searchText, setSearchText] = React.useState("");
-  // const limit = 20; 
+  // const limit = 20;
   const originalDataRef = React.useRef(null);
   const firstLoad = React.useRef(true);
-const [totalRows, setTotalRows] = React.useState(0);
-const [limit, setLimit] = React.useState(20);
+  const [totalRows, setTotalRows] = React.useState(0);
+  const [limit, setLimit] = React.useState(20);
 
-   const {
-    
+  const { checkAccess } = useThemeMode();
+
+  const canAdd = checkAccess(4, "IsAdd");
+  const canEdit = checkAccess(4, "IsEdit");
+  const canDelete = checkAccess(4, "IsDelete");
+
+  const {
     handleSubmit,
     control,
     setValue,
@@ -65,7 +70,6 @@ const [limit, setLimit] = React.useState(20);
   const handleClose = () => setOn(false);
 
   const handleOnSave = () => {
-    
     setSaveUpdateButton("SAVE");
     setClearUpdateButton("CLEAR");
     clearFormData();
@@ -76,11 +80,11 @@ const [limit, setLimit] = React.useState(20);
   const handleSubmitForm = async (formData) => {
     try {
       const payload = {
-        UserId: sessionStorage.getItem("userId") ,
-         CreatedDate: dayjs().format("YYYY-MM-DD"),
+        UserId: sessionStorage.getItem("userId"),
+        CreatedDate: dayjs().format("YYYY-MM-DD"),
         CreatedBy: sessionStorage.getItem("userId"),
         ModifiedBy: sessionStorage.getItem("userId"),
- ModifiedDate: dayjs().format("YYYY-MM-DDTHH:mm:ss.SSS"),
+        ModifiedDate: dayjs().format("YYYY-MM-DDTHH:mm:ss.SSS"),
 
         Id: null || formData.Id,
         Name: formData.Name,
@@ -175,8 +179,7 @@ const [limit, setLimit] = React.useState(20);
           }))
         );
         // setTotalRows(response.data.count);
-              setTotalRows(response.data.count || 0);
-
+        setTotalRows(response.data.count || 0);
       }
     } catch (error) {
       console.error("Error fetching data:", error);
@@ -185,22 +188,17 @@ const [limit, setLimit] = React.useState(20);
     }
   };
 
+  React.useEffect(() => {
+    getAllOfficerList(currentPage, searchText, limit);
+  }, [currentPage, searchText, limit]);
 
-  
-
-    React.useEffect(() => {
-  getAllOfficerList(currentPage, searchText, limit);
-}, [currentPage, searchText, limit]);
-
-
-//  React.useEffect(() => {
-//    if (firstLoad.current) {
-//      firstLoad.current = false;
-//      return;
-//    }
-//   getAllOfficerList(currentPage, searchText, limit);
-//   }, [currentPage, searchText, limit]);
-
+  //  React.useEffect(() => {
+  //    if (firstLoad.current) {
+  //      firstLoad.current = false;
+  //      return;
+  //    }
+  //   getAllOfficerList(currentPage, searchText, limit);
+  //   }, [currentPage, searchText, limit]);
 
   const handleDelete = async (rowData) => {
     Swal.fire({
@@ -263,29 +261,47 @@ const [limit, setLimit] = React.useState(20);
       sortable: false,
       renderCell: (params) => (
         <strong>
-          <IconButton
-            color="primary"
-            sx={{
-              color: "rgb(0, 90, 91)", 
-              "&:hover": {
-                backgroundColor: "rgba(0, 90, 91, 0.1)", 
-              },
-            }}
-            onClick={() => handleUpdate(params.row)}
+          <Tooltip
+            title={!canEdit ? "You don't have Edit permission" : ""}
+            placement="top"
           >
-            <EditNoteIcon />
-          </IconButton>
-          <Button
-            size="medium"
-            sx={{ color: "red" }}
-            onClick={() => handleDelete(params.row)}
+            <span>
+              <IconButton
+                color="primary"
+                sx={{
+                  color: "rgb(0, 90, 91)",
+                  "&:hover": {
+                    backgroundColor: "rgba(0, 90, 91, 0.1)",
+                  },
+                }}
+                onClick={() => handleUpdate(params.row)}
+                            disabled={!canEdit}
+
+              >
+                <EditNoteIcon />
+              </IconButton>
+            </span>
+          </Tooltip>
+          <Tooltip
+            title={!canDelete ? "You don't have Delete permission" : ""}
+            placement="top"
           >
-            <DeleteForeverIcon />
-          </Button>
+            <span>
+              <Button
+                size="medium"
+                sx={{ color: "red" }}
+                onClick={() => handleDelete(params.row)}
+            disabled={!canDelete}
+
+              >
+                <DeleteForeverIcon />
+              </Button>
+            </span>
+          </Tooltip>
         </strong>
       ),
     },
-       {
+    {
       field: "srNo",
       headerName: "SR NO",
       width: 60,
@@ -295,7 +311,7 @@ const [limit, setLimit] = React.useState(20);
       renderCell: (params) =>
         params.api.getSortedRowIds().indexOf(params.id) + 1,
     },
-       {
+    {
       field: "Name",
       headerName: "Name",
       width: 600,
@@ -319,11 +335,11 @@ const [limit, setLimit] = React.useState(20);
       if (response.data && response.data.values) {
         const department = response.data.values;
         originalDataRef.current = department;
-       
+
         reset({
           Id: department.Id ?? "",
           Name: department.Name ?? "",
-          // Status: department.Status ?? "", 
+          // Status: department.Status ?? "",
         });
       }
     } catch (error) {
@@ -434,7 +450,7 @@ const [limit, setLimit] = React.useState(20);
             >
               <Button
                 size="small"
-                onClick={() => clearFormData()} 
+                onClick={() => clearFormData()}
                 sx={{
                   p: 1,
                   width: 80,
@@ -509,9 +525,15 @@ const [limit, setLimit] = React.useState(20);
       </Grid>
       <Grid container spacing={2} marginBottom={1} justifyContent="flex-end">
         <Grid textAlign={"end"} marginBottom={1}>
+            <Tooltip 
+            title={!canAdd ? "You don't have Add permission" : ""} 
+            placement="top"
+          >
+            <span>
           <Button
- 
             onClick={handleOnSave}
+                                 disabled={!canAdd}
+
             type="text"
             size="medium"
             sx={{
@@ -540,6 +562,8 @@ const [limit, setLimit] = React.useState(20);
             <AddIcon />
             Add Gazetted
           </Button>
+          </span>
+          </Tooltip>
         </Grid>
       </Grid>
       <Grid
@@ -549,48 +573,48 @@ const [limit, setLimit] = React.useState(20);
         component={Paper}
         sx={{ height: "85vh", width: "100%" }}
       >
-    <DataGrid
-  className="datagrid-style"
-  sx={{
-    height: "100%",
-    minHeight: "500px",
-    "& .MuiDataGrid-columnHeaders": {
-      backgroundColor: (theme) => theme.palette.custome.datagridcolor,
-    },
-    "& .MuiDataGrid-row:hover": {
-      boxShadow: "0px 4px 20px rgba(0, 0, 0.2, 0.2)",
-    },
-  }}
-  rows={OfficersList}
-  columns={columns}
-  pagination
-  paginationMode="server"
-  rowCount={totalRows} // REQUIRED — tells grid how many total records exist
-  pageSizeOptions={[10, 20, 50]}
-  paginationModel={{ page: currentPage, pageSize: limit }}
-  onPaginationModelChange={(newModel) => {
-    setCurrentPage(newModel.page);
-    setLimit(newModel.pageSize);
-  }}
-  loading={loading}
-  disableColumnFilter
-  hideFooterSelectedRowCount
-  disableColumnSelector
-  disableDensitySelector
-  slots={{ toolbar: GridToolbar }}
-  slotProps={{
-    toolbar: {
-      showQuickFilter: true,
-      quickFilterProps: { debounceMs: 500 },
-    },
-  }}
-  onFilterModelChange={(model) => {
-    const quickFilterValue = model.quickFilterValues?.[0] || "";
-    setSearchText(quickFilterValue);
-    setCurrentPage(0); // reset page on search
-  }}
-  getRowId={(row) => row.Id}
-/>
+        <DataGrid
+          className="datagrid-style"
+          sx={{
+            height: "100%",
+            minHeight: "500px",
+            "& .MuiDataGrid-columnHeaders": {
+              backgroundColor: (theme) => theme.palette.custome.datagridcolor,
+            },
+            "& .MuiDataGrid-row:hover": {
+              boxShadow: "0px 4px 20px rgba(0, 0, 0.2, 0.2)",
+            },
+          }}
+          rows={OfficersList}
+          columns={columns}
+          pagination
+          paginationMode="server"
+          rowCount={totalRows} // REQUIRED — tells grid how many total records exist
+          pageSizeOptions={[10, 20, 50]}
+          paginationModel={{ page: currentPage, pageSize: limit }}
+          onPaginationModelChange={(newModel) => {
+            setCurrentPage(newModel.page);
+            setLimit(newModel.pageSize);
+          }}
+          loading={loading}
+          disableColumnFilter
+          hideFooterSelectedRowCount
+          disableColumnSelector
+          disableDensitySelector
+          slots={{ toolbar: GridToolbar }}
+          slotProps={{
+            toolbar: {
+              showQuickFilter: true,
+              quickFilterProps: { debounceMs: 500 },
+            },
+          }}
+          onFilterModelChange={(model) => {
+            const quickFilterValue = model.quickFilterValues?.[0] || "";
+            setSearchText(quickFilterValue);
+            setCurrentPage(0); // reset page on search
+          }}
+          getRowId={(row) => row.Id}
+        />
       </Grid>
     </>
   );

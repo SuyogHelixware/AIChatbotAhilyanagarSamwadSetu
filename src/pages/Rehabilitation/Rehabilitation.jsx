@@ -50,8 +50,9 @@ const Rehabilitation = () => {
 
   const { checkAccess } = useThemeMode();
 
-   
   const canAdd = checkAccess(11, "IsAdd");
+  const canEdit = checkAccess(11, "IsEdit");
+  const canDelete = checkAccess(11, "IsDelete");
 
   const [DammyData, setDammyData] = React.useState([
     { id: 1, NameMR: "Driving License", isNew: false },
@@ -328,6 +329,37 @@ const Rehabilitation = () => {
   };
 
   const columns = [
+    // {
+    //   field: "actions",
+    //   headerName: "Action",
+    //   width: 150,
+    //   headerAlign: "center",
+    //   align: "center",
+    //   sortable: false,
+    //   renderCell: (params) => (
+    //     <strong>
+    //       <IconButton
+    //         color="primary"
+    //         sx={{
+    //           color: "rgb(0, 90, 91)",
+    //           "&:hover": {
+    //             backgroundColor: "rgba(0, 90, 91, 0.1)",
+    //           },
+    //         }}
+    //         onClick={() => handleUpdate(params.row)}
+    //       >
+    //         <EditNoteIcon />
+    //       </IconButton>
+    //       <Button
+    //         size="medium"
+    //         sx={{ color: "red" }}
+    //         onClick={() => handleDelete(params.row)}
+    //       >
+    //         <DeleteForeverIcon />
+    //       </Button>
+    //     </strong>
+    //   ),
+    // },
     {
       field: "actions",
       headerName: "Action",
@@ -337,25 +369,44 @@ const Rehabilitation = () => {
       sortable: false,
       renderCell: (params) => (
         <strong>
-          <IconButton
-            color="primary"
-            sx={{
-              color: "rgb(0, 90, 91)",
-              "&:hover": {
-                backgroundColor: "rgba(0, 90, 91, 0.1)",
-              },
-            }}
-            onClick={() => handleUpdate(params.row)}
+          <Tooltip
+            title={!canEdit ? "You don't have Edit permission" : ""}
+            placement="top"
           >
-            <EditNoteIcon />
-          </IconButton>
-          <Button
-            size="medium"
-            sx={{ color: "red" }}
-            onClick={() => handleDelete(params.row)}
+            <span>
+              <IconButton
+                color="primary"
+                disabled={!canEdit}
+                sx={{
+                  color: canEdit ? "rgb(0, 90, 91)" : "grey",
+                  "&:hover": {
+                    backgroundColor: canEdit
+                      ? "rgba(0, 90, 91, 0.1)"
+                      : "transparent",
+                  },
+                }}
+                onClick={() => handleUpdate(params.row)}
+              >
+                <EditNoteIcon />
+              </IconButton>
+            </span>
+          </Tooltip>
+
+          <Tooltip
+            title={!canDelete ? "You don't have Delete permission" : ""}
+            placement="top"
           >
-            <DeleteForeverIcon />
-          </Button>
+            <span>
+              <Button
+                size="medium"
+                disabled={!canDelete}
+                sx={{ color: canDelete ? "red" : "grey" }}
+                onClick={() => handleDelete(params.row)}
+              >
+                <DeleteForeverIcon />
+              </Button>
+            </span>
+          </Tooltip>
         </strong>
       ),
     },
@@ -804,42 +855,48 @@ const Rehabilitation = () => {
       </Grid>
       <Grid container spacing={2} marginBottom={1} justifyContent="flex-end">
         <Grid textAlign={"end"} marginBottom={1}>
-          <Button
-            onClick={handleOnSave}
-                     disabled={canAdd}
-
-            type="text"
-            size="medium"
-            sx={{
-              pr: 2,
-              mb: 0,
-              mt: 2,
-              color: "white",
-              background:
-                "linear-gradient(to right, rgb(0, 90, 91), rgb(22, 149, 153))",
-              borderRadius: "8px",
-              transition: "all 0.2s ease-in-out",
-              boxShadow: "0 4px 8px rgba(0, 90, 91, 0.3)",
-              "&:hover": {
-                //  boxShadow: "0 2px 4px rgba(0, 90, 91, 0.2)",
-
-                transform: canAdd ? "translateY(2px)" : "none",
-                boxShadow: canAdd
-                  ? "0 2px 4px rgba(0, 90, 91, 0.2)"
-                  : "0 4px 8px rgba(0,0,0,0.1)",
-              },
-              "& .MuiButton-label": {
-                display: "flex",
-                alignItems: "center",
-              },
-              "& .MuiSvgIcon-root": {
-                marginRight: "10px",
-              },
-            }}
+          <Tooltip
+            title={!canAdd ? "You don't have Add permission" : ""}
+            placement="top"
           >
-            <AddIcon />
-            Add Rehabilitation
-          </Button>
+            <span>
+              <Button
+                onClick={handleOnSave}
+                disabled={!canAdd}
+                type="text"
+                size="medium"
+                sx={{
+                  pr: 2,
+                  mb: 0,
+                  mt: 2,
+                  color: "white",
+                  background:
+                    "linear-gradient(to right, rgb(0, 90, 91), rgb(22, 149, 153))",
+                  borderRadius: "8px",
+                  transition: "all 0.2s ease-in-out",
+                  boxShadow: "0 4px 8px rgba(0, 90, 91, 0.3)",
+                  "&:hover": {
+                    //  boxShadow: "0 2px 4px rgba(0, 90, 91, 0.2)",
+
+                    transform: canAdd ? "translateY(2px)" : "none",
+                    boxShadow: canAdd
+                      ? "0 2px 4px rgba(0, 90, 91, 0.2)"
+                      : "0 4px 8px rgba(0,0,0,0.1)",
+                  },
+                  "& .MuiButton-label": {
+                    display: "flex",
+                    alignItems: "center",
+                  },
+                  "& .MuiSvgIcon-root": {
+                    marginRight: "10px",
+                  },
+                }}
+              >
+                <AddIcon />
+                Add Rehabilitation
+              </Button>
+            </span>
+          </Tooltip>
         </Grid>
       </Grid>
       <Grid
