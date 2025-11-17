@@ -66,7 +66,7 @@ export const ModeContextProvider = ({ children }) => {
     UserType: "",
     CreatedBy: "",
   });
-  const storedUser = JSON.parse(sessionStorage.getItem("userData") || "{}");
+  // const storedUser = JSON.parse(sessionStorage.getItem("userData") || "{}");
 
   // const encrypted = sessionStorage.getItem("userData");
 
@@ -91,22 +91,68 @@ export const ModeContextProvider = ({ children }) => {
   // }
 
   useEffect(() => {
-    const userId = storedUser.Username;
-    const UserType = storedUser.UserType;
-    const CreatedBy = storedUser.Username;
-    setUserSession({ userId, UserType, CreatedBy });
+  // always read fresh data inside useEffect
+  const userData = sessionStorage.getItem("userData");
 
-    const oLinesData = loadRoleAccess();
+  if (userData) {
+    try {
+      const parsed = JSON.parse(userData);
+
+      setUserSession({
+        userId: parsed.Username || "",
+        UserType: parsed.UserType || "",
+        CreatedBy: parsed.Username || "",
+      });
+        const oLinesData = loadRoleAccess();
     setRoleAccess(oLinesData);
-  }, []);
+
+    } catch (error) {
+      console.error("Error parsing userData:", error);
+    }
+  }
+}, []);
+
+
+const getStoredUser = () => {
+  try {
+    return JSON.parse(sessionStorage.getItem("userData")) || {};
+  } catch {
+    return {};
+  }
+};
+
+const refreshUserSession = () => {
+  const data = getStoredUser();
+
+  setUserSession({
+    userId: data.Username || "",
+    UserType: data.UserType || "",
+    CreatedBy: data.Username || "",
+  });
+};
+
+
+  // =================
+
+  // useEffect(() => {
+  //   const userId = storedUser.Username;
+  //   const UserType = storedUser.UserType;
+  //   const CreatedBy = storedUser.Username;
+  //   setUserSession({ userId, UserType, CreatedBy });
+
+  //   const oLinesData = loadRoleAccess();
+  //   setRoleAccess(oLinesData);
+  // }, []);
 
   // ✅ same here — always read fresh data
-  const refreshUserSession = () => {
-    const userId = storedUser.Username;
-    const UserType = storedUser.UserType;
-    const CreatedBy = storedUser.Username;
-    setUserSession({ userId, UserType, CreatedBy });
-  };
+  // const refreshUserSession = () => {
+  //   const userId = storedUser.Username;
+  //   const UserType = storedUser.UserType;
+  //   const CreatedBy = storedUser.Username;
+  //   setUserSession({ userId, UserType, CreatedBy });
+  // };
+
+
 
   const refreshRoleAccess = () => {
     const updatedData = loadRoleAccess();
