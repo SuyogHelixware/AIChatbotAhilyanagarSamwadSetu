@@ -95,13 +95,20 @@ const UploadDocument = () => {
     },
   });
 
-  const DocopetionOptions = [
-    { label: "Land Acquisition", value: "LandAcquisition" },
-    { label: "Income Certificate", value: "IncomeCertificate" },
-    { label: "Policy Document", value: "PolicyDocument" },
-    { label: "NOC", value: "NOC" },
-    { label: "OTHER", value: "OTHER" },
-  ];
+React.useEffect(() => {
+  if (rows.length > 0 && DocmasterList.length > 0) {
+    setSubDocMap(() => {
+      const map = {};
+      rows.forEach((row) => {
+        const selectedDoc = DocmasterList.find(
+          (doc) => doc.NameMR === row.DocType
+        );
+        map[row.id] = selectedDoc?.SubDocs || [];
+      });
+      return map;
+    });
+  }
+}, [rows, DocmasterList]);
 
   const DocColumns = [
     {
