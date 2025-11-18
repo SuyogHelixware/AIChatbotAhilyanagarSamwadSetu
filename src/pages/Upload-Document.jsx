@@ -8,12 +8,10 @@ import RemoveRedEyeIcon from "@mui/icons-material/RemoveRedEye";
 import {
   Button,
   Checkbox,
-  Collapse,
   FormControlLabel,
   Grid,
   IconButton,
   ListItemText,
-  Menu,
   MenuItem,
   Modal,
   Paper,
@@ -35,7 +33,6 @@ import InputTextField, {
 import Loader from "../components/Loader";
 import { BASE_URL } from "../Constant";
 import { useThemeMode } from "../Dashboard/Theme";
-import { ExpandLess, ExpandMore } from "@mui/icons-material";
 
 const UploadDocument = () => {
   const [loaderOpen, setLoaderOpen] = React.useState(false);
@@ -52,12 +49,9 @@ const UploadDocument = () => {
   const [rows, setRows] = React.useState([]);
   const [gazeteList, setgazeteList] = React.useState([]);
   const [DocmasterList, setDocmasterList] = React.useState([]);
-
   const [DeleteLineNums, setDeleteLineNums] = React.useState([]);
   const fileInputRef = React.useRef(null);
   const [isAddMissing, setIsAddMissing] = React.useState(false);
-  
-
   const firstLoad = React.useRef(true);
   const handleClose = () => setOn(false);
   const { userSession } = useThemeMode();
@@ -65,9 +59,7 @@ const UploadDocument = () => {
   const [subDocMap, setSubDocMap] = React.useState({});
   const [isMobileDisabled, setIsMobileDisabled] = React.useState(false);
 
-
   const { checkAccess } = useThemeMode();
-
   const canAdd = checkAccess(9, "IsAdd");
   const canEdit = checkAccess(9, "IsEdit");
   const canDelete = checkAccess(9, "IsDelete");
@@ -88,27 +80,26 @@ const UploadDocument = () => {
     handleSubmit,
     control,
     reset,
-    //  formState: { errors },
   } = useForm({
     defaultValues: {
       initial,
     },
   });
 
-React.useEffect(() => {
-  if (rows.length > 0 && DocmasterList.length > 0) {
-    setSubDocMap(() => {
-      const map = {};
-      rows.forEach((row) => {
-        const selectedDoc = DocmasterList.find(
-          (doc) => doc.NameMR === row.DocType
-        );
-        map[row.id] = selectedDoc?.SubDocs || [];
+  React.useEffect(() => {
+    if (rows.length > 0 && DocmasterList.length > 0) {
+      setSubDocMap(() => {
+        const map = {};
+        rows.forEach((row) => {
+          const selectedDoc = DocmasterList.find(
+            (doc) => doc.NameMR === row.DocType
+          );
+          map[row.id] = selectedDoc?.SubDocs || [];
+        });
+        return map;
       });
-      return map;
-    });
-  }
-}, [rows, DocmasterList]);
+    }
+  }, [rows, DocmasterList]);
 
   const DocColumns = [
     {
@@ -233,9 +224,7 @@ React.useEffect(() => {
         const isDisabled = row.isDisabled;
 
         const handleDateChange = (newValue) => {
-          // Update DataGrid UI
           api.updateRows([{ id, [field]: newValue }]);
-          // Update rows state for submit
           setRows((prev) =>
             prev.map((row) =>
               row.id === id ? { ...row, [field]: newValue } : row
@@ -278,11 +267,7 @@ React.useEffect(() => {
 
         const handleChange = (e) => {
           const newValue = e.target.value;
-
-          // Update DataGrid UI
           api.updateRows([{ id, [field]: newValue }]);
-
-          // Update parent state
           setRows((prev) =>
             prev.map((row) =>
               row.id === id ? { ...row, [field]: newValue } : row
@@ -290,7 +275,6 @@ React.useEffect(() => {
           );
         };
 
-        //  Logic for enabling/disabling
         const isEditable =
           UserType === "A" ||
           !storedGazOfficer ||
@@ -360,7 +344,7 @@ React.useEffect(() => {
         );
       },
     },
- 
+
     {
       field: "DocType",
       headerName: "DOCUMENT TYPE",
@@ -402,7 +386,6 @@ React.useEffect(() => {
               fullWidth
               disabled={isDisabled}
               variant="standard"
-               
               MenuProps={{
                 PaperProps: {
                   style: { maxHeight: 200, overflowY: "auto" },
@@ -427,7 +410,7 @@ React.useEffect(() => {
         );
       },
     },
-   
+
     {
       field: "MissingDocs",
       headerName: "MISSING DOCUMENT",
@@ -490,46 +473,13 @@ React.useEffect(() => {
     : DocColumns.filter((col) => col.field !== "MissingDocs");
 
   const Maincolumns = [
-    // {
-    //   field: "actions",
-    //   headerName: "Action",
-    //   width: 150,
-    //   sortable: false,
-    //   renderCell: (params) => (
-    //     <strong>
-    //       <IconButton
-    //         color="primary"
-    //         onClick={() => handleUpdate(params.row)}
-    //         sx={{
-    //           color: "rgb(0, 90, 91)",
-    //           "&:hover": { backgroundColor: "rgba(0, 90, 91, 0.1)" },
-    //         }}
-    //       >
-    //         <EditNoteIcon />
-    //       </IconButton>
-    //       <IconButton
-    //         size="medium"
-    //         sx={{ color: "red" }}
-    //         onClick={() => handleDelete(params.row)}
-    //         disabled={
-    //           JSON.parse(sessionStorage.getItem("userData") || "{}")
-    //             ?.UserType?.trim()
-    //             .toUpperCase() !== "A"
-    //         }
-    //       >
-    //         <DeleteForeverIcon />
-    //       </IconButton>
-    //     </strong>
-    //   ),
-    // },
-    {
+       {
       field: "actions",
       headerName: "Action",
       width: 150,
       sortable: false,
       renderCell: (params) => (
         <strong>
-          {/* ---- EDIT BUTTON ---- */}
           <Tooltip
             title={!canEdit ? "You don't have Edit permission" : ""}
             placement="top"
@@ -553,7 +503,6 @@ React.useEffect(() => {
             </span>
           </Tooltip>
 
-          {/* ---- DELETE BUTTON ---- */}
           <Tooltip
             title={!canDelete ? "You don't have Delete permission" : ""}
             placement="top"
@@ -676,12 +625,10 @@ React.useEffect(() => {
     setClearUpdateButton("RESET");
     setOn(true);
     setIsAddMissing(false);
-setIsMobileDisabled(true);
+    setIsMobileDisabled(true);
 
     try {
       setLoading(true);
-
-      // Get user data
       const userData = sessionStorage.getItem("userData");
       let userType = null;
       let userId = null;
@@ -780,7 +727,7 @@ setIsMobileDisabled(true);
 
   const clearFormData = () => {
     setRows([]);
-  setIsMobileDisabled(false);    
+    setIsMobileDisabled(false);
 
     if (ClearUpdateButton === "CLEAR") {
       reset({
@@ -793,39 +740,6 @@ setIsMobileDisabled(true);
       });
       setIsAddMissing(false);
     }
-    // if (ClearUpdateButton === "RESET") {
-    //   if (originalDataRef.current) {
-    //     const resetData = { ...originalDataRef.current };
-
-    //     // Remove +91 from MobileNo if it exists
-    //     if (resetData.MobileNo && resetData.MobileNo.startsWith("+91")) {
-    //       resetData.MobileNo = resetData.MobileNo.slice(3);
-    //     }
-    //     reset(resetData);
-
-    //     // also set rows for DataGrid
-    //     if (resetData.oDocLines && Array.isArray(resetData.oDocLines)) {
-    //       const formattedLines = resetData.oDocLines.map((line, index) => ({
-    //         ...line,
-    //         id: line.LineNum ?? index,
-    //         Email:line.Email,
-    //        }));
-    //       setRows(formattedLines);
-    //     } else {
-    //       setRows([]);
-    //     }
-    //   } else {
-    //     reset({
-    //       Status: 1,
-    //       Address: "",
-    //       Email: "",
-    //       MobileNo: "",
-    //       Name: "",
-    //       oDocLines: [],
-    //     });
-    //     setRows([]);
-    //   }
-    // }
     if (ClearUpdateButton === "RESET") {
       if (originalDataRef.current) {
         const resetData = { ...originalDataRef.current };
@@ -964,8 +878,7 @@ setIsMobileDisabled(true);
   //   );
 
   //   setRows((prev) => [...prev, ...newRows]);
-  //   console.log("object file", newRows);
-
+ 
   //   if (fileInputRef.current) {
   //     fileInputRef.current.value = "";
   //   }
@@ -1034,8 +947,7 @@ setIsMobileDisabled(true);
     );
 
     setRows((prev) => [...prev, ...newRows]);
-    console.log("object file", newRows);
-
+ 
     if (fileInputRef.current) {
       fileInputRef.current.value = "";
     }
@@ -1106,38 +1018,7 @@ setIsMobileDisabled(true);
       return;
     }
 
-    //   let hasConflict = false;
-
-    // rows.forEach((row, index) => {
-    //   debugger
-    //   const hasFile = !!row.FileName; // file uploaded
-    //   const hasMissingDocs =
-    //     Array.isArray(row.MissingDocs) && row.MissingDocs.length > 0;
-
-    //   if (hasFile && hasMissingDocs) {
-    //     hasConflict = true;
-    //     // alert(
-    //     //   `Row ${index + 1}: You cannot select Missing Documents when a file is uploaded.`
-    //     // );
-    //        Swal.fire({
-    //       toast: true,
-    //       position: "center",
-    //       icon: "warning",
-    //       title: `Row ${index + 1}: You cannot select Missing Documents when a file is uploaded.`,
-    //       showConfirmButton: false,
-    //       timer: 3000,
-    //       timerProgressBar: true,
-    //       // background: "#fff8e1",
-    //     });
-
-    //   }
-    // });
-
-    // if (hasConflict) {
-    //   return; // Stop submission
-    // }
-
-    const formData = new FormData();
+      const formData = new FormData();
 
     formData.append("UserId", sessionStorage.getItem("userId") || "");
     formData.append("CreatedBy", sessionStorage.getItem("userId") || "");
@@ -1205,16 +1086,11 @@ setIsMobileDisabled(true);
           formData.append(`oDocLines[${index}].MissingDocs[${i}]`, docType);
         });
       }
-      // else {
-      //   formData.append(`oDocLines[${index}].MissingDocs`, JSON.stringify([]));
-      // }
-      // ============
-    });
+         });
     try {
       let response;
       if (DeleteLineNums) {
-        console.log("object", DeleteLineNums);
-
+ 
         await axios.delete(`${BASE_URL}DocUpload`, {
           headers: { "Content-Type": "application/json" },
           data: DeleteLineNums,
@@ -1373,7 +1249,6 @@ setIsMobileDisabled(true);
 
   React.useEffect(() => {
     if (firstLoad.current) {
-      // getAllDocList();
       firstLoad.current = false;
 
       DocMasterList();
@@ -1402,7 +1277,7 @@ setIsMobileDisabled(true);
   }, []);
 
   // ===================Username and CreatedBy are same in case Doc uploaded rows are enabled logic start============================
-  
+
   const currentUser = userSession.userId || "";
   const currentUserType = userSession.UserType;
 
@@ -1417,82 +1292,26 @@ setIsMobileDisabled(true);
     };
   });
 
-
-  
   // =================== Username and CreatedBy are same in case Doc uploaded rows are enabled logic start ============================
-  // const updatedRows = React.useMemo(() => {
-  //     if (!userSession || !userSession.UserType) return rows;
 
-  //     const currentUser = userSession.userId || "";
-  //     const currentUserType = userSession.UserType;
-
-  //     return rows.map((row) => {
-        
-
-  //       const createdBy = (row.CreatedBy || "").toString().trim();
-  //       const current = currentUser.toString().trim();
-  //       const isAllowed = currentUserType === "A" || createdBy === current;
-  //       return { ...row, isDisabled: !isAllowed };
-  //     });
-  //   }, [rows, userSession]);
-  // ====================End============================
-
-  // const handleAddRow = () => {
- 
-  //   const userDataStr = sessionStorage.getItem("userData");
-  //   let UserType = null;
-  //   let CreatedBy = null;
-
-  //   try {
-  //     // debugger
-  //     const userData = userDataStr ? JSON.parse(userDataStr) : {};
-  //     UserType = userData.UserType;
-  //     CreatedBy = userData.Username;
-  //   } catch (err) {
-  //     console.error("Error parsing userData:", err);
-  //   }
-
-  //   // const newRow = {
-  //   //   id: Date.now(),
-  //   //   srNo: "",
-  //   //   FileName: "",
-  //   //   DocReqDate: dayjs().format("YYYY-MM-DD"),
-  //   //   IssuedBy: "",
-  //   //   DocType: "",
-  //   //   CreatedBy: CreatedBy || "", // track creator for validation logic
-  //   //   isDisabled: false, // ✅ always enabled when first created
-  //   //   isNew: true, // optional helper flag for your grid logic
-  //   // };
-   
-  //   setRows((prev) => [...prev, newRow]);
-  // };
 
   const handleAddRow = () => {
+    const UserType = userSession.UserType || "";
+    const CreatedBy = userSession.userId || "";
 
-  // userSession already contains { userId, UserType, CreatedBy }
-  const UserType = userSession.UserType || "";
-  const CreatedBy = userSession.userId || "";
-
-  const newRow = {
-    id: Date.now(),
-    srNo: "",
-    FileName: "",
-    DocReqDate: dayjs().format("YYYY-MM-DD"),
-    IssuedBy: "",
-    DocType: "",
-
-    // always set correct CreatedBy from context
-    CreatedBy: CreatedBy,
-
-    // new rows must always be enabled
-    isDisabled: false,
-
-    isNew: true,
+    const newRow = {
+      id: Date.now(),
+      srNo: "",
+      FileName: "",
+      DocReqDate: dayjs().format("YYYY-MM-DD"),
+      IssuedBy: "",
+      DocType: "",
+      CreatedBy: CreatedBy,
+     isDisabled: false,
+      isNew: true,  
+      };
+    setRows((prev) => [...prev, newRow]);
   };
-
-  setRows((prev) => [...prev, newRow]);
-};
-
 
   return (
     <>
@@ -1582,8 +1401,7 @@ setIsMobileDisabled(true);
                     {...field}
                     label=" ENTER MOBILE NO"
                     // fullWidth
-                      disabled={isMobileDisabled}    
-
+                    disabled={isMobileDisabled}
                     size="small"
                     error={!!fieldState.error}
                     helperText={fieldState.error?.message}
@@ -1648,29 +1466,6 @@ setIsMobileDisabled(true);
               md={4}
               sx={{ display: "flex", justifyContent: "flex-center" }}
             >
-              {/* <Button
-                variant="contained"
-                size="small"
-                component="label"
-                sx={{
-                  width: 120,
-                  height: 40,
-                  color: "white",
-                  background:
-                    "linear-gradient(to right, rgb(0, 90, 91), rgb(22, 149, 153))",
-                  fontSize: "0.75rem",
-                }}
-              >
-                Upload File
-                <input
-                  type="file"
-                  accept=".jpg,.jpeg,.png,.pdf"
-                  hidden
-                  multiple
-                  ref={fileInputRef}
-                  onChange={handleFileUpload}
-                />
-              </Button>*/}
               <Button
                 variant="contained"
                 size="small"
@@ -1721,32 +1516,9 @@ setIsMobileDisabled(true);
               />
             </Grid>
 
-            {/* Add Row Button (placed beside checkbox) */}
-            {/* <Grid item xs={6} md={4}>
-              <Button
-                variant="contained"
-                size="small"
-                component="label"
-                sx={{
-                  width: 120,
-                  height: 40,
-                  color: "white",
-                  background:
-                    "linear-gradient(to right, rgb(0, 90, 91), rgb(22, 149, 153))",
-                  fontSize: "0.79rem",
-                }}
-                onClick={handleAddRow}
-              >
-                {" "}
-                <AddIcon />
-                Add Row
-              </Button>
-            </Grid> */}
-
             <Grid item xs={12} style={{ height: 400, paddingBottom: 40 }}>
               <DataGrid
                 rows={updatedRows}
-                // columns={DocColumns}
                 columns={visibleColumns}
                 pageSize={5}
                 rowsPerPageOptions={[5]}

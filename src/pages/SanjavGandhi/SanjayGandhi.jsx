@@ -25,42 +25,7 @@ const SanjayGandhi = () => {
 
   const canAdd = checkAccess(10, "IsAdd");
 
-  // const getAllOfficerList = async (page = 0, searchText = "") => {
-  //   try {
-  //     setLoading(true);
-
-  //     const params = {
-  //       Status: 1,
-  //       Page: page,
-  //       ...(limit ? { Limit: limit } : {}),
-  //       ...(searchText ? { SearchText: searchText } : {}),
-  //     };
-
-  //     const response = await axios.get(`${BASE_URL}GazOfficers`, { params });
-  //     if (response.data && response.data.values) {
-  //       setDocumentList(
-  //         response.data.values.map((item, index) => ({
-  //           ...item,
-  //           id: item.Id,
-  //         }))
-  //       );
-  //       // setTotalRows(response.data.count);
-  //       setTotalRows(response.data.count || 0);
-  //     }
-  //   } catch (error) {
-  //     console.error("Error fetching data:", error);
-  //   } finally {
-  //     setLoading(false);
-  //   }
-  // };
-
-  // React.useEffect(() => {
-  //   if (firstLoad.current) {
-  //     firstLoad.current = false;
-  //     return;
-  //   }
-  //   getAllOfficerList(currentPage, searchText, limit);
-  // }, [currentPage, searchText, limit]);
+ 
 
   const columns = [
     {
@@ -254,7 +219,6 @@ const SanjayGandhi = () => {
           textAlign="center"
           textTransform="uppercase"
           fontWeight="bold"
-          // color={"#5C5CFF"}
           padding={1}
           noWrap
         >
@@ -281,7 +245,7 @@ const SanjayGandhi = () => {
           <Tooltip
             title={
               !canAdd ? (
-                // 🔸 Tooltip when user does not have permission
+                // Tooltip when user does not have permission
                 <Typography sx={{ fontSize: 13, p: 0.5 }}>
                   You don’t have permission to upload files.
                 </Typography>
@@ -343,7 +307,6 @@ const SanjayGandhi = () => {
             arrow
             placement="left-end"
           >
-            {/* ✅ span wrapper needed for tooltip on disabled button */}
             <span>
               <Button
                 onClick={() => successFileRef.current.click()}
@@ -357,7 +320,7 @@ const SanjayGandhi = () => {
                   color: "white",
                   fontWeight: "bold",
                   background: !canAdd
-                    ? "linear-gradient(to right, #0b7a3e, #16a34a)" // greyed-out gradient
+                    ? "linear-gradient(to right, #0b7a3e, #16a34a)" 
                     : "linear-gradient(to right, #0b7a3e, #16a34a)",
                   borderRadius: "8px",
                   transition: "all 0.2s ease-in-out",
@@ -390,7 +353,6 @@ const SanjayGandhi = () => {
               e.target.value = null;
             }}
           />
-        
           <Tooltip
             title={
               !canAdd ? (
@@ -455,7 +417,6 @@ const SanjayGandhi = () => {
             placement="right-end"
           >
             <span>
-
             <Button
               onClick={() => failFileRef.current.click()}
               disabled={!canAdd}
@@ -467,14 +428,12 @@ const SanjayGandhi = () => {
                 mt: 2,
                 color: "white",
                 fontWeight: "bold",
-                background: "linear-gradient(to right, #a12b2bff, #ee4949ff)", // red theme
+                background: "linear-gradient(to right, #a12b2bff, #ee4949ff)", 
                 borderRadius: "8px",
                 transition: "all 0.2s ease-in-out",
                 boxShadow: "0 4px 8px rgba(161, 43, 43, 0.3)",
                 "&:hover": {
                      transform: canAdd ? "translateY(2px)" : "none",
-                  // boxShadow: "0 2px 4px rgba(161, 43, 43, 0.2)",
-
                   boxShadow: canAdd
                       ? "0 2px 4px rgba(161, 43, 43, 0.2)"
                       : "0 4px 8px rgba(0,0,0,0.1)",
@@ -513,7 +472,7 @@ const SanjayGandhi = () => {
           getRowId={(row) => row.Id || `${row.Name}-${row.MobileNumber}`}
           pagination
           paginationMode="server"
-          rowCount={totalRows} // REQUIRED — tells grid how many total records exist
+          rowCount={totalRows} 
           pageSizeOptions={[20, 50, 100]}
           paginationModel={{ page: currentPage, pageSize: limit }}
           onPaginationModelChange={(newModel) => {

@@ -88,24 +88,21 @@ export default function ManageUsers() {
   // };
 
   const clearFormData = () => {
-    console.log("ClearUpdateButton: ", ClearUpdateButton);
-
+ 
     if (ClearUpdateButton === "CLEAR") {
-      // Reset to default values (empty or initial state)
-      reset({
+       reset({
         Id: "",
         Password: "",
         FirstName: "",
         Username: "",
         LastName: "",
-        // DOB: dayjs(),
-        Phone: "",
+         Phone: "",
         Status: 1,
         Email: "",
         UserType: "U",
         Avatar: "",
       });
-      setImage(""); // Clear the image
+      setImage("");  
     } else if (ClearUpdateButton === "RESET") {
       // Reset to the original data
       if (originalDataRef.current) {
@@ -141,8 +138,7 @@ export default function ManageUsers() {
     try {
       setLoading(true);
       const apiUrl = `${BASE_URL}Users/${row.Id}`;
-      console.log("Fetching API URL:", apiUrl);
-
+ 
       const response = await axios.get(apiUrl);
 
       if (response.data) {
@@ -310,9 +306,7 @@ export default function ManageUsers() {
       Status: getValues("Status"),
       // Avatar: uploadedImg === "" ? getValues("Avatar") : filename,
     };
-    // console.log("object",saveObj)
-    // return
-    setLoaderOpen(true);
+     setLoaderOpen(true);
     if (getValues("Password") !== "" || getValues("Password") !== undefined) {
       saveObj.Password = getValues("Password");
       UpdateObj.Password = getValues("Password");
@@ -754,36 +748,16 @@ export default function ManageUsers() {
     }
   };
 
-  //   const handleonRoleList = async (params = {}) => {
-  //   setLoading(true);
-  //   try {
-  //      const queryParams = { Status: "1", ...params };
-
-  //     // Fetch data
-  //     const { data } = await axios.get(`${BASE_URL}Role`, {
-  //       params: queryParams,
-  //     });
-
-  //     if (data.values) {
-  //       setRoleList(data.values);
-  //     }
-  //   } catch (error) {
-  //     console.error("Error fetching data:", error);
-  //   } finally {
-  //     setLoading(false);
-  //   }
-  // };
+ 
   const handleonRoleList = async (params = {}) => {
     setLoading(true);
     try {
-      // Fetch ALL records, do not filter Status
-      const { data } = await axios.get(`${BASE_URL}Role`, {
+       const { data } = await axios.get(`${BASE_URL}Role`, {
         params: params,
       });
 
       if (data.values) {
-        // Add disabled flag for Status=0
-        const updated = data.values.map((item) => ({
+         const updated = data.values.map((item) => ({
           ...item,
           isDisabled: item.Status === 0,
         }));
@@ -802,8 +776,7 @@ export default function ManageUsers() {
       {loaderOpen && <Loader open={loaderOpen} />}
       <Modal
         open={on}
-        // onClose={handleClose}
-        sx={{
+         sx={{
           backdropFilter: "blur(5px)",
           backgroundColor: "rgba(0, 0, 0, 0.3)",
         }}
@@ -814,8 +787,7 @@ export default function ManageUsers() {
             width: "90%",
             maxWidth: 650,
             height: 600,
-            // bgcolor: "#E6E6FA",
-            position: "absolute",
+             position: "absolute",
             top: "50%",
             left: "50%",
             transform: "translate(-50%, -50%)",
@@ -887,8 +859,7 @@ export default function ManageUsers() {
                 setOn(false);
                 setClearUpdateButton("CLEAR");
                 clearFormData();
-                console.log(ClearUpdateButton);
-              }}
+               }}
             >
               <CloseIcon />
             </IconButton>
@@ -1505,8 +1476,7 @@ export default function ManageUsers() {
             pageSizeOptions={[limit]}
             paginationModel={{ page: currentPage, pageSize: limit }}
             onPaginationModelChange={(newModel) => {
-              console.log("New Pagination Model:", newModel);
-              setCurrentPage(newModel.page);
+               setCurrentPage(newModel.page);
               getUserData(newModel.page, searchText);
             }}
             loading={loading}

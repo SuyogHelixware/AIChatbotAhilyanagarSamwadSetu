@@ -58,8 +58,7 @@ const Signin = () => {
             };
 
             // Save basic user info
-            console.log("tt==+++++++++===", userData);
-            sessionStorage.setItem("BearerTokan", res.headers.authorization);
+             sessionStorage.setItem("BearerTokan", res.headers.authorization);
             sessionStorage.setItem("userId", userData.Username);
             sessionStorage.setItem("userData", JSON.stringify(userData));
             refreshUserSession();
@@ -117,8 +116,7 @@ const Signin = () => {
         })
         .catch((e) => {
           setLoading(false);
-          console.log(e);
-        });
+         });
     } catch (error) {
       setLoading(false);
       Swal.fire({

@@ -51,22 +51,19 @@ const RoleCreation = () => {
   const handleClose = () => setOn(false);
   const [openMenu, setOpenMenu] = React.useState(false);
   const [selectedIds, setSelectedIds] = React.useState([]);
-
-  // const handleOpenMenu = () => setOpenMenu(true);
   const [pickerInitialSelectedIds, setPickerInitialSelectedIds] =
     React.useState([]);
   const [pickerDisabledSubmenuIds, setPickerDisabledSubmenuIds] =
     React.useState([]);
-
   const { checkAccess } = useThemeMode();
-
   const canAdd = checkAccess(12, "IsAdd");
   const canEdit = checkAccess(12, "IsEdit");
   const canDelete = checkAccess(12, "IsDelete");
-
   const handleCloseMenu = () => setOpenMenu(false);
   const firstLoad = React.useRef(true);
   const [MenuList, setMenuList] = React.useState([]);
+  const [expandedRowIds, setExpandedRowIds] = React.useState([]);
+
   const initial = {
     RoleName: "",
     Remarks: "",
@@ -85,7 +82,6 @@ const RoleCreation = () => {
   const { handleSubmit, control, reset } = useForm({
     defaultValues: initial,
   });
-
   const [RoleTableData, setRoleTableData] = React.useState(() => [
     {
       ...initialRole,
@@ -99,7 +95,6 @@ const RoleCreation = () => {
         (child, idx) => ({
           ...child,
           id: `child-${Date.now()}-${idx}`,
-
           IsRead: true,
           IsAdd: true,
           IsEdit: true,
@@ -162,7 +157,6 @@ const RoleCreation = () => {
         ) : null;
       },
     },
-
     {
       field: "Name",
       headerName: "Activity Name",
@@ -171,7 +165,7 @@ const RoleCreation = () => {
         <Typography
           variant="body2"
           sx={{
-            pl: params.row.isChild ? 5 : 0, // indent children visually
+            pl: params.row.isChild ? 5 : 0,
             fontWeight: params.row.isChild ? 350 : 450,
           }}
         >
@@ -186,80 +180,6 @@ const RoleCreation = () => {
         </Typography>
       ),
     },
-    // {
-    //   field: "IsRead",
-    //   headerName: "READ",
-    //   flex: 1,
-    //   headerAlign: "center",
-    //   align: "center",
-    //   sortable: false,
-
-    //   renderCell: (params) => (
-    //     <Checkbox
-    //       checked={Boolean(params.row.IsRead)}
-    //       onChange={(e) =>
-    //         handleCheckboxChange(params.row.id, "IsRead", e.target.checked)
-    //       }
-    //       size="medium"
-    //       color="primary"
-    //     />
-    //   ),
-    // },
-
-    //     {
-    //       field: "IsAdd",
-    //       headerName: "ADD",
-    //       flex: 1,
-    //       headerAlign: "center",
-    //       align: "center",
-    //       sortable: false,
-    //       renderCell: (params) => (
-    //         <Checkbox
-    //           checked={Boolean(params.row.IsAdd)}
-    //           onChange={(e) =>
-    //             handleCheckboxChange(params.row.id, "IsAdd", e.target.checked)
-    //           }
-    //           size="medium"
-    //           color="success"
-    //         />
-    //       ),
-    //     },
-    //     {
-    //       field: "IsEdit",
-    //       headerName: "EDIT",
-    //       flex: 1,
-    //       headerAlign: "center",
-    //       align: "center",
-    //       sortable: false,
-    //       renderCell: (params) => (
-    //         <Checkbox
-    //           checked={Boolean(params.row.IsEdit)}
-    //           onChange={(e) =>
-    //             handleCheckboxChange(params.row.id, "IsEdit", e.target.checked)
-    //           }
-    //           size="medium"
-    //           color="info"
-    //         />
-    //       ),
-    //     },
-    //     {
-    //       field: "IsDelete",
-    //       headerName: "DELETE",
-    //       flex: 1,
-    //       headerAlign: "center",
-    //       align: "center",
-    //       sortable: false,
-    //       renderCell: (params) => (
-    //         <Checkbox
-    //           checked={Boolean(params.row.IsDelete)}
-    //           onChange={(e) =>
-    //             handleCheckboxChange(params.row.id, "IsDelete", e.target.checked)
-    //           }
-    //           size="medium"
-    //           color="error"
-    //         />
-    //       ),
-    //     },
     {
       field: "IsRead",
       headerName: "READ",
@@ -337,7 +257,6 @@ const RoleCreation = () => {
         ),
     },
   ];
-
   const Maincolumns = [
     {
       field: "actions",
@@ -354,8 +273,7 @@ const RoleCreation = () => {
               <IconButton
                 color="primary"
                 onClick={() => handleUpdate(params.row)}
-                            disabled={!canEdit}
-
+                disabled={!canEdit}
                 sx={{
                   color: "rgb(0, 90, 91)",
                   "&:hover": { backgroundColor: "rgba(0, 90, 91, 0.1)" },
@@ -375,13 +293,7 @@ const RoleCreation = () => {
                 size="medium"
                 sx={{ color: "red" }}
                 onClick={() => handleDelete(params.row)}
-                            disabled={!canDelete}
-
-                // disabled={
-                //   JSON.parse(sessionStorage.getItem("userData") || "{}")
-                //     ?.UserType?.trim()
-                //     .toUpperCase() !== "A"
-                // }
+                disabled={!canDelete}
               >
                 <DeleteForeverIcon />
               </IconButton>
@@ -461,10 +373,8 @@ const RoleCreation = () => {
     try {
       setLoading(true);
 
-      // Build query params
-      const params = {
-        // Status: "1",
-        Page: page,
+       const params = {
+         Page: page,
         Limit: limit,
         ...(searchText ? { SearchText: searchText } : {}),
       };
@@ -504,30 +414,6 @@ const RoleCreation = () => {
       firstLoad.current = false;
     }
   }, []);
-
-  // const handleRemove = (displayRow) => {
-  //   const displayId = displayRow.id;
-
-  //   // if child
-  //   if (typeof displayId === "string" && displayId.includes("-child-")) {
-  //     const [parentIdStr, childIdxStr] = displayId.split("-child-");
-
-  //     setRoleTableData((prev) =>
-  //       prev.map((parent) => {
-  //         if (String(parent.id) !== parentIdStr) return parent;
-  //         const idx = Number(childIdxStr);
-  //         const childArr = Array.isArray(parent.oSubMenusSpeAccess)
-  //           ? parent.oSubMenusSpeAccess.filter((_, i) => i !== idx)
-  //           : [];
-  //         return { ...parent, oSubMenusSpeAccess: childArr };
-  //       })
-  //     );
-  //     return;
-  //   }
-
-  //   // otherwise parent row
-  //   setRoleTableData((prev) => prev.filter((r) => r.id !== displayId));
-  // };
   const handleRemove = (displayRow) => {
     const displayId = displayRow.id;
 
@@ -538,7 +424,7 @@ const RoleCreation = () => {
       const childIndex = Number(childIdxStr);
 
       setRoleTableData((prev) => {
-        // 1️⃣ Update parent’s internal array
+        // Update parent’s internal array
         const updatedData = prev.map((row) => {
           if (String(row.id) !== String(parentId)) return row;
 
@@ -549,23 +435,20 @@ const RoleCreation = () => {
           return { ...row, oSubMenusSpeAccess: updatedChildren };
         });
 
-        // 2️⃣ Remove the child’s flattened row from DataGrid
+        // Remove the child’s flattened row from DataGrid
         const filtered = updatedData.filter(
-          (r) => String(r.id) !== displayId // remove this exact flattened child row
+          (r) => String(r.id) !== displayId 
         );
-
         return filtered;
       });
-
       return;
     }
-
     // --- If it's a parent row ---
     setRoleTableData((prev) =>
       prev.filter(
         (r) =>
-          String(r.id) !== String(displayId) && // remove parent itself
-          !String(r.id).startsWith(`${displayId}-child-`) // also remove all its children
+          String(r.id) !== String(displayId) &&  
+          !String(r.id).startsWith(`${displayId}-child-`)  
       )
     );
   };
@@ -620,8 +503,7 @@ const RoleCreation = () => {
   };
 
   const handleUpdate = async (rowData) => {
-    console.log("object ", rowData);
-    setSaveUpdateButton("UPDATE");
+     setSaveUpdateButton("UPDATE");
     setClearUpdateButton("RESET");
     setOn(true);
 
@@ -687,50 +569,6 @@ const RoleCreation = () => {
     }
   };
 
-  // const clearFormData = () => {
-  //   setRoleTableData([]);
-
-  //   if (ClearUpdateButton === "CLEAR") {
-  //     reset({
-  //       Status: 1,
-
-  //       RoleName: "",
-  //       oLines: [],
-  //     });
-  //   }
-  //   if (ClearUpdateButton === "RESET") {
-  //     if (originalDataRef.current) {
-  //       const resetData = { ...originalDataRef.current };
-
-  //       // Remove +91 from MobileNo if it exists
-  //       if (resetData.MobileNo && resetData.MobileNo.startsWith("+91")) {
-  //         resetData.MobileNo = resetData.MobileNo.slice(3);
-  //       }
-  //       reset(resetData);
-
-  //       // also set rows for DataGrid
-  //       if (resetData.oLines && Array.isArray(resetData.oLines)) {
-  //         const formattedLines = resetData.oLines.map((line, index) => ({
-  //           ...line,
-  //           id: line.LineNum ?? index,
-  //         }));
-  //         setRoleTableData(formattedLines);
-  //       }
-  //        else {
-  //         setRoleTableData([]);
-  //       }
-  //     } else {
-  //       reset({
-  //         Status: 1,
-
-  //         RoleName: "",
-  //         oLines: [],
-  //       });
-  //       setRoleTableData([]);
-  //     }
-  //   }
-  // };
-
   const clearFormData = () => {
     setRoleTableData([]);
 
@@ -789,7 +627,6 @@ const RoleCreation = () => {
               });
             }
           });
-
           setRoleTableData(formattedLines);
         } else {
           setRoleTableData([]);
@@ -804,7 +641,6 @@ const RoleCreation = () => {
       }
     }
   };
-
   const handleOnSave = () => {
     setSaveUpdateButton("SAVE");
     setClearUpdateButton("CLEAR");
@@ -815,9 +651,8 @@ const RoleCreation = () => {
       RoleName: "",
       oLines: [],
     });
-    setRoleTableData([]); // clears table data
+    setRoleTableData([]); 
   };
-
   const onSubmit = async (data) => {
     if (!data.RoleName || data.RoleName.trim() === "") {
       Swal.fire({
@@ -832,7 +667,6 @@ const RoleCreation = () => {
       });
       return;
     }
-
     const payload = {
       Id: data.Id || 0,
       CreatedBy: sessionStorage.getItem("userId") || "",
@@ -840,7 +674,6 @@ const RoleCreation = () => {
       ModifiedBy: sessionStorage.getItem("userId") || "",
       ModifiedDate: dayjs().format("YYYY-MM-DDTHH:mm:ss.SSS"),
       Status: data.Status === false ? 0 : 1,
-
       RoleName: data.RoleName || "",
       Remarks: data.Remarks || "",
       oLines: RoleTableData.map((row, index) => ({
@@ -869,8 +702,7 @@ const RoleCreation = () => {
             : [],
       })),
     };
-    // console.log(" My object", payload);
-    // return
+     // return
 
     try {
       let response;
@@ -887,15 +719,11 @@ const RoleCreation = () => {
           cancelButtonColor: "#d33",
           confirmButtonText: "Yes, Update it!",
         });
-
         if (!result.isConfirmed) return;
-
         setLoaderOpen(true);
         response = await axios.put(`${BASE_URL}Role/${data.Id}`, payload);
       }
-
       setLoaderOpen(false);
-
       if (response.data.success) {
         Swal.fire({
           icon: "success",
@@ -916,66 +744,18 @@ const RoleCreation = () => {
 
       Swal.fire({
         title: "Error!",
-        text: error.message || "Something went wrong while uploading.",
+        text: error.message  ,
         icon: "error",
         confirmButtonText: "Ok",
       });
     }
   };
-
-  // const handleSelectedMenus = () => {
-  //   if (!Array.isArray(selectedIds) || selectedIds.length === 0) return;
-
-  //   const selectedData = [];
-
-  //   MenuList.forEach((menu) => {
-  //     (menu.oSubMenus || []).forEach((sub) => {
-  //       if (selectedIds.includes(sub.id)) {
-  //         // Filter only selected special accesses
-  //         const filteredAccess = (sub.oSubMenusSpeAccess || []).filter(
-  //           (access) => selectedIds.includes(`${sub.id}_${access.LineNum}`)
-  //         );
-
-  //         selectedData.push({
-  //           id: `${sub.id}_${Date.now()}_${Math.random()
-  //             .toString(36)
-  //             .slice(2, 8)}`,
-  //           ParentMenuId: menu.Id,
-  //           ParentMenuName: menu.Name,
-  //           SubMenuId: sub.LineNum,
-  //           SubMenuName: sub.Name,
-  //           IsRead: true,
-  //           IsAdd: true,
-  //           IsEdit: true,
-  //           IsDelete: true,
-  //           oSubMenusSpeAccess: filteredAccess.map((acc) => ({
-  //             ...acc,
-  //             LineNum: acc.LineNum,
-  //             spName: acc.Name,
-  //             isChild: true,
-  //             IsRead: true,
-  //             IsAdd: true,
-  //             IsEdit: true,
-  //             IsDelete: true,
-  //           })),
-  //         });
-  //       }
-  //     });
-  //   });
-
-  //   // Merge with existing table data
-  //   setRoleTableData((prev) => [...prev, ...selectedData]);
-  //   setOpenMenu(false);
-  // };
   const handleSelectedMenus = () => {
     if (!Array.isArray(selectedIds) || selectedIds.length === 0) return;
-
     const existingSubMenus = new Set(
       (RoleTableData || []).map((r) => Number(r.SubMenuId))
     );
-
     const selectedData = [];
-
     MenuList.forEach((menu) => {
       (menu.oSubMenus || []).forEach((sub) => {
         if (
@@ -985,7 +765,6 @@ const RoleCreation = () => {
           const filteredAccess = (sub.oSubMenusSpeAccess || []).filter((acc) =>
             selectedIds.includes(`${sub.id}_${acc.LineNum}`)
           );
-
           selectedData.push({
             id: `${sub.id}_${Date.now()}`,
             ParentMenuId: menu.Id,
@@ -1004,22 +783,17 @@ const RoleCreation = () => {
         }
       });
     });
-
     setRoleTableData((prev) => [...prev, ...selectedData]);
     setOpenMenu(false);
   };
-
   const handleMenusList = async (params = {}) => {
     setLoading(true);
-
     try {
       const token = sessionStorage.getItem("BearerTokan");
-
       if (!token) {
         console.error("No token found! Please login first.");
         return;
       }
-
       const { data } = await axios.get(`${BASE_URL}Menus`, {
         params,
         headers: {
@@ -1028,7 +802,6 @@ const RoleCreation = () => {
             : `Bearer ${token}`,
         },
       });
-
       if (data && data.success && Array.isArray(data.values)) {
         const formatted = data.values.map((menuParent) => ({
           ...menuParent,
@@ -1054,13 +827,9 @@ const RoleCreation = () => {
       setLoading(false);
     }
   };
-
-  // 🔹 Call when the component mounts
   React.useEffect(() => {
     handleMenusList();
   }, []);
-
-  const [expandedRowIds, setExpandedRowIds] = React.useState([]);
 
   const toggleExpandRow = (rowId) => {
     setExpandedRowIds((prev) =>
@@ -1073,30 +842,26 @@ const RoleCreation = () => {
   const handleCheckboxChange = (displayId, field, value) => {
     setRoleTableData((prev) =>
       prev.map((parent) => {
-        // 1) Parent row clicked (displayId === parent.id)
+        //  Parent row clicked (displayId === parent.id)
         if (displayId === parent.id) {
           return { ...parent, [field]: value };
         }
 
-        // 2) Child clicked: expected format "<parentId>-child-<idx>"
+        //  Child clicked: expected format "<parentId>-child-<idx>"
         if (typeof displayId === "string" && displayId.includes("-child-")) {
           const [parentIdStr, childIdxStr] = displayId.split("-child-");
-          // parent ids may be numbers — compare as strings for safety
           if (String(parent.id) === parentIdStr) {
             const childIdx = Number(childIdxStr);
             const childArr = Array.isArray(parent.oSubMenusSpeAccess)
               ? [...parent.oSubMenusSpeAccess]
               : [];
 
-            // guard index
             if (childIdx >= 0 && childIdx < childArr.length) {
               childArr[childIdx] = { ...childArr[childIdx], [field]: value };
             }
-
             return { ...parent, oSubMenusSpeAccess: childArr };
           }
         }
-
         return parent;
       })
     );
@@ -1109,9 +874,7 @@ const RoleCreation = () => {
       ...(isExpanded
         ? (row.oSubMenusSpeAccess || []).map((child, idx) => ({
             ...child,
-            // id: `${row.id}-child-${idx}`,
-            id: `${row.id}-child-${idx}`, // ✅ guaranteed unique (includes parent id)
-
+            id: `${row.id}-child-${idx}`, 
             isChild: true,
             parentId: row.id,
             ParentMenuName: row.ParentMenuName,
@@ -1131,12 +894,10 @@ const RoleCreation = () => {
   const prepareExistingMenus = (roleTableData) => {
     const selectedIds = new Set();
     const disabledSubMenus = new Set();
-
     roleTableData.forEach((row) => {
-      // For parent/submenu rows
       if (row.SubMenuId) {
-        disabledSubMenus.add(Number(row.SubMenuId)); // used for disabling submenu checkbox
-        selectedIds.add(row.SubMenuId); // used for marking selected
+        disabledSubMenus.add(Number(row.SubMenuId));
+        selectedIds.add(row.SubMenuId); 
       }
 
       // For child special access
@@ -1157,14 +918,12 @@ const RoleCreation = () => {
   return (
     <>
       <Dialog open={openMenu} onClose={handleCloseMenu} fullWidth maxWidth="md">
-        {/* <DialogTitle>Menu Activity</DialogTitle> */}
         <Grid
           item
           xs={12}
           sx={{ display: "flex", justifyContent: "space-between" }}
         >
           <DialogTitle>ROLE CREATION</DialogTitle>
-          {/* <Typography fontWeight="bold"> ROLE CREATION</Typography> */}
           <IconButton onClick={handleCloseMenu}>
             <CloseIcon />
           </IconButton>
@@ -1172,17 +931,6 @@ const RoleCreation = () => {
 
         <DialogContent dividers>
           <div style={{ height: 550, width: "100%" }}>
-            {/* <CollapsibleMenuGrid
-              menuList={MenuList}
-              onSelectionChange={setSelectedIds}
-               existingSubMenus={[
-                ...new Set(
-                  RoleTableData.filter((r) => r.SubMenuId != null).map(
-                    (r) => r.SubMenuId
-                  ) // SubMenuId = LineNum
-                ),
-              ]}
-            /> */}
             <CollapsibleMenuGrid
               menuList={MenuList}
               onSelectionChange={setSelectedIds}
@@ -1201,24 +949,10 @@ const RoleCreation = () => {
         <DialogActions
           sx={{
             display: "flex",
-            justifyContent: "space-between", // adds space between buttons
-            px: 3, // optional: adds some padding on left and right
+            justifyContent: "space-between",
+            px: 3, 
           }}
         >
-          {/* <Button
-            onClick={handleCloseMenu}
-            variant="outlined"
-            size="small"
-            sx={{
-              p: 1,
-              width: 80,
-              color: "rgb(0, 90, 91)",
-              border: "1px solid rgb(0, 90, 91)",
-              borderRadius: "8px",
-            }}
-          >
-            Cancle
-          </Button> */}
           <Button
             variant="contained"
             size="small"
@@ -1503,42 +1237,41 @@ const RoleCreation = () => {
         </Typography>
       </Grid>
       <Grid container xs={12} md={12} lg={12} justifyContent="flex-end">
-      <Tooltip 
-      title={!canAdd ? "You don't have Add permission" : ""} 
-      placement="top"
-    >
-      <span> 
-        <Button
-          onClick={handleOnSave}
-                               disabled={!canAdd}
-
-          type="text"
-          size="medium"
-          sx={{
-            pr: 2,
-            color: "white",
-            background:
-              "linear-gradient(to right, rgb(0, 90, 91), rgb(22, 149, 153))",
-            borderRadius: "8px",
-            transition: "all 0.2s ease-in-out",
-            boxShadow: "0 4px 8px rgba(0, 90, 91, 0.3)",
-            "&:hover": {
-              transform: "translateY(2px)",
-              boxShadow: "0 2px 4px rgba(0, 90, 91, 0.2)",
-            },
-            "& .MuiButton-label": {
-              display: "flex",
-              alignItems: "center",
-            },
-            "& .MuiSvgIcon-root": {
-              marginRight: "10px",
-            },
-          }}
+        <Tooltip
+          title={!canAdd ? "You don't have Add permission" : ""}
+          placement="top"
         >
-          <AddIcon />
-          Add Role
-        </Button>
-        </span>
+          <span>
+            <Button
+              onClick={handleOnSave}
+              disabled={!canAdd}
+              type="text"
+              size="medium"
+              sx={{
+                pr: 2,
+                color: "white",
+                background:
+                  "linear-gradient(to right, rgb(0, 90, 91), rgb(22, 149, 153))",
+                borderRadius: "8px",
+                transition: "all 0.2s ease-in-out",
+                boxShadow: "0 4px 8px rgba(0, 90, 91, 0.3)",
+                "&:hover": {
+                  transform: "translateY(2px)",
+                  boxShadow: "0 2px 4px rgba(0, 90, 91, 0.2)",
+                },
+                "& .MuiButton-label": {
+                  display: "flex",
+                  alignItems: "center",
+                },
+                "& .MuiSvgIcon-root": {
+                  marginRight: "10px",
+                },
+              }}
+            >
+              <AddIcon />
+              Add Role
+            </Button>
+          </span>
         </Tooltip>
       </Grid>
       <Grid
@@ -1599,8 +1332,6 @@ const RoleCreation = () => {
             setCurrentPage(0);
             getAllRoleList(0, quickFilterValue, limit);
           }}
-          // getRowId={(row) => row.MenuId}
-          // getRowId={(row) => row.Id ?? row.id ?? row.MenuId ?? row.LineNum ?? `${row.RoleName}-${Math.random()}`}
         />
       </Grid>
     </>

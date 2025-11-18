@@ -48,7 +48,6 @@ const GazettedMaster = () => {
     control,
     setValue,
     reset,
-    // formState: {  },
   } = useForm({
     defaultValues: {
       Name: "",
@@ -357,8 +356,6 @@ const GazettedMaster = () => {
         onClose={handleClose}
         sx={{
           backdropFilter: "blur(5px)",
-          // backgroundColor: "rgba(0, 0, 0, 0.3)",
-          // zIndex: 1200,
         }}
       >
         <Paper
@@ -400,7 +397,6 @@ const GazettedMaster = () => {
                 <CloseIcon />
               </IconButton>
             </Grid>
-            {/* <form onSubmit={handleSubmit(handleSubmitForm)}> */}
 
             <Grid item xs={12}>
               <Controller
@@ -470,7 +466,6 @@ const GazettedMaster = () => {
               <Button
                 type="submit"
                 size="small"
-                // onClick={handleSubmitForm}
                 sx={{
                   marginTop: 1,
                   p: 1,
@@ -488,7 +483,6 @@ const GazettedMaster = () => {
                 {SaveUpdateButton}
               </Button>
             </Grid>
-            {/* </form> */}
             <Grid />
           </Grid>
         </Paper>
@@ -589,7 +583,7 @@ const GazettedMaster = () => {
           columns={columns}
           pagination
           paginationMode="server"
-          rowCount={totalRows} // REQUIRED — tells grid how many total records exist
+          rowCount={totalRows} 
           pageSizeOptions={[10, 20, 50]}
           paginationModel={{ page: currentPage, pageSize: limit }}
           onPaginationModelChange={(newModel) => {
