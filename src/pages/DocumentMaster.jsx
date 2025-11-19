@@ -45,8 +45,12 @@ const DocumentMaster = () => {
   const originalDataRef = React.useRef(null);
   const firstLoad = React.useRef(true);
 
-  const [page, setPage] = React.useState(0);
+  
+//  ===============
+const [page, setPage] = React.useState(0);
  const [hasMore, setHasMore] = React.useState(true);
+const [scrollLock, setScrollLock] = React.useState(false);
+// ============
 
 
   const { checkAccess } = useThemeMode();
@@ -288,15 +292,13 @@ const CustomListBox = React.forwardRef(function CustomListBox(props, ref) {
 
   const handleScroll = (event) => {
     const list = event.currentTarget;
+    const bottom = list.scrollHeight - (list.scrollTop + list.clientHeight);
 
-    if (
-      list.scrollTop + list.clientHeight >= list.scrollHeight - 5 &&
-      !loading &&
-      hasMore
-    ) {
+    // 👇 strong threshold check
+    if (bottom < 30 && !loading && hasMore && !scrollLock) {
       const nextPage = page + 1;
       setPage(nextPage);
-      DocMasterListTemp(nextPage); // load more
+      DocMasterListTemp(nextPage);
     }
   };
 
@@ -311,6 +313,7 @@ const CustomListBox = React.forwardRef(function CustomListBox(props, ref) {
     </ul>
   );
 });
+
 
   // const getAllDocumentList = async (page = 0, searchText = "") => {
   //   try {
@@ -918,32 +921,36 @@ const [selectedDocs, setSelectedDocs] = React.useState([]);
   //   }
   // };
 
-  const DocMasterListTemp = async (page = 0, excludeId = null) => {
-  try {
-    setLoading(true);
+const DocMasterListTemp = async (page = 0, excludeId = null) => {
+  if (scrollLock || !hasMore) return;
+  setScrollLock(true);
+  setLoading(true);
 
+  try {
     const { data } = await axios.get(`${BASE_URL}DocsMaster`, {
-      params: { Status: "1", page: page }   // 👈 Page param
+      params: { Status: "1", page }
     });
 
-    if (data?.values) {
-      const newDocs = excludeId
-        ? data.values.filter((doc) => Number(doc.Id) !== Number(excludeId))
-        : data.values;
+    const newDocs = data?.values || [];
 
-        if (!data?.values || data.values.length === 0) {
-  setHasMore(false);  // stop loading more
-}
-
-      // 👇 Append if page > 0, otherwise replace
-      setDocOptions((prev) => (page === 0 ? newDocs : [...prev, ...newDocs]));
+    if (excludeId) {
+      newDocs = newDocs.filter((doc) => Number(doc.Id) !== Number(excludeId));
     }
-  } catch (error) {
-    console.error("Error fetching DocsMaster:", error);
+
+    if (newDocs.length === 0) {
+      setHasMore(false);
+      return;
+    }
+
+    setDocOptions((prev) => page === 0 ? newDocs : [...prev, ...newDocs]);
+  } catch (err) {
+    console.error("Error fetching DocsMaster:", err);
   } finally {
     setLoading(false);
+    setTimeout(() => setScrollLock(false), 300); // 👈 small delay prevents repeat call
   }
 };
+
 
 
   return (
