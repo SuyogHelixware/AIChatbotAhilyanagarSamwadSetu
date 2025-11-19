@@ -4,6 +4,8 @@ import DeleteForeverIcon from "@mui/icons-material/DeleteForever";
 import EditNoteIcon from "@mui/icons-material/EditNote";
 import {
   Button,
+  Checkbox,
+  FormControlLabel,
   Grid,
   IconButton,
   MenuItem,
@@ -23,6 +25,9 @@ import Swal from "sweetalert2";
 import { BASE_URL } from "../Constant";
 import Loader from "../components/Loader";
 import { useThemeMode } from "../Dashboard/Theme";
+import Autocomplete from "@mui/material/Autocomplete";
+import Popper from "@mui/material/Popper";
+
 
 const DocumentMaster = () => {
   const [loaderOpen, setLoaderOpen] = React.useState(false);
@@ -34,13 +39,17 @@ const DocumentMaster = () => {
   const [currentPage, setCurrentPage] = React.useState(0);
   const [loading, setLoading] = React.useState(false);
   const [searchText, setSearchText] = React.useState("");
-  const limit = 20;
-  const originalDataRef = React.useRef(null);
+  // const limit = 40;
+  const [limit, setLimit] = React.useState(20);
 
+  const originalDataRef = React.useRef(null);
   const firstLoad = React.useRef(true);
 
-  const { checkAccess } = useThemeMode();
+  const [page, setPage] = React.useState(0);
+ const [hasMore, setHasMore] = React.useState(true);
 
+
+  const { checkAccess } = useThemeMode();
   const canAdd = checkAccess(5, "IsAdd");
   const canEdit = checkAccess(5, "IsEdit");
   const canDelete = checkAccess(5, "IsDelete");
@@ -61,6 +70,7 @@ const DocumentMaster = () => {
     control,
     setValue,
     reset,
+    watch,
     formState: { errors },
   } = useForm({
     defaultValues: {
@@ -70,6 +80,8 @@ const DocumentMaster = () => {
       Status: 1,
     },
   });
+  const isMainDoc = watch("IsMainDoc");
+
   const clearFormData = () => {
     if (ClearUpdateButton === "CLEAR") {
       reset({
@@ -77,6 +89,7 @@ const DocumentMaster = () => {
         NameMR: "",
         Description: "",
         Status: 1,
+        IsMainDoc:false,
         CreateSubDocRows: [],
       });
       setCreateSubDocRows([]);
@@ -158,6 +171,7 @@ const DocumentMaster = () => {
         NameMR: formData.NameMR,
         Description: formData.Description || "",
         Status: formData.Status || "1",
+        IsMainDoc: formData.IsMainDoc,
 
         SubDocs: CreateSubDocRows.filter((row) => row.NameMR).map(
           (row, index) => ({
@@ -248,35 +262,129 @@ const DocumentMaster = () => {
     }
   };
 
-  const getAllDocumentList = async (page = 0, searchText = "") => {
-    try {
-      setLoading(true);
+  const CustomPopper = (props) => {
+  return (
+    <Popper
+      {...props}
+      onScroll={async (e) => {
+        const list = e.target;
 
-      const params = {
-        Status: 1,
-        Page: page,
-        ...(limit ? { Limit: limit } : {}),
-        ...(searchText ? { SearchText: searchText } : {}),
-      };
+        if (
+          list.scrollTop + list.clientHeight >= list.scrollHeight - 10 &&
+          !loading &&
+          hasMore
+        ) {
+          const nextPage = page + 1;
+          setPage(nextPage);
+          DocMasterListTemp(nextPage);
+        }
+      }}
+    />
+  );
+};
 
-      const response = await axios.get(`${BASE_URL}DocsMaster`, { params });
-      if (response.data && response.data.values) {
-        setDocumentData(
-          response.data.values.map((item, index) => ({
-            ...item,
-            id: item.Id,
-          }))
-        );
-      }
-    } catch (error) {
-      console.error("Error fetching data:", error);
-    } finally {
-      setLoading(false);
+const CustomListBox = React.forwardRef(function CustomListBox(props, ref) {
+  const { children, ...other } = props;
+
+  const handleScroll = (event) => {
+    const list = event.currentTarget;
+
+    if (
+      list.scrollTop + list.clientHeight >= list.scrollHeight - 5 &&
+      !loading &&
+      hasMore
+    ) {
+      const nextPage = page + 1;
+      setPage(nextPage);
+      DocMasterListTemp(nextPage); // load more
     }
   };
+
+  return (
+    <ul
+      {...other}
+      ref={ref}
+      style={{ maxHeight: 250, overflow: "auto" }}
+      onScroll={handleScroll}
+    >
+      {children}
+    </ul>
+  );
+});
+
+  // const getAllDocumentList = async (page = 0, searchText = "") => {
+  //   try {
+  //     setLoading(true);
+
+  //     const params = {
+  //       Status: 1,
+  //       Page: page,
+  //        ...(limit ? { Limit: limit } : {}),
+  //       ...(searchText ? { SearchText: searchText } : {}),
+  //     };
+
+  //     const response = await axios.get(`${BASE_URL}DocsMaster`, { params });
+  //     if (response.data && response.data.values) {
+  //       setDocumentData(
+  //         response.data.values.map((item, index) => ({
+  //           ...item,
+  //           id: item.Id,
+  //         }))
+  //       );
+  //     }
+  //   } catch (error) {
+  //     console.error("Error fetching data:", error);
+  //   } finally {
+  //     setLoading(false);
+  //   }
+  // };
+
+  const getAllDocumentList = async (page = 0, searchText = "") => {
+  try {
+    setLoading(true);
+
+    // If your backend expects 1-based pages (Page=1 for first page),
+    // uncomment the next line and send `apiPage = page + 1`
+    // const apiPage = page + 1;
+    const apiPage = page; // keep as-is if backend uses 0-based page
+
+    let apiUrl = `${BASE_URL}DocsMaster?Page=${apiPage}&Limit=${limit}`;
+    if (searchText) {
+      apiUrl = `${BASE_URL}DocsMaster?SearchText=${encodeURIComponent(
+        searchText
+      )}&Page=${apiPage}&Limit=${limit}`;
+    }
+
+    const response = await axios.get(apiUrl);
+
+    if (response.data && response.data.values) {
+      // map ids so they are unique across pages
+      setDocumentData(
+        response.data.values.map((item, index) => ({
+          ...item,
+          id: page * limit + index + 1, // digit-by-digit arithmetic: page*limit + index + 1
+        }))
+      );
+
+      // set total rows for server-side pagination
+      setTotalRows(response.data.count || 0);
+    } else {
+      setDocumentData([]);
+      setTotalRows(0);
+    }
+  } catch (error) {
+    console.error("Error fetching data:", error);
+  } finally {
+    setLoading(false);
+  }
+};
+
+
   React.useEffect(() => {
-    if (on) DocMasterListTemp();
+    if (on) DocMasterListTemp(0);
   }, [on]);
+
+ 
 
   React.useEffect(() => {
     if (firstLoad.current) {
@@ -363,8 +471,7 @@ const DocumentMaster = () => {
                   },
                 }}
                 onClick={() => handleUpdate(params.row)}
-                            disabled={!canEdit}
-
+                disabled={!canEdit}
               >
                 <EditNoteIcon />
               </IconButton>
@@ -380,8 +487,7 @@ const DocumentMaster = () => {
                 size="medium"
                 sx={{ color: "red" }}
                 onClick={() => handleDelete(params.row)}
-                            disabled={!canDelete}
-
+                disabled={!canDelete}
               >
                 <DeleteForeverIcon />
               </Button>
@@ -391,17 +497,47 @@ const DocumentMaster = () => {
       ),
     },
 
-    {
-      field: "srNo",
-      headerName: "SR NO",
-      width: 60,
-      sortable: false,
-      headerAlign: "center",
-      align: "center",
-      renderCell: (params) =>
-        params.api.getSortedRowIds().indexOf(params.id) + 1,
-    },
+    // {
+    //   field: "srNo",
+    //   headerName: "SR NO",
+    //   width: 60,
+    //   sortable: false,
+    //   headerAlign: "center",
+    //   align: "center",
+    //   renderCell: (params) =>
+    //     params.api.getSortedRowIds().indexOf(params.id) + 1,
+    // },
+  {
+  field: "srNo",
+  headerName: "SR NO",
+  width: 80,
+  sortable: false,
+  headerAlign: "center",
+  align: "center",
+  renderCell: (params) => params.row.id ?? "", 
+},
 
+  {
+    field: "IsMainDoc",
+    headerName: "MAIN DOCUMENT",
+    width: 120,
+    sortable: false,
+    renderCell: (params) => (
+      <Checkbox
+        checked={params.value === true}
+        color="success"
+        size="medium"
+        onChange={(e) => {
+          const newValue = e.target.checked;
+          params.api.setEditCellValue({
+            id: params.id,
+            field: "IsMainDoc",
+            value: newValue,
+          });
+        }}
+      />
+    ),
+  },
     {
       field: "NameEN",
       headerName: "DOCUMENT NAME",
@@ -471,22 +607,43 @@ const DocumentMaster = () => {
       ),
     },
   ];
+const [selectedDocs, setSelectedDocs] = React.useState([]);
+
   // ===== Delete Row =====
-  const handleDeleteRow = (id) => {
-    setCreateSubDocRows((prev) => prev.filter((r) => r.id !== id));
-  };
+  // const handleDeleteRow = (id) => {
+  //   setCreateSubDocRows((prev) => prev.filter((r) => r.id !== id));
+  // };
+
+ const handleDeleteRow = (id) => {
+  const deletedDoc = CreateSubDocRows.find(r => r.id === id)?.NameMR;
+
+  setCreateSubDocRows((prev) => prev.filter((r) => r.id !== id));
+
+  if (deletedDoc) {
+    setSelectedDocs((prev) => prev.filter((x) => x !== deletedDoc));
+  }
+};
+
+
+    const [SearchTextsubmenuname, setSearchTextsubmenuname] = React.useState("");
+
+
 
   const columnssubDoc = [
-    {
-      field: "srNo",
-      headerName: "SR NO",
-      width: 60,
-      sortable: false,
-      headerAlign: "center",
-      align: "center",
-      renderCell: (params) =>
-        params.api.getSortedRowIds().indexOf(params.id) + 1,
-    },
+   
+  {
+  field: "srNo",
+  headerName: "SR NO",
+  width: 60,
+  sortable: false,
+  headerAlign: "center",
+  align: "center",
+  renderCell: (params) => {
+    const index = CreateSubDocRows.findIndex((r) => r.id === params.row.id);
+    return index + 1;
+  }
+},
+
     {
       field: "actions",
       headerName: "Action",
@@ -503,46 +660,172 @@ const DocumentMaster = () => {
         </Button>
       ),
     },
+      // {
+    //   field: "NameMR",
+    //   headerName: "DOCUMENT NAME",
+    //   width: 250,
+    //   renderCell: (params) => {
+    //     const handleChange = (e) => {
+    //       const newValue = e.target.value;
+    //       setCreateSubDocRows((prev) =>
+    //         prev.map((r) =>
+    //           r.id === params.row.id ? { ...r, NameMR: newValue } : r
+    //         )
+    //       );
+    //     };
 
-    {
-      field: "NameMR",
-      headerName: "DOCUMENT NAME",
-      width: 250,
-      renderCell: (params) => {
-        const handleChange = (e) => {
-          const newValue = e.target.value;
-          setCreateSubDocRows((prev) =>
-            prev.map((r) =>
-              r.id === params.row.id ? { ...r, NameMR: newValue } : r
-            )
-          );
-        };
+    //     return (
+    //       <Tooltip title={params.value || ""}>
+    //         <Select
+    //           value={params.value || ""}
+    //           onChange={handleChange}
+    //           fullWidth
+    //           variant="standard"
+    //           MenuProps={{
+    //             PaperProps: { style: { maxHeight: 200 , maxWidth: 200,  } },
+    //           }}
+    //             sx={{
+    //             minWidth: 250,
+    //           }}
+    //         >
+    //           {docOptions.length > 0 ? (
+    //             docOptions.map((opt, i) => (
+    //               <MenuItem key={i} value={opt.NameMR}     sx={{
+    //                   whiteSpace: "normal",
+    //                   wordWrap: "break-word",
+    //                   alignItems: "flex-start",
+    //                 }}
+    //               >
+    //                 {opt.NameMR}
+    //               </MenuItem>
+    //             ))
+    //           ) : (
+    //             <MenuItem disabled>No options available</MenuItem>
+    //           )}
+    //         </Select>
+    //       </Tooltip>
+    //     );
+    //   },
+    // },
 
-        return (
-          <Tooltip title={params.value || ""}>
-            <Select
-              value={params.value || ""}
-              onChange={handleChange}
-              fullWidth
-              variant="standard"
-              MenuProps={{
-                PaperProps: { style: { maxHeight: 200 } },
-              }}
-            >
-              {docOptions.length > 0 ? (
-                docOptions.map((opt, i) => (
-                  <MenuItem key={i} value={opt.NameMR}>
-                    {opt.NameMR}
-                  </MenuItem>
-                ))
-              ) : (
-                <MenuItem disabled>No options available</MenuItem>
-              )}
-            </Select>
-          </Tooltip>
-        );
-      },
-    },
+// {
+//   field: "NameMR",
+//   headerName: "DOCUMENT NAME",
+//   width: 250,
+//   renderCell: (params) => {
+//     const currentValue = params.row.NameMR;
+
+//     const handleChange = (e) => {
+//       const newValue = e.target.value;
+
+//       // Update grid rows
+//       setCreateSubDocRows((prev) =>
+//         prev.map((r) =>
+//           r.id === params.row.id ? { ...r, NameMR: newValue } : r
+//         )
+//       );
+
+//       // Update selected documents list
+//       setSelectedDocs((prev) => {
+//         const withoutCurrent = prev.filter((x) => x !== currentValue);
+//         return [...withoutCurrent, newValue];
+//       });
+//     };
+
+//     // Filter dropdown (hide selected except current row value)
+//     const filteredOptions = docOptions.filter(
+//       (opt) => !selectedDocs.includes(opt.NameMR) || opt.NameMR === currentValue
+//     );
+
+//     return (
+//       <Tooltip title={params.value || ""}>
+//         <Select
+//           value={params.value || ""}
+//           onChange={handleChange}
+//           fullWidth
+//           variant="standard"
+//           MenuProps={{
+//             PaperProps: { style: { maxHeight: 200, maxWidth: 200 } },
+//           }}
+//           sx={{ minWidth: 250 }}
+//         >
+//           {filteredOptions.length > 0 ? (
+//             filteredOptions.map((opt, i) => (
+//               <MenuItem
+//                 key={i}
+//                 value={opt.NameMR}
+//                 sx={{
+//                   whiteSpace: "normal",
+//                   wordWrap: "break-word",
+//                   alignItems: "flex-start",
+//                 }}
+//               >
+//                 {opt.NameMR}
+//               </MenuItem>
+//             ))
+//           ) : (
+//             <MenuItem disabled>No options available</MenuItem>
+//           )}
+//         </Select>
+//       </Tooltip>
+//     );
+//   },
+// }
+
+// ========================
+{
+  field: "NameMR",
+  headerName: "DOCUMENT NAME",
+  width: 250,
+  renderCell: (params) => {
+    const currentValue = params.row.NameMR;
+
+    // Filter options to avoid duplicates
+    const filteredOptions = docOptions.filter(
+      (opt) => !selectedDocs.includes(opt.NameMR) || opt.NameMR === currentValue
+    );
+
+    const handleChange = (e, newValue) => {
+      if (!newValue) return;
+
+      // Update grid rows
+      setCreateSubDocRows((prev) =>
+        prev.map((r) =>
+          r.id === params.row.id ? { ...r, NameMR: newValue.NameMR } : r
+        )
+      );
+
+      // Update selected documents list
+      setSelectedDocs((prev) => {
+        const withoutCurrent = prev.filter((x) => x !== currentValue);
+        return [...withoutCurrent, newValue.NameMR];
+      });
+    };
+
+    return (
+      <Tooltip title={params.value || ""}>
+        <Autocomplete
+        disablePortal     
+  ListboxComponent={CustomListBox}   // 👈 Use custom scroll logic
+  
+          value={
+            docOptions.find((opt) => opt.NameMR === currentValue) || null
+          }
+          onChange={handleChange}
+          options={filteredOptions}
+          getOptionLabel={(option) => option.NameMR}
+          renderInput={(params) => (
+            <TextField {...params} variant="standard" placeholder="Select..." />
+          )}
+          fullWidth
+          sx={{ minWidth: 250 }}
+        />
+      </Tooltip>
+    );
+  },
+}
+
+
   ];
   const [docOptions, setDocOptions] = React.useState([]);
 
@@ -571,6 +854,7 @@ const DocumentMaster = () => {
         setValue("NameMR", Document.NameMR);
         setValue("Description", Document.Description);
         setValue("Status", Document.Status);
+        setValue("IsMainDoc", Document.IsMainDoc);
 
         // ✅ map sub docs
         const subDocs = (Document.SubDocs || []).map((subDoc, index) => ({
@@ -589,38 +873,78 @@ const DocumentMaster = () => {
     }
   };
 
+  // const handleAddRow = () => {
+  //   setCreateSubDocRows((prevRows) => [
+  //     ...prevRows,
+  //     {
+  //       id: prevRows.length + 1,
+  //       DocName: "",
+  //       Description: "",
+  //       isDisabled: false,
+  //     },
+  //   ]);
+  // };
   const handleAddRow = () => {
-    setCreateSubDocRows((prevRows) => [
-      ...prevRows,
-      {
-        id: prevRows.length + 1,
-        DocName: "",
-        Description: "",
-        isDisabled: false,
-      },
-    ]);
-  };
+  setCreateSubDocRows((prevRows) => [
+    ...prevRows,
+    {
+      id: Date.now(),      
+      NameMR: "",
+      Description: "",
+      isDisabled: false,
+    },
+  ]);
+};
 
-  const DocMasterListTemp = async (excludeId = null) => {
+
+  // const DocMasterListTemp = async (excludeId = null) => {
+  //   setLoading(true);
+  //   try {
+  //     const { data } = await axios.get(`${BASE_URL}DocsMaster`, {
+  //       params: { Status: "1"},
+  //     });
+
+  //     if (data?.values) {
+  //       const filteredDocs = excludeId
+  //         ? data.values.filter((doc) => Number(doc.Id) !== Number(excludeId))
+  //         : data.values;
+
+  //       setDocOptions(filteredDocs);
+  //     }
+  //   } catch (error) {
+  //     console.error("Error fetching DocsMaster:", error);
+  //   } finally {
+  //     setLoading(false);
+  //   }
+  // };
+
+  const DocMasterListTemp = async (page = 0, excludeId = null) => {
+  try {
     setLoading(true);
-    try {
-      const { data } = await axios.get(`${BASE_URL}DocsMaster`, {
-        params: { Status: "1" },
-      });
 
-      if (data?.values) {
-        const filteredDocs = excludeId
-          ? data.values.filter((doc) => Number(doc.Id) !== Number(excludeId))
-          : data.values;
+    const { data } = await axios.get(`${BASE_URL}DocsMaster`, {
+      params: { Status: "1", page: page }   // 👈 Page param
+    });
 
-        setDocOptions(filteredDocs);
-      }
-    } catch (error) {
-      console.error("Error fetching DocsMaster:", error);
-    } finally {
-      setLoading(false);
+    if (data?.values) {
+      const newDocs = excludeId
+        ? data.values.filter((doc) => Number(doc.Id) !== Number(excludeId))
+        : data.values;
+
+        if (!data?.values || data.values.length === 0) {
+  setHasMore(false);  // stop loading more
+}
+
+      // 👇 Append if page > 0, otherwise replace
+      setDocOptions((prev) => (page === 0 ? newDocs : [...prev, ...newDocs]));
     }
-  };
+  } catch (error) {
+    console.error("Error fetching DocsMaster:", error);
+  } finally {
+    setLoading(false);
+  }
+};
+
 
   return (
     <>
@@ -727,74 +1051,100 @@ const DocumentMaster = () => {
                   )}
                 />
               </Grid>
+
               <Grid item xs={12}></Grid>
+              <Grid item xs={12}>
+                <Controller
+                  name="IsMainDoc"
+                  control={control}
+                  defaultValue={false}
+                  render={({ field }) => (
+                    <FormControlLabel
+                      control={
+                        <Checkbox
+                          {...field}
+                          checked={field.value === true}
+                          onChange={(e) =>
+                            field.onChange(e.target.checked ? true : false)
+                          }
+                        />
+                      }
+                      label="Is Main Document"
+                    />
+                  )}
+                />
+              </Grid>
             </Grid>
 
             {/* ========================================================== */}
-            <Grid
-              item
-              xs={12}
-              display="flex"
-              alignItems="center"
-              justifyContent="space-between"
-              sx={{ mt: 2 }}
-            >
-              <Typography
-                variant="subtitle1"
-                fontWeight="bold"
-                color="rgb(0, 90, 91)"
-              >
-                ADD SUB DOCUMENTS LIST
-              </Typography>
+            {isMainDoc && (
+              <>
+                <Grid
+                  item
+                  xs={12}
+                  display="flex"
+                  alignItems="center"
+                  justifyContent="space-between"
+                  sx={{ mt: 2 }}
+                >
+                  <Typography
+                    variant="subtitle1"
+                    fontWeight="bold"
+                    color="rgb(0, 90, 91)"
+                  >
+                    ADD SUB DOCUMENTS LIST
+                  </Typography>
 
-              <Button
-                variant="outlined"
-                size="small"
-                sx={{
-                  height: "36px",
-                  color: "rgb(0, 90, 91)",
-                  border: "1px solid rgb(0, 90, 91)",
-                  borderRadius: "8px",
-                  "&:hover": {
-                    backgroundColor: "rgba(0,90,91,0.1)",
-                  },
-                }}
-                onClick={handleAddRow}
-              >
-                Add Document Row
-              </Button>
-            </Grid>
+                  <Button
+                    variant="outlined"
+                    size="small"
+                    sx={{
+                      height: "36px",
+                      color: "rgb(0, 90, 91)",
+                      border: "1px solid rgb(0, 90, 91)",
+                      borderRadius: "8px",
+                      "&:hover": {
+                        backgroundColor: "rgba(0,90,91,0.1)",
+                      },
+                    }}
+                    onClick={handleAddRow}
+                  >
+                    Add Document Row
+                  </Button>
+                </Grid>
 
-            {/* DATAGRID SECTION */}
+                {/* DATAGRID SECTION */}
 
-            <div style={{ height: 300 }}>
-              <DataGrid
-                className="datagrid-style"
-                rows={CreateSubDocRows}
-                columns={columnssubDoc}
-                pageSize={5}
-                rowsPerPageOptions={[5]}
-                disableRowSelectionOnClick
-                hideFooter
-                onRowClick={(params, event) => {
-                  if (params.row.isDisabled) event.stopPropagation();
-                }}
-                getRowId={(row) =>
-                  row.DocEntry ||
-                  row.id ||
-                  `${row.NameMR}-${row.NameEN}-${Math.random()}`
-                }
-                sx={{
-                  "& .MuiDataGrid-columnHeaders": {
-                    backgroundColor: (theme) =>
-                      theme.palette.custome?.datagridcolor || "#f5f5f5",
-                  },
-                  "& .MuiDataGrid-row:hover": {
-                    boxShadow: "0px 4px 20px rgba(0,0,0,0.1)",
-                  },
-                }}
-              />
-            </div>
+                <div style={{ height: 300 }}>
+                  <DataGrid
+                    className="datagrid-style"
+                    rows={CreateSubDocRows}
+                    columns={columnssubDoc}
+                    pageSize={5}
+                    rowsPerPageOptions={[5]}
+                    disableRowSelectionOnClick
+                    hideFooter
+                    onRowClick={(params, event) => {
+                      if (params.row.isDisabled) event.stopPropagation();
+                    }}
+                    getRowId={(row) =>
+                      row.DocEntry ||
+                      row.id ||
+                      `${row.NameMR}-${row.NameEN}-${Math.random()}`
+                    }
+                    sx={{
+                      "& .MuiDataGrid-columnHeaders": {
+                        backgroundColor: (theme) =>
+                          theme.palette.custome?.datagridcolor || "#f5f5f5",
+                      },
+                      "& .MuiDataGrid-row:hover": {
+                        boxShadow: "0px 4px 20px rgba(0,0,0,0.1)",
+                      },
+                    }}
+                  />
+                </div>
+              </>
+            )}
 
             {/* ======================================== */}
             <Grid item xs={12} sm={12}></Grid>
@@ -949,18 +1299,19 @@ const DocumentMaster = () => {
           }}
           rows={DocumentData}
           columns={columns}
-          // autoHeight
-          pagination
+           pagination
           paginationMode="server"
           rowCount={totalRows}
           pageSizeOptions={[limit]}
           paginationModel={{ page: currentPage, pageSize: limit }}
           onPaginationModelChange={(newModel) => {
-            console.log("New Pagination Model:", newModel);
-            setCurrentPage(newModel.page);
-            // getAllImgList(newModel.page, searchText);
-            getAllDocumentList();
-          }}
+    // update state and immediately fetch the correct page
+    setCurrentPage(newModel.page);
+    setLimit(newModel.pageSize);
+    // fetch new page with current searchText (use the state value)
+    getAllDocumentList(newModel.page, searchText);
+  }}
+       
           loading={loading}
           initialState={{
             pagination: { paginationModel: { pageSize: 8 } },
@@ -987,7 +1338,6 @@ const DocumentMaster = () => {
             const quickFilterValue = model.quickFilterValues?.[0] || "";
             setSearchText(quickFilterValue);
             setCurrentPage(0);
-
             getAllDocumentList(0, quickFilterValue);
           }}
           getRowId={(row) => row.Id}
