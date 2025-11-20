@@ -27,6 +27,10 @@ import SanjayGandhi from "../pages/SanjavGandhi/SanjayGandhi";
 import Rehabilitation from "../pages/Rehabilitation/Rehabilitation";
 import { useThemeMode } from "../Dashboard/Theme";
 import ProtectedRoute from "./ProtectedRoute";
+import BhusampadanDashboard from "../Dashboard/BhusampadanDashboard";
+import SJYGandhiDashboard from "../Dashboard/SJYGandhi-Dashboard";
+import LandAcquistionReport from "../pages/Reports/LandAcquistion-Report";
+import SJYGandhiReport from "../pages/Reports/SJYGandhi-Report";
 
 export default function Routing() {
   const { roleAccess } = useThemeMode();
@@ -40,6 +44,13 @@ export default function Routing() {
           {/* 👈 Add this route */}
           <Route path="dashboard" element={<Dashboard />}>
             <Route path="home" element={<Home />} />
+            <Route path="BhusampadanDashboard" element={<BhusampadanDashboard />} />
+            <Route path="SJYGandhiDashboard" element={<SJYGandhiDashboard />} />
+            <Route path="LandAcquistionReport" element={<LandAcquistionReport />} />
+            <Route path="SJYGandhiReport" element={<SJYGandhiReport />} />
+
+
+
             {/* <Route
               path="home"
               element={

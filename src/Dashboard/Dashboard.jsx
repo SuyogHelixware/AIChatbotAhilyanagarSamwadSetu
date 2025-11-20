@@ -63,7 +63,7 @@ import { keyframes } from "@mui/system";
 import { useState } from "react";
 import LoginPageLoader from "../pages/LoginPageLoader";
 
- 
+
 
 const drawerWidth = 250;
 const openedMixin = (theme) => ({
@@ -252,9 +252,21 @@ const allMenus = [
       path: "home",
        menuId: 1,
     },
-    {
+     {
+      label: "Sampadan Dashboard",
+      icon: <DashboardIcon />,
+      path: "BhusampadanDashboard",
+       menuId: 1,
+    },
+        {
+      label: "SJYGandhi Dashboard",
+      icon: <DashboardIcon />,
+      path: "SJYGandhiDashboard",
+       menuId: 1,
+    },
+    { 
       label: "User",
-      icon: <ManageAccountsIcon />,
+      icon: <GroupIcon />,
       path: "manage-user",
       menuId: 3,
     },
@@ -324,6 +336,18 @@ const allMenus = [
       icon: <CorporateFareIcon />,
       path: "Rehabilitation",
       menuId: 11,
+    },
+     {
+      label: "LandAcquistion Report",
+      icon: <DriveFolderUploadIcon />,
+      path: "LandAcquistionReport",
+      menuId: 9,
+    },
+      {
+      label: "SJY Gandhi Report",
+      icon: <DriveFolderUploadIcon />,
+      path: "SJYGandhiReport",
+      menuId: 9,
     },
   ];
 
