@@ -76,11 +76,7 @@ const UploadDocument = () => {
     oDocLines: [],
   };
 
-  const {
-    handleSubmit,
-    control,
-    reset,
-  } = useForm({
+  const { handleSubmit, control, reset } = useForm({
     defaultValues: {
       initial,
     },
@@ -420,7 +416,7 @@ const UploadDocument = () => {
         const isDisabled = row.isDisabled;
 
         const selectedValues = Array.isArray(value) ? value : [];
-        const availableSubDocs = subDocMap[id] || []; // get subdocs for this row
+        const availableSubDocs = subDocMap[id] || [];
 
         const handleChange = (event) => {
           const newValues = event.target.value;
@@ -445,21 +441,40 @@ const UploadDocument = () => {
               variant="standard"
               renderValue={(selected) => selected.join(", ")}
               MenuProps={{
-                PaperProps: { style: { maxHeight: 220, overflowY: "auto" } },
+                PaperProps: {
+                  style: { maxHeight: 250, maxWidth: 200, overflowY: "auto" },
+                },
               }}
+              sx={{
+                minWidth: 250,
+                   paddingLeft: 3.5,     
+               }}
             >
               {availableSubDocs.length > 0 ? (
                 availableSubDocs.map((option) => (
-                  <MenuItem key={option.value} value={option.NameMR}>
+                  <MenuItem
+                    key={option.value}
+                    value={option.NameMR}
+                    sx={{
+                      whiteSpace: "normal",
+                      wordWrap: "break-word",
+                      alignItems: "flex-start",
+                    }}
+                  >
                     <Checkbox
                       checked={selectedValues.indexOf(option.NameMR) > -1}
                       size="small"
                     />
-                    <ListItemText primary={option.NameMR} />
+                    <ListItemText
+                      primary={option.NameMR}
+                      sx={{
+                        whiteSpace: "normal",
+                      }}
+                    />
                   </MenuItem>
                 ))
               ) : (
-                <MenuItem disabled>No any sub document added</MenuItem>
+                <MenuItem disabled>No any sub document</MenuItem>
               )}
             </Select>
           </Tooltip>
@@ -473,7 +488,7 @@ const UploadDocument = () => {
     : DocColumns.filter((col) => col.field !== "MissingDocs");
 
   const Maincolumns = [
-       {
+    {
       field: "actions",
       headerName: "Action",
       width: 150,
@@ -878,7 +893,7 @@ const UploadDocument = () => {
   //   );
 
   //   setRows((prev) => [...prev, ...newRows]);
- 
+
   //   if (fileInputRef.current) {
   //     fileInputRef.current.value = "";
   //   }
@@ -947,7 +962,7 @@ const UploadDocument = () => {
     );
 
     setRows((prev) => [...prev, ...newRows]);
- 
+
     if (fileInputRef.current) {
       fileInputRef.current.value = "";
     }
@@ -1018,7 +1033,7 @@ const UploadDocument = () => {
       return;
     }
 
-      const formData = new FormData();
+    const formData = new FormData();
 
     formData.append("UserId", sessionStorage.getItem("userId") || "");
     formData.append("CreatedBy", sessionStorage.getItem("userId") || "");
@@ -1086,11 +1101,10 @@ const UploadDocument = () => {
           formData.append(`oDocLines[${index}].MissingDocs[${i}]`, docType);
         });
       }
-         });
+    });
     try {
       let response;
       if (DeleteLineNums) {
- 
         await axios.delete(`${BASE_URL}DocUpload`, {
           headers: { "Content-Type": "application/json" },
           data: DeleteLineNums,
@@ -1231,7 +1245,7 @@ const UploadDocument = () => {
   const DocMasterList = async (params = {}) => {
     setLoading(true);
     try {
-      const queryParams = { Status: "1", ...params };
+      const queryParams = { Status: "1", IsMainDoc: true, ...params };
 
       const { data } = await axios.get(`${BASE_URL}DocsMaster`, {
         params: queryParams,
@@ -1294,7 +1308,6 @@ const UploadDocument = () => {
 
   // =================== Username and CreatedBy are same in case Doc uploaded rows are enabled logic start ============================
 
-
   const handleAddRow = () => {
     const UserType = userSession.UserType || "";
     const CreatedBy = userSession.userId || "";
@@ -1307,9 +1320,9 @@ const UploadDocument = () => {
       IssuedBy: "",
       DocType: "",
       CreatedBy: CreatedBy,
-     isDisabled: false,
-      isNew: true,  
-      };
+      isDisabled: false,
+      isNew: true,
+    };
     setRows((prev) => [...prev, newRow]);
   };
 
