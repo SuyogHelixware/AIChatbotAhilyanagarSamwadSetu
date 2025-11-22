@@ -237,7 +237,7 @@ export default function Dashboard() {
         {
           label: "Land Acquisition Dashboard",
           icon: <DehazeIcon />,
-          path: "BhusampadanDashboard",
+          path: "LandAcquisition",
           menuId: 13,
         },
         {

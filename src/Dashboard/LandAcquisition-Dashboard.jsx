@@ -3,6 +3,9 @@ import Grid from "@mui/material/Grid";
 import Paper from "@mui/material/Paper";
 import { BarChart } from "@mui/x-charts";
 import CountUp from "react-countup";
+import CheckCircleOutlineIcon from "@mui/icons-material/CheckCircleOutline";
+import ErrorOutlineIcon from "@mui/icons-material/ErrorOutline";
+import RuleIcon from "@mui/icons-material/Rule";
 
 // ICONS
 import ChecklistIcon from "@mui/icons-material/Checklist";
@@ -15,11 +18,12 @@ import { Controller, useForm, useWatch } from "react-hook-form";
 import { DatePickerField } from "../components/Component";
 import CustomToolbar from "../components/CustomToolbar";
 import { BASE_URL } from "../Constant";
+ import { PieChart } from "@mui/x-charts";
 
-export default function BhusampadanDashboard() {
- 
+
+export default function LandAcquisition() {
   const [officerRows, setOfficerRows] = React.useState([]);
- 
+
   const officerColumns = [
     {
       field: "Name",
@@ -37,7 +41,7 @@ export default function BhusampadanDashboard() {
     },
   ];
 
-  const today = dayjs();  
+  const today = dayjs();
   const firstDayOfMonth = dayjs().startOf("month");
 
   const [counts, setCounts] = useState({
@@ -175,8 +179,8 @@ export default function BhusampadanDashboard() {
           {/* CARD 2 */}
           <Grid item xs={12} sm={6} md={3}>
             <Paper sx={cardStyle} elevation={5}>
-              <IconBox color="#0D6EFD">
-                <ChecklistIcon sx={{ fontSize: 35, color: "white" }} />
+              <IconBox color="#e27857ff">
+                <RuleIcon sx={{ fontSize: 35, color: "white" }} />
               </IconBox>
               <TextBox>
                 <label>Total Missing Documents </label>
@@ -194,7 +198,7 @@ export default function BhusampadanDashboard() {
           <Grid item xs={12} sm={6} md={3}>
             <Paper sx={cardStyle} elevation={5}>
               <IconBox color="#28A745">
-                <ChecklistIcon sx={{ fontSize: 35, color: "white" }} />
+                <CheckCircleOutlineIcon sx={{ fontSize: 35, color: "white" }} />
               </IconBox>
               <TextBox>
                 <label>Total WhatsApp Success Alert</label>
@@ -211,8 +215,8 @@ export default function BhusampadanDashboard() {
 
           <Grid item xs={12} sm={6} md={3}>
             <Paper sx={cardStyle} elevation={5}>
-              <IconBox color="#0D6EFD">
-                <ChecklistIcon sx={{ fontSize: 35, color: "white" }} />
+              <IconBox color="#e27857ff">
+                <ErrorOutlineIcon sx={{ fontSize: 35, color: "white" }} />
               </IconBox>
               <TextBox>
                 <label>Total Whatsapp Miss Alert </label>
@@ -255,9 +259,30 @@ export default function BhusampadanDashboard() {
             </Paper>
           </Grid>
 
+              <Grid item xs={12} md={6}>
+            <Paper elevation={7} sx={{ borderRadius: 3, py: 3 }}>
+                            <div style={{ height: 335, width: "100%", marginTop: 10 }}>
+
+              <PieChart
+                series={[
+                  {
+                    data: [
+                      { id: 0, value: 10, label: "series A" },
+                      { id: 1, value: 15, label: "series B" },
+                      { id: 2, value: 20, label: "series C" },
+                    ],
+                  },
+                ]}
+                height={300}
+                colors={["#005A5B", "#338687 ", "#9CD8C4"]}
+              />
+              </div>
+            </Paper>
+          </Grid>
+
           {/* OFFICER-WISE BAR Graph CERTIFICATES PROCESSED */}
 
-          <Grid item xs={12} md={6}>
+          <Grid item xs={12} md={12}>
             <Paper elevation={6} sx={{ borderRadius: 3, py: 3 }}>
               <h3 style={{ marginLeft: 10, marginBottom: 10 }}>
                 Certificates Generated Per Month
