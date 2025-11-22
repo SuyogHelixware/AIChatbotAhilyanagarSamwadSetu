@@ -1,60 +1,35 @@
-import React, { useEffect, useState } from "react";
-import {
-  Grid,
-  Paper,
-  Button,
-  TextField,
-  Box,
-  Typography,
-  Chip,
-} from "@mui/material";
-import { DataGrid, GridToolbar } from "@mui/x-data-grid";
-import dayjs from "dayjs";
+import { Button, Chip, Grid, Paper, Typography } from "@mui/material";
+import { DataGrid } from "@mui/x-data-grid";
 import axios from "axios";
+import dayjs from "dayjs";
+import React, { useEffect, useState } from "react";
+import { useForm } from "react-hook-form";
 import { BASE_URL } from "../../Constant";
-import { DatePickerField } from "../../components/Component";
-import { Controller, useForm } from "react-hook-form";
-
-import { DatePicker } from "@mui/x-date-pickers";
-
-import { DateRangePicker } from "@mui/x-date-pickers-pro";
-
-import { LocalizationProvider } from "@mui/x-date-pickers/LocalizationProvider";
-import { AdapterDayjs } from "@mui/x-date-pickers/AdapterDayjs";
-import DateRangePickerField from "../../components/DateRangePickerField";
-import CustomToolbar from "../../components/CustomToolbar";
 import ContentPasteSearchIcon from "@mui/icons-material/ContentPasteSearch";
-import PhoneIcon from '@mui/icons-material/Phone';
-import FormatListNumberedIcon from '@mui/icons-material/FormatListNumbered';
-import DateRangeIcon from '@mui/icons-material/DateRange';
+import DateRangeIcon from "@mui/icons-material/DateRange";
+import FormatListNumberedIcon from "@mui/icons-material/FormatListNumbered";
+import PhoneIcon from "@mui/icons-material/Phone";
+import CustomToolbar from "../../components/CustomToolbar";
+import DateRangePickerField from "../../components/DateRangePickerField";
 export default function LandAcquistionReport() {
-  // 👉 Sample data (can be replaced when API comes)
-
   const [fromDate, setFromDate] = useState(dayjs().startOf("month"));
   const [toDate, setToDate] = useState(dayjs());
-
-  const [rows, setRows] = React.useState([]);
-  const limit = 20;
   const [loading, setLoading] = React.useState(false);
-  const [totalRows, setTotalRows] = React.useState(0);
   const [DocMissingCount, setDocMissingCount] = React.useState(0);
   const [DocReadyCount, setDocReadyCount] = React.useState(0);
-
   const [docMissingRows, setDocMissingRows] = React.useState([]);
   const [docReadyRows, setDocReadyRows] = React.useState([]);
-
-  const { control, watch, getValues } = useForm({
-    defaultValues: {
-      DateRange: [dayjs(), dayjs()],
-    },
-  });
+  // const { control, watch, getValues } = useForm({
+  //   defaultValues: {
+  //     DateRange: [dayjs(), dayjs()],
+  //   },
+  // });
 
   const fetchReport = async () => {
     try {
       setLoading(true);
-
       const params = {
-         FromDate: dayjs(fromDate).format("YYYY-MM-DD"),
+        FromDate: dayjs(fromDate).format("YYYY-MM-DD"),
         ToDate: dayjs(toDate).format("YYYY-MM-DD"),
       };
 
@@ -72,7 +47,7 @@ export default function LandAcquistionReport() {
         ? response.data.values
         : [];
 
-       // -- DocMissing
+      // -- DocMissing
       const missingGroup = groups.find((g) => g.TransType === "DocMissing");
       const docMissingRows =
         missingGroup?.Values?.map((item, idx) => ({
@@ -103,43 +78,7 @@ export default function LandAcquistionReport() {
   };
   useEffect(() => {
     fetchReport();
-  }, []); //
-  //    const officerColumns = [
-  //     {
-  //       field: "srNo",
-  //       headerName: "SR NO",
-  //       width: 80,
-  //       sortable: false,
-  //       headerAlign: "center",
-  //       align: "center",
-  //       renderCell: (params) =>
-  //         params.api.getSortedRowIds().indexOf(params.id) + 1,
-  //     },
-
-  //     {
-  //   field: "SentDate",
-  //   headerName: "Send Date",
-  //   flex: 1,
-  //   valueGetter: (params) => {
-  //     if (!params.row.SentDate) return "";
-
-  //     const date = new Date(params.row.SentDate);
-  //     return date.toLocaleDateString("en-GB", {
-  //       day: "2-digit",
-  //       month: "short",
-  //       year: "numeric",
-  //     }).replace(/ /g, "-"); // to format 18-Nov-2025
-  //   },
-  // },
-  //     { field: "PhoneNo", headerName: "Phone No", flex: 1 },
-  //     {
-  //       field: "MsgCnt",
-  //       headerName: "Message Count",
-  //       flex: 1,
-  //       align: "center",
-  //       headerAlign: "center",
-  //     },
-  //   ];
+  }, []);
 
   const officerColumns = [
     {
@@ -152,104 +91,77 @@ export default function LandAcquistionReport() {
       renderCell: (params) =>
         params.api.getSortedRowIds().indexOf(params.id) + 1,
     },
- {
-  field: "SentDate",
-  headerName: "SEND DATE",
-  flex: 1,
-  headerAlign: "center",
-  align: "center",
-
-  renderHeader: () => (
-    <span style={{ display: "flex", alignItems: "center", gap: "5px" }}>
-      <DateRangeIcon fontSize="small" />
-      SEND DATE
-    </span>
-  ),
-
-  valueGetter: (params) => {
-    if (!params.row.SentDate) return "";
-    const d = new Date(params.row.SentDate);
-    return d
-      .toLocaleDateString("en-GB", {
-        day: "2-digit",
-        month: "short",
-        year: "numeric",
-      })
-      .replace(/ /g, "-");
-  },
-},
-    // {
-    //   field: "PhoneNo",
-    //   headerName: "📞 PHONE NO",
-    //   flex: 1.2,
-    //   headerAlign: "center",
-    //   align: "center",
-    //   renderCell: (params) => <span>{params.value}</span>,
-    // },
     {
-  field: "PhoneNo",
-  headerName: "PHONE NO",
-  flex: 1.2,
-  headerAlign: "center",
-  align: "center",
-  renderHeader: () => (
-    <span style={{ display: "flex", alignItems: "center", gap: "5px" }}>
-      <PhoneIcon fontSize="small" />
-      PHONE NO
-    </span>
-  ),
-  renderCell: (params) => <span>{params.value}</span>,
-},
-    // {
-    //   field: "MsgCnt",
-    //   headerName: "📨 COUNT",
-    //   flex: 0.7,
-    //   align: "center",
-    //   headerAlign: "center",
-    //   renderCell: (params) => (
-    //     <span
-    //       style={{
-    //         display: "inline-block",
-    //         padding: "3px 10px",
-    //         borderRadius: "6px",
-    //         background: "#1c7255ff",
-    //         fontWeight: 600,
-    //         color: "#ebebebff",
-    //       }}
-    //     >
-    //       {params.value}
-    //     </span>
-    //   ),
-    // },
+      field: "SentDate",
+      headerName: "SEND DATE",
+      flex: 1,
+      headerAlign: "center",
+      align: "center",
+
+      renderHeader: () => (
+        <span style={{ display: "flex", alignItems: "center", gap: "5px" }}>
+          <DateRangeIcon fontSize="small" />
+          SEND DATE
+        </span>
+      ),
+
+      valueGetter: (params) => {
+        if (!params.row.SentDate) return "";
+        const d = new Date(params.row.SentDate);
+        return d
+          .toLocaleDateString("en-GB", {
+            day: "2-digit",
+            month: "short",
+            year: "numeric",
+          })
+          .replace(/ /g, "-");
+      },
+    },
+
     {
-  field: "MsgCnt",
-  headerName: "COUNT",
-  flex: 0.7,
-  align: "center",
-  headerAlign: "center",
+      field: "PhoneNo",
+      headerName: "PHONE NO",
+      flex: 1.2,
+      headerAlign: "center",
+      align: "center",
+      renderHeader: () => (
+        <span style={{ display: "flex", alignItems: "center", gap: "5px" }}>
+          <PhoneIcon fontSize="small" />
+          PHONE NO
+        </span>
+      ),
+      renderCell: (params) => <span>{params.value}</span>,
+    },
 
-  renderHeader: () => (
-    <span style={{ display: "flex", alignItems: "center", gap: "5px" }}>
-      <FormatListNumberedIcon fontSize="small" />
-      COUNT
-    </span>
-  ),
+    {
+      field: "MsgCnt",
+      headerName: "COUNT",
+      flex: 0.7,
+      align: "center",
+      headerAlign: "center",
 
-  renderCell: (params) => (
-    <span
-      style={{
-        display: "inline-block",
-        padding: "3px 10px",
-        borderRadius: "6px",
-        background: "#1c7255ff",
-        fontWeight: 600,
-        color: "#ebebebff",
-      }}
-    >
-      {params.value}
-    </span>
-  ),
-}
+      renderHeader: () => (
+        <span style={{ display: "flex", alignItems: "center", gap: "5px" }}>
+          <FormatListNumberedIcon fontSize="small" />
+          COUNT
+        </span>
+      ),
+
+      renderCell: (params) => (
+        <span
+          style={{
+            display: "inline-block",
+            padding: "3px 10px",
+            borderRadius: "6px",
+            // background: "#1c7255ff",
+            fontWeight: 600,
+            // color: "#ebebebff",
+          }}
+        >
+          {params.value}
+        </span>
+      ),
+    },
   ];
 
   return (
@@ -307,7 +219,6 @@ export default function LandAcquistionReport() {
             type="text"
             size="large"
             sx={{
-              // pr: 2,
               color: "white",
               background:
                 "linear-gradient(to right, rgb(0, 90, 91), rgb(22, 149, 153))",
@@ -382,7 +293,6 @@ export default function LandAcquistionReport() {
       {/* DataGrid */}
       <Grid item xs={12} sx={{ mt: 2 }}>
         <Paper elevation={7} sx={{ borderRadius: 3, p: 2 }}>
-          {/* <h3>Missing Document (Count: {DocMissingCount}) </h3> */}
           <h3
             style={{
               display: "flex",
@@ -395,7 +305,7 @@ export default function LandAcquistionReport() {
             <Chip
               label={DocMissingCount}
               size="small"
-              color="error" // red color for missing
+              color="error"
               sx={{ fontWeight: "bold" }}
             />
           </h3>
@@ -426,7 +336,6 @@ export default function LandAcquistionReport() {
           </div>
         </Paper>
       </Grid>
-      {/* ================================ */}
     </>
   );
 }

@@ -59,12 +59,11 @@ export default function ManageUsers() {
 
   const theme = useTheme();
   const firstLoad = React.useRef(true);
-    const { checkAccess } = useThemeMode();
+  const { checkAccess } = useThemeMode();
 
-   
   const canAdd = checkAccess(3, "IsAdd");
-     const canEdit = checkAccess(3, "IsEdit");
-    const canDelete= checkAccess(3, "IsDelete");
+  const canEdit = checkAccess(3, "IsEdit");
+  const canDelete = checkAccess(3, "IsDelete");
 
   const handleClickShowPassword = () => setShowPassword(!showPassword);
 
@@ -88,21 +87,20 @@ export default function ManageUsers() {
   // };
 
   const clearFormData = () => {
- 
     if (ClearUpdateButton === "CLEAR") {
-       reset({
+      reset({
         Id: "",
         Password: "",
         FirstName: "",
         Username: "",
         LastName: "",
-         Phone: "",
+        Phone: "",
         Status: 1,
         Email: "",
         UserType: "U",
         Avatar: "",
       });
-      setImage("");  
+      setImage("");
     } else if (ClearUpdateButton === "RESET") {
       // Reset to the original data
       if (originalDataRef.current) {
@@ -138,7 +136,7 @@ export default function ManageUsers() {
     try {
       setLoading(true);
       const apiUrl = `${BASE_URL}Users/${row.Id}`;
- 
+
       const response = await axios.get(apiUrl);
 
       if (response.data) {
@@ -306,7 +304,7 @@ export default function ManageUsers() {
       Status: getValues("Status"),
       // Avatar: uploadedImg === "" ? getValues("Avatar") : filename,
     };
-     setLoaderOpen(true);
+    setLoaderOpen(true);
     if (getValues("Password") !== "" || getValues("Password") !== undefined) {
       saveObj.Password = getValues("Password");
       UpdateObj.Password = getValues("Password");
@@ -500,16 +498,7 @@ export default function ManageUsers() {
     getUserData(currentPage, searchText);
     handleonGazettedList();
     handleonRoleList();
-  }, [currentPage]);
-
-  // useEffect(() => {
-  //   if (firstLoad.current) {
-  //     firstLoad.current = false;
-  //     return;
-  //   }
-  //   getUserData(currentPage, searchText, limit);
-  //    handleonGazettedList();
-  // }, [currentPage, searchText, limit]);
+  }, [currentPage, limit, searchText]);
 
   const columns = [
     {
@@ -521,48 +510,44 @@ export default function ManageUsers() {
       sortable: false,
       renderCell: (params) => (
         <>
-         <Tooltip
-                title={!canEdit ? "You don't have Edit permission" : ""}
-                placement="top"
-              >
-                <span> 
-          <IconButton
-            onClick={() => handleUpdate(params.row)}
-            disabled={!canEdit}
-
-
-            sx={{
-              color: "rgb(0, 90, 91)", // Apply color to the icon
-              "&:hover": {
-                backgroundColor: "rgba(0, 90, 91, 0.1)", // Optional hover effect
-              },
-            }}
+          <Tooltip
+            title={!canEdit ? "You don't have Edit permission" : ""}
+            placement="top"
           >
-            <EditNoteIcon />
-          </IconButton>
-          </span>
+            <span>
+              <IconButton
+                onClick={() => handleUpdate(params.row)}
+                disabled={!canEdit}
+                sx={{
+                  color: "rgb(0, 90, 91)", // Apply color to the icon
+                  "&:hover": {
+                    backgroundColor: "rgba(0, 90, 91, 0.1)", // Optional hover effect
+                  },
+                }}
+              >
+                <EditNoteIcon />
+              </IconButton>
+            </span>
           </Tooltip>
           <Tooltip
-                  title={!canDelete ? "You don't have delete permission" : ""}
-                  placement="top"
-                >
-                  <span> 
-          <IconButton
-            sx={{
-              "& .MuiButtonBase-root,": {
-                padding: 0,
-                marginLeft: 3,
-              },
-              color: "red",
-            }}
-            onClick={() => deluser(params.row.Id)}
-                        disabled={!canDelete}
-
+            title={!canDelete ? "You don't have delete permission" : ""}
+            placement="top"
           >
-            <DeleteForeverIcon />
-
-          </IconButton>
-          </span>
+            <span>
+              <IconButton
+                sx={{
+                  "& .MuiButtonBase-root,": {
+                    padding: 0,
+                    marginLeft: 3,
+                  },
+                  color: "red",
+                }}
+                onClick={() => deluser(params.row.Id)}
+                disabled={!canDelete}
+              >
+                <DeleteForeverIcon />
+              </IconButton>
+            </span>
           </Tooltip>
         </>
       ),
@@ -748,16 +733,15 @@ export default function ManageUsers() {
     }
   };
 
- 
   const handleonRoleList = async (params = {}) => {
     setLoading(true);
     try {
-       const { data } = await axios.get(`${BASE_URL}Role`, {
+      const { data } = await axios.get(`${BASE_URL}Role`, {
         params: params,
       });
 
       if (data.values) {
-         const updated = data.values.map((item) => ({
+        const updated = data.values.map((item) => ({
           ...item,
           isDisabled: item.Status === 0,
         }));
@@ -776,7 +760,7 @@ export default function ManageUsers() {
       {loaderOpen && <Loader open={loaderOpen} />}
       <Modal
         open={on}
-         sx={{
+        sx={{
           backdropFilter: "blur(5px)",
           backgroundColor: "rgba(0, 0, 0, 0.3)",
         }}
@@ -787,7 +771,7 @@ export default function ManageUsers() {
             width: "90%",
             maxWidth: 650,
             height: 600,
-             position: "absolute",
+            position: "absolute",
             top: "50%",
             left: "50%",
             transform: "translate(-50%, -50%)",
@@ -859,7 +843,7 @@ export default function ManageUsers() {
                 setOn(false);
                 setClearUpdateButton("CLEAR");
                 clearFormData();
-               }}
+              }}
             >
               <CloseIcon />
             </IconButton>
@@ -1035,13 +1019,11 @@ export default function ManageUsers() {
                 name="UserType"
                 control={control}
                 defaultValue="U"
- 
                 render={({ field }) => (
                   <TextField
                     select
                     label="USER TYPE "
-                                sx={{ width: "90%" }}  
-
+                    sx={{ width: "90%" }}
                     fullWidth
                     size="small"
                     {...field}
@@ -1112,61 +1094,63 @@ export default function ManageUsers() {
                 }}
               />
             </Grid> */}
-<Grid item md={6} sm={6} xs={12}>
-  <Controller
-    name="Role"
-    control={control}
-    defaultValue=""
-    render={({ field }) => {
-      const selectedValue =
-        field.value && field.value.trim() !== "" ? field.value : "No Role";
+            <Grid item md={6} sm={6} xs={12}>
+              <Controller
+                name="Role"
+                control={control}
+                defaultValue=""
+                render={({ field }) => {
+                  const selectedValue =
+                    field.value && field.value.trim() !== ""
+                      ? field.value
+                      : "No Role";
 
-      return (
-        <Tooltip title={selectedValue} arrow placement="bottom">
-          <TextField
-            select
-            label="ROLE"
-            size="small"
-            fullWidth
-            sx={{ width: "78%" }}  
-            {...field}
-            InputLabelProps={{
-              shrink: Boolean(field.value),
-            }}
-            SelectProps={{
-              MenuProps: {
-                PaperProps: {
-                  style: {
-                    maxHeight: 200,
-                    overflowY: "auto",
-                    width: 250,  
-                  },
-                },
-              },
-            }}
-          >
-            <MenuItem value="">No Role</MenuItem>
+                  return (
+                    <Tooltip title={selectedValue} arrow placement="bottom">
+                      <TextField
+                        select
+                        label="ROLE"
+                        size="small"
+                        fullWidth
+                        sx={{ width: "78%" }}
+                        {...field}
+                        InputLabelProps={{
+                          shrink: Boolean(field.value),
+                        }}
+                        SelectProps={{
+                          MenuProps: {
+                            PaperProps: {
+                              style: {
+                                maxHeight: 200,
+                                overflowY: "auto",
+                                width: 250,
+                              },
+                            },
+                          },
+                        }}
+                      >
+                        <MenuItem value="">No Role</MenuItem>
 
-            {RoleList.map((option) => (
-              <MenuItem
-                key={option.RoleName}
-                value={option.RoleName}
-                disabled={option.isDisabled}
-                sx={{
-                  height: 35,
-                  display: "flex",
-                  alignItems: "center",
+                        {RoleList.map((option) => (
+                          <MenuItem
+                            key={option.RoleName}
+                            value={option.RoleName}
+                            disabled={option.isDisabled}
+                            sx={{
+                              height: 35,
+                              display: "flex",
+                              alignItems: "center",
+                            }}
+                          >
+                            {option.RoleName}
+                          </MenuItem>
+                        ))}
+                      </TextField>
+                    </Tooltip>
+                  );
                 }}
-              >
-                {option.RoleName}
-              </MenuItem>
-            ))}
-          </TextField>
-        </Tooltip>
-      );
-    }}
-  />
-</Grid>
+              />
+            </Grid>
 
             {/* =========================== */}
 
@@ -1186,9 +1170,7 @@ export default function ManageUsers() {
                       <TextField
                         select
                         label="Gaz Officer"
-                         
-                                    sx={{ width: "90%" }}  
-
+                        sx={{ width: "90%" }}
                         size="small"
                         {...field}
                         InputLabelProps={{
@@ -1415,41 +1397,41 @@ export default function ManageUsers() {
         </Typography>
       </Grid>
       <Grid textAlign={"end"} marginBottom={1}>
-          <Tooltip 
-          title={!canAdd ? "You don't have Add permission" : ""} 
+        <Tooltip
+          title={!canAdd ? "You don't have Add permission" : ""}
           placement="top"
         >
-          <span> 
-        <Button
-          onClick={handleOnSave}
-          disabled={!canAdd}
-          type="text"
-          size="medium"
-          sx={{
-            pr: 2,
-            color: "white",
-            background:
-              "linear-gradient(to right, rgb(0, 90, 91), rgb(22, 149, 153))",
-            borderRadius: "8px",
-            transition: "all 0.2s ease-in-out",
-            boxShadow: "0 4px 8px rgba(0, 90, 91, 0.3)",
-            "&:hover": {
-              transform: "translateY(2px)",
-              boxShadow: "0 2px 4px rgba(0, 90, 91, 0.2)",
-            },
-            "& .MuiButton-label": {
-              display: "flex",
-              alignItems: "center",
-            },
-            "& .MuiSvgIcon-root": {
-              marginRight: "10px",
-            },
-          }}
-        >
-          <AddIcon />
-          Add User
-        </Button>
-        </span>
+          <span>
+            <Button
+              onClick={handleOnSave}
+              disabled={!canAdd}
+              type="text"
+              size="medium"
+              sx={{
+                pr: 2,
+                color: "white",
+                background:
+                  "linear-gradient(to right, rgb(0, 90, 91), rgb(22, 149, 153))",
+                borderRadius: "8px",
+                transition: "all 0.2s ease-in-out",
+                boxShadow: "0 4px 8px rgba(0, 90, 91, 0.3)",
+                "&:hover": {
+                  transform: "translateY(2px)",
+                  boxShadow: "0 2px 4px rgba(0, 90, 91, 0.2)",
+                },
+                "& .MuiButton-label": {
+                  display: "flex",
+                  alignItems: "center",
+                },
+                "& .MuiSvgIcon-root": {
+                  marginRight: "10px",
+                },
+              }}
+            >
+              <AddIcon />
+              Add User
+            </Button>
+          </span>
         </Tooltip>
       </Grid>
       <Paper

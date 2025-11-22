@@ -8,26 +8,22 @@ import {
   FormControlLabel,
   Grid,
   IconButton,
-  MenuItem,
   Modal,
   Paper,
-  Select,
   TextField,
   Tooltip,
   Typography,
 } from "@mui/material";
+import Autocomplete from "@mui/material/Autocomplete";
 import { DataGrid, GridToolbar } from "@mui/x-data-grid";
 import axios from "axios";
 import dayjs from "dayjs";
 import * as React from "react";
 import { Controller, useForm } from "react-hook-form"; // Importing React Hook Form
 import Swal from "sweetalert2";
-import { BASE_URL } from "../Constant";
 import Loader from "../components/Loader";
+import { BASE_URL } from "../Constant";
 import { useThemeMode } from "../Dashboard/Theme";
-import Autocomplete from "@mui/material/Autocomplete";
-import Popper from "@mui/material/Popper";
-
 
 const DocumentMaster = () => {
   const [loaderOpen, setLoaderOpen] = React.useState(false);
@@ -39,19 +35,17 @@ const DocumentMaster = () => {
   const [currentPage, setCurrentPage] = React.useState(0);
   const [loading, setLoading] = React.useState(false);
   const [searchText, setSearchText] = React.useState("");
-  // const limit = 40;
+  const [docOptions, setDocOptions] = React.useState([]);
   const [limit, setLimit] = React.useState(20);
 
   const originalDataRef = React.useRef(null);
   const firstLoad = React.useRef(true);
 
-  
-//  ===============
-const [page, setPage] = React.useState(0);
- const [hasMore, setHasMore] = React.useState(true);
-const [scrollLock, setScrollLock] = React.useState(false);
-// ============
-
+  //  ===============
+  const [page, setPage] = React.useState(0);
+  const [hasMore, setHasMore] = React.useState(true);
+  const [scrollLock, setScrollLock] = React.useState(false);
+  // ============
 
   const { checkAccess } = useThemeMode();
   const canAdd = checkAccess(5, "IsAdd");
@@ -93,7 +87,7 @@ const [scrollLock, setScrollLock] = React.useState(false);
         NameMR: "",
         Description: "",
         Status: 1,
-        IsMainDoc:false,
+        IsMainDoc: false,
         CreateSubDocRows: [],
       });
       setCreateSubDocRows([]);
@@ -115,7 +109,7 @@ const [scrollLock, setScrollLock] = React.useState(false);
         ...s,
       }));
 
-      setCreateSubDocRows(oldRows); // 🔥 Important
+      setCreateSubDocRows(oldRows);
     }
   };
 
@@ -179,16 +173,13 @@ const [scrollLock, setScrollLock] = React.useState(false);
 
         SubDocs: CreateSubDocRows.filter((row) => row.NameMR).map(
           (row, index) => ({
-            // LineNum: index + 1,
             LineNum: 0,
-
             Id: 0,
             Status: 1,
             CreatedDate: dayjs().format("YYYY-MM-DD"),
             CreatedBy: sessionStorage.getItem("userId"),
             ModifiedDate: dayjs().format("YYYY-MM-DD"),
             ModifiedBy: sessionStorage.getItem("userId"),
-            // NameEN: row.NameMR,
             NameEN: "",
             NameMR: row.NameMR,
             Description: row.Description || "",
@@ -266,54 +257,31 @@ const [scrollLock, setScrollLock] = React.useState(false);
     }
   };
 
-  const CustomPopper = (props) => {
-  return (
-    <Popper
-      {...props}
-      onScroll={async (e) => {
-        const list = e.target;
+  const CustomListBox = React.forwardRef(function CustomListBox(props, ref) {
+    const { children, ...other } = props;
 
-        if (
-          list.scrollTop + list.clientHeight >= list.scrollHeight - 10 &&
-          !loading &&
-          hasMore
-        ) {
-          const nextPage = page + 1;
-          setPage(nextPage);
-          DocMasterListTemp(nextPage);
-        }
-      }}
-    />
-  );
-};
+    const handleScroll = (event) => {
+      const list = event.currentTarget;
+      const bottom = list.scrollHeight - (list.scrollTop + list.clientHeight);
 
-const CustomListBox = React.forwardRef(function CustomListBox(props, ref) {
-  const { children, ...other } = props;
+      if (bottom < 30 && !loading && hasMore && !scrollLock) {
+        const nextPage = page + 1;
+        setPage(nextPage);
+        DocMasterListTemp(nextPage);
+      }
+    };
 
-  const handleScroll = (event) => {
-    const list = event.currentTarget;
-    const bottom = list.scrollHeight - (list.scrollTop + list.clientHeight);
-
-    // 👇 strong threshold check
-    if (bottom < 30 && !loading && hasMore && !scrollLock) {
-      const nextPage = page + 1;
-      setPage(nextPage);
-      DocMasterListTemp(nextPage);
-    }
-  };
-
-  return (
-    <ul
-      {...other}
-      ref={ref}
-      style={{ maxHeight: 250, overflow: "auto" }}
-      onScroll={handleScroll}
-    >
-      {children}
-    </ul>
-  );
-});
-
+    return (
+      <ul
+        {...other}
+        ref={ref}
+        style={{ maxHeight: 250, overflow: "auto" }}
+        onScroll={handleScroll}
+      >
+        {children}
+      </ul>
+    );
+  });
 
   // const getAllDocumentList = async (page = 0, searchText = "") => {
   //   try {
@@ -343,51 +311,43 @@ const CustomListBox = React.forwardRef(function CustomListBox(props, ref) {
   // };
 
   const getAllDocumentList = async (page = 0, searchText = "") => {
-  try {
-    setLoading(true);
+    try {
+      setLoading(true);
 
-    // If your backend expects 1-based pages (Page=1 for first page),
-    // uncomment the next line and send `apiPage = page + 1`
-    // const apiPage = page + 1;
-    const apiPage = page; // keep as-is if backend uses 0-based page
+      const apiPage = page;
 
-    let apiUrl = `${BASE_URL}DocsMaster?Page=${apiPage}&Limit=${limit}`;
-    if (searchText) {
-      apiUrl = `${BASE_URL}DocsMaster?SearchText=${encodeURIComponent(
-        searchText
-      )}&Page=${apiPage}&Limit=${limit}`;
+      let apiUrl = `${BASE_URL}DocsMaster?Page=${apiPage}&Limit=${limit}`;
+      if (searchText) {
+        apiUrl = `${BASE_URL}DocsMaster?SearchText=${encodeURIComponent(
+          searchText
+        )}&Page=${apiPage}&Limit=${limit}`;
+      }
+
+      const response = await axios.get(apiUrl);
+
+      if (response.data && response.data.values) {
+        setDocumentData(
+          response.data.values.map((item, index) => ({
+            ...item,
+            id: page * limit + index + 1,
+          }))
+        );
+
+        setTotalRows(response.data.count || 0);
+      } else {
+        setDocumentData([]);
+        setTotalRows(0);
+      }
+    } catch (error) {
+      console.error("Error fetching data:", error);
+    } finally {
+      setLoading(false);
     }
-
-    const response = await axios.get(apiUrl);
-
-    if (response.data && response.data.values) {
-      // map ids so they are unique across pages
-      setDocumentData(
-        response.data.values.map((item, index) => ({
-          ...item,
-          id: page * limit + index + 1, // digit-by-digit arithmetic: page*limit + index + 1
-        }))
-      );
-
-      // set total rows for server-side pagination
-      setTotalRows(response.data.count || 0);
-    } else {
-      setDocumentData([]);
-      setTotalRows(0);
-    }
-  } catch (error) {
-    console.error("Error fetching data:", error);
-  } finally {
-    setLoading(false);
-  }
-};
-
+  };
 
   React.useEffect(() => {
     if (on) DocMasterListTemp(0);
   }, [on]);
-
- 
 
   React.useEffect(() => {
     if (firstLoad.current) {
@@ -395,6 +355,12 @@ const CustomListBox = React.forwardRef(function CustomListBox(props, ref) {
       firstLoad.current = false;
     }
   }, []);
+ 
+// React.useEffect(() => {
+//   if (isMainDoc === true) {
+//     setCreateSubDocRows([]);  
+//   }
+// }, [isMainDoc]);
 
   // =========================
 
@@ -499,48 +465,52 @@ const CustomListBox = React.forwardRef(function CustomListBox(props, ref) {
         </strong>
       ),
     },
+    {
+      field: "srNo",
+      headerName: "SR NO",
+      width: 80,
+      sortable: false,
+      headerAlign: "center",
+      align: "center",
+      renderCell: (params) => {
+        const page = params.api.state.pagination.paginationModel.page;
+        const pageSize = params.api.state.pagination.paginationModel.pageSize;
+        const rowIndex = params.api.getSortedRowIds().indexOf(params.id);
+        return page * pageSize + (rowIndex + 1);
+      },
+    },
 
-    // {
+    //   {
     //   field: "srNo",
     //   headerName: "SR NO",
-    //   width: 60,
+    //   width: 80,
     //   sortable: false,
     //   headerAlign: "center",
     //   align: "center",
-    //   renderCell: (params) =>
-    //     params.api.getSortedRowIds().indexOf(params.id) + 1,
+    //   renderCell: (params) => params.row.id ?? "",
     // },
-  {
-  field: "srNo",
-  headerName: "SR NO",
-  width: 80,
-  sortable: false,
-  headerAlign: "center",
-  align: "center",
-  renderCell: (params) => params.row.id ?? "", 
-},
 
-  {
-    field: "IsMainDoc",
-    headerName: "MAIN DOCUMENT",
-    width: 120,
-    sortable: false,
-    renderCell: (params) => (
-      <Checkbox
-        checked={params.value === true}
-        color="success"
-        size="medium"
-        onChange={(e) => {
-          const newValue = e.target.checked;
-          params.api.setEditCellValue({
-            id: params.id,
-            field: "IsMainDoc",
-            value: newValue,
-          });
-        }}
-      />
-    ),
-  },
+    {
+      field: "IsMainDoc",
+      headerName: "MAIN DOCUMENT",
+      width: 120,
+      sortable: false,
+      renderCell: (params) => (
+        <Checkbox
+          checked={params.value === true}
+          color="success"
+          size="medium"
+          onChange={(e) => {
+            const newValue = e.target.checked;
+            params.api.setEditCellValue({
+              id: params.id,
+              field: "IsMainDoc",
+              value: newValue,
+            });
+          }}
+        />
+      ),
+    },
     {
       field: "NameEN",
       headerName: "DOCUMENT NAME",
@@ -610,43 +580,30 @@ const CustomListBox = React.forwardRef(function CustomListBox(props, ref) {
       ),
     },
   ];
-const [selectedDocs, setSelectedDocs] = React.useState([]);
+  const [selectedDocs, setSelectedDocs] = React.useState([]);
 
   // ===== Delete Row =====
-  // const handleDeleteRow = (id) => {
-  //   setCreateSubDocRows((prev) => prev.filter((r) => r.id !== id));
-  // };
-
- const handleDeleteRow = (id) => {
-  const deletedDoc = CreateSubDocRows.find(r => r.id === id)?.NameMR;
-
-  setCreateSubDocRows((prev) => prev.filter((r) => r.id !== id));
-
-  if (deletedDoc) {
-    setSelectedDocs((prev) => prev.filter((x) => x !== deletedDoc));
-  }
-};
-
-
-    const [SearchTextsubmenuname, setSearchTextsubmenuname] = React.useState("");
-
-
+  const handleDeleteRow = (id) => {
+    const deletedDoc = CreateSubDocRows.find((r) => r.id === id)?.NameMR;
+    setCreateSubDocRows((prev) => prev.filter((r) => r.id !== id));
+    if (deletedDoc) {
+      setSelectedDocs((prev) => prev.filter((x) => x !== deletedDoc));
+    }
+  };
 
   const columnssubDoc = [
-   
-  {
-  field: "srNo",
-  headerName: "SR NO",
-  width: 60,
-  sortable: false,
-  headerAlign: "center",
-  align: "center",
-  renderCell: (params) => {
-    const index = CreateSubDocRows.findIndex((r) => r.id === params.row.id);
-    return index + 1;
-  }
-},
-
+    {
+      field: "srNo",
+      headerName: "SR NO",
+      width: 60,
+      sortable: false,
+      headerAlign: "center",
+      align: "center",
+      renderCell: (params) => {
+        const index = CreateSubDocRows.findIndex((r) => r.id === params.row.id);
+        return index + 1;
+      },
+    },
     {
       field: "actions",
       headerName: "Action",
@@ -663,19 +620,35 @@ const [selectedDocs, setSelectedDocs] = React.useState([]);
         </Button>
       ),
     },
-      // {
+
+    // {
     //   field: "NameMR",
     //   headerName: "DOCUMENT NAME",
     //   width: 250,
     //   renderCell: (params) => {
+    //     const currentValue = params.row.NameMR;
+
     //     const handleChange = (e) => {
     //       const newValue = e.target.value;
+
+    //       // Update grid rows
     //       setCreateSubDocRows((prev) =>
     //         prev.map((r) =>
     //           r.id === params.row.id ? { ...r, NameMR: newValue } : r
     //         )
     //       );
+
+    //       // Update selected documents list
+    //       setSelectedDocs((prev) => {
+    //         const withoutCurrent = prev.filter((x) => x !== currentValue);
+    //         return [...withoutCurrent, newValue];
+    //       });
     //     };
+
+    //     // Filter dropdown (hide selected except current row value)
+    //     const filteredOptions = docOptions.filter(
+    //       (opt) => !selectedDocs.includes(opt.NameMR) || opt.NameMR === currentValue
+    //     );
 
     //     return (
     //       <Tooltip title={params.value || ""}>
@@ -685,15 +658,16 @@ const [selectedDocs, setSelectedDocs] = React.useState([]);
     //           fullWidth
     //           variant="standard"
     //           MenuProps={{
-    //             PaperProps: { style: { maxHeight: 200 , maxWidth: 200,  } },
+    //             PaperProps: { style: { maxHeight: 200, maxWidth: 200 } },
     //           }}
-    //             sx={{
-    //             minWidth: 250,
-    //           }}
+    //           sx={{ minWidth: 250 }}
     //         >
-    //           {docOptions.length > 0 ? (
-    //             docOptions.map((opt, i) => (
-    //               <MenuItem key={i} value={opt.NameMR}     sx={{
+    //           {filteredOptions.length > 0 ? (
+    //             filteredOptions.map((opt, i) => (
+    //               <MenuItem
+    //                 key={i}
+    //                 value={opt.NameMR}
+    //                 sx={{
     //                   whiteSpace: "normal",
     //                   wordWrap: "break-word",
     //                   alignItems: "flex-start",
@@ -709,131 +683,66 @@ const [selectedDocs, setSelectedDocs] = React.useState([]);
     //       </Tooltip>
     //     );
     //   },
-    // },
+    // }
 
-// {
-//   field: "NameMR",
-//   headerName: "DOCUMENT NAME",
-//   width: 250,
-//   renderCell: (params) => {
-//     const currentValue = params.row.NameMR;
+    // ========================
+    {
+      field: "NameMR",
+      headerName: "DOCUMENT NAME",
+      width: 250,
+      renderCell: (params) => {
+        const currentValue = params.row.NameMR;
 
-//     const handleChange = (e) => {
-//       const newValue = e.target.value;
+        // Filter options to avoid duplicates
+        const filteredOptions = docOptions.filter(
+          (opt) =>
+            !selectedDocs.includes(opt.NameMR) || opt.NameMR === currentValue
+        );
 
-//       // Update grid rows
-//       setCreateSubDocRows((prev) =>
-//         prev.map((r) =>
-//           r.id === params.row.id ? { ...r, NameMR: newValue } : r
-//         )
-//       );
+        const handleChange = (e, newValue) => {
+          if (!newValue) return;
 
-//       // Update selected documents list
-//       setSelectedDocs((prev) => {
-//         const withoutCurrent = prev.filter((x) => x !== currentValue);
-//         return [...withoutCurrent, newValue];
-//       });
-//     };
+          // Update grid rows
+          setCreateSubDocRows((prev) =>
+            prev.map((r) =>
+              r.id === params.row.id ? { ...r, NameMR: newValue.NameMR } : r
+            )
+          );
 
-//     // Filter dropdown (hide selected except current row value)
-//     const filteredOptions = docOptions.filter(
-//       (opt) => !selectedDocs.includes(opt.NameMR) || opt.NameMR === currentValue
-//     );
+          // Update selected documents list
+          setSelectedDocs((prev) => {
+            const withoutCurrent = prev.filter((x) => x !== currentValue);
+            return [...withoutCurrent, newValue.NameMR];
+          });
+        };
 
-//     return (
-//       <Tooltip title={params.value || ""}>
-//         <Select
-//           value={params.value || ""}
-//           onChange={handleChange}
-//           fullWidth
-//           variant="standard"
-//           MenuProps={{
-//             PaperProps: { style: { maxHeight: 200, maxWidth: 200 } },
-//           }}
-//           sx={{ minWidth: 250 }}
-//         >
-//           {filteredOptions.length > 0 ? (
-//             filteredOptions.map((opt, i) => (
-//               <MenuItem
-//                 key={i}
-//                 value={opt.NameMR}
-//                 sx={{
-//                   whiteSpace: "normal",
-//                   wordWrap: "break-word",
-//                   alignItems: "flex-start",
-//                 }}
-//               >
-//                 {opt.NameMR}
-//               </MenuItem>
-//             ))
-//           ) : (
-//             <MenuItem disabled>No options available</MenuItem>
-//           )}
-//         </Select>
-//       </Tooltip>
-//     );
-//   },
-// }
-
-// ========================
-{
-  field: "NameMR",
-  headerName: "DOCUMENT NAME",
-  width: 250,
-  renderCell: (params) => {
-    const currentValue = params.row.NameMR;
-
-    // Filter options to avoid duplicates
-    const filteredOptions = docOptions.filter(
-      (opt) => !selectedDocs.includes(opt.NameMR) || opt.NameMR === currentValue
-    );
-
-    const handleChange = (e, newValue) => {
-      if (!newValue) return;
-
-      // Update grid rows
-      setCreateSubDocRows((prev) =>
-        prev.map((r) =>
-          r.id === params.row.id ? { ...r, NameMR: newValue.NameMR } : r
-        )
-      );
-
-      // Update selected documents list
-      setSelectedDocs((prev) => {
-        const withoutCurrent = prev.filter((x) => x !== currentValue);
-        return [...withoutCurrent, newValue.NameMR];
-      });
-    };
-
-    return (
-      <Tooltip title={params.value || ""}>
-        <Autocomplete
-        disablePortal     
-  ListboxComponent={CustomListBox}   // 👈 Use custom scroll logic
-  
-          value={
-            docOptions.find((opt) => opt.NameMR === currentValue) || null
-          }
-          onChange={handleChange}
-          options={filteredOptions}
-          getOptionLabel={(option) => option.NameMR}
-          renderInput={(params) => (
-            <TextField {...params} variant="standard" placeholder="Select..." />
-          )}
-          fullWidth
-          sx={{ minWidth: 250 }}
-        />
-      </Tooltip>
-    );
-  },
-}
-
-
+        return (
+          <Tooltip title={params.value || ""}>
+            <Autocomplete
+              disablePortal
+              ListboxComponent={CustomListBox} //  Use custom scroll logic
+              value={
+                docOptions.find((opt) => opt.NameMR === currentValue) || null
+              }
+              onChange={handleChange}
+              options={filteredOptions}
+              getOptionLabel={(option) => option.NameMR}
+              renderInput={(params) => (
+                <TextField
+                  {...params}
+                  variant="standard"
+                  placeholder="Select..."
+                />
+              )}
+              fullWidth
+              sx={{ minWidth: 250 }}
+            />
+          </Tooltip>
+        );
+      },
+    },
   ];
-  const [docOptions, setDocOptions] = React.useState([]);
 
-  // 3️⃣ When updating a record, remember its Id and then fetch the list
-  // ✅ Load document by Id for editing
   const handleUpdate = async (rowData) => {
     setSaveUpdateButton("UPDATE");
     setClearUpdateButton("RESET");
@@ -848,10 +757,6 @@ const [selectedDocs, setSelectedDocs] = React.useState([]);
         const Document = response.data.values;
         originalDataRef.current = Document;
 
-        // ✅ store current editing doc Id
-        // setCurrentDocId(Document.Id);
-
-        // ✅ set form fields
         setValue("Id", Document.Id);
         setValue("NameEN", Document.NameEN);
         setValue("NameMR", Document.NameMR);
@@ -859,14 +764,12 @@ const [selectedDocs, setSelectedDocs] = React.useState([]);
         setValue("Status", Document.Status);
         setValue("IsMainDoc", Document.IsMainDoc);
 
-        // ✅ map sub docs
         const subDocs = (Document.SubDocs || []).map((subDoc, index) => ({
           id: subDoc.LineNum || index + 1,
           ...subDoc,
         }));
         setCreateSubDocRows(subDocs);
 
-        // ✅ now fetch all other docs EXCLUDING this one
         await DocMasterListTemp(Document.Id);
       }
     } catch (error) {
@@ -876,82 +779,47 @@ const [selectedDocs, setSelectedDocs] = React.useState([]);
     }
   };
 
-  // const handleAddRow = () => {
-  //   setCreateSubDocRows((prevRows) => [
-  //     ...prevRows,
-  //     {
-  //       id: prevRows.length + 1,
-  //       DocName: "",
-  //       Description: "",
-  //       isDisabled: false,
-  //     },
-  //   ]);
-  // };
   const handleAddRow = () => {
-  setCreateSubDocRows((prevRows) => [
-    ...prevRows,
-    {
-      id: Date.now(),      
-      NameMR: "",
-      Description: "",
-      isDisabled: false,
-    },
-  ]);
-};
+    setCreateSubDocRows((prevRows) => [
+      ...prevRows,
+      {
+        id: Date.now(),
+        NameMR: "",
+        Description: "",
+        isDisabled: false,
+      },
+    ]);
+  };
 
+  const DocMasterListTemp = async (page = 0, excludeId = null) => {
+    if (scrollLock || !hasMore) return;
+    setScrollLock(true);
+    setLoading(true);
 
-  // const DocMasterListTemp = async (excludeId = null) => {
-  //   setLoading(true);
-  //   try {
-  //     const { data } = await axios.get(`${BASE_URL}DocsMaster`, {
-  //       params: { Status: "1"},
-  //     });
+    try {
+      const { data } = await axios.get(`${BASE_URL}DocsMaster`, {
+        params: { Status: "1", page },
+      });
 
-  //     if (data?.values) {
-  //       const filteredDocs = excludeId
-  //         ? data.values.filter((doc) => Number(doc.Id) !== Number(excludeId))
-  //         : data.values;
+      const newDocs = data?.values || [];
 
-  //       setDocOptions(filteredDocs);
-  //     }
-  //   } catch (error) {
-  //     console.error("Error fetching DocsMaster:", error);
-  //   } finally {
-  //     setLoading(false);
-  //   }
-  // };
+      if (excludeId) {
+        newDocs = newDocs.filter((doc) => Number(doc.Id) !== Number(excludeId));
+      }
 
-const DocMasterListTemp = async (page = 0, excludeId = null) => {
-  if (scrollLock || !hasMore) return;
-  setScrollLock(true);
-  setLoading(true);
+      if (newDocs.length === 0) {
+        setHasMore(false);
+        return;
+      }
 
-  try {
-    const { data } = await axios.get(`${BASE_URL}DocsMaster`, {
-      params: { Status: "1", page }
-    });
-
-    const newDocs = data?.values || [];
-
-    if (excludeId) {
-      newDocs = newDocs.filter((doc) => Number(doc.Id) !== Number(excludeId));
+      setDocOptions((prev) => (page === 0 ? newDocs : [...prev, ...newDocs]));
+    } catch (err) {
+      console.error("Error fetching DocsMaster:", err);
+    } finally {
+      setLoading(false);
+      setTimeout(() => setScrollLock(false), 300);
     }
-
-    if (newDocs.length === 0) {
-      setHasMore(false);
-      return;
-    }
-
-    setDocOptions((prev) => page === 0 ? newDocs : [...prev, ...newDocs]);
-  } catch (err) {
-    console.error("Error fetching DocsMaster:", err);
-  } finally {
-    setLoading(false);
-    setTimeout(() => setScrollLock(false), 300); // 👈 small delay prevents repeat call
-  }
-};
-
-
+  };
 
   return (
     <>
@@ -1167,7 +1035,6 @@ const DocMasterListTemp = async (page = 0, excludeId = null) => {
                 bottom: 5,
                 left: 10,
                 right: 10,
-                // mt: "10px",
               }}
             >
               <Button
@@ -1290,7 +1157,7 @@ const DocMasterListTemp = async (page = 0, excludeId = null) => {
         item
         lg={12}
         component={Paper}
-        sx={{ height: "85vh", width: "100%" }}
+        sx={{ height: "75vh", width: "100%" }}
       >
         <DataGrid
           className="datagrid-style"
@@ -1306,19 +1173,18 @@ const DocMasterListTemp = async (page = 0, excludeId = null) => {
           }}
           rows={DocumentData}
           columns={columns}
-           pagination
+          pagination
           paginationMode="server"
           rowCount={totalRows}
           pageSizeOptions={[limit]}
           paginationModel={{ page: currentPage, pageSize: limit }}
           onPaginationModelChange={(newModel) => {
-    // update state and immediately fetch the correct page
-    setCurrentPage(newModel.page);
-    setLimit(newModel.pageSize);
-    // fetch new page with current searchText (use the state value)
-    getAllDocumentList(newModel.page, searchText);
-  }}
-       
+            // update state and immediately fetch the correct page
+            setCurrentPage(newModel.page);
+            setLimit(newModel.pageSize);
+            // fetch new page with current searchText (use the state value)
+            getAllDocumentList(newModel.page, searchText);
+          }}
           loading={loading}
           initialState={{
             pagination: { paginationModel: { pageSize: 8 } },

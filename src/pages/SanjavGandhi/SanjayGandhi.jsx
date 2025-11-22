@@ -473,7 +473,7 @@ const SanjayGandhi = () => {
           pagination
           paginationMode="server"
           rowCount={totalRows} 
-          pageSizeOptions={[20, 50, 100]}
+          // pageSizeOptions={[20, 50, 100]}
           paginationModel={{ page: currentPage, pageSize: limit }}
           onPaginationModelChange={(newModel) => {
             setCurrentPage(newModel.page);

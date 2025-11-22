@@ -64,7 +64,7 @@ import { useState } from "react";
 import LoginPageLoader from "../pages/LoginPageLoader";
 import { ExpandLess, ExpandMore } from "@mui/icons-material";
 import PrintIcon from "@mui/icons-material/Print";
-
+  import DehazeIcon from '@mui/icons-material/Dehaze';
 const drawerWidth = 250;
 const openedMixin = (theme) => ({
   width: drawerWidth,
@@ -230,19 +230,19 @@ export default function Dashboard() {
       children: [
         {
           label: "Main Dashboard",
-          icon: <DashboardIcon />,
+          icon: <DehazeIcon />,
           path: "home",
           menuId: 1,
-        },
+        }, 
         {
           label: "Land Acquisition Dashboard",
-          icon: <DashboardIcon />,
+          icon: <DehazeIcon />,
           path: "BhusampadanDashboard",
           menuId: 13,
         },
         {
           label: "Sanjay Gandhi Dashboard",
-          icon: <DashboardIcon />,
+          icon: <DehazeIcon />,
           path: "SJYGandhiDashboard",
           menuId: 14,
         },
@@ -418,9 +418,9 @@ export default function Dashboard() {
   };
 
   const handleDrawerOpen = () => {
-    // setDrawerOpen(true);
-    setOpen(!open);
+     setOpen(!open);
     handleClickTransaction();
+ setOpenCollapse(null)
   };
 
   const handleClickMasters = () => {
@@ -739,146 +739,7 @@ export default function Dashboard() {
               </Tooltip>
             </Toolbar>
           </AppBar>
-           
-          {/* <Drawer variant="permanent" open={open} PaperProps={{ elevation: 7 }}>
-            <DrawerHeader>
-              <IconButton>
-                {theme.direction === "rtl" ? (
-                  <ChevronRightIcon />
-                ) : (
-                  <ChevronLeftIcon />
-                )}
-              </IconButton>
-            </DrawerHeader>
-
-             <Grid style={{ height: 90 }}>
-              <img
-                src={themestatus ? logo : logoDarkTheme}
-                alt="logo"
-                style={{
-                  maxWidth: "100%",
-                  maxHeight: "100%",
-                  objectFit: "contain",
-                  paddingTop: 10,
-                }}
-              />
-            </Grid>
-
-             <Grid
-              sx={{
-                width: "100%",
-                height: "100%",
-                overflow: "hidden",
-                "&:hover": { overflowY: "auto", scrollbarWidth: "thin" },
-              }}
-            >
-               
-              {visibleMenus.map(({ label, icon, path, children }) => {
-                // DASHBOARD COLLAPS
-                if (label === "Dashboards") {
-                  return (
-                    <div key={label}>
-                      <ListItemButton
-                        onClick={() => setOpenDashboard(!openDashboard)}
-                        sx={{ pl: 1.5 }}
-                      >
-                        <ListItemIcon
-                          sx={{ minWidth: "33px", marginRight: "3px" }}
-                        >
-                          {icon}
-                        </ListItemIcon>
-                        <ListItemText primary={label} />
-                        {openDashboard ? <ExpandLess /> : <ExpandMore />}
-                      </ListItemButton>
-
-                      <Collapse in={openDashboard} timeout="auto" unmountOnExit>
-                        {children.map((sub) => (
-                          <Link
-                            to={sub.path}
-                            key={sub.path}
-                            className="link_style"
-                          >
-                            <ListItemButton
-                              sx={{ pl: 3 }}
-                              selected={
-                                location.pathname === `/dashboard/${sub.path}`
-                              }
-                            >
-                              <ListItemIcon
-                                sx={{ minWidth: "33px", marginRight: "3px" }}
-                              >
-                                {sub.icon}
-                              </ListItemIcon>
-                              <ListItemText primary={sub.label} />
-                            </ListItemButton>
-                          </Link>
-                        ))}
-                      </Collapse>
-                    </div>
-                  );
-                }
-
-                 if (label === "Reports") {
-                  return (
-                    <div key={label}>
-                      <ListItemButton
-                        onClick={() => setOpenReport(!openReport)}
-                        sx={{ pl: 1.5 }}
-                      >
-                        <ListItemIcon
-                          sx={{ minWidth: "33px", marginRight: "3px" }}
-                        >
-                          {icon}
-                        </ListItemIcon>
-                        <ListItemText primary={label} />
-                        {openReport ? <ExpandLess /> : <ExpandMore />}
-                      </ListItemButton>
-
-                      <Collapse in={openReport} timeout="auto" unmountOnExit>
-                        {children.map((sub) => (
-                          <Link
-                            to={sub.path}
-                            key={sub.path}
-                            className="link_style"
-                          >
-                            <ListItemButton
-                              sx={{ pl: 3 }}
-                              selected={
-                                location.pathname === `/dashboard/${sub.path}`
-                              }
-                            >
-                              <ListItemIcon
-                                sx={{ minWidth: "33px", marginRight: "3px" }}
-                              >
-                                {sub.icon}
-                              </ListItemIcon>
-                              <ListItemText primary={sub.label} />
-                            </ListItemButton>
-                          </Link>
-                        ))}
-                      </Collapse>
-                    </div>
-                  );
-                }
-
-                 return (
-                  <Link key={path} to={path} className="link_style">
-                    <ListItemButton
-                      selected={location.pathname === `/dashboard/${path}`}
-                      sx={{ pl: 1.5 }}
-                    >
-                      <ListItemIcon
-                        sx={{ minWidth: "33px", marginRight: "3px" }}
-                      >
-                        {icon}
-                      </ListItemIcon>
-                      <ListItemText primary={label} />
-                    </ListItemButton>
-                  </Link>
-                );
-              })}
-            </Grid>
-          </Drawer> */}
+        
               <Drawer variant="permanent" open={open} PaperProps={{ elevation: 7 }}>
       <div style={{ display: "flex", alignItems: "center", justifyContent: "flex-end", padding: 8 }}>
         <IconButton onClick={handleDrawerOpen}>
@@ -928,10 +789,10 @@ export default function Dashboard() {
                       onClick={() => setOpenCollapse(null)}
                     >
                       <ListItemButton
-                        sx={{ pl: 4 }}
+                        sx={{ pl: 2 }}
                         selected={location.pathname === `/dashboard/${sub.path}`}
                       >
-                        <ListItemIcon sx={{ minWidth: "33px", marginRight: "3px" }}>
+                        <ListItemIcon sx={{ minWidth: "33px", marginRight: "2px" }}>
                           {sub.icon}
                         </ListItemIcon>
                         <ListItemText primary={sub.label} />

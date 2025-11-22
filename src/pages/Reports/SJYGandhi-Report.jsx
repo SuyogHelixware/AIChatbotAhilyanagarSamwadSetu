@@ -81,16 +81,13 @@ export default function LandAcquistionReport() {
   const [DocMissingCount, setDocMissingCount] = React.useState(0);
   const [DocReadyCount, setDocReadyCount] = React.useState(0);
 
-  const [docMissingRows, setDocMissingRows] = React.useState([]);
-  const [docReadyRows, setDocReadyRows] = React.useState([]);
+
 
   const [fromDate, setFromDate] = useState(dayjs().startOf("month"));
   const [toDate, setToDate] = useState(dayjs());
 
-  const [rows, setRows] = React.useState([]);
   const limit = 20;
   const [loading, setLoading] = React.useState(false);
-  const [totalRows, setTotalRows] = React.useState(0);
 
   const [SJYFailed, setSJYFailed] = React.useState([]);
   const [SJYSuccess, setSJYSuccess] = React.useState([]);
@@ -229,9 +226,9 @@ export default function LandAcquistionReport() {
             display: "inline-block",
             padding: "3px 10px",
             borderRadius: "6px",
-            background: "#1c7255ff",
+            // background: "#1c7255ff",
             fontWeight: 600,
-            color: "#ebebebff",
+            // color: "#ebebebff",
           }}
         >
           {params.value}
@@ -392,7 +389,7 @@ export default function LandAcquistionReport() {
               className="datagrid-style"
               sx={{
                 height: "100%",
-                minHeight: "250px",
+                minHeight: "200px",
                 "& .MuiDataGrid-columnHeaders": {
                   backgroundColor: (theme) =>
                     theme.palette.custome.datagridcolor,
@@ -401,6 +398,8 @@ export default function LandAcquistionReport() {
                   boxShadow: "0px 4px 20px rgba(0,0,0,.2)",
                 },
               }}
+
+          
               rows={SJYFailed}
               columns={officerColumns}
               pageSize={5}

@@ -301,15 +301,30 @@ const GazettedMaster = () => {
       ),
     },
     {
-      field: "srNo",
-      headerName: "SR NO",
-      width: 60,
-      sortable: false,
-      headerAlign: "center",
-      align: "center",
-      renderCell: (params) =>
-        params.api.getSortedRowIds().indexOf(params.id) + 1,
-    },
+  field: "srNo",
+  headerName: "SR NO",
+  width: 80,
+  sortable: false,
+  headerAlign: "center",
+  align: "center",
+  renderCell: (params) => {
+    const page = params.api.state.pagination.paginationModel.page;
+    const pageSize = params.api.state.pagination.paginationModel.pageSize;
+    const rowIndex = params.api.getSortedRowIds().indexOf(params.id);
+    return page * pageSize + (rowIndex + 1);
+  },
+},
+
+    // {
+    //   field: "srNo",
+    //   headerName: "SR NO",
+    //   width: 60,
+    //   sortable: false,
+    //   headerAlign: "center",
+    //   align: "center",
+    //   renderCell: (params) =>
+    //     params.api.getSortedRowIds().indexOf(params.id) + 1,
+    // },
     {
       field: "Name",
       headerName: "Name",
@@ -584,7 +599,7 @@ const GazettedMaster = () => {
           pagination
           paginationMode="server"
           rowCount={totalRows} 
-          pageSizeOptions={[10, 20, 50]}
+          // pageSizeOptions={[10, 20, 50]}
           paginationModel={{ page: currentPage, pageSize: limit }}
           onPaginationModelChange={(newModel) => {
             setCurrentPage(newModel.page);

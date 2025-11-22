@@ -537,7 +537,22 @@ const UploadDocument = () => {
       ),
     },
 
-    { field: "id", headerName: "Sr.No", width: 80, sortable: true },
+    // { field: "id", headerName: "Sr.No", width: 80, sortable: true },
+    {
+  field: "srNo",
+  headerName: "SR NO",
+  width: 80,
+  sortable: false,
+  headerAlign: "center",
+  align: "center",
+  renderCell: (params) => {
+    const page = params.api.state.pagination.paginationModel.page;
+    const pageSize = params.api.state.pagination.paginationModel.pageSize;
+    const rowIndex = params.api.getSortedRowIds().indexOf(params.id);
+    return page * pageSize + (rowIndex + 1);
+  },
+},
+
     {
       field: "Name",
       headerName: "NAME",
@@ -1677,7 +1692,7 @@ const UploadDocument = () => {
         item
         lg={12}
         component={Paper}
-        sx={{ height: "80vh", width: "100%" }}
+        sx={{ height: "76vh", width: "100%" }}
       >
         <DataGrid
           className="datagrid-style"

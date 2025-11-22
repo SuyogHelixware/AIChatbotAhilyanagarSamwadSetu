@@ -302,16 +302,31 @@ const RoleCreation = () => {
         </strong>
       ),
     },
-    {
-      field: "srNo",
-      headerName: "SR NO",
-      width: 80,
-      sortable: false,
-      headerAlign: "center",
-      align: "center",
-      renderCell: (params) =>
-        params.api.getSortedRowIds().indexOf(params.id) + 1,
-    },
+    // {
+    //   field: "srNo",
+    //   headerName: "SR NO",
+    //   width: 80,
+    //   sortable: false,
+    //   headerAlign: "center",
+    //   align: "center",
+    //   renderCell: (params) =>
+    //     params.api.getSortedRowIds().indexOf(params.id) + 1,
+    // },
+     {
+  field: "srNo",
+  headerName: "SR NO",
+  width: 80,
+  sortable: false,
+  headerAlign: "center",
+  align: "center",
+  renderCell: (params) => {
+    const page = params.api.state.pagination.paginationModel.page;
+    const pageSize = params.api.state.pagination.paginationModel.pageSize;
+    const rowIndex = params.api.getSortedRowIds().indexOf(params.id);
+    return page * pageSize + (rowIndex + 1);
+  },
+},
+
     {
       field: "RoleName",
       headerName: " ROLE NAME",
@@ -373,10 +388,12 @@ const RoleCreation = () => {
     try {
       setLoading(true);
 
-       const params = {
-         Page: page,
+      const params = {
+        Page: page,
         Limit: limit,
-        ...(searchText ? { SearchText: searchText } : {}),
+        ...(searchText
+          ? { SearchText: decodeURIComponent(searchText.trim()) }
+          : {}),
       };
 
       const userData = sessionStorage.getItem("userData");
@@ -408,12 +425,17 @@ const RoleCreation = () => {
     }
   };
 
+  // React.useEffect(() => {
+  //   if (firstLoad.current) {
+  //     getAllRoleList();
+  //     firstLoad.current = false;
+  //   }
+  // }, []);
+
   React.useEffect(() => {
-    if (firstLoad.current) {
-      getAllRoleList();
-      firstLoad.current = false;
-    }
-  }, []);
+    getAllRoleList(currentPage, searchText, limit);
+  }, [currentPage, limit, searchText]);
+
   const handleRemove = (displayRow) => {
     const displayId = displayRow.id;
 
@@ -436,9 +458,7 @@ const RoleCreation = () => {
         });
 
         // Remove the child’s flattened row from DataGrid
-        const filtered = updatedData.filter(
-          (r) => String(r.id) !== displayId 
-        );
+        const filtered = updatedData.filter((r) => String(r.id) !== displayId);
         return filtered;
       });
       return;
@@ -447,8 +467,8 @@ const RoleCreation = () => {
     setRoleTableData((prev) =>
       prev.filter(
         (r) =>
-          String(r.id) !== String(displayId) &&  
-          !String(r.id).startsWith(`${displayId}-child-`)  
+          String(r.id) !== String(displayId) &&
+          !String(r.id).startsWith(`${displayId}-child-`)
       )
     );
   };
@@ -503,7 +523,7 @@ const RoleCreation = () => {
   };
 
   const handleUpdate = async (rowData) => {
-     setSaveUpdateButton("UPDATE");
+    setSaveUpdateButton("UPDATE");
     setClearUpdateButton("RESET");
     setOn(true);
 
@@ -651,7 +671,7 @@ const RoleCreation = () => {
       RoleName: "",
       oLines: [],
     });
-    setRoleTableData([]); 
+    setRoleTableData([]);
   };
   const onSubmit = async (data) => {
     if (!data.RoleName || data.RoleName.trim() === "") {
@@ -702,7 +722,7 @@ const RoleCreation = () => {
             : [],
       })),
     };
-     // return
+    // return
 
     try {
       let response;
@@ -744,7 +764,7 @@ const RoleCreation = () => {
 
       Swal.fire({
         title: "Error!",
-        text: error.message  ,
+        text: error.message,
         icon: "error",
         confirmButtonText: "Ok",
       });
@@ -874,7 +894,7 @@ const RoleCreation = () => {
       ...(isExpanded
         ? (row.oSubMenusSpeAccess || []).map((child, idx) => ({
             ...child,
-            id: `${row.id}-child-${idx}`, 
+            id: `${row.id}-child-${idx}`,
             isChild: true,
             parentId: row.id,
             ParentMenuName: row.ParentMenuName,
@@ -897,7 +917,7 @@ const RoleCreation = () => {
     roleTableData.forEach((row) => {
       if (row.SubMenuId) {
         disabledSubMenus.add(Number(row.SubMenuId));
-        selectedIds.add(row.SubMenuId); 
+        selectedIds.add(row.SubMenuId);
       }
 
       // For child special access
@@ -950,7 +970,7 @@ const RoleCreation = () => {
           sx={{
             display: "flex",
             justifyContent: "space-between",
-            px: 3, 
+            px: 3,
           }}
         >
           <Button
@@ -1322,8 +1342,10 @@ const RoleCreation = () => {
           slotProps={{
             toolbar: {
               showQuickFilter: true,
-
-              quickFilterProps: { debounceMs: 500 },
+              quickFilterProps: {
+                debounceMs: 500,
+                quickFilterParser: (value) => [value],
+              },
             },
           }}
           onFilterModelChange={(model) => {
