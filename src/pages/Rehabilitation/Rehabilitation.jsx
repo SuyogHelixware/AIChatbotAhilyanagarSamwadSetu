@@ -904,7 +904,7 @@ const Rehabilitation = () => {
         item
         lg={12}
         component={Paper}
-        sx={{ height: "85vh", width: "100%" }}
+        sx={{ height: "74vh", width: "100%" }}
       >
         <DataGrid
           className="datagrid-style"

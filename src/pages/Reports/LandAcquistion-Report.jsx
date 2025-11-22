@@ -72,8 +72,7 @@ export default function LandAcquistionReport() {
         ? response.data.values
         : [];
 
-      debugger;
-      // -- DocMissing
+       // -- DocMissing
       const missingGroup = groups.find((g) => g.TransType === "DocMissing");
       const docMissingRows =
         missingGroup?.Values?.map((item, idx) => ({

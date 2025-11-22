@@ -1279,7 +1279,7 @@ const RoleCreation = () => {
         item
         lg={12}
         component={Paper}
-        sx={{ height: "80vh", width: "100%" }}
+        sx={{ height: "76vh", width: "100%" }}
       >
         <DataGrid
           className="datagrid-style"

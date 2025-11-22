@@ -50,5 +50,10 @@ code {
     monospace;
 }
 
+.link_style {
+  text-decoration: none !important;
+  color: inherit;
+}
+
 
 

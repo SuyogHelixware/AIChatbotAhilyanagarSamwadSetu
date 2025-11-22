@@ -8,7 +8,7 @@ import FullscreenExitIcon from "@mui/icons-material/FullscreenExit";
 // import GroupsIcon from "@mui/icons-material/Groups";
 import LightModeIcon from "@mui/icons-material/LightMode";
 import ManageAccountsIcon from "@mui/icons-material/ManageAccounts";
-import GroupIcon from '@mui/icons-material/Group';
+import GroupIcon from "@mui/icons-material/Group";
 import MenuIcon from "@mui/icons-material/Menu";
 import ModeNightIcon from "@mui/icons-material/ModeNight";
 import logoDarkTheme from "../assets/darkThemeLogo.png";
@@ -21,8 +21,8 @@ import DescriptionIcon from "@mui/icons-material/Description";
 // import { MdMiscellaneousServices } from "react-icons/md";
 import DriveFolderUploadIcon from "@mui/icons-material/DriveFolderUpload";
 import ChecklistIcon from "@mui/icons-material/Checklist";
-import MarkChatReadIcon from '@mui/icons-material/MarkChatRead';
-import CorporateFareIcon from '@mui/icons-material/CorporateFare';
+import MarkChatReadIcon from "@mui/icons-material/MarkChatRead";
+import CorporateFareIcon from "@mui/icons-material/CorporateFare";
 
 import {
   Avatar,
@@ -62,8 +62,8 @@ import SpeedDialAction from "@mui/material/SpeedDialAction";
 import { keyframes } from "@mui/system";
 import { useState } from "react";
 import LoginPageLoader from "../pages/LoginPageLoader";
-
-
+import { ExpandLess, ExpandMore } from "@mui/icons-material";
+import PrintIcon from "@mui/icons-material/Print";
 
 const drawerWidth = 250;
 const openedMixin = (theme) => ({
@@ -165,6 +165,7 @@ const RotatingIcon = styled(SettingsIcon)(({ theme }) => ({
 }));
 
 export default function Dashboard() {
+ 
   const [fullscreen, setFullscreen] = React.useState(false);
   const Navigate = useNavigate();
   const router = useLocation();
@@ -173,12 +174,16 @@ export default function Dashboard() {
   const [on, setOn] = React.useState(false);
   const { themeMode, LightMode, DarkMode } = useThemeMode();
   const [loading, setLoading] = React.useState(true);
+  const [openReport, setOpenReport] = React.useState(false);
+  const [openDashboard, setOpenDashboard] = React.useState(false);
+  const [openCollapse, setOpenCollapse] = React.useState(null);
+
   const [themestatus, setThemeStatus] = useState(() => {
     const CurrentTheme = localStorage.getItem("Theme");
     return CurrentTheme === "dark" ? false : true;
   });
   const [list, setList] = React.useState(false);
-    const location = useLocation();
+  const location = useLocation();
 
   const [openProcessTransactions, setOpenProcessTransactions] =
     React.useState(false);
@@ -194,77 +199,56 @@ export default function Dashboard() {
     Avatar: "",
     _id: "",
   });
-   
-//   const allMenus = [
-//     {
-//       label: "Dashboard",
-//       icon: <DashboardIcon />,
-//       path: "home",
-//       allowed: ["A", "U"],
-//     },
-//     {
-//       label: "User",
-//       icon: <ManageAccountsIcon />,
-//       path: "manage-user",
-// allowed: ["A"],    },
-//     {
-//       label: "Role Creation",
-//       icon: <ManageAccountsIcon />,
-//       path: "RoleCreation",
-// allowed: ["A"],    },
-     
-
-//     {
-//       label: "Documents Master",
-//       icon: <DescriptionIcon />,
-//       path: "DocumentMaster",
-// allowed: ["A"],     },
-//     {
-//       label: "Gazetted Master",
-//       icon: <ChecklistIcon />,
-//       path: "Gazetted-Master",
-//        allowed: ["A"],
-//     },
-//     {
-//       label: "Upload Documents",
-//       icon: <DriveFolderUploadIcon />,
-//       path: "Upload-Document",
-//        allowed: ["A", "U"],
-//     },
-//      {
-//       label: "SanjayGandhi",
-//       icon: <MarkChatReadIcon />,
-//       path: "SanjayGandhi",
-//        menuId: 10,
-//     },
-//     {
-//       label: "Rehabilitation",
-//       icon: <CorporateFareIcon />,
-//       path: "Rehabilitation",
-//       menuId: 11,
-//     },
-//   ];
-
-const allMenus = [
+  // Helper: toggle collapse (only one open at a time)
+  const handleOpenCollapse = (menuLabel) => {
+    setOpenCollapse((prev) => (prev === menuLabel ? null : menuLabel));
+  };
+  
+  const allMenus = [
+    // {
+    //   label: "Dashboard",
+    //   icon: <DashboardIcon />,
+    //   path: "home",
+    //   menuId: 1,
+    // },
+    // {
+    //   label: "Sampadan Dashboard",
+    //   icon: <DashboardIcon />,
+    //   path: "BhusampadanDashboard",
+    //   menuId: 1,
+    // },
+    // {
+    //   label: "SJYGandhi Dashboard",
+    //   icon: <DashboardIcon />,
+    //   path: "SJYGandhiDashboard",
+    //   menuId: 1,
+    // },
     {
-      label: "Dashboard",
+      label: "Dashboards",
       icon: <DashboardIcon />,
-      path: "home",
-       menuId: 1,
-    },
-     {
-      label: "Sampadan Dashboard",
-      icon: <DashboardIcon />,
-      path: "BhusampadanDashboard",
-       menuId: 1,
-    },
+      menuId: 1,
+      children: [
         {
-      label: "SJYGandhi Dashboard",
-      icon: <DashboardIcon />,
-      path: "SJYGandhiDashboard",
-       menuId: 1,
+          label: "Main Dashboard",
+          icon: <DashboardIcon />,
+          path: "home",
+          menuId: 1,
+        },
+        {
+          label: "Land Acquisition Dashboard",
+          icon: <DashboardIcon />,
+          path: "BhusampadanDashboard",
+          menuId: 13,
+        },
+        {
+          label: "Sanjay Gandhi Dashboard",
+          icon: <DashboardIcon />,
+          path: "SJYGandhiDashboard",
+          menuId: 14,
+        },
+      ],
     },
-    { 
+    {
       label: "User",
       icon: <GroupIcon />,
       path: "manage-user",
@@ -274,7 +258,7 @@ const allMenus = [
       label: "Role Creation",
       icon: <ManageAccountsIcon />,
       path: "RoleCreation",
-        menuId: 12,
+      menuId: 12,
     },
     //   {
     //   label: "Department",
@@ -311,8 +295,8 @@ const allMenus = [
       label: "Documents Master",
       icon: <DescriptionIcon />,
       path: "DocumentMaster",
-      menuId:5,
-     },
+      menuId: 5,
+    },
     {
       label: "Gazetted Master",
       icon: <ChecklistIcon />,
@@ -325,11 +309,11 @@ const allMenus = [
       path: "Upload-Document",
       menuId: 9,
     },
-     {
-      label: "SanjayGandhi",
+    {
+      label: "Sanjay Gandhi",
       icon: <MarkChatReadIcon />,
       path: "SanjayGandhi",
-       menuId: 10,
+      menuId: 10,
     },
     {
       label: "Rehabilitation",
@@ -337,22 +321,41 @@ const allMenus = [
       path: "Rehabilitation",
       menuId: 11,
     },
-     {
-      label: "LandAcquistion Report",
-      icon: <DriveFolderUploadIcon />,
-      path: "LandAcquistionReport",
-      menuId: 9,
-    },
-      {
-      label: "SJY Gandhi Report",
-      icon: <DriveFolderUploadIcon />,
-      path: "SJYGandhiReport",
-      menuId: 9,
+    //  {
+    //   label: "LandAcquistion Report",
+    //   icon: <DriveFolderUploadIcon />,
+    //   path: "LandAcquistionReport",
+    //   menuId: 9,
+    // },
+    //   {
+    //   label: "SJY Gandhi Report",
+    //   icon: <DriveFolderUploadIcon />,
+    //   path: "SJYGandhiReport",
+    //   menuId: 9,
+    // },
+    {
+      label: "Reports",
+      icon: <PrintIcon />,
+      menuId: 5,
+      children: [
+        {
+          label: "LandAcquistion Report",
+          icon: <PrintIcon />,
+          path: "LandAcquistionReport",
+          menuId: 15,
+        },
+        {
+          label: "Sanjay Gandhi Report",
+          icon: <PrintIcon />,
+          path: "SJYGandhiReport",
+          menuId: 16,
+        },
+      ],
     },
   ];
 
   const handleOn = () => {
-     setOn(true);
+    setOn(true);
   };
   const handleClose = () => {
     setOn(false);
@@ -413,7 +416,6 @@ const allMenus = [
       setThemeStatus(true);
     }
   };
-
 
   const handleDrawerOpen = () => {
     // setDrawerOpen(true);
@@ -491,59 +493,67 @@ const allMenus = [
     }
   }, []);
 
-
-    const visibleMenus = React.useMemo(() => {
+  const visibleMenus = React.useMemo(() => {
     if (!Array.isArray(roleAccess) || roleAccess.length === 0) return [];
+
     const allowedMenuIds = roleAccess
       .filter((item) => item.IsRead)
       .map((item) => item.MenuId);
-    return allMenus.filter((menu) => allowedMenuIds.includes(menu.menuId));
+
+    return allMenus
+      .map((menu) => {
+        if (menu.children) {
+          const visibleChildren = menu.children.filter((child) =>
+            allowedMenuIds.includes(child.menuId)
+          );
+          if (visibleChildren.length > 0)
+            return { ...menu, children: visibleChildren };
+          return null;
+        }
+        return allowedMenuIds.includes(menu.menuId) ? menu : null;
+      })
+      .filter(Boolean);
   }, [roleAccess]);
+
+  //   const visibleMenus = React.useMemo(() => {
+  //   if (!Array.isArray(roleAccess) || roleAccess.length === 0) return [];
+  //   const allowedMenuIds = roleAccess
+  //     .filter((item) => item.IsRead)
+  //     .map((item) => item.MenuId);
+  //   return allMenus.filter((menu) => allowedMenuIds.includes(menu.menuId));
+  // }, [roleAccess]);
   // ===(below logic are if menuId not present in case visible menu)=======(Above logic if menuId not present to not visible all user this menu)===============
-// const visibleMenus = React.useMemo(() => {
-//   if (!Array.isArray(roleAccess) || roleAccess.length === 0) return [];
 
-//   const allowedMenuIds = roleAccess
-//     .filter((item) => item.IsRead)
-//     .map((item) => item.MenuId);
+  // const visibleMenus = React.useMemo(() => {
+  //   if (!Array.isArray(roleAccess) || roleAccess.length === 0) return [];
 
-  
-//   //  - OR have no menuId at all (undefined / null)
-//   return allMenus.filter(
-//     (menu) =>
-//       !menu.menuId || allowedMenuIds.includes(menu.menuId)
-//   );
-// }, [roleAccess]);
-// =============================
+  //   const allowedMenuIds = roleAccess
+  //     .filter((item) => item.IsRead)
+  //     .map((item) => item.MenuId);
 
-// const visibleMenus = React.useMemo(() => {
-//   if (!userType) return [];
-
-//   const allowedMenuIds = roleAccess
-//   ?.filter((r) => r.IsRead)
-//   .map((r) => r.MenuId);
+  //   //  - OR have no menuId at all (undefined / null)
+  //   return allMenus.filter(
+  //     (menu) =>
+  //       !menu.menuId || allowedMenuIds.includes(menu.menuId)
+  //   );
+  // }, [roleAccess]);
+  // =============================
 
 
-//   return allMenus.filter((menu) => {
-
-//     // 🔹 CASE 1: Menus having menuId → Apply Role Based Logic
-//     if (menu.menuId) {
-//       return allowedMenuIds?.includes(menu.menuId);
-//     }
-
-//     // 🔹 CASE 2: Menus without menuId → Apply UserType logic
-//     if (menu.allowed) {
-//       return menu.allowed.includes(userType);
-//     }
-
-//     // Default show (if no rule defined)
-//     return true;
-//   });
-
-// }, [roleAccess, userType]);
-
-// ================
-
+    React.useEffect(() => {
+    if (!Array.isArray(visibleMenus)) return;
+    // find any menu that has children whose path matches current pathname
+    const active = visibleMenus.find((menu) =>
+      Array.isArray(menu.children) &&
+      menu.children.some((c) => location.pathname === `/dashboard/${c.path}`)
+    );
+    if (active) {
+      setOpenCollapse(active.label);
+    } else {
+      // optional: close all if no child matches
+      // setOpenCollapse(null);
+    }
+  }, [location.pathname, visibleMenus])
 
   const getButtonStyle = (isSelected) => ({
     "&.Mui-selected": {
@@ -570,7 +580,6 @@ const allMenus = [
         <Box
           sx={{
             display: "flex",
-            //  backgroundColor: "#F5F6FA",
             backgroundColor: (theme) => theme.palette.background.default,
           }}
         >
@@ -730,7 +739,8 @@ const allMenus = [
               </Tooltip>
             </Toolbar>
           </AppBar>
-          <Drawer variant="permanent" open={open} PaperProps={{ elevation: 7 }}>
+           
+          {/* <Drawer variant="permanent" open={open} PaperProps={{ elevation: 7 }}>
             <DrawerHeader>
               <IconButton>
                 {theme.direction === "rtl" ? (
@@ -740,11 +750,8 @@ const allMenus = [
                 )}
               </IconButton>
             </DrawerHeader>
-            <Grid
-              style={{
-                height: 90,
-              }}
-            >
+
+             <Grid style={{ height: 90 }}>
               <img
                 src={themestatus ? logo : logoDarkTheme}
                 alt="logo"
@@ -756,41 +763,210 @@ const allMenus = [
                 }}
               />
             </Grid>
-            <Grid
+
+             <Grid
               sx={{
                 width: "100%",
-                // maxWidth: 340,
                 height: "100%",
-                // backgroundColor: "White",
                 overflow: "hidden",
-                "&:hover": {
-                  overflowY: "auto",
-                  scrollbarWidth: "thin",
-                  // scrollbarColor: "#888 transparent",
-                },
+                "&:hover": { overflowY: "auto", scrollbarWidth: "thin" },
               }}
             >
-              {visibleMenus.map(({ label, icon, path }) => (
-                <Link key={path} to={path} className="link_style">
-                  <ListItemButton
-                    onClick={handleClickTransaction}
-                    selected={location.pathname === `/dashboard/${path}`}
-                    sx={getButtonStyle(
-                      location.pathname === `/dashboard/${path}`
-                    )}
-                  >
-                    <ListItemIcon
-                      sx={{ minWidth: "33px", marginRight: "8px" }}
-                      onClick={handleDrawerOpen}
+               
+              {visibleMenus.map(({ label, icon, path, children }) => {
+                // DASHBOARD COLLAPS
+                if (label === "Dashboards") {
+                  return (
+                    <div key={label}>
+                      <ListItemButton
+                        onClick={() => setOpenDashboard(!openDashboard)}
+                        sx={{ pl: 1.5 }}
+                      >
+                        <ListItemIcon
+                          sx={{ minWidth: "33px", marginRight: "3px" }}
+                        >
+                          {icon}
+                        </ListItemIcon>
+                        <ListItemText primary={label} />
+                        {openDashboard ? <ExpandLess /> : <ExpandMore />}
+                      </ListItemButton>
+
+                      <Collapse in={openDashboard} timeout="auto" unmountOnExit>
+                        {children.map((sub) => (
+                          <Link
+                            to={sub.path}
+                            key={sub.path}
+                            className="link_style"
+                          >
+                            <ListItemButton
+                              sx={{ pl: 3 }}
+                              selected={
+                                location.pathname === `/dashboard/${sub.path}`
+                              }
+                            >
+                              <ListItemIcon
+                                sx={{ minWidth: "33px", marginRight: "3px" }}
+                              >
+                                {sub.icon}
+                              </ListItemIcon>
+                              <ListItemText primary={sub.label} />
+                            </ListItemButton>
+                          </Link>
+                        ))}
+                      </Collapse>
+                    </div>
+                  );
+                }
+
+                 if (label === "Reports") {
+                  return (
+                    <div key={label}>
+                      <ListItemButton
+                        onClick={() => setOpenReport(!openReport)}
+                        sx={{ pl: 1.5 }}
+                      >
+                        <ListItemIcon
+                          sx={{ minWidth: "33px", marginRight: "3px" }}
+                        >
+                          {icon}
+                        </ListItemIcon>
+                        <ListItemText primary={label} />
+                        {openReport ? <ExpandLess /> : <ExpandMore />}
+                      </ListItemButton>
+
+                      <Collapse in={openReport} timeout="auto" unmountOnExit>
+                        {children.map((sub) => (
+                          <Link
+                            to={sub.path}
+                            key={sub.path}
+                            className="link_style"
+                          >
+                            <ListItemButton
+                              sx={{ pl: 3 }}
+                              selected={
+                                location.pathname === `/dashboard/${sub.path}`
+                              }
+                            >
+                              <ListItemIcon
+                                sx={{ minWidth: "33px", marginRight: "3px" }}
+                              >
+                                {sub.icon}
+                              </ListItemIcon>
+                              <ListItemText primary={sub.label} />
+                            </ListItemButton>
+                          </Link>
+                        ))}
+                      </Collapse>
+                    </div>
+                  );
+                }
+
+                 return (
+                  <Link key={path} to={path} className="link_style">
+                    <ListItemButton
+                      selected={location.pathname === `/dashboard/${path}`}
+                      sx={{ pl: 1.5 }}
                     >
-                      {icon}
-                    </ListItemIcon>
-                    <ListItemText primary={label}/>
-                  </ListItemButton>
-                </Link>
-              ))}
+                      <ListItemIcon
+                        sx={{ minWidth: "33px", marginRight: "3px" }}
+                      >
+                        {icon}
+                      </ListItemIcon>
+                      <ListItemText primary={label} />
+                    </ListItemButton>
+                  </Link>
+                );
+              })}
             </Grid>
-          </Drawer>
+          </Drawer> */}
+              <Drawer variant="permanent" open={open} PaperProps={{ elevation: 7 }}>
+      <div style={{ display: "flex", alignItems: "center", justifyContent: "flex-end", padding: 8 }}>
+        <IconButton onClick={handleDrawerOpen}>
+          <ChevronLeftIcon />
+        </IconButton>
+      </div>
+
+      <Grid style={{ height: 90 }}>
+        <img
+          src={themestatus ? logo : logoDarkTheme}
+          alt="logo"
+          style={{ maxWidth: "100%", maxHeight: "100%", objectFit: "contain", paddingTop: 10 }}
+        />
+      </Grid>
+
+      <Grid sx={{
+        width: "100%",
+        height: "100%",
+        overflow: "hidden",
+        "&:hover": { overflowY: "auto", scrollbarWidth: "thin" },
+      }}>
+        {visibleMenus.map((menu) => {
+          const hasChildren = Array.isArray(menu.children) && menu.children.length > 0;
+
+          if (hasChildren) {
+            return (
+              <div key={menu.label}>
+                <ListItemButton
+                  onClick={() => handleOpenCollapse(menu.label)}
+                  sx={{ pl: 1.5 }}
+                >
+                  <ListItemIcon sx={{ minWidth: "33px", marginRight: "3px" }}>
+                    {menu.icon}
+                  </ListItemIcon>
+                  <ListItemText primary={menu.label} />
+                  {openCollapse === menu.label ? <ExpandLess /> : <ExpandMore />}
+                </ListItemButton>
+
+                <Collapse in={openCollapse === menu.label} timeout="auto" unmountOnExit>
+                  {menu.children.map((sub) => (
+                    <Link
+                      to={`/dashboard/${sub.path}`}
+                      key={sub.path}
+                      className="link_style"
+                      style={{ textDecoration: "none", color: "inherit", display: "block" }}
+                      // close the collapse when a child is clicked
+                      onClick={() => setOpenCollapse(null)}
+                    >
+                      <ListItemButton
+                        sx={{ pl: 4 }}
+                        selected={location.pathname === `/dashboard/${sub.path}`}
+                      >
+                        <ListItemIcon sx={{ minWidth: "33px", marginRight: "3px" }}>
+                          {sub.icon}
+                        </ListItemIcon>
+                        <ListItemText primary={sub.label} />
+                      </ListItemButton>
+                    </Link>
+                  ))}
+                </Collapse>
+              </div>
+            );
+          }
+
+          // Normal, single menu (no children)
+          return (
+            <Link
+              key={menu.path}
+              to={`/dashboard/${menu.path}`}
+              className="link_style"
+              style={{ textDecoration: "none", color: "inherit", display: "block" }}
+              // optional: close any open collapse when clicking a normal menu
+              onClick={() => setOpenCollapse(null)}
+            >
+              <ListItemButton
+                selected={location.pathname === `/dashboard/${menu.path}`}
+                sx={{ pl: 1.5 }}
+              >
+                <ListItemIcon sx={{ minWidth: "33px", marginRight: "3px" }}>
+                  {menu.icon}
+                </ListItemIcon>
+                <ListItemText primary={menu.label} />
+              </ListItemButton>
+            </Link>
+          );
+        })}
+      </Grid>
+    </Drawer>
           <Box
             component="main"
             sx={{

@@ -1462,7 +1462,7 @@ export default function ManageUsers() {
         }}
         elevation={7}
       >
-        <Box sx={{ height: "80vh", width: "100%" }}>
+        <Box sx={{ height: "75vh", width: "100%" }}>
           {/* <DataGrid
             className="datagrid-style"
             rowHeight={70}
