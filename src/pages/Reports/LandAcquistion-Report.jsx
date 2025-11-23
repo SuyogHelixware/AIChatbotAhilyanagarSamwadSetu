@@ -11,6 +11,7 @@ import FormatListNumberedIcon from "@mui/icons-material/FormatListNumbered";
 import PhoneIcon from "@mui/icons-material/Phone";
 import CustomToolbar from "../../components/CustomToolbar";
 import DateRangePickerField from "../../components/DateRangePickerField";
+import CustomMuiRangePicker from "../../components/DateRangePickerField";
 export default function LandAcquistionReport() {
   const [fromDate, setFromDate] = useState(dayjs().startOf("month"));
   const [toDate, setToDate] = useState(dayjs());
@@ -25,7 +26,8 @@ export default function LandAcquistionReport() {
   //   },
   // });
 
-  const fetchReport = async () => {
+  // const fetchReport = async () => {
+  const fetchReport = async (selectedFrom, selectedTo) => {
     try {
       setLoading(true);
       const params = {
@@ -76,9 +78,14 @@ export default function LandAcquistionReport() {
       setLoading(false);
     }
   };
+  // useEffect(() => {
+  //   fetchReport();
+  // }, []);
   useEffect(() => {
-    fetchReport();
-  }, []);
+    if (fromDate && toDate) {
+      fetchReport();
+    }
+  }, [fromDate, toDate]);
 
   const officerColumns = [
     {
@@ -195,16 +202,39 @@ export default function LandAcquistionReport() {
           Land Acquisition Report
         </Typography>
       </Grid>
-      <Grid container spacing={2} alignItems="center" justifyContent="flex-end">
-        <Grid item xs={12} sm={4}>
-          <DateRangePickerField
+      {/* <Grid container justifyContent="flex-end"> */}
+<Grid container justifyContent="flex-end" item xs={12} sm={12}>
+          {/* <DateRangePickerField
             fromDate={fromDate}
             toDate={toDate}
             setFromDate={setFromDate}
             setToDate={setToDate}
+          /> */}
+          <Paper
+    elevation={0}
+    sx={{
+      p: 1.3,
+      borderRadius: 2.5,
+       border: "1px solid #e0e0e0",
+      boxShadow: "0 1px 3px rgba(0,0,0,0.08)",
+      transition: "all 0.2s ease",
+      "&:hover": {
+        borderColor: "#0288d1",
+        boxShadow: "0 4px 10px rgba(0,0,0,0.12)",
+        transform: "translateY(-2px)",
+      },
+    }}
+  >
+          <CustomMuiRangePicker
+            fromDate={fromDate}
+            toDate={toDate}
+            setFromDate={setFromDate}
+            setToDate={setToDate}
+            onApply={fetchReport}
           />
+            </Paper>
         </Grid>
-        <Grid
+        {/* <Grid
           item
           xs={12}
           sm={4}
@@ -241,8 +271,8 @@ export default function LandAcquistionReport() {
             <ContentPasteSearchIcon />
             Search
           </Button>
-        </Grid>{" "}
-      </Grid>
+        </Grid>{" "} */}
+      {/* </Grid> */}
 
       <Grid item xs={12} sx={{ mt: 3 }}>
         <Paper elevation={7} sx={{ borderRadius: 3, p: 2 }}>
@@ -254,7 +284,7 @@ export default function LandAcquistionReport() {
               justifyContent: "center",
             }}
           >
-            Ready Document
+            Ready Uploaded Document
             <Chip
               label={DocReadyCount}
               size="small"
@@ -301,7 +331,7 @@ export default function LandAcquistionReport() {
               justifyContent: "center",
             }}
           >
-            Missing Document
+            Missing Uploaded Document
             <Chip
               label={DocMissingCount}
               size="small"

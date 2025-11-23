@@ -18,11 +18,18 @@ import { Controller, useForm, useWatch } from "react-hook-form";
 import { DatePickerField } from "../components/Component";
 import CustomToolbar from "../components/CustomToolbar";
 import { BASE_URL } from "../Constant";
- import { PieChart } from "@mui/x-charts";
+import { PieChart } from "@mui/x-charts";
+// import DateRangePickerField from "../components/DateRangePickerField";
 
+import { Typography } from "@mui/material";
+import CustomMuiRangePicker from "../components/DateRangePickerField";
 
 export default function LandAcquisition() {
   const [officerRows, setOfficerRows] = React.useState([]);
+  const [fromDate, setFromDate] = useState(dayjs().startOf("month"));
+  const [toDate, setToDate] = useState(dayjs());
+  const [barMonths, setBarMonths] = useState([]);
+  const [barCounts, setBarCounts] = useState([]);
 
   const officerColumns = [
     {
@@ -40,7 +47,6 @@ export default function LandAcquisition() {
       headerAlign: "center",
     },
   ];
-
   const today = dayjs();
   const firstDayOfMonth = dayjs().startOf("month");
 
@@ -59,20 +65,14 @@ export default function LandAcquisition() {
       fromDateOfficer: firstDayOfMonth,
     },
   });
-  const [fromDate, toDate] = useWatch({
-    control,
-    name: ["FromDate", "ToDate"],
-  });
-  // const [fromDateOfficer, toDateOfficer] = useWatch({
+  // const [fromDate, toDate] = useWatch({
   //   control,
-  //   name: ["fromDateOfficer", "toDateOfficer"],
+  //   name: ["FromDate", "ToDate"],
   // });
-
   const callDashboardAPI = async (fDate, tDate) => {
     try {
       const from = dayjs(fDate).format("YYYY-MM-DD");
       const to = dayjs(tDate).format("YYYY-MM-DD");
-
       const response = await axios.get(`${BASE_URL}Reports/Dashboard`, {
         params: { FromDate: from, ToDate: to },
       });
@@ -87,6 +87,25 @@ export default function LandAcquisition() {
           TotalWPMsgSuccess: response.data.values.TotalWPMsgSuccess || 0,
         });
       }
+
+      if (response.data && response.data.values) {
+        const v = response.data.values;
+
+        setCounts({
+          TotalMissingDocsLandAcqui: v.TotalMissingDocsLandAcqui || 0,
+          TotalDocsLandAcqui: v.TotalDocsLandAcqui || 0,
+          TotalWPMsgFailed: v.TotalWPMsgFailed || 0,
+          TotalWPMsgSuccess: v.TotalWPMsgSuccess || 0,
+        });
+
+        // SET PIE CHART VALUES HERE  ⭐
+        setPieData([
+          { id: 0, value: v.TotalDocsLandAcqui || 0, label: "Docs" },
+          { id: 1, value: v.TotalMissingDocsLandAcqui || 0, label: "Missing" },
+          { id: 2, value: v.TotalWPMsgSuccess || 0, label: "Success" },
+          { id: 3, value: v.TotalWPMsgFailed || 0, label: "Failed" },
+        ]);
+      }
     } catch (error) {
       console.error("API Error:", error);
     }
@@ -97,6 +116,52 @@ export default function LandAcquisition() {
       callDashboardAPI(fromDate, toDate);
     }
   }, [fromDate, toDate]);
+
+  // ---------------------------
+  // ******** BARCHART API CALL LOGIC *******
+  const getYearlyBarChart = async (fDate, tDate) => {
+    try {
+      const from = dayjs(fDate).format("YYYY-MM-DD");
+      const to = dayjs(tDate).format("YYYY-MM-DD");
+
+      const response = await axios.get(`${BASE_URL}Reports/LandAcqu/Yearly`, {
+        params: { FromDate: from, ToDate: to },
+      });
+
+      if (response.data && response.data.values) {
+        const list = response.data.values;
+
+        // const months = list.map((item) =>
+        //   new Date(item.YearMonth + "-01").toLocaleString("en-US", {
+        //     month: "short",
+        //   })
+        // );
+        const months = list.map((item) => {
+          const date = new Date(item.YearMonth + "-01");
+          const month = date.toLocaleString("en-US", { month: "short" });
+          const year = date.getFullYear();
+          return `${month}-${year}`; // Example: Nov-2025
+        });
+
+        const counts = list.map((item) => item.TotalCnt);
+
+        setBarMonths(months);
+        setBarCounts(counts);
+      }
+    } catch (error) {
+      console.log("Yearly Chart Error:", error);
+    }
+  };
+
+  useEffect(() => {
+    if (fromDate && toDate) {
+      callDashboardAPI(fromDate, toDate);
+      HandleOfficerList(fromDate, toDate);
+      getYearlyBarChart(fromDate, toDate); // 🌟 Load Bar Chart
+    }
+  }, [fromDate, toDate]);
+
+  // ----------------------------------
 
   const HandleOfficerList = async (fromDateOfficer, toDateOfficer) => {
     try {
@@ -129,6 +194,8 @@ export default function LandAcquisition() {
     }
   }, [fromDate, toDate]);
 
+  const [pieData, setPieData] = useState([]);
+
   return (
     <>
       <Box sx={{ width: "100%", p: 1 }}>
@@ -136,25 +203,39 @@ export default function LandAcquisition() {
           sx={{
             display: "flex",
             justifyContent: "flex-end",
-            gap: 2,
+            width: "100%",
             mb: 2,
           }}
         >
-          <Controller
-            name="FromDate"
-            control={control}
-            render={({ field }) => (
-              <DatePickerField {...field} id="FromDate" label="FROM DATE" />
-            )}
-          />
-
-          <Controller
-            name="ToDate"
-            control={control}
-            render={({ field }) => (
-              <DatePickerField {...field} id="ToDate" label="TO DATE" />
-            )}
-          />
+          <Grid item xs={12} sm={4}>
+           <Paper
+    elevation={4}
+    sx={{
+      p: 1.5,
+      borderRadius: 2,
+       boxShadow: "0 4px 10px rgba(0, 90, 91, 0.15)",
+      transition: "all 0.2s ease",
+      "&:hover": {
+        boxShadow: "0 6px 16px rgba(0, 90, 91, 0.25)",
+        transform: "translateY(-2px)",
+      },
+    }}
+  >
+            {/* <DateRangePickerField
+              fromDate={fromDate}
+              toDate={toDate}
+              setFromDate={setFromDate}
+              setToDate={setToDate}
+            /> */}
+            <CustomMuiRangePicker
+              fromDate={fromDate}
+              toDate={toDate}
+              setFromDate={setFromDate}
+              setToDate={setToDate}
+              inputPlaceholder="Pick date range"
+            />
+              </Paper>
+          </Grid>
         </Box>
 
         <Grid container spacing={3}>
@@ -254,28 +335,29 @@ export default function LandAcquisition() {
                   hideFooter={true}
                   slots={{ toolbar: CustomToolbar }}
                   getRowId={(row) => row.Name}
+                  slotProps={{
+                    toolbar: {
+                      showQuickFilter: true,
+                      quickFilterProps: { debounceMs: 500 },
+                    },
+                  }}
                 />
               </div>
             </Paper>
           </Grid>
 
-              <Grid item xs={12} md={6}>
+          <Grid item xs={12} md={6}>
             <Paper elevation={7} sx={{ borderRadius: 3, py: 3 }}>
-                            <div style={{ height: 335, width: "100%", marginTop: 10 }}>
-
-              <PieChart
-                series={[
-                  {
-                    data: [
-                      { id: 0, value: 10, label: "series A" },
-                      { id: 1, value: 15, label: "series B" },
-                      { id: 2, value: 20, label: "series C" },
-                    ],
-                  },
-                ]}
-                height={300}
-                colors={["#005A5B", "#338687 ", "#9CD8C4"]}
-              />
+              <div style={{ height: 335, width: "100%", marginTop: 10 }}>
+                <PieChart
+                  series={[
+                    {
+                      data: pieData ?? [],
+                    },
+                  ]}
+                  height={300}
+                  colors={["#005A5B", "#EF6C00", "#28A745", "#E53935"]}
+                />
               </div>
             </Paper>
           </Grid>
@@ -287,31 +369,44 @@ export default function LandAcquisition() {
               <h3 style={{ marginLeft: 10, marginBottom: 10 }}>
                 Certificates Generated Per Month
               </h3>
+
+              {/* <BarChart
+  series={[
+    {
+      data: Array.isArray(barCounts) && barCounts.length > 0 ? barCounts : [0],
+    },
+  ]}
+  xAxis={[
+    {
+      data: Array.isArray(barMonths) && barMonths.length > 0 ? barMonths : [""],
+      scaleType: "band",
+    },
+  ]}
+  height={295}
+/> */}
               <BarChart
                 series={[
                   {
-                    data: [40, 70, 80, 65, 90, 92, 105, 101, 106, 110, 111],
+                    data:
+                      Array.isArray(barCounts) && barCounts.length > 0
+                        ? barCounts
+                        : [0],
                   },
                 ]}
                 xAxis={[
                   {
-                    data: [
-                      "Jan",
-                      "Feb",
-                      "Mar",
-                      "Apr",
-                      "May",
-                      "Jun",
-                      "Jul",
-                      "Aug",
-                      "Sep",
-                      "Oct",
-                      "Nov",
-                    ],
+                    data:
+                      Array.isArray(barMonths) && barMonths.length > 0
+                        ? barMonths
+                        : [""],
                     scaleType: "band",
                   },
                 ]}
                 height={295}
+                // 🔽 ADD THESE
+                barCategoryGap={0.4} // 0.4 (40%) gap → bars thinner
+                barGap={0.3} // spacing between multiple bars (keep low)
+                grid={{ horizontal: true }} // (Optional: adds grid lines for clarity)
               />
             </Paper>
           </Grid>
@@ -326,9 +421,7 @@ export default function LandAcquisition() {
 const cardStyle = {
   display: "flex",
   alignItems: "center",
-
   fontWeight: "bold",
-
   gap: 2,
   p: 2,
   borderRadius: 3,

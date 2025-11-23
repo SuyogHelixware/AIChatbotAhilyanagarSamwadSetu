@@ -16,10 +16,18 @@ import CheckCircleIcon from "@mui/icons-material/CheckCircle";
 import DangerousIcon from "@mui/icons-material/Dangerous";
 import ReplyAllIcon from "@mui/icons-material/ReplyAll";
 import CancelIcon from "@mui/icons-material/Cancel";
+import CustomMuiRangePicker from "../components/DateRangePickerField";
+import MessageIcon from "@mui/icons-material/Message";
+import SpeakerNotesOffIcon from "@mui/icons-material/SpeakerNotesOff";
+import CheckCircleOutlineIcon from "@mui/icons-material/CheckCircleOutline";
+import ErrorOutlineIcon from "@mui/icons-material/ErrorOutline";
 
 export default function SJYGandhiDashboard() {
   const today = dayjs();
   const firstDayOfMonth = dayjs().startOf("month");
+
+  const [fromDate, setFromDate] = useState(dayjs().startOf("month"));
+  const [toDate, setToDate] = useState(dayjs());
 
   const [counts, setCounts] = useState({
     TotalMsgSJYSuccess: 0,
@@ -34,10 +42,10 @@ export default function SJYGandhiDashboard() {
       ToDate: today,
     },
   });
-  const [fromDate, toDate] = useWatch({
-    control,
-    name: ["FromDate", "ToDate"],
-  });
+  // const [fromDate, toDate] = useWatch({
+  //   control,
+  //   name: ["FromDate", "ToDate"],
+  // });
 
   useEffect(() => {
     if (fromDate && toDate) {
@@ -79,25 +87,30 @@ export default function SJYGandhiDashboard() {
           sx={{
             display: "flex",
             justifyContent: "flex-end",
-            gap: 2,
-            mb: 2,
+             mb: 2,
           }}
-        >
-          <Controller
-            name="FromDate"
-            control={control}
-            render={({ field }) => (
-              <DatePickerField {...field} id="FromDate" label="FROM DATE" />
-            )}
+        > <Paper
+    elevation={4}
+    sx={{
+      p: 1.5,
+      borderRadius: 2,
+       boxShadow: "0 4px 10px rgba(0, 90, 91, 0.15)",
+      transition: "all 0.2s ease",
+      "&:hover": {
+        boxShadow: "0 6px 16px rgba(0, 90, 91, 0.25)",
+        transform: "translateY(-2px)",
+      },
+    }}
+  >
+ 
+          <CustomMuiRangePicker
+            fromDate={fromDate}
+            toDate={toDate}
+            setFromDate={setFromDate}
+            setToDate={setToDate}
+            inputPlaceholder="Pick date range"
           />
-
-          <Controller
-            name="ToDate"
-            control={control}
-            render={({ field }) => (
-              <DatePickerField {...field} id="ToDate" label="TO DATE" />
-            )}
-          />
+            </Paper>
         </Box>
 
         <Grid container spacing={3}>
@@ -105,7 +118,7 @@ export default function SJYGandhiDashboard() {
           <Grid item xs={12} sm={6} md={3}>
             <Paper sx={cardStyle} elevation={5}>
               <IconBox color="#28A745">
-                <SummarizeIcon sx={{ fontSize: 35, color: "white" }} />
+                <MessageIcon sx={{ fontSize: 35, color: "white" }} />
               </IconBox>
               <TextBox>
                 <label>Sanjay Gandhi Success Total Message</label>
@@ -122,8 +135,8 @@ export default function SJYGandhiDashboard() {
           {/* 2 */}
           <Grid item xs={12} sm={6} md={3}>
             <Paper sx={cardStyle} elevation={5}>
-              <IconBox color="#28A745">
-                <SummarizeIcon sx={{ fontSize: 35, color: "white" }} />
+              <IconBox color="#e27857ff">
+                <SpeakerNotesOffIcon sx={{ fontSize: 35, color: "white" }} />
               </IconBox>
               <TextBox>
                 <label>Sanjay Gandhi Fail Total Message</label>
@@ -140,8 +153,8 @@ export default function SJYGandhiDashboard() {
           {/* 3 */}
           <Grid item xs={12} sm={6} md={3}>
             <Paper sx={cardStyle} elevation={5}>
-              <IconBox color="#0D6EFD">
-                <ReplyAllIcon sx={{ fontSize: 35, color: "white" }} />
+              <IconBox color="#28A745">
+                <CheckCircleOutlineIcon sx={{ fontSize: 35, color: "white" }} />
               </IconBox>
               <TextBox>
                 <label>Sanjay Gandhi Total WhatsApp Success Alert</label>
@@ -158,8 +171,8 @@ export default function SJYGandhiDashboard() {
           {/* 4 */}
           <Grid item xs={12} sm={6} md={3}>
             <Paper sx={cardStyle} elevation={5}>
-              <IconBox color="#0D6EFD">
-                <CancelIcon sx={{ fontSize: 35, color: "white" }} />
+              <IconBox color="#e27857ff">
+                <ErrorOutlineIcon sx={{ fontSize: 35, color: "white" }} />
               </IconBox>
               <TextBox>
                 <label>Sanjay Gandhi Total WhatsApp Failure Alert</label>
@@ -267,14 +280,16 @@ const cardStyle = {
   gap: 2,
   p: 2,
   borderRadius: 3,
+    minHeight: 140,  
+
   height: 150,
 };
 
 const IconBox = ({ children, color }) => (
   <Box
     sx={{
-      width: 60,
-      height: 60,
+      width: 90,
+      height: 57,
       borderRadius: "50%",
       backgroundColor: color,
       display: "flex",
