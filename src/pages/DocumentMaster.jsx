@@ -826,8 +826,7 @@ const DocumentMaster = () => {
       {loaderOpen && <Loader open={loaderOpen} />}
       <Modal
         open={on}
-        onClose={handleClose}
-        sx={{
+         sx={{
           backdropFilter: "blur(5px)",
           backgroundColor: "rgba(0, 0, 0, 0.3)",
         }}

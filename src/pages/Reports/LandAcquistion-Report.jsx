@@ -1,22 +1,18 @@
-import { Button, Chip, Grid, Paper, Typography } from "@mui/material";
+import DateRangeIcon from "@mui/icons-material/DateRange";
+import FormatListNumberedIcon from "@mui/icons-material/FormatListNumbered";
+import PhoneIcon from "@mui/icons-material/Phone";
+import { Chip, Grid, Paper, Typography } from "@mui/material";
 import { DataGrid } from "@mui/x-data-grid";
 import axios from "axios";
 import dayjs from "dayjs";
 import React, { useEffect, useState } from "react";
-import { useForm } from "react-hook-form";
-import { BASE_URL } from "../../Constant";
-import ContentPasteSearchIcon from "@mui/icons-material/ContentPasteSearch";
-import DateRangeIcon from "@mui/icons-material/DateRange";
-import FormatListNumberedIcon from "@mui/icons-material/FormatListNumbered";
-import PhoneIcon from "@mui/icons-material/Phone";
 import CustomToolbar from "../../components/CustomToolbar";
-import DateRangePickerField from "../../components/DateRangePickerField";
 import CustomMuiRangePicker from "../../components/DateRangePickerField";
+import { BASE_URL } from "../../Constant";
 export default function LandAcquistionReport() {
   const [fromDate, setFromDate] = useState(dayjs().startOf("month"));
   const [toDate, setToDate] = useState(dayjs());
-  const [loading, setLoading] = React.useState(false);
-  const [DocMissingCount, setDocMissingCount] = React.useState(0);
+   const [DocMissingCount, setDocMissingCount] = React.useState(0);
   const [DocReadyCount, setDocReadyCount] = React.useState(0);
   const [docMissingRows, setDocMissingRows] = React.useState([]);
   const [docReadyRows, setDocReadyRows] = React.useState([]);
@@ -29,7 +25,7 @@ export default function LandAcquistionReport() {
   // const fetchReport = async () => {
   const fetchReport = async (selectedFrom, selectedTo) => {
     try {
-      setLoading(true);
+
       const params = {
         FromDate: dayjs(fromDate).format("YYYY-MM-DD"),
         ToDate: dayjs(toDate).format("YYYY-MM-DD"),
@@ -75,7 +71,7 @@ export default function LandAcquistionReport() {
       setDocMissingRows([]);
       setDocReadyRows([]);
     } finally {
-      setLoading(false);
+
     }
   };
   // useEffect(() => {

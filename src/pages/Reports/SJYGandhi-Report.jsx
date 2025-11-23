@@ -48,62 +48,41 @@
 //   );
 // }
 
-import React, { useEffect, useState } from "react";
 import {
+  Chip,
   Grid,
   Paper,
-  Button,
-  TextField,
-  Box,
-  Typography,
-  Chip,
+  Typography
 } from "@mui/material";
-import { DataGrid, GridToolbar } from "@mui/x-data-grid";
-import dayjs from "dayjs";
+import { DataGrid } from "@mui/x-data-grid";
 import axios from "axios";
-import { BASE_URL } from "../../Constant";
-import { DatePickerField } from "../../components/Component";
-import { Controller, useForm } from "react-hook-form";
-
-import { DatePicker } from "@mui/x-date-pickers";
-
-import { DateRangePicker } from "@mui/x-date-pickers-pro";
-
-import { LocalizationProvider } from "@mui/x-date-pickers/LocalizationProvider";
-import { AdapterDayjs } from "@mui/x-date-pickers/AdapterDayjs";
-import DateRangePickerField from "../../components/DateRangePickerField";
-import CustomToolbar from "../../components/CustomToolbar";
-import ContentPasteSearchIcon from "@mui/icons-material/ContentPasteSearch";
-import PhoneIcon from "@mui/icons-material/Phone";
-import FormatListNumberedIcon from "@mui/icons-material/FormatListNumbered";
+import dayjs from "dayjs";
+import React, { useEffect, useState } from "react";
+ import { BASE_URL } from "../../Constant";
 import DateRangeIcon from "@mui/icons-material/DateRange";
+import FormatListNumberedIcon from "@mui/icons-material/FormatListNumbered";
+import PhoneIcon from "@mui/icons-material/Phone";
+import CustomToolbar from "../../components/CustomToolbar";
 import CustomMuiRangePicker from "../../components/DateRangePickerField";
 export default function LandAcquistionReport() {
   const [DocMissingCount, setDocMissingCount] = React.useState(0);
   const [DocReadyCount, setDocReadyCount] = React.useState(0);
-
-
-
   const [fromDate, setFromDate] = useState(dayjs().startOf("month"));
   const [toDate, setToDate] = useState(dayjs());
-
-  const limit = 20;
-  const [loading, setLoading] = React.useState(false);
 
   const [SJYFailed, setSJYFailed] = React.useState([]);
   const [SJYSuccess, setSJYSuccess] = React.useState([]);
 
-  const { control, watch, getValues } = useForm({
-    defaultValues: {
-      DateRange: [dayjs(), dayjs()],
-    },
-  });
+  // const {  } = useForm({
+  //   defaultValues: {
+  //     DateRange: [dayjs(), dayjs()],
+  //   },
+  // });
 
-  const fetchReport = async (selectedFrom, selectedTo) => {
+  // const fetchReport = async (selectedFrom, selectedTo) => {
 
-  // const fetchReport = async () => {
+  const fetchReport = async () => {
     try {
-      setLoading(true);
 
       const params = {
         FromDate: dayjs(fromDate).format("YYYY-MM-DD"),
@@ -149,7 +128,7 @@ export default function LandAcquistionReport() {
       setSJYFailed([]);
       setSJYSuccess([]);
     } finally {
-      setLoading(false);
+
     }
   };
   // useEffect(() => {
@@ -234,10 +213,8 @@ export default function LandAcquistionReport() {
             display: "inline-block",
             padding: "3px 10px",
             borderRadius: "6px",
-            // background: "#1c7255ff",
-            fontWeight: 600,
-            // color: "#ebebebff",
-          }}
+             fontWeight: 600,
+           }}
         >
           {params.value}
         </span>
@@ -277,12 +254,6 @@ export default function LandAcquistionReport() {
         </Typography>
       </Grid>
 <Grid container justifyContent="flex-end" item xs={12} sm={12}>
-           {/* <DateRangePickerField
-            fromDate={fromDate}
-            toDate={toDate}
-            setFromDate={setFromDate}
-            setToDate={setToDate}
-          /> */}
           <Paper
               elevation={0}
               sx={{
@@ -307,47 +278,7 @@ export default function LandAcquistionReport() {
           />
           </Paper>
         </Grid>
-        {/* <Grid
-          item
-          xs={12}
-          sm={4}
-          sx={{
-            display: "flex",
-            alignItems: "center",
-            justifyContent: "flex-start",
-          }}
-        > */}
-          {/* <Button
-            onClick={fetchReport}
-            type="text"
-            size="large"
-            sx={{
-              // pr: 2,
-              color: "white",
-              background:
-                "linear-gradient(to right, rgb(0, 90, 91), rgb(22, 149, 153))",
-              borderRadius: "8px",
-              transition: "all 0.2s ease-in-out",
-              boxShadow: "0 4px 8px rgba(0, 90, 91, 0.3)",
-              "&:hover": {
-                transform: "translateY(2px)",
-                boxShadow: "0 2px 4px rgba(0, 90, 91, 0.2)",
-              },
-              "& .MuiButton-label": {
-                display: "flex",
-                alignItems: "center",
-              },
-              "& .MuiSvgIcon-root": {
-                marginRight: "10px",
-              },
-            }}
-          >
-            <ContentPasteSearchIcon />
-            Search
-          </Button> */}
-        {/* </Grid>{" "} */}
-      {/* </Grid> */}
-
+        
       <Grid item xs={6} md={6} sx={{ mt: 3 }}>
         <Paper elevation={7} sx={{ borderRadius: 3, p: 2 }}>
           <h3
@@ -358,7 +289,7 @@ export default function LandAcquistionReport() {
               justifyContent: "center",
             }}
           >
-            Sucess File List
+            Sucess List
             <Chip
               label={DocReadyCount}
               size="small"
@@ -409,7 +340,7 @@ export default function LandAcquistionReport() {
             <Chip
               label={DocMissingCount}
               size="small"
-              color="error" // red color for missing
+              color="error" 
               sx={{ fontWeight: "bold" }}
             />
           </h3>
@@ -428,8 +359,6 @@ export default function LandAcquistionReport() {
                   boxShadow: "0px 4px 20px rgba(0,0,0,.2)",
                 },
               }}
-
-          
               rows={SJYFailed}
               columns={officerColumns}
               pageSize={5}

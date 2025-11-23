@@ -100,6 +100,8 @@ const SanjayGandhi = () => {
       return;
     }
     setLoaderOpen(true);
+          setLoading(true);
+
 
     try {
       // 🔹 Step 1: Show confirmation alert before uploading
@@ -130,6 +132,7 @@ const SanjayGandhi = () => {
         return;
       }
       setLoaderOpen(true);
+ 
 
       //  Proceed with actual upload if confirmed
       const formData = new FormData();
@@ -189,6 +192,8 @@ const SanjayGandhi = () => {
       );
     } finally {
       setLoaderOpen(false);
+            setLoading(false);
+
     }
   };
 
@@ -494,7 +499,7 @@ const SanjayGandhi = () => {
           onFilterModelChange={(model) => {
             const quickFilterValue = model.quickFilterValues?.[0] || "";
             setSearchText(quickFilterValue);
-            setCurrentPage(0); // reset page on search
+            setCurrentPage(0);  
           }}
         />
       </Grid>

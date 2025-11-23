@@ -20,10 +20,10 @@ const Signin = () => {
   const [loading, setLoading] = useState(false);
   const { refreshUserSession } = useThemeMode();
 
-  const [role, setRole] = useState(() => {
-    const storedRole = localStorage.getItem("RoleDetails");
-    return storedRole ? JSON.parse(storedRole) : null;
-  });
+  // const [role, setRole] = useState(() => {
+    // const storedRole = localStorage.getItem("RoleDetails");
+    // return storedRole ? JSON.parse(storedRole) : null;
+  // });
 
   const { refreshRoleAccess } = useThemeMode();
 

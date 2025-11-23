@@ -1,28 +1,27 @@
 // import ApprovalIcon from "@mui/icons-material/Approval";
 import ChevronLeftIcon from "@mui/icons-material/ChevronLeft";
-import ChevronRightIcon from "@mui/icons-material/ChevronRight";
 // import CommentIcon from "@mui/icons-material/Comment";
 import DashboardIcon from "@mui/icons-material/Dashboard";
 import FullscreenIcon from "@mui/icons-material/Fullscreen";
 import FullscreenExitIcon from "@mui/icons-material/FullscreenExit";
 // import GroupsIcon from "@mui/icons-material/Groups";
+import GroupIcon from "@mui/icons-material/Group";
 import LightModeIcon from "@mui/icons-material/LightMode";
 import ManageAccountsIcon from "@mui/icons-material/ManageAccounts";
-import GroupIcon from "@mui/icons-material/Group";
 import MenuIcon from "@mui/icons-material/Menu";
 import ModeNightIcon from "@mui/icons-material/ModeNight";
-import logoDarkTheme from "../assets/darkThemeLogo.png";
 import SettingsIcon from "@mui/icons-material/Settings";
+import logoDarkTheme from "../assets/darkThemeLogo.png";
 // import SmartphoneIcon from "@mui/icons-material/Smartphone";
 // import EmailIcon from "@mui/icons-material/Email";
 // import BusinessIcon from "@mui/icons-material/Business";
 import DescriptionIcon from "@mui/icons-material/Description";
 // import MiscellaneousServicesIcon from "@mui/icons-material/MiscellaneousServices";
 // import { MdMiscellaneousServices } from "react-icons/md";
-import DriveFolderUploadIcon from "@mui/icons-material/DriveFolderUpload";
 import ChecklistIcon from "@mui/icons-material/Checklist";
-import MarkChatReadIcon from "@mui/icons-material/MarkChatRead";
 import CorporateFareIcon from "@mui/icons-material/CorporateFare";
+import DriveFolderUploadIcon from "@mui/icons-material/DriveFolderUpload";
+import MarkChatReadIcon from "@mui/icons-material/MarkChatRead";
 
 import {
   Avatar,
@@ -39,32 +38,30 @@ import Box from "@mui/material/Box";
 import CssBaseline from "@mui/material/CssBaseline";
 import MuiDrawer from "@mui/material/Drawer";
 import IconButton from "@mui/material/IconButton";
-import List from "@mui/material/List";
 import ListItemButton from "@mui/material/ListItemButton";
 import ListItemIcon from "@mui/material/ListItemIcon";
 import ListItemText from "@mui/material/ListItemText";
+import { styled, useTheme } from "@mui/material/styles";
 import Toolbar from "@mui/material/Toolbar";
 import Typography from "@mui/material/Typography";
-import { styled, useTheme } from "@mui/material/styles";
 import * as React from "react";
 import { Link, Outlet, useLocation, useNavigate } from "react-router-dom";
 import logo from "../assets/ApaleSarkar.png";
 import "../Dashboard/Dashboard.css";
 // import avatar from "../assets/avtar.png";
-import { Bunny_Image_URL } from "../Constant";
 import { isLogin } from "./Auth";
 
 import { Tooltip } from "@mui/material";
 import { useThemeMode } from "./Theme";
 
+import { ExpandLess, ExpandMore } from "@mui/icons-material";
+import DehazeIcon from "@mui/icons-material/Dehaze";
+import PrintIcon from "@mui/icons-material/Print";
 import SpeedDial from "@mui/material/SpeedDial";
 import SpeedDialAction from "@mui/material/SpeedDialAction";
 import { keyframes } from "@mui/system";
 import { useState } from "react";
 import LoginPageLoader from "../pages/LoginPageLoader";
-import { ExpandLess, ExpandMore } from "@mui/icons-material";
-import PrintIcon from "@mui/icons-material/Print";
-  import DehazeIcon from '@mui/icons-material/Dehaze';
 const drawerWidth = 250;
 const openedMixin = (theme) => ({
   width: drawerWidth,
@@ -165,19 +162,15 @@ const RotatingIcon = styled(SettingsIcon)(({ theme }) => ({
 }));
 
 export default function Dashboard() {
- 
   const [fullscreen, setFullscreen] = React.useState(false);
   const Navigate = useNavigate();
-  const router = useLocation();
+  // const router = useLocation();
   const [open, setOpen] = React.useState(true);
   const [openList, setOpenList] = React.useState(false);
   const [on, setOn] = React.useState(false);
   const { themeMode, LightMode, DarkMode } = useThemeMode();
   const [loading, setLoading] = React.useState(true);
-  const [openReport, setOpenReport] = React.useState(false);
-  const [openDashboard, setOpenDashboard] = React.useState(false);
   const [openCollapse, setOpenCollapse] = React.useState(null);
-
   const [themestatus, setThemeStatus] = useState(() => {
     const CurrentTheme = localStorage.getItem("Theme");
     return CurrentTheme === "dark" ? false : true;
@@ -203,7 +196,7 @@ export default function Dashboard() {
   const handleOpenCollapse = (menuLabel) => {
     setOpenCollapse((prev) => (prev === menuLabel ? null : menuLabel));
   };
-  
+
   const allMenus = [
     // {
     //   label: "Dashboard",
@@ -229,19 +222,19 @@ export default function Dashboard() {
       menuId: 1,
       children: [
         {
-          label: "Main Dashboard",
+          label: "Admin",
           icon: <DehazeIcon />,
           path: "home",
           menuId: 1,
-        }, 
+        },
         {
-          label: "Land Acquisition Dashboard",
+          label: "Land Acquisition",
           icon: <DehazeIcon />,
           path: "LandAcquisition",
           menuId: 13,
         },
         {
-          label: "Sanjay Gandhi Dashboard",
+          label: "Sanjay Gandhi",
           icon: <DehazeIcon />,
           path: "SJYGandhiDashboard",
           menuId: 14,
@@ -339,13 +332,13 @@ export default function Dashboard() {
       menuId: 5,
       children: [
         {
-          label: "LandAcquistion Report",
+          label: "LandAcquistion",
           icon: <PrintIcon />,
           path: "LandAcquistionReport",
           menuId: 15,
         },
         {
-          label: "Sanjay Gandhi Report",
+          label: "Sanjay Gandhi",
           icon: <PrintIcon />,
           path: "SJYGandhiReport",
           menuId: 16,
@@ -418,21 +411,11 @@ export default function Dashboard() {
   };
 
   const handleDrawerOpen = () => {
-     setOpen(!open);
+    setOpen(!open);
     handleClickTransaction();
- setOpenCollapse(null)
+    setOpenCollapse(null);
   };
 
-  const handleClickMasters = () => {
-    if (!open) {
-      setOpen(true);
-    }
-    setOpenList(!openList);
-    if (openProcessTransactions) {
-      setOpenProcessTransactions(!openProcessTransactions);
-    }
-    handleClickTransaction();
-  };
   const handleClickTransaction = () => {
     setOpenProcessTransactions(!openProcessTransactions);
     if (openList) {
@@ -539,13 +522,13 @@ export default function Dashboard() {
   // }, [roleAccess]);
   // =============================
 
-
-    React.useEffect(() => {
+  React.useEffect(() => {
     if (!Array.isArray(visibleMenus)) return;
     // find any menu that has children whose path matches current pathname
-    const active = visibleMenus.find((menu) =>
-      Array.isArray(menu.children) &&
-      menu.children.some((c) => location.pathname === `/dashboard/${c.path}`)
+    const active = visibleMenus.find(
+      (menu) =>
+        Array.isArray(menu.children) &&
+        menu.children.some((c) => location.pathname === `/dashboard/${c.path}`)
     );
     if (active) {
       setOpenCollapse(active.label);
@@ -553,21 +536,21 @@ export default function Dashboard() {
       // optional: close all if no child matches
       // setOpenCollapse(null);
     }
-  }, [location.pathname, visibleMenus])
+  }, [location.pathname, visibleMenus]);
 
-  const getButtonStyle = (isSelected) => ({
-    "&.Mui-selected": {
-      background:
-        "linear-gradient(to right, rgb(0, 90, 91), rgb(22, 149, 153))",
-      borderRadius: 1,
-      "& .MuiListItemIcon-root, & .MuiTypography-root": {
-        color: "#FFFFFF",
-      },
-    },
-    "& .MuiListItemText-primary": {
-      color: theme.palette.text.primary,
-    },
-  });
+  // const getButtonStyle = (isSelected) => ({
+  //   "&.Mui-selected": {
+  //     background:
+  //       "linear-gradient(to right, rgb(0, 90, 91), rgb(22, 149, 153))",
+  //     borderRadius: 1,
+  //     "& .MuiListItemIcon-root, & .MuiTypography-root": {
+  //       color: "#FFFFFF",
+  //     },
+  //   },
+  //   "& .MuiListItemText-primary": {
+  //     color: theme.palette.text.primary,
+  //   },
+  // });
 
   //  Show loader or nothing until userType known
   if (!userType) return null;
@@ -739,95 +722,134 @@ export default function Dashboard() {
               </Tooltip>
             </Toolbar>
           </AppBar>
-        
-              <Drawer variant="permanent" open={open} PaperProps={{ elevation: 7 }}>
-      <div style={{ display: "flex", alignItems: "center", justifyContent: "flex-end", padding: 8 }}>
-        <IconButton onClick={handleDrawerOpen}>
-          <ChevronLeftIcon />
-        </IconButton>
-      </div>
 
-      <Grid style={{ height: 90 }}>
-        <img
-          src={themestatus ? logo : logoDarkTheme}
-          alt="logo"
-          style={{ maxWidth: "100%", maxHeight: "100%", objectFit: "contain", paddingTop: 10 }}
-        />
-      </Grid>
-
-      <Grid sx={{
-        width: "100%",
-        height: "100%",
-        overflow: "hidden",
-        "&:hover": { overflowY: "auto", scrollbarWidth: "thin" },
-      }}>
-        {visibleMenus.map((menu) => {
-          const hasChildren = Array.isArray(menu.children) && menu.children.length > 0;
-
-          if (hasChildren) {
-            return (
-              <div key={menu.label}>
-                <ListItemButton
-                  onClick={() => handleOpenCollapse(menu.label)}
-                  sx={{ pl: 1.5 }}
-                >
-                  <ListItemIcon sx={{ minWidth: "33px", marginRight: "3px" }}>
-                    {menu.icon}
-                  </ListItemIcon>
-                  <ListItemText primary={menu.label} />
-                  {openCollapse === menu.label ? <ExpandLess /> : <ExpandMore />}
-                </ListItemButton>
-
-                <Collapse in={openCollapse === menu.label} timeout="auto" unmountOnExit>
-                  {menu.children.map((sub) => (
-                    <Link
-                      to={`/dashboard/${sub.path}`}
-                      key={sub.path}
-                      className="link_style"
-                      style={{ textDecoration: "none", color: "inherit", display: "block" }}
-                      // close the collapse when a child is clicked
-                      onClick={() => setOpenCollapse(null)}
-                    >
-                      <ListItemButton
-                        sx={{ pl: 2 }}
-                        selected={location.pathname === `/dashboard/${sub.path}`}
-                      >
-                        <ListItemIcon sx={{ minWidth: "33px", marginRight: "2px" }}>
-                          {sub.icon}
-                        </ListItemIcon>
-                        <ListItemText primary={sub.label} />
-                      </ListItemButton>
-                    </Link>
-                  ))}
-                </Collapse>
-              </div>
-            );
-          }
-
-          // Normal, single menu (no children)
-          return (
-            <Link
-              key={menu.path}
-              to={`/dashboard/${menu.path}`}
-              className="link_style"
-              style={{ textDecoration: "none", color: "inherit", display: "block" }}
-              // optional: close any open collapse when clicking a normal menu
-              onClick={() => setOpenCollapse(null)}
+          <Drawer variant="permanent" open={open} PaperProps={{ elevation: 7 }}>
+            <div
+              style={{
+                display: "flex",
+                alignItems: "center",
+                justifyContent: "flex-end",
+                padding: 8,
+              }}
             >
-              <ListItemButton
-                selected={location.pathname === `/dashboard/${menu.path}`}
-                sx={{ pl: 1.5 }}
-              >
-                <ListItemIcon sx={{ minWidth: "33px", marginRight: "3px" }}>
-                  {menu.icon}
-                </ListItemIcon>
-                <ListItemText primary={menu.label} />
-              </ListItemButton>
-            </Link>
-          );
-        })}
-      </Grid>
-    </Drawer>
+              <IconButton onClick={handleDrawerOpen}>
+                <ChevronLeftIcon />
+              </IconButton>
+            </div>
+
+            <Grid style={{ height: 90 }}>
+              <img
+                src={themestatus ? logo : logoDarkTheme}
+                alt="logo"
+                style={{
+                  maxWidth: "100%",
+                  maxHeight: "100%",
+                  objectFit: "contain",
+                  paddingTop: 10,
+                }}
+              />
+            </Grid>
+
+            <Grid
+              sx={{
+                width: "100%",
+                height: "100%",
+                overflow: "hidden",
+                "&:hover": { overflowY: "auto", scrollbarWidth: "thin" },
+              }}
+            >
+              {visibleMenus.map((menu) => {
+                const hasChildren =
+                  Array.isArray(menu.children) && menu.children.length > 0;
+
+                if (hasChildren) {
+                  return (
+                    <div key={menu.label}>
+                      <ListItemButton
+                        onClick={() => handleOpenCollapse(menu.label)}
+                        sx={{ pl: 1.5 }}
+                      >
+                        <ListItemIcon
+                          sx={{ minWidth: "36px", marginRight: "8px" }}
+                        >
+                          {menu.icon}
+                        </ListItemIcon>
+                        <ListItemText primary={menu.label} />
+                        {openCollapse === menu.label ? (
+                          <ExpandLess />
+                        ) : (
+                          <ExpandMore />
+                        )}
+                      </ListItemButton>
+
+                      <Collapse
+                        in={openCollapse === menu.label}
+                        timeout="auto"
+                        unmountOnExit
+                      >
+                        {menu.children.map((sub) => (
+                          <Link
+                            to={`/dashboard/${sub.path}`}
+                            key={sub.path}
+                            className="link_style"
+                            style={{
+                              textDecoration: "none",
+                              color: "inherit",
+                              display: "block",
+                            }}
+                            // close the collapse when a child is clicked
+                            onClick={() => setOpenCollapse(null)}
+                          >
+                            <ListItemButton
+                              sx={{ pl: 2 }}
+                              selected={
+                                location.pathname === `/dashboard/${sub.path}`
+                              }
+                            >
+                              <ListItemIcon
+                                sx={{ minWidth: "36px", marginRight: "9px" }}
+                              >
+                                {sub.icon}
+                              </ListItemIcon>
+                              <ListItemText primary={sub.label} />
+                            </ListItemButton>
+                          </Link>
+                        ))}
+                      </Collapse>
+                    </div>
+                  );
+                }
+
+                // Normal, single menu (no children)
+                return (
+                  <Link
+                    key={menu.path}
+                    to={`/dashboard/${menu.path}`}
+                    className="link_style"
+                    style={{
+                      textDecoration: "none",
+                      color: "inherit",
+                      display: "block",
+                    }}
+                    // optional: close any open collapse when clicking a normal menu
+                    onClick={() => setOpenCollapse(null)}
+                  >
+                    <ListItemButton
+                      selected={location.pathname === `/dashboard/${menu.path}`}
+                      sx={{ pl: 1.5 }}
+                    >
+                      <ListItemIcon
+                        sx={{ minWidth: "35px", marginRight: "9px" }}
+                      >
+                        {menu.icon}
+                      </ListItemIcon>
+                      <ListItemText primary={menu.label} />
+                    </ListItemButton>
+                  </Link>
+                );
+              })}
+            </Grid>
+          </Drawer>
           <Box
             component="main"
             sx={{

@@ -599,8 +599,7 @@ const GazettedMaster = () => {
           pagination
           paginationMode="server"
           rowCount={totalRows} 
-          // pageSizeOptions={[10, 20, 50]}
-          paginationModel={{ page: currentPage, pageSize: limit }}
+           paginationModel={{ page: currentPage, pageSize: limit }}
           onPaginationModelChange={(newModel) => {
             setCurrentPage(newModel.page);
             setLimit(newModel.pageSize);

@@ -1,27 +1,25 @@
+import CheckCircleOutlineIcon from "@mui/icons-material/CheckCircleOutline";
+import ErrorOutlineIcon from "@mui/icons-material/ErrorOutline";
+import RuleIcon from "@mui/icons-material/Rule";
 import Box from "@mui/material/Box";
 import Grid from "@mui/material/Grid";
 import Paper from "@mui/material/Paper";
 import { BarChart } from "@mui/x-charts";
 import CountUp from "react-countup";
-import CheckCircleOutlineIcon from "@mui/icons-material/CheckCircleOutline";
-import ErrorOutlineIcon from "@mui/icons-material/ErrorOutline";
-import RuleIcon from "@mui/icons-material/Rule";
 
 // ICONS
 import ChecklistIcon from "@mui/icons-material/Checklist";
 
+import { PieChart } from "@mui/x-charts";
 import { DataGrid } from "@mui/x-data-grid";
 import axios from "axios";
 import dayjs from "dayjs";
 import React, { useEffect, useState } from "react";
-import { Controller, useForm, useWatch } from "react-hook-form";
-import { DatePickerField } from "../components/Component";
+import { useForm } from "react-hook-form";
 import CustomToolbar from "../components/CustomToolbar";
 import { BASE_URL } from "../Constant";
-import { PieChart } from "@mui/x-charts";
 // import DateRangePickerField from "../components/DateRangePickerField";
 
-import { Typography } from "@mui/material";
 import CustomMuiRangePicker from "../components/DateRangePickerField";
 
 export default function LandAcquisition() {
@@ -30,6 +28,8 @@ export default function LandAcquisition() {
   const [toDate, setToDate] = useState(dayjs());
   const [barMonths, setBarMonths] = useState([]);
   const [barCounts, setBarCounts] = useState([]);
+  const [pieData, setPieData] = useState([]);
+
 
   const officerColumns = [
     {
@@ -57,14 +57,14 @@ export default function LandAcquisition() {
     TotalWPMsgFailed: 0,
   });
 
-  const { control, watch } = useForm({
-    defaultValues: {
-      FromDate: firstDayOfMonth,
-      ToDate: today,
-      toDateOfficer: today,
-      fromDateOfficer: firstDayOfMonth,
-    },
-  });
+  // const { control } = useForm({
+  //   defaultValues: {
+  //     FromDate: firstDayOfMonth,
+  //     ToDate: today,
+  //     toDateOfficer: today,
+  //     fromDateOfficer: firstDayOfMonth,
+  //   },
+  // });
   // const [fromDate, toDate] = useWatch({
   //   control,
   //   name: ["FromDate", "ToDate"],
@@ -98,8 +98,7 @@ export default function LandAcquisition() {
           TotalWPMsgSuccess: v.TotalWPMsgSuccess || 0,
         });
 
-        // SET PIE CHART VALUES HERE  ⭐
-        setPieData([
+         setPieData([
           { id: 0, value: v.TotalDocsLandAcqui || 0, label: "Docs" },
           { id: 1, value: v.TotalMissingDocsLandAcqui || 0, label: "Missing" },
           { id: 2, value: v.TotalWPMsgSuccess || 0, label: "Success" },
@@ -117,8 +116,7 @@ export default function LandAcquisition() {
     }
   }, [fromDate, toDate]);
 
-  // ---------------------------
-  // ******** BARCHART API CALL LOGIC *******
+   // ******** BARCHART API CALL LOGIC *******
   const getYearlyBarChart = async (fDate, tDate) => {
     try {
       const from = dayjs(fDate).format("YYYY-MM-DD");
@@ -131,16 +129,11 @@ export default function LandAcquisition() {
       if (response.data && response.data.values) {
         const list = response.data.values;
 
-        // const months = list.map((item) =>
-        //   new Date(item.YearMonth + "-01").toLocaleString("en-US", {
-        //     month: "short",
-        //   })
-        // );
         const months = list.map((item) => {
           const date = new Date(item.YearMonth + "-01");
           const month = date.toLocaleString("en-US", { month: "short" });
           const year = date.getFullYear();
-          return `${month}-${year}`; // Example: Nov-2025
+          return `${month}-${year}`;  
         });
 
         const counts = list.map((item) => item.TotalCnt);
@@ -157,7 +150,7 @@ export default function LandAcquisition() {
     if (fromDate && toDate) {
       callDashboardAPI(fromDate, toDate);
       HandleOfficerList(fromDate, toDate);
-      getYearlyBarChart(fromDate, toDate); // 🌟 Load Bar Chart
+      getYearlyBarChart(fromDate, toDate);                               
     }
   }, [fromDate, toDate]);
 
@@ -194,7 +187,6 @@ export default function LandAcquisition() {
     }
   }, [fromDate, toDate]);
 
-  const [pieData, setPieData] = useState([]);
 
   return (
     <>
@@ -315,7 +307,7 @@ export default function LandAcquisition() {
           {/* CERTIFICATE   TABLE */}
           <Grid item xs={12} md={6}>
             <Paper elevation={7} sx={{ borderRadius: 3, p: 2 }}>
-              <h3>Officer-wise Certificates Processed</h3>
+              <h3>Officer-wise Certificates Proceed</h3>
               <div style={{ height: 300, width: "100%", marginTop: 10 }}>
                 <DataGrid
                   className="datagrid-style"

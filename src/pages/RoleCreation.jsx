@@ -1,13 +1,12 @@
+import { KeyboardArrowDown, KeyboardArrowRight } from "@mui/icons-material";
 import AddIcon from "@mui/icons-material/Add";
 import CloseIcon from "@mui/icons-material/Close";
 import DeleteIcon from "@mui/icons-material/Delete";
 import DeleteForeverIcon from "@mui/icons-material/DeleteForever";
 import EditNoteIcon from "@mui/icons-material/EditNote";
 import {
-  Box,
   Button,
   Checkbox,
-  Collapse,
   Dialog,
   DialogActions,
   DialogContent,
@@ -19,7 +18,7 @@ import {
   Paper,
   TextField,
   Tooltip,
-  Typography,
+  Typography
 } from "@mui/material";
 import { DataGrid, GridToolbar } from "@mui/x-data-grid";
 import axios from "axios";
@@ -29,10 +28,8 @@ import { Controller, useForm } from "react-hook-form";
 import Swal from "sweetalert2";
 import { InputDescriptionField } from "../components/Component";
 import Loader from "../components/Loader";
-import { BASE_URL } from "../Constant";
-import MenuWithOneCollapse from "../components/MenuWithOneCollapse";
 import CollapsibleMenuGrid from "../components/MenuWithOneCollapse";
-import { KeyboardArrowDown, KeyboardArrowRight } from "@mui/icons-material";
+import { BASE_URL } from "../Constant";
 import { useThemeMode } from "../Dashboard/Theme";
 
 const RoleCreation = () => {
@@ -47,8 +44,7 @@ const RoleCreation = () => {
   const [searchText, setSearchText] = React.useState("");
   const limit = 20;
   const originalDataRef = React.useRef(null);
-  const [rows, setRows] = React.useState([]);
-  const handleClose = () => setOn(false);
+   const handleClose = () => setOn(false);
   const [openMenu, setOpenMenu] = React.useState(false);
   const [selectedIds, setSelectedIds] = React.useState([]);
   const [pickerInitialSelectedIds, setPickerInitialSelectedIds] =
@@ -60,8 +56,7 @@ const RoleCreation = () => {
   const canEdit = checkAccess(12, "IsEdit");
   const canDelete = checkAccess(12, "IsDelete");
   const handleCloseMenu = () => setOpenMenu(false);
-  const firstLoad = React.useRef(true);
-  const [MenuList, setMenuList] = React.useState([]);
+   const [MenuList, setMenuList] = React.useState([]);
   const [expandedRowIds, setExpandedRowIds] = React.useState([]);
 
   const initial = {
@@ -937,7 +932,7 @@ const RoleCreation = () => {
 
   return (
     <>
-      <Dialog open={openMenu} onClose={handleCloseMenu} fullWidth maxWidth="md">
+      <Dialog open={openMenu}  fullWidth maxWidth="md">
         <Grid
           item
           xs={12}
