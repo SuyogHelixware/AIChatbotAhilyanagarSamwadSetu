@@ -6,11 +6,13 @@ import DeleteForeverIcon from "@mui/icons-material/DeleteForever";
 import EditNoteIcon from "@mui/icons-material/EditNote";
 import RemoveRedEyeIcon from "@mui/icons-material/RemoveRedEye";
 import {
+  Autocomplete,
   Button,
   Checkbox,
   FormControlLabel,
   Grid,
   IconButton,
+  InputBase,
   ListItemText,
   MenuItem,
   Modal,
@@ -33,6 +35,7 @@ import InputTextField, {
 import Loader from "../components/Loader";
 import { BASE_URL } from "../Constant";
 import { useThemeMode } from "../Dashboard/Theme";
+import LazyAutocomplete from "../components/Autocomplete";
 
 const UploadDocument = () => {
   const [loaderOpen, setLoaderOpen] = React.useState(false);
@@ -63,6 +66,21 @@ const UploadDocument = () => {
   const canAdd = checkAccess(9, "IsAdd");
   const canEdit = checkAccess(9, "IsEdit");
   const canDelete = checkAccess(9, "IsDelete");
+
+  // =================
+  const [gPage, setGPage] = React.useState(0);
+  const [hasMoreGazette, setHasMoreGazette] = React.useState(true);
+  const [scrollLockGaz, setScrollLockGaz] = React.useState(false);
+  const [gLoading, setGLoading] = React.useState(false);
+  const [gazSearch, setGazSearch] = React.useState("");
+  // -----------------------------------------
+  const [dPage, setDPage] = React.useState(0);
+  const [hasMoreDocs, setHasMoreDocs] = React.useState(true);
+  const [scrollLockDocs, setScrollLockDocs] = React.useState(false);
+  const [dLoading, setDLoading] = React.useState(false);
+  const [docSearch, setDocSearch] = React.useState("");
+
+  // ======================
 
   const initial = {
     Status: "1",
@@ -96,6 +114,43 @@ const UploadDocument = () => {
       });
     }
   }, [rows, DocmasterList]);
+  const [search, setSearch] = React.useState("");
+
+  // ------------ COMMON LISTBOX ------------
+  const CommonListBox = React.forwardRef(function CommonListBox(props, ref) {
+    const {
+      children,
+      onLazyLoad,
+      loading,
+      hasMore,
+      pageSetter,
+      page,
+      search,
+      ...other
+    } = props;
+
+    const handleScroll = (event) => {
+      const list = event.currentTarget;
+      const bottom = list.scrollHeight - (list.scrollTop + list.clientHeight);
+
+      if (bottom < 30 && !loading && hasMore) {
+        const nextPage = page + 1;
+        pageSetter(nextPage);
+        onLazyLoad({ page: nextPage, search: search });
+      }
+    };
+
+    return (
+      <ul
+        {...other}
+        ref={ref}
+        style={{ maxHeight: 250, overflow: "auto" }}
+        onScroll={handleScroll}
+      >
+        {children}
+      </ul>
+    );
+  });
 
   const DocColumns = [
     {
@@ -237,176 +292,393 @@ const UploadDocument = () => {
       },
     },
 
+    // {
+    //   field: "IssuedBy",
+    //   headerName: "GAZETTED OFFICER",
+    //   flex: 1,
+    //   renderCell: (params) => {
+    //     const { id, field, value, api } = params;
+    //     const isDisabled = params.row.isDisabled;
+
+    //     const gazetteOptions = Array.isArray(gazeteList) ? gazeteList : [];
+
+    //     const userDataStr = sessionStorage.getItem("userData");
+    //     let UserType = null;
+    //     let storedGazOfficer = null;
+
+    //     if (userDataStr) {
+    //       try {
+    //         const userData = JSON.parse(userDataStr);
+    //         UserType = userData.UserType;
+    //         storedGazOfficer = userData.GazOfficer || "";
+    //       } catch (error) {
+    //         console.error("Failed to parse userData:", error);
+    //       }
+    //     }
+
+    //     const handleChange = (e) => {
+    //       const newValue = e.target.value;
+    //       api.updateRows([{ id, [field]: newValue }]);
+    //       setRows((prev) =>
+    //         prev.map((row) =>
+    //           row.id === id ? { ...row, [field]: newValue } : row
+    //         )
+    //       );
+    //     };
+
+    //     const isEditable =
+    //       UserType === "A" ||
+    //       !storedGazOfficer ||
+    //       storedGazOfficer.trim() === "";
+
+    //     //  When disabled (non-admin + GazOfficer present)
+    //     if (!isEditable) {
+    //       // Keep stored value synced
+    //       if (value !== storedGazOfficer) {
+    //         api.updateRows([{ id, [field]: storedGazOfficer }]);
+    //         setRows((prev) =>
+    //           prev.map((row) =>
+    //             row.id === id ? { ...row, [field]: storedGazOfficer } : row
+    //           )
+    //         );
+    //       }
+    //       return (
+    //         <Tooltip title={storedGazOfficer || ""} arrow placement="top">
+    //           <Select
+    //             value={storedGazOfficer || ""}
+    //             disabled={isDisabled}
+    //             fullWidth
+    //             variant="standard"
+    //           >
+    //             <MenuItem value={storedGazOfficer || ""}>
+    //               {storedGazOfficer || ""}
+    //             </MenuItem>
+    //           </Select>
+    //         </Tooltip>
+    //       );
+    //     }
+    //     return (
+    //       <Tooltip title={value || ""} arrow placement="top">
+    //         <Select
+    //           value={value || ""}
+    //           onChange={handleChange}
+    //           fullWidth
+    //           variant="standard"
+    //           MenuProps={{
+    //             PaperProps: {
+    //               style: {
+    //                 maxHeight: 220,
+    //                 overflowY: "auto",
+    //               },
+    //             },
+    //           }}
+    //         >
+    //           {gazetteOptions.length > 0 ? (
+    //             gazetteOptions.map((option) => (
+    //               <MenuItem
+    //                 key={option.Name}
+    //                 value={option.Name}
+    //                 sx={{
+    //                   height: 35,
+    //                   display: "flex",
+    //                   alignItems: "center",
+    //                 }}
+    //               >
+    //                 {option.Name}
+    //               </MenuItem>
+    //             ))
+    //           ) : (
+    //             <MenuItem disabled>No officers found</MenuItem>
+    //           )}
+    //         </Select>
+    //       </Tooltip>
+    //     );
+    //   },
+    // },
+    // {
+    //   field: "IssuedBy",
+    //   headerName: "GAZETTED OFFICER",
+    //   flex: 1,
+    //   renderCell: (params) => {
+    //     const { id, field, value, api } = params;
+
+    //     const userData = JSON.parse(sessionStorage.getItem("userData") || "{}");
+    //     const stored = userData.GazOfficer || "";
+    //     const isEditable = userData.UserType === "A" || !stored.trim();
+
+    //     if (!isEditable) {
+    //       return (
+    //         <TextField
+    //           value={stored}
+    //           disabled
+    //           variant="standard"
+    //           sx={{ width: 280 }}
+    //         />
+    //       );
+    //     }
+
+    //     return (
+    //       <LazyAutocomplete
+    //         id={id}
+    //         field={field}
+    //         value={value}
+    //         list={gazeteList}
+    //         displayField="Name"
+    //         disabled={false}
+    //         searchValue={gazSearch}
+    //         onSearch={(txt) => {
+    //           setGazSearch(txt);
+    //           setGPage(0);
+    //           setHasMoreGazette(true);
+    //           gazettedList({ page: 0, search: txt });
+    //         }}
+    //         api={api}
+    //         setRows={setRows}
+    //         loading={gLoading}
+    //         onLazyLoad={gazettedList}
+    //         page={gPage}
+    //         setPage={setGPage}
+    //         hasMore={hasMoreGazette}
+    //       />
+    //     );
+    //   },
+    // },
     {
       field: "IssuedBy",
       headerName: "GAZETTED OFFICER",
       flex: 1,
       renderCell: (params) => {
         const { id, field, value, api } = params;
-        const isDisabled = params.row.isDisabled;
 
-        const gazetteOptions = Array.isArray(gazeteList) ? gazeteList : [];
+        const userData = JSON.parse(sessionStorage.getItem("userData") || "{}");
+        const stored = userData.GazOfficer || "";
+        const isEditable = userData.UserType === "A" || !stored.trim();
 
-        const userDataStr = sessionStorage.getItem("userData");
-        let UserType = null;
-        let storedGazOfficer = null;
-
-        if (userDataStr) {
-          try {
-            const userData = JSON.parse(userDataStr);
-            UserType = userData.UserType;
-            storedGazOfficer = userData.GazOfficer || "";
-          } catch (error) {
-            console.error("Failed to parse userData:", error);
-          }
-        }
-
-        const handleChange = (e) => {
-          const newValue = e.target.value;
-          api.updateRows([{ id, [field]: newValue }]);
-          setRows((prev) =>
-            prev.map((row) =>
-              row.id === id ? { ...row, [field]: newValue } : row
-            )
-          );
-        };
-
-        const isEditable =
-          UserType === "A" ||
-          !storedGazOfficer ||
-          storedGazOfficer.trim() === "";
-
-        //  When disabled (non-admin + GazOfficer present)
+        // ----------------- LOCKED FIELD -----------------
         if (!isEditable) {
-          // Keep stored value synced
-          if (value !== storedGazOfficer) {
-            api.updateRows([{ id, [field]: storedGazOfficer }]);
+          // ✅ Update the row immediately if value is missing
+          if (value !== stored) {
+            api.updateRows([{ id, [field]: stored }]);
             setRows((prev) =>
-              prev.map((row) =>
-                row.id === id ? { ...row, [field]: storedGazOfficer } : row
-              )
+              prev.map((r) => (r.id === id ? { ...r, [field]: stored } : r))
             );
           }
+
           return (
-            <Tooltip title={storedGazOfficer || ""} arrow placement="top">
-              <Select
-                value={storedGazOfficer || ""}
-                disabled={isDisabled}
-                fullWidth
+            <Tooltip title={stored || ""} arrow placement="top">
+              <TextField
+                value={stored}
+                disabled
                 variant="standard"
-              >
-                <MenuItem value={storedGazOfficer || ""}>
-                  {storedGazOfficer || ""}
-                </MenuItem>
-              </Select>
+                sx={{ width: 280 }}
+              />
             </Tooltip>
           );
         }
+
+        // ----------------- EDITABLE FIELD -----------------
         return (
           <Tooltip title={value || ""} arrow placement="top">
-            <Select
-              value={value || ""}
-              onChange={handleChange}
-              fullWidth
-              variant="standard"
-              MenuProps={{
-                PaperProps: {
-                  style: {
-                    maxHeight: 220,
-                    overflowY: "auto",
-                  },
-                },
+            <LazyAutocomplete
+              id={id}
+              field={field}
+              value={value}
+              list={gazeteList}
+              displayField="Name"
+              disabled={false}
+              searchValue={gazSearch}
+              onSearch={(txt) => {
+                setGazSearch(txt);
+                setGPage(0);
+                setHasMoreGazette(true);
+                gazettedList({ page: 0, search: txt });
               }}
-            >
-              {gazetteOptions.length > 0 ? (
-                gazetteOptions.map((option) => (
-                  <MenuItem
-                    key={option.Name}
-                    value={option.Name}
-                    sx={{
-                      height: 35,
-                      display: "flex",
-                      alignItems: "center",
-                    }}
-                  >
-                    {option.Name}
-                  </MenuItem>
-                ))
-              ) : (
-                <MenuItem disabled>No officers found</MenuItem>
-              )}
-            </Select>
+              api={api}
+              setRows={setRows}
+              loading={gLoading}
+              onLazyLoad={gazettedList}
+              page={gPage}
+              setPage={setGPage}
+              hasMore={hasMoreGazette}
+            />
           </Tooltip>
         );
       },
     },
 
+    // {
+    //   field: "DocType",
+    //   headerName: "DOCUMENT TYPE",
+    //   flex: 1,
+    //   renderCell: (params) => {
+    //     const { id, field, value, api, row } = params;
+    //     const isDisabled = row.isDisabled;
+
+    //     const handleChange = (e) => {
+    //       const newValue = e.target.value;
+
+    //       // find selected document in master list
+    //       const selectedDoc = DocmasterList.find(
+    //         (doc) => doc.NameMR === newValue
+    //       );
+
+    //       // update subdoc list for that row
+    //       setSubDocMap((prev) => ({
+    //         ...prev,
+    //         [id]: selectedDoc?.SubDocs || [],
+    //       }));
+
+    //       // update DataGrid & rows
+    //       api.updateRows([{ id, [field]: newValue, MissingDocs: [] }]);
+    //       setRows((prev) =>
+    //         prev.map((row) =>
+    //           row.id === id
+    //             ? { ...row, [field]: newValue, MissingDocs: [] }
+    //             : row
+    //         )
+    //       );
+    //     };
+
+    //     return (
+    //       <Tooltip title={value || ""} arrow placement="top">
+    //         <Select
+    //           value={value || ""}
+    //           onChange={handleChange}
+    //           fullWidth
+    //           disabled={isDisabled}
+    //           variant="standard"
+    //           MenuProps={{
+    //             PaperProps: {
+    //               style: { maxHeight: 200, overflowY: "auto" },
+    //             },
+    //           }}
+    //         >
+    //           {DocmasterList.length > 0 ? (
+    //             DocmasterList.map((option) => (
+    //               <MenuItem
+    //                 key={option.value}
+    //                 value={option.NameMR}
+    //                 sx={{ height: 35, display: "flex", alignItems: "center" }}
+    //               >
+    //                 {option.NameMR}
+    //               </MenuItem>
+    //             ))
+    //           ) : (
+    //             <MenuItem disabled>No options available</MenuItem>
+    //           )}
+    //         </Select>
+    //       </Tooltip>
+    //     );
+    //   },
+    // },
     {
       field: "DocType",
       headerName: "DOCUMENT TYPE",
       flex: 1,
       renderCell: (params) => {
         const { id, field, value, api, row } = params;
-        const isDisabled = row.isDisabled;
-
-        const handleChange = (e) => {
-          const newValue = e.target.value;
-
-          // find selected document in master list
-          const selectedDoc = DocmasterList.find(
-            (doc) => doc.NameMR === newValue
-          );
-
-          // update subdoc list for that row
-          setSubDocMap((prev) => ({
-            ...prev,
-            [id]: selectedDoc?.SubDocs || [],
-          }));
-
-          // update DataGrid & rows
-          api.updateRows([{ id, [field]: newValue, MissingDocs: [] }]);
-          setRows((prev) =>
-            prev.map((row) =>
-              row.id === id
-                ? { ...row, [field]: newValue, MissingDocs: [] }
-                : row
-            )
-          );
-        };
 
         return (
-          <Tooltip title={value || ""} arrow placement="top">
-            <Select
-              value={value || ""}
-              onChange={handleChange}
-              fullWidth
-              disabled={isDisabled}
-              variant="standard"
-              MenuProps={{
-                PaperProps: {
-                  style: { maxHeight: 200, overflowY: "auto" },
-                },
-              }}
-            >
-              {DocmasterList.length > 0 ? (
-                DocmasterList.map((option) => (
-                  <MenuItem
-                    key={option.value}
-                    value={option.NameMR}
-                    sx={{ height: 35, display: "flex", alignItems: "center" }}
-                  >
-                    {option.NameMR}
-                  </MenuItem>
-                ))
-              ) : (
-                <MenuItem disabled>No options available</MenuItem>
-              )}
-            </Select>
-          </Tooltip>
+          <LazyAutocomplete
+            id={id}
+            field={field}
+            value={value}
+            list={DocmasterList}
+            displayField="NameMR"
+            disabled={row.isDisabled}
+            searchValue={docSearch}
+            onSearch={(txt) => {
+              setDocSearch(txt);
+              setDPage(0);
+              setHasMoreDocs(true);
+              DocMasterList({ page: 0, search: txt });
+            }}
+            api={api}
+            setRows={setRows}
+            loading={dLoading}
+            onLazyLoad={DocMasterList}
+            page={dPage}
+            setPage={setDPage}
+            hasMore={hasMoreDocs}
+          />
         );
       },
     },
 
+    // {
+    //   field: "MissingDocs",
+    //   headerName: "MISSING DOCUMENT",
+    //   flex: 1,
+    //   renderCell: (params) => {
+    //     const { id, field, value, api, row } = params;
+    //     const isDisabled = row.isDisabled;
+
+    //     const selectedValues = Array.isArray(value) ? value : [];
+    //     const availableSubDocs = subDocMap[id] || [];
+
+    //     const handleChange = (event) => {
+    //       const newValues = event.target.value;
+    //       setRows((prev) =>
+    //         prev.map((r) => (r.id === id ? { ...r, [field]: newValues } : r))
+    //       );
+    //       api.updateRows([{ id, [field]: newValues }]);
+    //     };
+
+    //     return (
+    //       <Tooltip
+    //         title={selectedValues.join(", ") || ""}
+    //         arrow
+    //         placement="top"
+    //       >
+    //         <Select
+    //           multiple
+    //           value={selectedValues}
+    //           onChange={handleChange}
+    //           fullWidth
+    //           disabled={isDisabled}
+    //           variant="standard"
+    //           renderValue={(selected) => selected.join(", ")}
+    //           MenuProps={{
+    //             PaperProps: {
+    //               style: { maxHeight: 250, maxWidth: 200, overflowY: "auto" },
+    //             },
+    //           }}
+    //           sx={{
+    //             minWidth: 250,
+    //             paddingLeft: 3.5,
+    //           }}
+    //         >
+    //           {availableSubDocs.length > 0 ? (
+    //             availableSubDocs.map((option) => (
+    //               <MenuItem
+    //                 key={option.value}
+    //                 value={option.NameMR}
+    //                 sx={{
+    //                   whiteSpace: "normal",
+    //                   wordWrap: "break-word",
+    //                   alignItems: "flex-start",
+    //                 }}
+    //               >
+    //                 <Checkbox
+    //                   checked={selectedValues.indexOf(option.NameMR) > -1}
+    //                   size="small"
+    //                 />
+    //                 <ListItemText
+    //                   primary={option.NameMR}
+    //                   sx={{
+    //                     whiteSpace: "normal",
+    //                   }}
+    //                 />
+    //               </MenuItem>
+    //             ))
+    //           ) : (
+    //             <MenuItem disabled>No any sub document</MenuItem>
+    //           )}
+    //         </Select>
+    //       </Tooltip>
+    //     );
+    //   },
+    // },
     {
       field: "MissingDocs",
       headerName: "MISSING DOCUMENT",
@@ -418,6 +690,8 @@ const UploadDocument = () => {
         const selectedValues = Array.isArray(value) ? value : [];
         const availableSubDocs = subDocMap[id] || [];
 
+        // LOCAL search state ONLY for this dropdown (no UI in DataGrid)
+
         const handleChange = (event) => {
           const newValues = event.target.value;
           setRows((prev) =>
@@ -425,6 +699,10 @@ const UploadDocument = () => {
           );
           api.updateRows([{ id, [field]: newValues }]);
         };
+
+        const filteredDocs = availableSubDocs.filter((o) =>
+          o.NameMR.toLowerCase().includes(searchText.toLowerCase())
+        );
 
         return (
           <Tooltip
@@ -442,16 +720,33 @@ const UploadDocument = () => {
               renderValue={(selected) => selected.join(", ")}
               MenuProps={{
                 PaperProps: {
-                  style: { maxHeight: 250, maxWidth: 200, overflowY: "auto" },
+                  style: { maxHeight: 260, width: 230, overflowY: "auto" },
                 },
               }}
               sx={{
                 minWidth: 250,
-                   paddingLeft: 3.5,     
-               }}
+                paddingLeft: 3.5,
+              }}
             >
-              {availableSubDocs.length > 0 ? (
-                availableSubDocs.map((option) => (
+              {/* 🔎 SEARCH BOX INSIDE MENU */}
+              <MenuItem disableRipple disableTouchRipple>
+                <InputBase
+                  autoFocus
+                  placeholder="Search..."
+                  value={searchText}
+                  onChange={(e) => setSearchText(e.target.value)}
+                  sx={{
+                    width: "100%",
+                    borderBottom: "1px solid #ddd",
+                    pb: 0.5,
+                    fontSize: 14,
+                  }}
+                />
+              </MenuItem>
+
+              {/* FILTERED OPTIONS */}
+              {filteredDocs.length > 0 ? (
+                filteredDocs.map((option) => (
                   <MenuItem
                     key={option.value}
                     value={option.NameMR}
@@ -465,16 +760,11 @@ const UploadDocument = () => {
                       checked={selectedValues.indexOf(option.NameMR) > -1}
                       size="small"
                     />
-                    <ListItemText
-                      primary={option.NameMR}
-                      sx={{
-                        whiteSpace: "normal",
-                      }}
-                    />
+                    <ListItemText primary={option.NameMR} />
                   </MenuItem>
                 ))
               ) : (
-                <MenuItem disabled>No any sub document</MenuItem>
+                <MenuItem disabled>No document found</MenuItem>
               )}
             </Select>
           </Tooltip>
@@ -539,19 +829,19 @@ const UploadDocument = () => {
 
     // { field: "id", headerName: "Sr.No", width: 80, sortable: true },
     {
-  field: "srNo",
-  headerName: "SR NO",
-  width: 80,
-  sortable: false,
-  headerAlign: "center",
-  align: "center",
-  renderCell: (params) => {
-    const page = params.api.state.pagination.paginationModel.page;
-    const pageSize = params.api.state.pagination.paginationModel.pageSize;
-    const rowIndex = params.api.getSortedRowIds().indexOf(params.id);
-    return page * pageSize + (rowIndex + 1);
-  },
-},
+      field: "srNo",
+      headerName: "SR NO",
+      width: 80,
+      sortable: false,
+      headerAlign: "center",
+      align: "center",
+      renderCell: (params) => {
+        const page = params.api.state.pagination.paginationModel.page;
+        const pageSize = params.api.state.pagination.paginationModel.pageSize;
+        const rowIndex = params.api.getSortedRowIds().indexOf(params.id);
+        return page * pageSize + (rowIndex + 1);
+      },
+    },
 
     {
       field: "Name",
@@ -1236,24 +1526,49 @@ const UploadDocument = () => {
     getAllDocList(currentPage, searchText, limit);
   }, [currentPage, searchText]);
 
-  const gazettedList = async (params = {}) => {
-    setLoading(true);
-    try {
-      // Default parameters
-      const queryParams = { Status: "1", ...params };
+  // const gazettedList = async (params = {}) => {
+  //   setLoading(true);
+  //   try {
+  //     // Default parameters
+  //     const queryParams = { Status: "1", ...params };
 
-      // Fetch data
+  //     // Fetch data
+  //     const { data } = await axios.get(`${BASE_URL}GazOfficers`, {
+  //       params: queryParams,
+  //     });
+
+  //     if (data.values) {
+  //       setgazeteList(data.values);
+  //     }
+  //   } catch (error) {
+  //     console.error("Error fetching data:", error);
+  //   } finally {
+  //     setLoading(false);
+  //   }
+  // };
+  const gazettedList = async ({ page = 0, search = "" } = {}) => {
+    if (scrollLockGaz || !hasMoreGazette) return;
+    setScrollLockGaz(true);
+    setGLoading(true);
+
+    try {
       const { data } = await axios.get(`${BASE_URL}GazOfficers`, {
-        params: queryParams,
+        params: { Status: "1", page, search },
       });
 
-      if (data.values) {
-        setgazeteList(data.values);
+      const newData = data?.values || [];
+
+      if (newData.length === 0) {
+        setHasMoreGazette(false);
+        return;
       }
-    } catch (error) {
-      console.error("Error fetching data:", error);
+
+      setgazeteList((prev) => (page === 0 ? newData : [...prev, ...newData]));
+    } catch (err) {
+      console.error("Error fetching Gazette list:", err);
     } finally {
-      setLoading(false);
+      setGLoading(false);
+      setTimeout(() => setScrollLockGaz(false), 250);
     }
   };
 
@@ -1355,8 +1670,8 @@ const UploadDocument = () => {
           elevation={10}
           sx={{
             width: "100%",
-            maxWidth: 1100,
-            Height: 2500,
+            maxWidth: 1300,
+            Height: 3000,
             position: "absolute",
             top: "50%",
             left: "50%",
@@ -1544,7 +1859,7 @@ const UploadDocument = () => {
               />
             </Grid>
 
-            <Grid item xs={12} style={{ height: 400, paddingBottom: 40 }}>
+            <Grid item xs={12} style={{ height: 450, paddingBottom: 40 }}>
               <DataGrid
                 rows={updatedRows}
                 columns={visibleColumns}

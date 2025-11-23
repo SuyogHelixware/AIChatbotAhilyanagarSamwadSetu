@@ -170,6 +170,8 @@ const DocumentMaster = () => {
         Description: formData.Description || "",
         Status: formData.Status || "1",
         IsMainDoc: formData.IsMainDoc,
+              Status: formData.Status === false ? 0 : 1,
+
 
         SubDocs: CreateSubDocRows.filter((row) => row.NameMR).map(
           (row, index) => ({
@@ -579,7 +581,51 @@ const DocumentMaster = () => {
         </Tooltip>
       ),
     },
+     {
+      field: "Status",
+      headerName: "Status",
+      width: 80,
+      headerAlign: "center",
+      align: "center",
+      sortable: false,
+      valueGetter: (params) =>
+        params.row.Status === 1 ? "Active" : "Inactive",
+      renderCell: (params) => {
+        const isActive = params.row.Status === 1;
+        return (
+          <button
+            style={isActive ? activeButtonStyle : inactiveButtonStyle}
+            disabled
+          >
+            {isActive ? "Active" : "InActive"}
+          </button>
+        );
+      },
+    },
   ];
+
+   const buttonStyles = {
+    border: "none",
+    borderRadius: "4px",
+    padding: "4px 8px",
+    fontSize: "12px",
+    cursor: "pointer",
+    color: "#fff",
+    width: 55,
+  };
+
+
+    const activeButtonStyle = {
+    ...buttonStyles,
+    backgroundColor: "green",
+  };
+
+  const inactiveButtonStyle = {
+    ...buttonStyles,
+    backgroundColor: "#dc3545",
+  };
+
+
   const [selectedDocs, setSelectedDocs] = React.useState([]);
 
   // ===== Delete Row =====
@@ -763,6 +809,8 @@ const DocumentMaster = () => {
         setValue("Description", Document.Description);
         setValue("Status", Document.Status);
         setValue("IsMainDoc", Document.IsMainDoc);
+        setValue("Status", Document.Status);
+
 
         const subDocs = (Document.SubDocs || []).map((subDoc, index) => ({
           id: subDoc.LineNum || index + 1,
@@ -927,7 +975,7 @@ const DocumentMaster = () => {
               </Grid>
 
               <Grid item xs={12}></Grid>
-              <Grid item xs={12}>
+              <Grid item xs={8}>
                 <Controller
                   name="IsMainDoc"
                   control={control}
@@ -947,7 +995,37 @@ const DocumentMaster = () => {
                     />
                   )}
                 />
-              </Grid>
+              </Grid> 
+                  <Grid
+                              item
+                              xs={6}
+                              sm={4}
+                              md={4}
+                              display="flex"
+                              alignItems="center"
+                              justifyContent="flex-start"
+                            >
+                              <Controller
+                                name="Status"
+                                control={control}
+                                defaultValue={false}
+                                render={({ field }) => (
+                                  <FormControlLabel
+                                    sx={{ ml: 1 }}
+                                    control={
+                                      <Checkbox
+                                        {...field}
+                                        checked={field.value}
+                                        onChange={(e) => field.onChange(e.target.checked)}
+                                        size="medium"
+                                        color="primary"
+                                      />
+                                    }
+                                    label="Active"
+                                  />
+                                )}
+                              />
+                            </Grid>
             </Grid>
 
             {/* ========================================================== */}
