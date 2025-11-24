@@ -227,8 +227,8 @@ export default function LandAcquisition() {
   const HandleOfficerList = async (fromDateOfficer, toDateOfficer) => {
     try {
       const params = {
-        fromDateOfficer: dayjs(fromDateOfficer).format("YYYY-MM-DD"),
-        toDateOfficer: dayjs(toDateOfficer).format("YYYY-MM-DD"),
+        FromDate: dayjs(fromDateOfficer).format("YYYY-MM-DD"),
+        ToDate: dayjs(toDateOfficer).format("YYYY-MM-DD"),
       };
 
       const response = await axios.get(

@@ -14,11 +14,12 @@ import {
   FormControlLabel,
   Grid,
   IconButton,
+  InputAdornment,
   Modal,
   Paper,
   TextField,
   Tooltip,
-  Typography
+  Typography,
 } from "@mui/material";
 import { DataGrid, GridToolbar } from "@mui/x-data-grid";
 import axios from "axios";
@@ -32,6 +33,8 @@ import CollapsibleMenuGrid from "../components/MenuWithOneCollapse";
 import { BASE_URL } from "../Constant";
 import { useThemeMode } from "../Dashboard/Theme";
 
+ import SearchIcon from "@mui/icons-material/Search";
+
 const RoleCreation = () => {
   const [loaderOpen, setLoaderOpen] = React.useState(false);
   const [GetRolelist, setGetRolelist] = React.useState([]);
@@ -44,7 +47,7 @@ const RoleCreation = () => {
   const [searchText, setSearchText] = React.useState("");
   const limit = 20;
   const originalDataRef = React.useRef(null);
-   const handleClose = () => setOn(false);
+  const handleClose = () => setOn(false);
   const [openMenu, setOpenMenu] = React.useState(false);
   const [selectedIds, setSelectedIds] = React.useState([]);
   const [pickerInitialSelectedIds, setPickerInitialSelectedIds] =
@@ -56,8 +59,13 @@ const RoleCreation = () => {
   const canEdit = checkAccess(12, "IsEdit");
   const canDelete = checkAccess(12, "IsDelete");
   const handleCloseMenu = () => setOpenMenu(false);
-   const [MenuList, setMenuList] = React.useState([]);
+  const [MenuList, setMenuList] = React.useState([]);
+
   const [expandedRowIds, setExpandedRowIds] = React.useState([]);
+  const [menuSearch, setMenuSearch] = React.useState("");
+
+  const [initialSelectedIds, setInitialSelectedIds] = React.useState([]);
+  const [disabledMenuIds, setDisabledMenuIds] = React.useState([]);
 
   const initial = {
     RoleName: "",
@@ -307,20 +315,20 @@ const RoleCreation = () => {
     //   renderCell: (params) =>
     //     params.api.getSortedRowIds().indexOf(params.id) + 1,
     // },
-     {
-  field: "srNo",
-  headerName: "SR NO",
-  width: 80,
-  sortable: false,
-  headerAlign: "center",
-  align: "center",
-  renderCell: (params) => {
-    const page = params.api.state.pagination.paginationModel.page;
-    const pageSize = params.api.state.pagination.paginationModel.pageSize;
-    const rowIndex = params.api.getSortedRowIds().indexOf(params.id);
-    return page * pageSize + (rowIndex + 1);
-  },
-},
+    {
+      field: "srNo",
+      headerName: "SR NO",
+      width: 80,
+      sortable: false,
+      headerAlign: "center",
+      align: "center",
+      renderCell: (params) => {
+        const page = params.api.state.pagination.paginationModel.page;
+        const pageSize = params.api.state.pagination.paginationModel.pageSize;
+        const rowIndex = params.api.getSortedRowIds().indexOf(params.id);
+        return page * pageSize + (rowIndex + 1);
+      },
+    },
 
     {
       field: "RoleName",
@@ -517,6 +525,74 @@ const RoleCreation = () => {
     });
   };
 
+  // const handleUpdate = async (rowData) => {
+  //   setSaveUpdateButton("UPDATE");
+  //   setClearUpdateButton("RESET");
+  //   setOn(true);
+
+  //   try {
+  //     setLoading(true);
+
+  //     const userData = sessionStorage.getItem("userData");
+  //     let userType = null;
+  //     let userId = null;
+
+  //     if (userData) {
+  //       try {
+  //         const parsedData = JSON.parse(userData);
+  //         userType = parsedData.UserType;
+  //         userId = parsedData.UserId;
+  //       } catch (e) {
+  //         console.error("Error parsing userData:", e);
+  //       }
+  //     }
+
+  //     const apiUrl = `${BASE_URL}Role/${rowData.Id}`;
+  //     const response = await axios.get(apiUrl);
+  //     if (response.data && response.data.values) {
+  //       const olddata = response.data.values;
+
+  //       originalDataRef.current = olddata;
+  //       const formattedLines = Array.isArray(olddata.oLines)
+  //         ? olddata.oLines.map((line, index) => ({
+  //             ...line,
+  //             id: line.MenuId || `${olddata.Id}-${index}-${Date.now()}`,
+
+  //             Name: `${line.ParentMenu || ""} - ${line.MenuName || ""}`.trim(),
+
+  //             SubMenuId: line.SubMenuId ?? null,
+
+  //             oSubMenusSpeAccess: Array.isArray(line.oSpecialAccess)
+  //               ? line.oSpecialAccess.map((sa, saIndex) => ({
+  //                   ...sa,
+  //                   id: sa.MenuId,
+  //                   LineNum: sa.MenuId,
+  //                   parentId: line.MenuId,
+  //                   Name: sa.MenuName,
+  //                   isChild: true,
+  //                 }))
+  //               : [],
+  //           }))
+  //         : [];
+
+  //       reset({
+  //         Id: olddata.Id,
+  //         RoleName: olddata.RoleName,
+  //         Remarks: olddata.Remarks,
+  //         Status: olddata.Status,
+  //         oLines: formattedLines,
+  //       });
+
+  //       setRoleTableData(formattedLines);
+
+  //
+  //   } catch (error) {
+  //     console.error("Error in handleUpdate:", error);
+  //   } finally {
+  //     setLoading(false);
+  //   }
+  // };
+
   const handleUpdate = async (rowData) => {
     setSaveUpdateButton("UPDATE");
     setClearUpdateButton("RESET");
@@ -525,63 +601,127 @@ const RoleCreation = () => {
     try {
       setLoading(true);
 
-      const userData = sessionStorage.getItem("userData");
-      let userType = null;
-      let userId = null;
-
-      if (userData) {
-        try {
-          const parsedData = JSON.parse(userData);
-          userType = parsedData.UserType;
-          userId = parsedData.UserId;
-        } catch (e) {
-          console.error("Error parsing userData:", e);
-        }
-      }
-
       const apiUrl = `${BASE_URL}Role/${rowData.Id}`;
       const response = await axios.get(apiUrl);
-      if (response.data && response.data.values) {
-        const olddata = response.data.values;
 
-        originalDataRef.current = olddata;
-        const formattedLines = Array.isArray(olddata.oLines)
-          ? olddata.oLines.map((line, index) => ({
-              ...line,
-              id: line.MenuId || `${olddata.Id}-${index}-${Date.now()}`,
+      if (!response.data?.values) return;
 
-              Name: `${line.ParentMenu || ""} - ${line.MenuName || ""}`.trim(),
+      const olddata = response.data.values;
+      originalDataRef.current = olddata;
 
-              SubMenuId: line.SubMenuId ?? null,
+      const formattedLines =
+        olddata.oLines?.map((line, index) => ({
+          ...line,
+          id: line.LineNum || `${olddata.Id}-${index}-${Date.now()}`,
+          SubMenuId: line.MenuId,
+          Name: `${line.ParentMenu} - ${line.MenuName}`,
+          oSubMenusSpeAccess:
+            line.oSpecialAccess?.map((sa) => ({
+              ...sa,
+              id: sa.MenuId,
+              LineNum: sa.MenuId,
+              parentId: line.LineNum,
+              Name: sa.MenuName,
+              isChild: true,
+            })) || [],
+        })) || [];
 
-              oSubMenusSpeAccess: Array.isArray(line.oSpecialAccess)
-                ? line.oSpecialAccess.map((sa, saIndex) => ({
-                    ...sa,
-                    id: sa.MenuId,
-                    LineNum: sa.MenuId,
-                    parentId: line.MenuId,
-                    Name: sa.MenuName,
-                    isChild: true,
-                  }))
-                : [],
-            }))
-          : [];
+      reset({
+        Id: olddata.Id,
+        RoleName: olddata.RoleName,
+        Remarks: olddata.Remarks,
+        Status: olddata.Status,
+        oLines: formattedLines,
+      });
 
-        reset({
-          Id: olddata.Id,
-          RoleName: olddata.RoleName,
-          Remarks: olddata.Remarks,
-          Status: olddata.Status,
-          oLines: formattedLines,
-        });
+      const selectedIds = [];
+      const disabledIds = [];
 
-        setRoleTableData(formattedLines);
-      }
-    } catch (error) {
-      console.error("Error in handleUpdate:", error);
+      formattedLines.forEach((line) => {
+        selectedIds.push(line.LineNum); // Auto select on update
+        disabledIds.push(line.LineNum); // Disable to avoid re-select
+      });
+      setRoleTableData(formattedLines);
+
+      // setInitialSelectedIds(selectedIds);
+      // setDisabledMenuIds(disabledIds);
+    } catch (err) {
+      console.error("Error in handleUpdate:", err);
     } finally {
       setLoading(false);
     }
+  };
+
+  // const handleSelectedMenus = () => {
+  //   if (!Array.isArray(selectedIds) || selectedIds.length === 0) return;
+
+  //   const existingIds = new Set(RoleTableData.map(x => x.SubMenuId));
+
+  //   const newRows = [];
+
+  //   MenuList.forEach(menu => {
+  //     menu.oSubMenus?.forEach(sub => {
+  //       if (selectedIds.includes(sub.LineNum) && !existingIds.has(sub.LineNum)) {
+  //         newRows.push({
+  //           id: `${sub.LineNum}_${Date.now()}`,
+  //           ParentMenuId: menu.Id,
+  //           ParentMenu: menu.Name,
+  //           SubMenuId: sub.LineNum,
+  //           MenuName: sub.Name,
+  //           IsRead: true,
+  //           IsAdd: true,
+  //           IsEdit: true,
+  //           IsDelete: true,
+  //           oSubMenusSpeAccess: [],
+  //         });
+  //       }
+  //     });
+  //   });
+
+  //   setRoleTableData(prev => [...prev, ...newRows]);
+  //   setDisabledMenuIds(prev => [...prev, ...newRows.map(x => x.SubMenuId)]);
+  //   setOpenMenu(false);
+  // };
+
+  const handleSelectedMenus = () => {
+    if (!Array.isArray(selectedIds) || selectedIds.length === 0) return;
+    const existingSubMenus = new Set(
+      (RoleTableData || []).map((r) => Number(r.SubMenuId))
+    );
+    const selectedData = [];
+    MenuList.forEach((menu) => {
+      (menu.oSubMenus || []).forEach((sub) => {
+        if (
+          selectedIds.includes(sub.id) &&
+          !existingSubMenus.has(sub.LineNum)
+        ) {
+          const filteredAccess = (sub.oSubMenusSpeAccess || []).filter((acc) =>
+            selectedIds.includes(`${sub.id}_${acc.LineNum}`)
+          );
+          selectedData.push({
+            id: `${sub.id}_${Date.now()}`,
+            ParentMenuId: menu.Id,
+            ParentMenuName: menu.Name,
+            SubMenuId: sub.LineNum,
+            SubMenuName: sub.Name,
+            IsRead: true,
+            IsAdd: true,
+            IsEdit: true,
+            IsDelete: true,
+            oSubMenusSpeAccess: filteredAccess.map((acc) => ({
+              ...acc,
+              isChild: true,
+            })),
+          });
+        }
+      });
+    });
+    setRoleTableData((prev) => [...prev, ...selectedData]);
+    setOpenMenu(false);
+    setDisabledMenuIds((prev) => [
+      ...prev,
+      ...selectedData.map((x) => x.SubMenuId),
+    ]);
   };
 
   const clearFormData = () => {
@@ -765,42 +905,46 @@ const RoleCreation = () => {
       });
     }
   };
-  const handleSelectedMenus = () => {
-    if (!Array.isArray(selectedIds) || selectedIds.length === 0) return;
-    const existingSubMenus = new Set(
-      (RoleTableData || []).map((r) => Number(r.SubMenuId))
-    );
-    const selectedData = [];
-    MenuList.forEach((menu) => {
-      (menu.oSubMenus || []).forEach((sub) => {
-        if (
-          selectedIds.includes(sub.id) &&
-          !existingSubMenus.has(sub.LineNum)
-        ) {
-          const filteredAccess = (sub.oSubMenusSpeAccess || []).filter((acc) =>
-            selectedIds.includes(`${sub.id}_${acc.LineNum}`)
-          );
-          selectedData.push({
-            id: `${sub.id}_${Date.now()}`,
-            ParentMenuId: menu.Id,
-            ParentMenuName: menu.Name,
-            SubMenuId: sub.LineNum,
-            SubMenuName: sub.Name,
-            IsRead: true,
-            IsAdd: true,
-            IsEdit: true,
-            IsDelete: true,
-            oSubMenusSpeAccess: filteredAccess.map((acc) => ({
-              ...acc,
-              isChild: true,
-            })),
-          });
-        }
-      });
-    });
-    setRoleTableData((prev) => [...prev, ...selectedData]);
-    setOpenMenu(false);
-  };
+  // const handleSelectedMenus = () => {
+  //   if (!Array.isArray(selectedIds) || selectedIds.length === 0) return;
+  //   const existingSubMenus = new Set(
+  //     (RoleTableData || []).map((r) => Number(r.SubMenuId))
+  //   );
+  //   const selectedData = [];
+  //   MenuList.forEach((menu) => {
+  //     (menu.oSubMenus || []).forEach((sub) => {
+  //       if (
+  //         selectedIds.includes(sub.id) &&
+  //         !existingSubMenus.has(sub.LineNum)
+  //       ) {
+  //         const filteredAccess = (sub.oSubMenusSpeAccess || []).filter((acc) =>
+  //           selectedIds.includes(`${sub.id}_${acc.LineNum}`)
+  //         );
+  //         selectedData.push({
+  //           id: `${sub.id}_${Date.now()}`,
+  //           ParentMenuId: menu.Id,
+  //           ParentMenuName: menu.Name,
+  //           SubMenuId: sub.LineNum,
+  //           SubMenuName: sub.Name,
+  //           IsRead: true,
+  //           IsAdd: true,
+  //           IsEdit: true,
+  //           IsDelete: true,
+  //           oSubMenusSpeAccess: filteredAccess.map((acc) => ({
+  //             ...acc,
+  //             isChild: true,
+  //           })),
+  //         });
+  //       }
+  //     });
+  //   });
+  //   setReorder((prev) => {
+  //     if (prev.some((x) => x.LineNum === item.LineNum)) return prev;
+  //     return [...prev, item];
+  //   });
+  //   setRoleTableData((prev) => [...prev, ...selectedData]);
+  //   setOpenMenu(false);
+  // };
   const handleMenusList = async (params = {}) => {
     setLoading(true);
     try {
@@ -904,6 +1048,7 @@ const RoleCreation = () => {
     setPickerInitialSelectedIds(initialSelectedIds);
     setPickerDisabledSubmenuIds(disabledSubmenuIds);
     setOpenMenu(true);
+     setMenuSearch("")
   };
 
   const prepareExistingMenus = (roleTableData) => {
@@ -932,16 +1077,45 @@ const RoleCreation = () => {
 
   return (
     <>
-      <Dialog open={openMenu}  fullWidth maxWidth="md">
+      <Dialog open={openMenu} fullWidth maxWidth="md">
         <Grid
           item
           xs={12}
           sx={{ display: "flex", justifyContent: "space-between" }}
         >
-          <DialogTitle>ROLE CREATION</DialogTitle>
-          <IconButton onClick={handleCloseMenu}>
-            <CloseIcon />
-          </IconButton>
+          <DialogTitle>MENUS</DialogTitle>
+
+          <div style={{ display: "flex", alignItems: "center", gap: 8 }}>
+           
+            <TextField
+              size="small"
+              placeholder="Search Menu here..."
+              value={menuSearch}
+              onChange={(e) => setMenuSearch(e.target.value)}
+              sx={{ width: 250 }}
+              InputProps={{
+                startAdornment: (
+                  <InputAdornment position="start">
+                    <SearchIcon fontSize="small" color="action" />
+                  </InputAdornment>
+                ),
+                endAdornment: menuSearch ? (
+                  <InputAdornment position="end">
+                    <IconButton
+                      size="small"
+                      onClick={() => setMenuSearch("")}  
+                    >
+                      <CloseIcon fontSize="small" />
+                    </IconButton>
+                  </InputAdornment>
+                ) : null,
+              }}
+            />
+
+            <IconButton onClick={handleCloseMenu}>
+              <CloseIcon />
+            </IconButton>
+          </div>
         </Grid>
 
         <DialogContent dividers>
@@ -949,15 +1123,9 @@ const RoleCreation = () => {
             <CollapsibleMenuGrid
               menuList={MenuList}
               onSelectionChange={setSelectedIds}
-              // existingSubMenus={[
-              //   ...new Set(
-              //     (RoleTableData || [])
-              //       .filter((r) => r.SubMenuId != null)
-              //       .map((r) => r.SubMenuId)
-              //   ),
-              // ]}
               initialSelectedIds={pickerInitialSelectedIds}
               disabledSubmenuIds={pickerDisabledSubmenuIds}
+              searchText={menuSearch}
             />
           </div>
         </DialogContent>

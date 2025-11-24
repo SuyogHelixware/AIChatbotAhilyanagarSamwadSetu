@@ -3,6 +3,7 @@ import CloseIcon from "@mui/icons-material/Close";
 import DeleteForeverIcon from "@mui/icons-material/DeleteForever";
 import EditNoteIcon from "@mui/icons-material/EditNote";
 import {
+  Autocomplete,
   Badge,
   Button,
   Checkbox,
@@ -1037,63 +1038,6 @@ export default function ManageUsers() {
 
             {/* ==================== */}
 
-            {/* <Grid item md={6} sm={6} xs={12}>
-              <Controller
-                name="Role"
-                control={control}
-                defaultValue=""
-                render={({ field }) => {
-                  const selectedValue =
-                    field.value && field.value.trim() !== ""
-                      ? field.value
-                      : "No Role";
-
-                  return (
-                    <Tooltip title={selectedValue} arrow placement="bottom">
-                      <TextField
-                        select
-                        label="ROLE"
-                        fullWidth
-                        size="small"
- 
-                        {...field}
-                        InputLabelProps={{
-                          shrink: Boolean(field.value),
-                        }}
-                        SelectProps={{
-                          MenuProps: {
-                            PaperProps: {
-                              style: {
-                                maxHeight: 200,
-                                overflowY: "auto",
-                                 width: 100,  
-                              },
-                            },
-                          },
-                        }}
-                      >
-                        <MenuItem value="">No Role</MenuItem>
-
-                        {RoleList.map((option) => (
-                          <MenuItem
-                          sx={{
-                              height: 35,
-                              display: "flex",
-                              alignItems: "center",
-                            }}
-                           key={option.RoleName}
-                           value={option.RoleName}
-                            disabled={option.isDisabled}
-                          >
-                           {option.RoleName}
-                          </MenuItem>
-                        ))}
-                      </TextField>
-                    </Tooltip>
-                  );
-                }}
-              />
-            </Grid> */}
             <Grid item md={6} sm={6} xs={12}>
               <Controller
                 name="Role"
@@ -1151,6 +1095,79 @@ export default function ManageUsers() {
                 }}
               />
             </Grid>
+            {/* <Grid item md={6} sm={6} xs={12}>
+              <Controller
+                name="Role"
+                control={control}
+                defaultValue={""}
+                render={({ field }) => {
+                  const val =
+                    typeof field.value === "string" ? field.value : "";
+                  const selectedValue = val !== "" ? val : "No Role";
+
+                  return (
+                    <Tooltip title={selectedValue} arrow placement="bottom">
+                      <Autocomplete
+                        size="small"
+ 
+                        fullWidth
+                        sx={{
+                          maxWidth: 350 ,
+                          width: "78%",
+                          height: 35,
+                          display: "flex",
+                          alignItems: "center",
+                        }}
+                        value={RoleList.find((r) => r.RoleName === val) || null}
+                        onChange={(_, newValue) => {
+                          field.onChange(newValue?.RoleName || "");
+                        }}
+                        options={RoleList}
+                        getOptionLabel={(option) => option?.RoleName || ""}
+                        isOptionEqualToValue={(option, value) =>
+                          option.RoleName === value.RoleName
+                        }
+                        //  Add List Height
+                        ListboxProps={{
+                          style: {
+                            maxHeight: 200, // <-- Change height here
+                            overflowY: "auto",
+                          },
+                        }}
+                        disabled={RoleList.length === 0}
+                        // sx={{ width: "78%" }}
+                        renderOption={(props, option) => (
+                          <li
+                            {...props}
+                            style={{
+                              height: 35,
+                              display: "flex",
+                              alignItems: "center",
+                              opacity: option.isDisabled ? 0.5 : 1,
+                              pointerEvents: option.isDisabled
+                                ? "none"
+                                : "auto",
+                            }}
+                          >
+                            {option.RoleName}
+                          </li>
+                        )}
+                        renderInput={(params) => (
+                          <TextField
+                            {...params}
+                            label="ROLE"
+                            size="small"
+                            InputLabelProps={{
+                              shrink: val !== "",
+                            }}
+                          />
+                        )}
+                      />
+                    </Tooltip>
+                  );
+                }}
+              />
+            </Grid> */}
 
             {/* =========================== */}
 
@@ -1208,6 +1225,64 @@ export default function ManageUsers() {
                 }}
               />
             </Grid>
+            {/* <Grid item md={6} sm={6} xs={12}>
+              <Controller
+                name="GazOfficer"
+                control={control}
+                defaultValue=""
+                render={({ field }) => {
+                  const val =
+                    typeof field.value === "string" ? field.value : "";
+                  const selectedValue = val !== "" ? val : "No Officer";
+
+                  return (
+                    <Tooltip title={selectedValue} arrow placement="bottom">
+                      <Autocomplete
+                        fullWidth
+                        size="small"
+                        sx={{ width: "80%" }}
+                        value={gazeteList.find((o) => o.Name === val) || null}
+                        onChange={(_, newValue) =>
+                          field.onChange(newValue?.Name || "")
+                        }
+                        options={gazeteList}
+                        getOptionLabel={(option) => option?.Name || ""}
+                        isOptionEqualToValue={(option, value) =>
+                          option.Name === value.Name
+                        }
+                         ListboxProps={{
+                          style: {
+                            maxHeight: 200,  
+                            overflowY: "auto",
+                          },
+                        }}
+                        renderInput={(params) => (
+                          <TextField
+                            {...params}
+                            label="Gaz Officer"
+                            InputLabelProps={{
+                              shrink: val !== "",
+                            }}
+                          />
+                        )}
+                        renderOption={(props, option) => (
+                          <li
+                            {...props}
+                            style={{
+                              height: 50,
+                              display: "flex",
+                              alignItems: "center",
+                            }}
+                          >
+                            {option.Name}
+                          </li>
+                        )}
+                      />
+                    </Tooltip>
+                  );
+                }}
+              />
+            </Grid> */}
 
             <Grid item md={6} sm={3} xs={12} textAlign={"center"}>
               <Controller
