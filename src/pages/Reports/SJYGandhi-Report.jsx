@@ -140,6 +140,8 @@ export default function LandAcquistionReport() {
   }
 }, [fromDate, toDate]);
 
+
+
   const officerColumns = [
     {
       field: "srNo",
@@ -278,8 +280,9 @@ export default function LandAcquistionReport() {
           />
           </Paper>
         </Grid>
-        
-      <Grid item xs={6} md={6} sx={{ mt: 3 }}>
+        <Grid container spacing={2} sx={{ mt: 3 }} >
+
+  <Grid item xs={12} sm={12} md={12} lg={6}>
         <Paper elevation={7} sx={{ borderRadius: 3, p: 2 }}>
           <h3
             style={{
@@ -289,7 +292,7 @@ export default function LandAcquistionReport() {
               justifyContent: "center",
             }}
           >
-            Sucess List
+           Beneficiary Sucess List
             <Chip
               label={DocReadyCount}
               size="small"
@@ -326,7 +329,7 @@ export default function LandAcquistionReport() {
       </Grid>
 
 
-      <Grid item xs={6} md={6} sx={{ mt: 2 }}>
+  <Grid item xs={12} sm={12} md={12} lg={6}>
         <Paper elevation={7} sx={{ borderRadius: 3, p: 2 }}>
           <h3
             style={{
@@ -336,7 +339,7 @@ export default function LandAcquistionReport() {
               justifyContent: "center",
             }}
           >
-            Failure Reason List
+            Beneficiary Failure Reason List
             <Chip
               label={DocMissingCount}
               size="small"
@@ -370,6 +373,7 @@ export default function LandAcquistionReport() {
             />
           </div>
         </Paper>
+      </Grid>
       </Grid>
     </>
   );

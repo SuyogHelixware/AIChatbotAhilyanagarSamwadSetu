@@ -27,7 +27,7 @@ import SanjayGandhi from "../pages/SanjavGandhi/SanjayGandhi";
 import Rehabilitation from "../pages/Rehabilitation/Rehabilitation";
 import { useThemeMode } from "../Dashboard/Theme";
 import ProtectedRoute from "./ProtectedRoute";
- import SJYGandhiDashboard from "../Dashboard/SJYGandhi-Dashboard";
+import SJYGandhiDashboard from "../Dashboard/SJYGandhi-Dashboard";
 import LandAcquistionReport from "../pages/Reports/LandAcquistion-Report";
 import SJYGandhiReport from "../pages/Reports/SJYGandhi-Report";
 import LandAcquisition from "../Dashboard/LandAcquisition-Dashboard";
@@ -43,24 +43,32 @@ export default function Routing() {
           <Route path="forgot-password" element={<ForgotPassword />} />
           {/* 👈 Add this route */}
           <Route path="dashboard" element={<Dashboard />}>
-            <Route path="home" element={<Home />} />
-            <Route path="LandAcquisition" element={<LandAcquisition/>} />
-            <Route path="SJYGandhiDashboard" element={<SJYGandhiDashboard />} />
-            <Route path="LandAcquistionReport" element={<LandAcquistionReport />} />
-            <Route path="SJYGandhiReport" element={<SJYGandhiReport />} />
-
-
-
-            {/* <Route
+            {/* <Route path="home" element={<Home />} /> */}
+            <Route
               path="home"
               element={
                 <ProtectedRoute menuId={1} roleAccess={roleAccess}>
                   <Home />
                 </ProtectedRoute>
               }
-            /> */}
-
-            {/* <Route path="manage-user" element={<ManageUser />} /> */}
+            />
+            <Route
+              path="LandAcquisition"
+              element={
+                <ProtectedRoute menuId={13} roleAccess={roleAccess}>
+                  <LandAcquisition />
+                </ProtectedRoute>
+              }
+            />
+            <Route
+              path="SJYGandhiDashboard"
+              element={
+                <ProtectedRoute menuId={14} roleAccess={roleAccess}>
+                  <SJYGandhiDashboard />
+                </ProtectedRoute>
+              }
+            />
+           
             <Route
               path="manage-user"
               element={
@@ -160,6 +168,25 @@ export default function Routing() {
                 </ProtectedRoute>
               }
             />
+
+            {/* ==============REPORT========== */}
+             <Route
+              path="LandAcquistionReport"
+              element={
+                <ProtectedRoute menuId={15} roleAccess={roleAccess}>
+                  <LandAcquistionReport />
+                </ProtectedRoute>
+              }
+            />{" "}
+            <Route
+              path="SJYGandhiReport"
+              element={
+                <ProtectedRoute menuId={16} roleAccess={roleAccess}>
+                  <SJYGandhiReport />
+                </ProtectedRoute>
+              }
+            />
+
             {/* <Route path="Rehabilitation" element={<Rehabilitation />} /> */}
           </Route>
           {/* <Route path="/dashboard/special" element={<SpecialLayout />}> */}

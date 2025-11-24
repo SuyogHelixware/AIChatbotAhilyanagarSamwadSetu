@@ -11,6 +11,7 @@ import PersonIcon from "@mui/icons-material/Person";
 // import PersonIcon from "@mui/icons-material/Person";
 import CryptoJS from "crypto-js";
 import { useThemeMode } from "./Theme";
+import { DASHBOARDMENU_PATHS, MENU_PATHS } from "../Routes/ProtectedRoute";
 
 const Signin = () => {
   const [userId, setUserId] = useState("");
@@ -21,14 +22,14 @@ const Signin = () => {
   const { refreshUserSession } = useThemeMode();
 
   // const [role, setRole] = useState(() => {
-    // const storedRole = localStorage.getItem("RoleDetails");
-    // return storedRole ? JSON.parse(storedRole) : null;
+  // const storedRole = localStorage.getItem("RoleDetails");
+  // return storedRole ? JSON.parse(storedRole) : null;
   // });
 
   const { refreshRoleAccess } = useThemeMode();
 
   const SECRET_KEY = "YourStrongSecretKey123!";
-   const handleSubmit = async () => {
+  const handleSubmit = async () => {
     try {
       const body = {
         Username: userId,
@@ -58,7 +59,7 @@ const Signin = () => {
             };
 
             // Save basic user info
-             sessionStorage.setItem("BearerTokan", res.headers.authorization);
+            sessionStorage.setItem("BearerTokan", res.headers.authorization);
             sessionStorage.setItem("userId", userData.Username);
             sessionStorage.setItem("userData", JSON.stringify(userData));
             refreshUserSession();
@@ -99,8 +100,39 @@ const Signin = () => {
               icon: "success",
             });
 
+            // setTimeout(() => {
+            //   navigate("/dashboard/home");
+            // }, 1000);
+
             setTimeout(() => {
-              navigate("/dashboard/home");
+              try {
+                const encrypted = sessionStorage.getItem("RoleDetails");
+                if (!encrypted) return navigate("/dashboard");
+
+                const bytes = CryptoJS.AES.decrypt(encrypted, SECRET_KEY);
+                const decryptedJson = bytes.toString(CryptoJS.enc.Utf8);
+                const decrypted = JSON.parse(decryptedJson);
+                const oLines = decrypted?.oLines ?? [];
+
+                const dashboardMenus = oLines.filter(
+                  (m) => Number(m?.ParentMenuId) === 1
+                );
+
+                if (dashboardMenus.length > 0) {
+                  const firstDashboard = dashboardMenus[0];
+                  const routePath = DASHBOARDMENU_PATHS[firstDashboard.MenuId];
+
+                  if (routePath) {
+                    navigate(routePath);
+                  } else {
+                    navigate("/dashboard");
+                  }
+                } else {
+                  navigate("/dashboard");
+                }
+              } catch (err) {
+                navigate("/dashboard");
+              }
             }, 1000);
           } else {
             setLoading(false);
@@ -116,7 +148,7 @@ const Signin = () => {
         })
         .catch((e) => {
           setLoading(false);
-         });
+        });
     } catch (error) {
       setLoading(false);
       Swal.fire({

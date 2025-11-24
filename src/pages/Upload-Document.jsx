@@ -236,6 +236,7 @@ const UploadDocument = () => {
       field: "FileName",
       headerName: "DOCUMENT NAME",
       flex: 1,
+      width:200,
       sortable: false,
       renderCell: (params) => {
         const { id, field, api, value, row } = params;
@@ -270,6 +271,7 @@ const UploadDocument = () => {
       field: "DocReqDate",
       headerName: "DOC REQUEST DATE",
       flex: 1,
+      width:200,
       renderCell: (params) => {
         const { id, value, api, field, row } = params;
         const isDisabled = row.isDisabled;
@@ -396,57 +398,13 @@ const UploadDocument = () => {
     //   },
     // },
     // {
-    //   field: "IssuedBy",
-    //   headerName: "GAZETTED OFFICER",
-    //   flex: 1,
-    //   renderCell: (params) => {
-    //     const { id, field, value, api } = params;
-
-    //     const userData = JSON.parse(sessionStorage.getItem("userData") || "{}");
-    //     const stored = userData.GazOfficer || "";
-    //     const isEditable = userData.UserType === "A" || !stored.trim();
-
-    //     if (!isEditable) {
-    //       return (
-    //         <TextField
-    //           value={stored}
-    //           disabled
-    //           variant="standard"
-    //           sx={{ width: 280 }}
-    //         />
-    //       );
-    //     }
-
-    //     return (
-    //       <LazyAutocomplete
-    //         id={id}
-    //         field={field}
-    //         value={value}
-    //         list={gazeteList}
-    //         displayField="Name"
-    //         disabled={false}
-    //         searchValue={gazSearch}
-    //         onSearch={(txt) => {
-    //           setGazSearch(txt);
-    //           setGPage(0);
-    //           setHasMoreGazette(true);
-    //           gazettedList({ page: 0, search: txt });
-    //         }}
-    //         api={api}
-    //         setRows={setRows}
-    //         loading={gLoading}
-    //         onLazyLoad={gazettedList}
-    //         page={gPage}
-    //         setPage={setGPage}
-    //         hasMore={hasMoreGazette}
-    //       />
-    //     );
-    //   },
-    // },
+  
     {
       field: "IssuedBy",
       headerName: "GAZETTED OFFICER",
       flex: 1,
+            width:200,
+
       renderCell: (params) => {
         const { id, field, value, api } = params;
 
@@ -1670,7 +1628,7 @@ const UploadDocument = () => {
           elevation={10}
           sx={{
             width: "100%",
-            maxWidth: 1300,
+            maxWidth: 1400,
             Height: 3000,
             position: "absolute",
             top: "50%",

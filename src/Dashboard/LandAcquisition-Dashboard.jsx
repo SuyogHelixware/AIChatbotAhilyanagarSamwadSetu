@@ -30,7 +30,6 @@ export default function LandAcquisition() {
   const [barCounts, setBarCounts] = useState([]);
   const [pieData, setPieData] = useState([]);
 
-
   const officerColumns = [
     {
       field: "Name",
@@ -98,7 +97,7 @@ export default function LandAcquisition() {
           TotalWPMsgSuccess: v.TotalWPMsgSuccess || 0,
         });
 
-         setPieData([
+        setPieData([
           { id: 0, value: v.TotalDocsLandAcqui || 0, label: "Docs" },
           { id: 1, value: v.TotalMissingDocsLandAcqui || 0, label: "Missing" },
           { id: 2, value: v.TotalWPMsgSuccess || 0, label: "Success" },
@@ -116,7 +115,36 @@ export default function LandAcquisition() {
     }
   }, [fromDate, toDate]);
 
-   // ******** BARCHART API CALL LOGIC *******
+  // ******** BARCHART API CALL LOGIC *******
+  // const getYearlyBarChart = async (fDate, tDate) => {
+  //   try {
+  //     const from = dayjs(fDate).format("YYYY-MM-DD");
+  //     const to = dayjs(tDate).format("YYYY-MM-DD");
+
+  //     const response = await axios.get(`${BASE_URL}Reports/LandAcqu/Yearly`, {
+  //       params: { FromDate: from, ToDate: to },
+  //     });
+
+  //     if (response.data && response.data.values) {
+  //       const list = response.data.values;
+
+  //       const months = list.map((item) => {
+  //         const date = new Date(item.YearMonth + "-01");
+  //         const month = date.toLocaleString("en-US", { month: "short" });
+  //         const year = date.getFullYear();
+  //         return `${month}-${year}`;
+  //       });
+
+  //       const counts = list.map((item) => item.TotalCnt);
+
+  //       setBarMonths(months);
+  //       setBarCounts(counts);
+  //     }
+  //   } catch (error) {
+  //     console.log("Yearly Chart Error:", error);
+  //   }
+  // };
+  // ******** SAFE BARCHART API CALL LOGIC *******
   const getYearlyBarChart = async (fDate, tDate) => {
     try {
       const from = dayjs(fDate).format("YYYY-MM-DD");
@@ -126,23 +154,63 @@ export default function LandAcquisition() {
         params: { FromDate: from, ToDate: to },
       });
 
-      if (response.data && response.data.values) {
-        const list = response.data.values;
+      const list = Array.isArray(response.data?.values)
+        ? response.data.values
+        : [];
 
-        const months = list.map((item) => {
-          const date = new Date(item.YearMonth + "-01");
-          const month = date.toLocaleString("en-US", { month: "short" });
-          const year = date.getFullYear();
-          return `${month}-${year}`;  
-        });
+      if (list.length === 0) {
+        const year = dayjs().year();
+        const allMonths = [
+          "Jan",
+          "Feb",
+          "Mar",
+          "Apr",
+          "May",
+          "Jun",
+          "Jul",
+          "Aug",
+          "Sep",
+          "Oct",
+          "Nov",
+          "Dec",
+        ].map((m) => `${m}-${year}`);
 
-        const counts = list.map((item) => item.TotalCnt);
-
-        setBarMonths(months);
-        setBarCounts(counts);
+        setBarMonths(allMonths);
+        setBarCounts(new Array(12).fill(0));
+        return;
       }
+
+      const year = new Date(list[0].YearMonth + "-01").getFullYear();
+
+      const allMonths = [
+        "Jan",
+        "Feb",
+        "Mar",
+        "Apr",
+        "May",
+        "Jun",
+        "Jul",
+        "Aug",
+        "Sep",
+        "Oct",
+        "Nov",
+        "Dec",
+      ].map((m) => `${m}-${year}`);
+
+      const apiData = {};
+      list.forEach((item) => {
+        const date = new Date(item.YearMonth + "-01");
+        const month = date.toLocaleString("en-US", { month: "short" });
+        apiData[`${month}-${year}`] = item.TotalCnt;
+      });
+
+      const finalCounts = allMonths.map((m) => apiData[m] || 0);
+
+      setBarMonths(allMonths);
+      setBarCounts(finalCounts);
     } catch (error) {
-      console.log("Yearly Chart Error:", error);
+      setBarMonths([]);
+      setBarCounts([]);
     }
   };
 
@@ -150,7 +218,7 @@ export default function LandAcquisition() {
     if (fromDate && toDate) {
       callDashboardAPI(fromDate, toDate);
       HandleOfficerList(fromDate, toDate);
-      getYearlyBarChart(fromDate, toDate);                               
+      getYearlyBarChart(fromDate, toDate);
     }
   }, [fromDate, toDate]);
 
@@ -187,7 +255,6 @@ export default function LandAcquisition() {
     }
   }, [fromDate, toDate]);
 
-
   return (
     <>
       <Box sx={{ width: "100%", p: 1 }}>
@@ -200,33 +267,33 @@ export default function LandAcquisition() {
           }}
         >
           <Grid item xs={12} sm={4}>
-           <Paper
-    elevation={4}
-    sx={{
-      p: 1.5,
-      borderRadius: 2,
-       boxShadow: "0 4px 10px rgba(0, 90, 91, 0.15)",
-      transition: "all 0.2s ease",
-      "&:hover": {
-        boxShadow: "0 6px 16px rgba(0, 90, 91, 0.25)",
-        transform: "translateY(-2px)",
-      },
-    }}
-  >
-            {/* <DateRangePickerField
+            <Paper
+              elevation={4}
+              sx={{
+                p: 1.5,
+                borderRadius: 2,
+                boxShadow: "0 4px 10px rgba(0, 90, 91, 0.15)",
+                transition: "all 0.2s ease",
+                "&:hover": {
+                  boxShadow: "0 6px 16px rgba(0, 90, 91, 0.25)",
+                  transform: "translateY(-2px)",
+                },
+              }}
+            >
+              {/* <DateRangePickerField
               fromDate={fromDate}
               toDate={toDate}
               setFromDate={setFromDate}
               setToDate={setToDate}
             /> */}
-            <CustomMuiRangePicker
-              fromDate={fromDate}
-              toDate={toDate}
-              setFromDate={setFromDate}
-              setToDate={setToDate}
-              inputPlaceholder="Pick date range"
-            />
-              </Paper>
+              <CustomMuiRangePicker
+                fromDate={fromDate}
+                toDate={toDate}
+                setFromDate={setFromDate}
+                setToDate={setToDate}
+                inputPlaceholder="Pick date range"
+              />
+            </Paper>
           </Grid>
         </Box>
 

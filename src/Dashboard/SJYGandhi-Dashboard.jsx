@@ -114,7 +114,7 @@ export default function SJYGandhiDashboard() {
                 <MessageIcon sx={{ fontSize: 35, color: "white" }} />
               </IconBox>
               <TextBox>
-                <label>Total Success Message</label>
+                <label>Beneficiary Total Success Message</label>
                 <h2>
                   <CountUp
                     end={counts.TotalMsgSJYSuccess}
@@ -132,7 +132,7 @@ export default function SJYGandhiDashboard() {
                 <SpeakerNotesOffIcon sx={{ fontSize: 35, color: "white" }} />
               </IconBox>
               <TextBox>
-                <label>Total Fail Message</label>
+                <label> Beneficiary Total Fail Message</label>
                 <h2>
                   <CountUp
                     end={counts.TotalMsgSJYFailed}
@@ -150,7 +150,7 @@ export default function SJYGandhiDashboard() {
                 <CheckCircleOutlineIcon sx={{ fontSize: 35, color: "white" }} />
               </IconBox>
               <TextBox>
-                <label>Total WhatsApp Success Alert</label>
+                <label>Total WhatsApp Success Message</label>
                 <h2>
                   <CountUp
                     end={counts.TotalWPMsgSuccess}
@@ -168,7 +168,7 @@ export default function SJYGandhiDashboard() {
                 <ErrorOutlineIcon sx={{ fontSize: 35, color: "white" }} />
               </IconBox>
               <TextBox>
-                <label>Total WhatsApp Failure Alert</label>
+                <label>Total WhatsApp Failure Message</label>
                 <h2>
                   <CountUp
                     end={counts.TotalWPMsgFailed}

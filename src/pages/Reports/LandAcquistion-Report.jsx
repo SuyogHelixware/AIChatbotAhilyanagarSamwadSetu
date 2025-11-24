@@ -16,13 +16,6 @@ export default function LandAcquistionReport() {
   const [DocReadyCount, setDocReadyCount] = React.useState(0);
   const [docMissingRows, setDocMissingRows] = React.useState([]);
   const [docReadyRows, setDocReadyRows] = React.useState([]);
-  // const { control, watch, getValues } = useForm({
-  //   defaultValues: {
-  //     DateRange: [dayjs(), dayjs()],
-  //   },
-  // });
-
-  // const fetchReport = async () => {
   const fetchReport = async (selectedFrom, selectedTo) => {
     try {
 
@@ -74,9 +67,6 @@ export default function LandAcquistionReport() {
 
     }
   };
-  // useEffect(() => {
-  //   fetchReport();
-  // }, []);
   useEffect(() => {
     if (fromDate && toDate) {
       fetchReport();
@@ -156,9 +146,7 @@ export default function LandAcquistionReport() {
             display: "inline-block",
             padding: "3px 10px",
             borderRadius: "6px",
-            // background: "#1c7255ff",
             fontWeight: 600,
-            // color: "#ebebebff",
           }}
         >
           {params.value}
@@ -198,14 +186,8 @@ export default function LandAcquistionReport() {
           Land Acquisition Report
         </Typography>
       </Grid>
-      {/* <Grid container justifyContent="flex-end"> */}
 <Grid container justifyContent="flex-end" item xs={12} sm={12}>
-          {/* <DateRangePickerField
-            fromDate={fromDate}
-            toDate={toDate}
-            setFromDate={setFromDate}
-            setToDate={setToDate}
-          /> */}
+         
           <Paper
     elevation={0}
     sx={{
@@ -230,47 +212,12 @@ export default function LandAcquistionReport() {
           />
             </Paper>
         </Grid>
-        {/* <Grid
-          item
-          xs={12}
-          sm={4}
-          sx={{
-            display: "flex",
-            alignItems: "center",
-            justifyContent: "flex-start",
-          }}
-        >
-          <Button
-            onClick={fetchReport}
-            type="text"
-            size="large"
-            sx={{
-              color: "white",
-              background:
-                "linear-gradient(to right, rgb(0, 90, 91), rgb(22, 149, 153))",
-              borderRadius: "8px",
-              transition: "all 0.2s ease-in-out",
-              boxShadow: "0 4px 8px rgba(0, 90, 91, 0.3)",
-              "&:hover": {
-                transform: "translateY(2px)",
-                boxShadow: "0 2px 4px rgba(0, 90, 91, 0.2)",
-              },
-              "& .MuiButton-label": {
-                display: "flex",
-                alignItems: "center",
-              },
-              "& .MuiSvgIcon-root": {
-                marginRight: "10px",
-              },
-            }}
-          >
-            <ContentPasteSearchIcon />
-            Search
-          </Button>
-        </Grid>{" "} */}
-      {/* </Grid> */}
+       
+<Grid container spacing={2} sx={{ mt: 3 }} >
 
-      <Grid item xs={12} sx={{ mt: 3 }}>
+      {/* <Grid item xs={6} sm={6} md={6} lg={6} sx={{ mt: 3 }}> */}
+        <Grid item xs={12} sm={12} md={12} lg={6}>
+
         <Paper elevation={7} sx={{ borderRadius: 3, p: 2 }}>
           <h3
             style={{
@@ -280,7 +227,7 @@ export default function LandAcquistionReport() {
               justifyContent: "center",
             }}
           >
-            Ready Uploaded Document
+             Uploaded Document
             <Chip
               label={DocReadyCount}
               size="small"
@@ -289,7 +236,7 @@ export default function LandAcquistionReport() {
             />
           </h3>
 
-          <div style={{ height: 280, width: "100%", marginTop: 4 }}>
+          <div style={{ height: 300, width: "100%", marginTop: 4 }}>
             <DataGrid
               className="datagrid-style"
               sx={{
@@ -317,7 +264,7 @@ export default function LandAcquistionReport() {
       </Grid>
 
       {/* DataGrid */}
-      <Grid item xs={12} sx={{ mt: 2 }}>
+  <Grid item xs={12} sm={12} md={12} lg={6}>
         <Paper elevation={7} sx={{ borderRadius: 3, p: 2 }}>
           <h3
             style={{
@@ -336,7 +283,7 @@ export default function LandAcquistionReport() {
             />
           </h3>
 
-          <div style={{ height: 280, width: "100%", marginTop: 5 }}>
+          <div style={{ height: 300, width: "100%", marginTop: 5 }}>
             <DataGrid
               className="datagrid-style"
               sx={{
@@ -361,6 +308,7 @@ export default function LandAcquistionReport() {
             />
           </div>
         </Paper>
+      </Grid>
       </Grid>
     </>
   );
