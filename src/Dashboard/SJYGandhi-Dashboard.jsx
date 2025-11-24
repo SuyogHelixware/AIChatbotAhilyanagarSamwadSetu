@@ -23,6 +23,28 @@ export default function SJYGandhiDashboard() {
   const [fromDate, setFromDate] = useState(dayjs().startOf("month"));
   const [toDate, setToDate] = useState(dayjs());
 
+  const [chartfromDate, setchartFromDate] = useState(dayjs().startOf("month"));
+  const [charttoDate, setchartToDate] = useState(dayjs());
+
+   const [ChartData, setChartData] = useState({
+    success: new Array(12).fill(0),
+    failure: new Array(12).fill(0),
+    months: [
+      "Jan",
+      "Feb",
+      "Mar",
+      "Apr",
+      "May",
+      "Jun",
+      "Jul",
+      "Aug",
+      "Sep",
+      "Oct",
+      "Nov",
+      "Dec",
+    ],
+  });
+
   const [counts, setCounts] = useState({
     TotalMsgSJYSuccess: 0,
     TotalMsgSJYFailed: 0,
