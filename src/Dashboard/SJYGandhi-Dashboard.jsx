@@ -13,6 +13,8 @@ import CountUp from "react-countup";
 import { useForm } from "react-hook-form";
 import CustomMuiRangePicker from "../components/DateRangePickerField";
 import { BASE_URL } from "../Constant";
+import { TextField, Typography } from "@mui/material";
+import { DatePicker } from "@mui/x-date-pickers";
 
 export default function SJYGandhiDashboard() {
   const today = dayjs();
@@ -27,17 +29,6 @@ export default function SJYGandhiDashboard() {
     TotalWPMsgSuccess: 0,
     TotalWPMsgFailed: 0,
   });
-
-  // const { control, watch } = useForm({
-  //   defaultValues: {
-  //     FromDate: firstDayOfMonth,
-  //     ToDate: today,
-  //   },
-  // });
-  // const [fromDate, toDate] = useWatch({
-  //   control,
-  //   name: ["FromDate", "ToDate"],
-  // });
 
   useEffect(() => {
     if (fromDate && toDate) {
@@ -71,6 +62,61 @@ export default function SJYGandhiDashboard() {
       console.error("API Error:", error);
     }
   };
+
+  // -------------------
+  const fetchChartData = async (ChartfromDate, CharttoDate) => {
+    try {
+      const response = await axios.get(
+        `${BASE_URL}Reports/SanjayGandhi/Yearly`,
+
+        {
+          params: {
+            FromDate: dayjs(ChartfromDate).format("YYYY-MM-DD"),
+            ToDate: dayjs(CharttoDate).format("YYYY-MM-DD"),
+          },
+        }
+      );
+
+      const apiData = response.data.values;
+
+      const allMonths = [
+        "Jan",
+        "Feb",
+        "Mar",
+        "Apr",
+        "May",
+        "Jun",
+        "Jul",
+        "Aug",
+        "Sep",
+        "Oct",
+        "Nov",
+        "Dec",
+      ];
+
+      const successData = new Array(12).fill(0);
+      const failureData = new Array(12).fill(0);
+
+      apiData.forEach((item) => {
+        const [year, month] = item.YearMonth.split("-");  
+        const monthIndex = parseInt(month, 10) - 1;
+        successData[monthIndex] = item.SJYSuccess;
+        failureData[monthIndex] = item.SJYFailed;
+      });
+
+      setChartData({
+        success: successData,
+        failure: failureData,
+        months: allMonths,
+      });
+    } catch (error) {
+      console.error("Failed to fetch chart data:", error);
+    }
+  };
+
+  useEffect(() => {
+    fetchChartData(chartfromDate, charttoDate);
+  }, [chartfromDate, charttoDate]);
 
   return (
     <>
@@ -114,7 +160,7 @@ export default function SJYGandhiDashboard() {
                 <MessageIcon sx={{ fontSize: 35, color: "white" }} />
               </IconBox>
               <TextBox>
-                <label>Beneficiary Total Success Message</label>
+                <label>Beneficiary Success Alerts</label>
                 <h2>
                   <CountUp
                     end={counts.TotalMsgSJYSuccess}
@@ -132,7 +178,7 @@ export default function SJYGandhiDashboard() {
                 <SpeakerNotesOffIcon sx={{ fontSize: 35, color: "white" }} />
               </IconBox>
               <TextBox>
-                <label> Beneficiary Total Fail Message</label>
+                <label>Beneficiary Failure Alerts</label>
                 <h2>
                   <CountUp
                     end={counts.TotalMsgSJYFailed}
@@ -147,10 +193,10 @@ export default function SJYGandhiDashboard() {
           <Grid item xs={12} sm={6} md={3}>
             <Paper sx={cardStyle} elevation={5}>
               <IconBox color="#28A745">
-                <CheckCircleOutlineIcon sx={{ fontSize: 35, color: "white" }} />
+                <CheckCircleOutlineIcon sx={{ fontSize: 38, color: "white" }} />
               </IconBox>
               <TextBox>
-                <label>Total WhatsApp Success Message</label>
+                <label>Total WhatsApp Success Alerts</label>
                 <h2>
                   <CountUp
                     end={counts.TotalWPMsgSuccess}
@@ -165,10 +211,10 @@ export default function SJYGandhiDashboard() {
           <Grid item xs={12} sm={6} md={3}>
             <Paper sx={cardStyle} elevation={5}>
               <IconBox color="#e27857ff">
-                <ErrorOutlineIcon sx={{ fontSize: 35, color: "white" }} />
+                <ErrorOutlineIcon sx={{ fontSize: 38, color: "white" }} />
               </IconBox>
               <TextBox>
-                <label>Total WhatsApp Failure Message</label>
+                <label>Total WhatsApp Failed Alerts</label>
                 <h2>
                   <CountUp
                     end={counts.TotalWPMsgFailed}
@@ -180,84 +226,54 @@ export default function SJYGandhiDashboard() {
             </Paper>
           </Grid>
 
-          {/* CERTIFICATES PER MONTH */}
-          <Grid item xs={12} md={6}>
+          <Grid item xs={12} md={12}>
             <Paper elevation={6} sx={{ borderRadius: 3, py: 3 }}>
-              <h3 style={{ marginLeft: 20, marginBottom: 10 }}>
-                Month-Wise Sended Message
-              </h3>
+              <Grid
+                container
+                alignItems="center"
+                sx={{ mb: 2, position: "relative" }}
+              >
+                <Grid item xs={12} sx={{ textAlign: "center" }}>
+                  <Typography variant="h6" fontWeight={"bold"} >
+                    Month-Wise Success vs Failure
+                  </Typography>
+                </Grid>
 
-              <BarChart
-                series={[
-                  {
-                    label: "Success",
-                    data: [40, 70, 80, 65, 90, 92, 105, 101, 106, 110, 111],
-                    color: "#58B25A", // Green
-                  },
-                  {
-                    label: "Failure",
-                    data: [5, 12, 8, 6, 10, 9, 7, 14, 11, 13, 15],
-                    color: "#F44336", // Red
-                  },
-                ]}
-                xAxis={[
-                  {
-                    data: [
-                      "Jan",
-                      "Feb",
-                      "Mar",
-                      "Apr",
-                      "May",
-                      "Jun",
-                      "Jul",
-                      "Aug",
-                      "Sep",
-                      "Oct",
-                      "Nov",
-                    ],
-                    scaleType: "band",
-                  },
-                ]}
-                height={365}
-              />
-            </Paper>
-          </Grid>
-
-          {/* OFFICER-WISE CERTIFICATES PROCESSED */}
-
-          <Grid item xs={12} md={6}>
-            <Paper elevation={6} sx={{ borderRadius: 3, py: 3 }}>
-              <h3 style={{ marginLeft: 20, marginBottom: 10 }}>
-                Daily Certificates Processed (Last 10 Days)
-              </h3>
-
-              <LineChart
-                height={365}
-                xAxis={[
-                  {
-                    data: [
-                      "Day 1",
-                      "Day 2",
-                      "Day 3",
-                      "Day 4",
-                      "Day 5",
-                      "Day 6",
-                      "Day 7",
-                      "Day 8",
-                      "Day 9",
-                      "Day 10",
-                    ],
-                    scaleType: "band",
-                  },
-                ]}
-                series={[
-                  {
-                    label: "Certificates Proceed",
-                    data: [2, 5, 4, 10, 12, 8, 14, 10, 13, 18],
-                    showMark: true,
-                  },
-                ]}
-              />
+                <Grid item sx={{ position: "absolute", right: 0 }}>
+                  <CustomMuiRangePicker
+                    fromDate={chartfromDate}
+                    toDate={charttoDate}
+                    setFromDate={setchartFromDate}
+                    setToDate={setchartToDate}
+                    inputPlaceholder="Pick date range"
+                  />
+                </Grid>
+              </Grid>
+              {ChartData &&
+                ChartData.success?.length > 0 &&
+                ChartData.failure?.length > 0 && (
+                  <BarChart
+                    series={[
+                      {
+                        label: "Success",
+                        data: ChartData.success,
+                        color: "#58B25A",
+                      },
+                      {
+                        label: "Failure",
+                        data: ChartData.failure,
+                        color: "#F44336",
+                      },
+                    ]}
+                    xAxis={[
+                      {
+                        data: ChartData.months,
+                        scaleType: "band",
+                      },
+                    ]}
+                    height={350}
+                  />
+                )}
             </Paper>
           </Grid>
         </Grid>
@@ -282,7 +298,7 @@ const cardStyle = {
 const IconBox = ({ children, color }) => (
   <Box
     sx={{
-      width: 60,
+      width: 65,
       height: 60,
       borderRadius: "50%",
       backgroundColor: color,
