@@ -26,7 +26,7 @@ export default function SJYGandhiDashboard() {
   const [chartfromDate, setchartFromDate] = useState(dayjs().startOf("month"));
   const [charttoDate, setchartToDate] = useState(dayjs());
 
-   const [ChartData, setChartData] = useState({
+  const [ChartData, setChartData] = useState({
     success: new Array(12).fill(0),
     failure: new Array(12).fill(0),
     months: [
@@ -120,7 +120,7 @@ export default function SJYGandhiDashboard() {
       const failureData = new Array(12).fill(0);
 
       apiData.forEach((item) => {
-        const [year, month] = item.YearMonth.split("-");  
+        const [year, month] = item.YearMonth.split("-");
         const monthIndex = parseInt(month, 10) - 1;
         successData[monthIndex] = item.SJYSuccess;
         failureData[monthIndex] = item.SJYFailed;
@@ -256,7 +256,7 @@ export default function SJYGandhiDashboard() {
                 sx={{ mb: 2, position: "relative" }}
               >
                 <Grid item xs={12} sx={{ textAlign: "center" }}>
-                  <Typography variant="h6" fontWeight={"bold"} >
+                  <Typography variant="h6" fontWeight={"bold"}>
                     Month-Wise Success vs Failure
                   </Typography>
                 </Grid>
@@ -275,18 +275,32 @@ export default function SJYGandhiDashboard() {
                 ChartData.success?.length > 0 &&
                 ChartData.failure?.length > 0 && (
                   <BarChart
+                  
                     series={[
                       {
                         label: "Success",
                         data: ChartData.success,
                         color: "#58B25A",
+                        barLabel: 'value',
+                        minBarSize:1
+
+                        // barLabel: (value, index) => {
+                        //   const total =
+                        //     ChartData.success[index] + ChartData.failure[index];
+                        //   return total;
+                        // },
                       },
+                      
                       {
                         label: "Failure",
                         data: ChartData.failure,
                         color: "#F44336",
+                           barLabel: (itm)=> console.log(itm),
+                        minBarSize:1
                       },
-                    ]}
+                    ]  }
+                    
+                    
                     xAxis={[
                       {
                         data: ChartData.months,
@@ -294,6 +308,7 @@ export default function SJYGandhiDashboard() {
                       },
                     ]}
                     height={350}
+               
                   />
                 )}
             </Paper>

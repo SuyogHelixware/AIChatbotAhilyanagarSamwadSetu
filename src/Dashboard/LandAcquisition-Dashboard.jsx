@@ -77,15 +77,6 @@ export default function LandAcquisition() {
       });
 
       // Save values to state
-      if (response.data && response.data.values) {
-        setCounts({
-          TotalMissingDocsLandAcqui:
-            response.data.values.TotalMissingDocsLandAcqui || 0,
-          TotalDocsLandAcqui: response.data.values.TotalDocsLandAcqui || 0,
-          TotalWPMsgFailed: response.data.values.TotalWPMsgFailed || 0,
-          TotalWPMsgSuccess: response.data.values.TotalWPMsgSuccess || 0,
-        });
-      }
 
       if (response.data && response.data.values) {
         const v = response.data.values;
@@ -100,8 +91,8 @@ export default function LandAcquisition() {
         setPieData([
           { id: 0, value: v.TotalDocsLandAcqui || 0, label: "Docs" },
           { id: 1, value: v.TotalMissingDocsLandAcqui || 0, label: "Missing" },
-          { id: 2, value: v.TotalWPMsgSuccess || 0, label: "Success" },
-          { id: 3, value: v.TotalWPMsgFailed || 0, label: "Failed" },
+          // { id: 2, value: v.TotalWPMsgSuccess || 0, label: "Success" },
+          // { id: 3, value: v.TotalWPMsgFailed || 0, label: "Failed" },
         ]);
       }
     } catch (error) {
@@ -304,7 +295,7 @@ export default function LandAcquisition() {
                 <ChecklistIcon sx={{ fontSize: 35, color: "white" }} />
               </IconBox>
               <TextBox>
-                <label>Total Documents</label>
+                <label>Document Ready Alerts</label>
                 <h2>
                   <CountUp
                     end={counts.TotalDocsLandAcqui}
@@ -323,7 +314,7 @@ export default function LandAcquisition() {
                 <RuleIcon sx={{ fontSize: 35, color: "white" }} />
               </IconBox>
               <TextBox>
-                <label>Total Missing Documents </label>
+                <label>Missing Document Alerts</label>
                 <h2>
                   <CountUp
                     end={counts.TotalMissingDocsLandAcqui}
@@ -341,7 +332,7 @@ export default function LandAcquisition() {
                 <CheckCircleOutlineIcon sx={{ fontSize: 35, color: "white" }} />
               </IconBox>
               <TextBox>
-                <label>Total WhatsApp Success Alert</label>
+                <label>Total WhatsApp Success Alerts</label>
                 <h2>
                   <CountUp
                     end={counts.TotalWPMsgSuccess}
@@ -359,7 +350,7 @@ export default function LandAcquisition() {
                 <ErrorOutlineIcon sx={{ fontSize: 35, color: "white" }} />
               </IconBox>
               <TextBox>
-                <label>Total Whatsapp Miss Alert </label>
+                <label>Total WhatsApp Failed Alerts </label>
                 <h2>
                   <CountUp
                     end={counts.TotalWPMsgFailed}
@@ -407,15 +398,24 @@ export default function LandAcquisition() {
 
           <Grid item xs={12} md={6}>
             <Paper elevation={7} sx={{ borderRadius: 3, py: 3 }}>
-              <div style={{ height: 335, width: "100%", marginTop: 10 }}>
+              <h3 style={{ marginLeft: 15, marginBottom: 10 }}>
+                Total Documents
+              </h3>
+              <div style={{ height: 296, width: "100%", marginTop: 5 }}>
                 <PieChart
                   series={[
                     {
                       data: pieData ?? [],
+                      innerRadius: 30,
+                      outerRadius: 100,
+                      paddingAngle: 2,
+                      cornerRadius: 2,
+                      arcLabel: (item) => `${item.value} ${item.label}`,
+                      arcLabelMinAngle: 20,
                     },
                   ]}
-                  height={300}
-                  colors={["#005A5B", "#EF6C00", "#28A745", "#E53935"]}
+                  height={296}
+                  colors={["#28A745", "#EF6C00"]}
                 />
               </div>
             </Paper>
@@ -429,20 +429,6 @@ export default function LandAcquisition() {
                 Certificates Generated Per Month
               </h3>
 
-              {/* <BarChart
-  series={[
-    {
-      data: Array.isArray(barCounts) && barCounts.length > 0 ? barCounts : [0],
-    },
-  ]}
-  xAxis={[
-    {
-      data: Array.isArray(barMonths) && barMonths.length > 0 ? barMonths : [""],
-      scaleType: "band",
-    },
-  ]}
-  height={295}
-/> */}
               <BarChart
                 series={[
                   {
