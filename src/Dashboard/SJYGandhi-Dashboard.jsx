@@ -255,13 +255,18 @@ export default function SJYGandhiDashboard() {
                 alignItems="center"
                 sx={{ mb: 2, position: "relative" }}
               >
-                <Grid item xs={12} sx={{ textAlign: "center" }}>
+                <Grid item xs={6} md={12} sx={{ textAlign: "center" }}>
                   <Typography variant="h6" fontWeight={"bold"}>
                     Month-Wise Success vs Failure
                   </Typography>
                 </Grid>
 
-                <Grid item sx={{ position: "absolute", right: 0 }}>
+                <Grid
+                  item
+                  xs={6}
+                  md={12}
+                  sx={{ position: "absolute", right: 0 }}
+                >
                   <CustomMuiRangePicker
                     fromDate={chartfromDate}
                     toDate={charttoDate}
@@ -275,14 +280,13 @@ export default function SJYGandhiDashboard() {
                 ChartData.success?.length > 0 &&
                 ChartData.failure?.length > 0 && (
                   <BarChart
-                  
                     series={[
                       {
                         label: "Success",
                         data: ChartData.success,
                         color: "#58B25A",
-                        barLabel: 'value',
-                        minBarSize:1
+                        barLabel: "value",
+                        minBarSize: 1,
 
                         // barLabel: (value, index) => {
                         //   const total =
@@ -290,17 +294,15 @@ export default function SJYGandhiDashboard() {
                         //   return total;
                         // },
                       },
-                      
+
                       {
                         label: "Failure",
                         data: ChartData.failure,
                         color: "#F44336",
-                           barLabel: (itm)=> console.log(itm),
-                        minBarSize:1
+                        barLabel: (itm) => console.log(itm),
+                        minBarSize: 1,
                       },
-                    ]  }
-                    
-                    
+                    ]}
                     xAxis={[
                       {
                         data: ChartData.months,
@@ -308,7 +310,6 @@ export default function SJYGandhiDashboard() {
                       },
                     ]}
                     height={350}
-               
                   />
                 )}
             </Paper>

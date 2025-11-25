@@ -21,6 +21,7 @@ import { BASE_URL } from "../Constant";
 // import DateRangePickerField from "../components/DateRangePickerField";
 
 import CustomMuiRangePicker from "../components/DateRangePickerField";
+import { Typography } from "@mui/material";
 
 export default function LandAcquisition() {
   const [officerRows, setOfficerRows] = React.useState([]);
@@ -29,6 +30,10 @@ export default function LandAcquisition() {
   const [barMonths, setBarMonths] = useState([]);
   const [barCounts, setBarCounts] = useState([]);
   const [pieData, setPieData] = useState([]);
+
+    const [chartfromDate, setchartFromDate] = useState(dayjs().startOf("month"));
+    const [charttoDate, setchartToDate] = useState(dayjs());
+  
 
   const officerColumns = [
     {
@@ -136,10 +141,10 @@ export default function LandAcquisition() {
   //   }
   // };
   // ******** SAFE BARCHART API CALL LOGIC *******
-  const getYearlyBarChart = async (fDate, tDate) => {
+  const getYearlyBarChart = async (ChartfromDate, CharttoDate) => {
     try {
-      const from = dayjs(fDate).format("YYYY-MM-DD");
-      const to = dayjs(tDate).format("YYYY-MM-DD");
+      const from = dayjs(ChartfromDate).format("YYYY-MM-DD");
+      const to = dayjs(CharttoDate).format("YYYY-MM-DD");
 
       const response = await axios.get(`${BASE_URL}Reports/LandAcqu/Yearly`, {
         params: { FromDate: from, ToDate: to },
@@ -209,9 +214,9 @@ export default function LandAcquisition() {
     if (fromDate && toDate) {
       callDashboardAPI(fromDate, toDate);
       HandleOfficerList(fromDate, toDate);
-      getYearlyBarChart(fromDate, toDate);
+      getYearlyBarChart(chartfromDate, charttoDate);
     }
-  }, [fromDate, toDate]);
+  }, [fromDate, toDate ,chartfromDate, charttoDate]);
 
   // ----------------------------------
 
@@ -361,7 +366,6 @@ export default function LandAcquisition() {
               </TextBox>
             </Paper>
           </Grid>
-
           {/* CERTIFICATE   TABLE */}
           <Grid item xs={12} md={6}>
             <Paper elevation={7} sx={{ borderRadius: 3, p: 2 }}>
@@ -425,9 +429,30 @@ export default function LandAcquisition() {
 
           <Grid item xs={12} md={12}>
             <Paper elevation={6} sx={{ borderRadius: 3, py: 3 }}>
-              <h3 style={{ marginLeft: 10, marginBottom: 10 }}>
+              {/* <h3 style={{ marginLeft: 10, marginBottom: 10 }}>
                 Certificates Generated Per Month
-              </h3>
+              </h3> */}
+              <Grid
+                container
+                alignItems="center"
+                sx={{ mb: 2, position: "relative" }}
+              >
+                <Grid item xs={6} md={12} sx={{ textAlign: "center" }}>
+                  <Typography variant="h6" fontWeight={"bold"}>
+                    Certificates Generated Per Month
+                  </Typography>
+                </Grid>
+
+                <Grid item xs={6} md={12} sx={{ position: "absolute", right: 0 }}>
+                  <CustomMuiRangePicker
+                    fromDate={chartfromDate}
+                    toDate={charttoDate}
+                    setFromDate={setchartFromDate}
+                    setToDate={setchartToDate}
+                    inputPlaceholder="Pick date range"
+                  />
+                </Grid>
+              </Grid>
 
               <BarChart
                 series={[
