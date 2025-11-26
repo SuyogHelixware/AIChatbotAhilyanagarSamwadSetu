@@ -69,7 +69,8 @@ export default function LazyAutocomplete({
   return (
     <Tooltip title={value || ""} arrow placement="top">
       <Autocomplete
-        disablePortal
+        // disablePortal
+        disablePortal={false} // Allow dropdown to escape modal
         disabled={disabled}
         ListboxComponent={(props) => (
           <ListBoxLazy
@@ -99,49 +100,47 @@ export default function LazyAutocomplete({
           />
         )}
         sx={{ width }}
-        // PopperProps={{
-        //   modifiers: [
-        //     {
-        //       name: "offset",
-        //       options: {
-        //         offset: [0, 4],
-        //       },
-        //     },
-        //   ],
-        //   style: { zIndex: 1300 },
-        // }}
-        // PaperProps={{
-        //   style: {
-        //     width: width + 250, // widen dropdown
-        //     maxWidth: width + 300, // allow resize space
-        //     minWidth: width + 200,
-        //     whiteSpace: "normal", // allow text wrap
-        //     wordWrap: "break-word",
-        //   },
-        // }}
- renderOption={(props, option) => (
-  <li
-    {...props}
-    style={{
-      whiteSpace: "normal",
-      wordWrap: "break-word",
-      lineHeight: "18px",
-      padding: "6px 8px",
-    }}
-  >
-    {option[displayField]}
-  </li>
-)}
-PaperProps={{
-  style: {
-    width: width + 250,
-    maxWidth: width + 300,
-    minWidth: width + 200,
-    whiteSpace: "normal",
-    wordWrap: "break-word",
-  },
-}}
+        loading={loading}
+        PopperProps={{
+           placement: "auto",  
 
+          modifiers: [
+            {
+              name: "flip",
+              enabled: true,  
+            },
+            {
+              name: "preventOverflow",
+              options: {
+                boundary: "viewport",  
+              },
+            },
+          ],
+        }}
+        
+        renderOption={(props, option) => (
+          <li
+            {...props}
+            style={{
+              whiteSpace: "normal",
+              wordWrap: "break-word",
+              lineHeight: "18px",
+              padding: "6px 8px",
+            }}
+          >
+            {option[displayField]}
+          </li>
+        )}
+        
+        PaperProps={{
+          style: {
+            width: width + 250,
+            maxWidth: width + 300,
+            minWidth: width + 200,
+            whiteSpace: "normal",
+            wordWrap: "break-word",
+          },
+        }}
       />
     </Tooltip>
   );

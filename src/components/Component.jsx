@@ -52,6 +52,37 @@ export class DatePickerField extends React.Component {
     );
   }
 }
+
+export class DatePickerFieldUploadDocModel extends React.Component {
+  render(props) {
+    return (
+      <>
+        <LocalizationProvider dateAdapter={AdapterDayjs}>
+          <DatePicker
+            disablePast={this.props.disablePast}
+            id={this.props.id}
+            name={this.props.id}
+            label={this.props.label}
+            value={this.props.value}
+            onChange={this.props.onChange}
+            format="YYYY-MM-DD"
+            disabled={this.props.disabled}
+            maxDate={this.props.maxDate}
+            slotProps={{
+              textField: {
+                size: "small",
+                // required: true,
+                // Check for small view and apply fullWidth accordingly
+                fullWidth: window.innerWidth < 200 ? true : false,
+              },
+            }}
+            sx={{ maxWidth: 180 }}
+          ></DatePicker>
+        </LocalizationProvider>
+      </>
+    );
+  }
+}
 export default class InputTextField extends React.Component {
   render(props) {
     return (

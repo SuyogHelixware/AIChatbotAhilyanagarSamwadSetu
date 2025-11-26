@@ -7,12 +7,21 @@ import EditNoteIcon from "@mui/icons-material/EditNote";
 import RemoveRedEyeIcon from "@mui/icons-material/RemoveRedEye";
 import {
   Autocomplete,
+  Box,
   Button,
   Checkbox,
+  Chip,
+  Dialog,
+  DialogActions,
+  DialogContent,
+  DialogTitle,
   FormControlLabel,
   Grid,
   IconButton,
+  InputAdornment,
   InputBase,
+  List,
+  ListItem,
   ListItemText,
   MenuItem,
   Modal,
@@ -30,12 +39,16 @@ import { Controller, useForm } from "react-hook-form";
 import Swal from "sweetalert2";
 import InputTextField, {
   DatePickerField,
+  DatePickerFieldUploadDocModel,
   InputDescriptionField,
 } from "../components/Component";
 import Loader from "../components/Loader";
 import { BASE_URL } from "../Constant";
 import { useThemeMode } from "../Dashboard/Theme";
 import LazyAutocomplete from "../components/Autocomplete";
+
+import ListIcon from "@mui/icons-material/List";
+import ClearIcon from "@mui/icons-material/Clear";
 
 const UploadDocument = () => {
   const [loaderOpen, setLoaderOpen] = React.useState(false);
@@ -81,6 +94,15 @@ const UploadDocument = () => {
   const [docSearch, setDocSearch] = React.useState("");
 
   // ======================
+  const [modalOpen, setModalOpen] = React.useState(false);
+  const [currentRowId, setCurrentRowId] = React.useState(null);
+  const [tempSelection, setTempSelection] = React.useState([]);
+  const [OpenModal, setOpenModal] = React.useState("");
+
+  // const [searchText, setSearchText] = useState("");
+  // const handleOpen = () => setOpenModal(true);
+  // const handleClose = () => setOpenModal(false);
+  // ==================
 
   const initial = {
     Status: "1",
@@ -117,40 +139,87 @@ const UploadDocument = () => {
   const [search, setSearch] = React.useState("");
 
   // ------------ COMMON LISTBOX ------------
-  const CommonListBox = React.forwardRef(function CommonListBox(props, ref) {
-    const {
-      children,
-      onLazyLoad,
-      loading,
-      hasMore,
-      pageSetter,
-      page,
-      search,
-      ...other
-    } = props;
+  // const CommonListBox = React.forwardRef(function CommonListBox(props, ref) {
+  //   const {
+  //     children,
+  //     onLazyLoad,
+  //     loading,
+  //     hasMore,
+  //     pageSetter,
+  //     page,
+  //     search,
+  //     ...other
+  //   } = props;
 
-    const handleScroll = (event) => {
-      const list = event.currentTarget;
-      const bottom = list.scrollHeight - (list.scrollTop + list.clientHeight);
+  //   const handleScroll = (event) => {
+  //     const list = event.currentTarget;
+  //     const bottom = list.scrollHeight - (list.scrollTop + list.clientHeight);
 
-      if (bottom < 30 && !loading && hasMore) {
-        const nextPage = page + 1;
-        pageSetter(nextPage);
-        onLazyLoad({ page: nextPage, search: search });
+  //     if (bottom < 30 && !loading && hasMore) {
+  //       const nextPage = page + 1;
+  //       pageSetter(nextPage);
+  //       onLazyLoad({ page: nextPage, search: search });
+  //     }
+  //   };
+
+  //   return (
+  //     <ul
+  //       {...other}
+  //       ref={ref}
+  //       style={{ maxHeight: 250, overflow: "auto" }}
+  //       onScroll={handleScroll}
+  //     >
+  //       {children}
+  //     </ul>
+  //   );
+  // });
+  // --------------------
+  // React.useEffect(() => {
+  //   setRows((prevRows) =>
+  //     prevRows.map((row) => {
+  //       // Auto-update FileName only if DocType exists
+  //       // Remove previous FileName if you want to overwrite every time
+  //       if (row.DocType) {
+  //         return { ...row, FileName: row.DocType };
+  //       }
+  //       return row;
+  //     })
+  //   );
+  // }, [rows.map((r) => r.DocType).join(",")]); // trigger effect when any DocType changes
+  React.useEffect(() => {
+    let changed = false;
+    const updated = rows.map((r) => {
+      if (
+        r.isNew &&
+        !r.isFileNameEdited &&
+        r.DocType &&
+        r.FileName !== r.DocType
+      ) {
+        changed = true;
+        return { ...r, FileName: r.DocType };
       }
-    };
+      return r;
+    });
 
-    return (
-      <ul
-        {...other}
-        ref={ref}
-        style={{ maxHeight: 250, overflow: "auto" }}
-        onScroll={handleScroll}
-      >
-        {children}
-      </ul>
+    if (changed) setRows(updated);
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [rows.map((r) => r.DocType).join(",")]);
+
+  const handleOpenModal = (row) => {
+    setCurrentRowId(row.id);
+    setTempSelection(row.MissingDocs || []);
+    setModalOpen(true);
+    setSearchText("");
+  };
+
+  const handleSaveModal = () => {
+    setRows((prev) =>
+      prev.map((r) =>
+        r.id === currentRowId ? { ...r, MissingDocs: tempSelection } : r
+      )
     );
-  });
+    setModalOpen(false);
+  };
 
   const DocColumns = [
     {
@@ -232,29 +301,108 @@ const UploadDocument = () => {
       },
     },
 
+    // {
+    //   field: "FileName",
+    //   headerName: "DOCUMENT NAME",
+    //   flex: 1,
+    //   width: 200,
+    //   sortable: false,
+    //   renderCell: (params) => {
+    //     const { id, field, api, value, row } = params;
+    //     const isDisabled = row.isDisabled;
+    //     const handleChange = (event) => {
+    //       const newValue = event.target.value;
+    //       api.updateRows([{ id, [field]: newValue }]);
+    //       setRows((prev) =>
+    //         prev.map((row) =>
+    //           row.id === id ? { ...row, [field]: newValue } : row
+    //         )
+    //       );
+    //     };
+    //     const displayValue = value ? value.replace(/\.[^/.]+$/, "") : "";
+    //     return (
+    //       <Tooltip title={displayValue || ""} arrow placement="top">
+    //         <TextField
+    //           value={displayValue ?? ""}
+    //           onChange={handleChange}
+    //           onKeyDown={(e) => e.stopPropagation()}
+    //           fullWidth
+    //           size="small"
+    //           variant="outlined"
+    //           disabled={isDisabled}
+    //         />
+    //       </Tooltip>
+    //     );
+    //   },
+    // },
+    // {
+    //   field: "FileName",
+    //   headerName: "DOCUMENT NAME",
+    //   flex: 1,
+    //   width: 200,
+    //   sortable: false,
+    //   renderCell: (params) => {
+    //     const { id, api, row } = params;
+    //     const isDisabled = row.isDisabled;
+
+    //     const handleChange = (event) => {
+    //       const newValue = event.target.value;
+    //       api.updateRows([{ id, FileName: newValue }]);
+    //       setRows((prev) =>
+    //         prev.map((r) => (r.id === id ? { ...r, FileName: newValue } : r))
+    //       );
+    //     };
+
+    //     // Show the auto-filled or manually typed value
+    //     const displayValue = row.FileName || "";
+
+    //     return (
+    //       <Tooltip title={displayValue} arrow placement="top">
+    //         <TextField
+    //           value={displayValue}
+    //           onChange={handleChange}
+    //           onKeyDown={(e) => e.stopPropagation()}
+    //           fullWidth
+    //           size="small"
+    //           variant="outlined"
+    //           disabled={isDisabled}
+    //         />
+    //       </Tooltip>
+    //     );
+    //   },
+    // },
     {
       field: "FileName",
       headerName: "DOCUMENT NAME",
       flex: 1,
-      width:200,
+      width: 200,
       sortable: false,
       renderCell: (params) => {
-        const { id, field, api, value, row } = params;
+        const { id, row } = params;
         const isDisabled = row.isDisabled;
+
         const handleChange = (event) => {
           const newValue = event.target.value;
-          api.updateRows([{ id, [field]: newValue }]);
           setRows((prev) =>
-            prev.map((row) =>
-              row.id === id ? { ...row, [field]: newValue } : row
+            prev.map((r) =>
+              r.id === id
+                ? {
+                    ...r,
+                    FileName: newValue,
+                    isFileNameEdited: true,
+                    isNew: r.isNew ?? false,
+                  }
+                : r
             )
           );
         };
-        const displayValue = value ? value.replace(/\.[^/.]+$/, "") : "";
+
+        const displayValue = row.FileName || "";
+
         return (
-          <Tooltip title={displayValue || ""} arrow placement="top">
+          <Tooltip title={displayValue} arrow placement="top">
             <TextField
-              value={displayValue ?? ""}
+              value={displayValue}
               onChange={handleChange}
               onKeyDown={(e) => e.stopPropagation()}
               fullWidth
@@ -270,8 +418,8 @@ const UploadDocument = () => {
     {
       field: "DocReqDate",
       headerName: "DOC REQUEST DATE",
-      flex: 1,
-      width:200,
+      // flex: 1,
+      width: 180,
       renderCell: (params) => {
         const { id, value, api, field, row } = params;
         const isDisabled = row.isDisabled;
@@ -285,7 +433,7 @@ const UploadDocument = () => {
           );
         };
         return (
-          <DatePickerField
+          <DatePickerFieldUploadDocModel
             value={value ? dayjs(value) : dayjs()}
             onChange={handleDateChange}
             disabled={isDisabled}
@@ -294,116 +442,11 @@ const UploadDocument = () => {
       },
     },
 
-    // {
-    //   field: "IssuedBy",
-    //   headerName: "GAZETTED OFFICER",
-    //   flex: 1,
-    //   renderCell: (params) => {
-    //     const { id, field, value, api } = params;
-    //     const isDisabled = params.row.isDisabled;
-
-    //     const gazetteOptions = Array.isArray(gazeteList) ? gazeteList : [];
-
-    //     const userDataStr = sessionStorage.getItem("userData");
-    //     let UserType = null;
-    //     let storedGazOfficer = null;
-
-    //     if (userDataStr) {
-    //       try {
-    //         const userData = JSON.parse(userDataStr);
-    //         UserType = userData.UserType;
-    //         storedGazOfficer = userData.GazOfficer || "";
-    //       } catch (error) {
-    //         console.error("Failed to parse userData:", error);
-    //       }
-    //     }
-
-    //     const handleChange = (e) => {
-    //       const newValue = e.target.value;
-    //       api.updateRows([{ id, [field]: newValue }]);
-    //       setRows((prev) =>
-    //         prev.map((row) =>
-    //           row.id === id ? { ...row, [field]: newValue } : row
-    //         )
-    //       );
-    //     };
-
-    //     const isEditable =
-    //       UserType === "A" ||
-    //       !storedGazOfficer ||
-    //       storedGazOfficer.trim() === "";
-
-    //     //  When disabled (non-admin + GazOfficer present)
-    //     if (!isEditable) {
-    //       // Keep stored value synced
-    //       if (value !== storedGazOfficer) {
-    //         api.updateRows([{ id, [field]: storedGazOfficer }]);
-    //         setRows((prev) =>
-    //           prev.map((row) =>
-    //             row.id === id ? { ...row, [field]: storedGazOfficer } : row
-    //           )
-    //         );
-    //       }
-    //       return (
-    //         <Tooltip title={storedGazOfficer || ""} arrow placement="top">
-    //           <Select
-    //             value={storedGazOfficer || ""}
-    //             disabled={isDisabled}
-    //             fullWidth
-    //             variant="standard"
-    //           >
-    //             <MenuItem value={storedGazOfficer || ""}>
-    //               {storedGazOfficer || ""}
-    //             </MenuItem>
-    //           </Select>
-    //         </Tooltip>
-    //       );
-    //     }
-    //     return (
-    //       <Tooltip title={value || ""} arrow placement="top">
-    //         <Select
-    //           value={value || ""}
-    //           onChange={handleChange}
-    //           fullWidth
-    //           variant="standard"
-    //           MenuProps={{
-    //             PaperProps: {
-    //               style: {
-    //                 maxHeight: 220,
-    //                 overflowY: "auto",
-    //               },
-    //             },
-    //           }}
-    //         >
-    //           {gazetteOptions.length > 0 ? (
-    //             gazetteOptions.map((option) => (
-    //               <MenuItem
-    //                 key={option.Name}
-    //                 value={option.Name}
-    //                 sx={{
-    //                   height: 35,
-    //                   display: "flex",
-    //                   alignItems: "center",
-    //                 }}
-    //               >
-    //                 {option.Name}
-    //               </MenuItem>
-    //             ))
-    //           ) : (
-    //             <MenuItem disabled>No officers found</MenuItem>
-    //           )}
-    //         </Select>
-    //       </Tooltip>
-    //     );
-    //   },
-    // },
-    // {
-  
     {
       field: "IssuedBy",
       headerName: "GAZETTED OFFICER",
       flex: 1,
-            width:200,
+      width: 220,
 
       renderCell: (params) => {
         const { id, field, value, api } = params;
@@ -458,6 +501,7 @@ const UploadDocument = () => {
               page={gPage}
               setPage={setGPage}
               hasMore={hasMoreGazette}
+              PopperProps={{ placement: "top-start" }}
             />
           </Tooltip>
         );
@@ -470,62 +514,30 @@ const UploadDocument = () => {
     //   flex: 1,
     //   renderCell: (params) => {
     //     const { id, field, value, api, row } = params;
-    //     const isDisabled = row.isDisabled;
-
-    //     const handleChange = (e) => {
-    //       const newValue = e.target.value;
-
-    //       // find selected document in master list
-    //       const selectedDoc = DocmasterList.find(
-    //         (doc) => doc.NameMR === newValue
-    //       );
-
-    //       // update subdoc list for that row
-    //       setSubDocMap((prev) => ({
-    //         ...prev,
-    //         [id]: selectedDoc?.SubDocs || [],
-    //       }));
-
-    //       // update DataGrid & rows
-    //       api.updateRows([{ id, [field]: newValue, MissingDocs: [] }]);
-    //       setRows((prev) =>
-    //         prev.map((row) =>
-    //           row.id === id
-    //             ? { ...row, [field]: newValue, MissingDocs: [] }
-    //             : row
-    //         )
-    //       );
-    //     };
 
     //     return (
-    //       <Tooltip title={value || ""} arrow placement="top">
-    //         <Select
-    //           value={value || ""}
-    //           onChange={handleChange}
-    //           fullWidth
-    //           disabled={isDisabled}
-    //           variant="standard"
-    //           MenuProps={{
-    //             PaperProps: {
-    //               style: { maxHeight: 200, overflowY: "auto" },
-    //             },
-    //           }}
-    //         >
-    //           {DocmasterList.length > 0 ? (
-    //             DocmasterList.map((option) => (
-    //               <MenuItem
-    //                 key={option.value}
-    //                 value={option.NameMR}
-    //                 sx={{ height: 35, display: "flex", alignItems: "center" }}
-    //               >
-    //                 {option.NameMR}
-    //               </MenuItem>
-    //             ))
-    //           ) : (
-    //             <MenuItem disabled>No options available</MenuItem>
-    //           )}
-    //         </Select>
-    //       </Tooltip>
+    //       <LazyAutocomplete
+    //         id={id}
+    //         field={field}
+    //         value={value}
+    //         list={DocmasterList}
+    //         displayField="NameMR"
+    //         disabled={row.isDisabled}
+    //         searchValue={docSearch}
+    //         onSearch={(txt) => {
+    //           setDocSearch(txt);
+    //           setDPage(0);
+    //           setHasMoreDocs(true);
+    //           DocMasterList({ page: 0, search: txt });
+    //         }}
+    //         api={api}
+    //         setRows={setRows}
+    //         loading={dLoading}
+    //         onLazyLoad={DocMasterList}
+    //         page={dPage}
+    //         setPage={setDPage}
+    //         hasMore={hasMoreDocs}
+    //       />
     //     );
     //   },
     // },
@@ -534,16 +546,39 @@ const UploadDocument = () => {
       headerName: "DOCUMENT TYPE",
       flex: 1,
       renderCell: (params) => {
-        const { id, field, value, api, row } = params;
+        const { id, api, row } = params;
+
+        const handleSelectDocType = (selected) => {
+          const selectedValue = selected?.NameMR || "";
+
+          setRows((prev) =>
+            prev.map((r) => {
+              if (r.id === id) {
+                if (r.isNew) {
+                  return {
+                    ...r,
+                    DocType: selectedValue,
+                    FileName: selectedValue,
+                  };
+                }
+                return { ...r, DocType: selectedValue };
+              }
+              return r;
+            })
+          );
+        };
 
         return (
           <LazyAutocomplete
             id={id}
-            field={field}
-            value={value}
+            field="DocType"
+            value={row.DocType}
             list={DocmasterList}
             displayField="NameMR"
             disabled={row.isDisabled}
+            api={api}
+            setRows={setRows}
+            onChangeValue={handleSelectDocType}
             searchValue={docSearch}
             onSearch={(txt) => {
               setDocSearch(txt);
@@ -551,13 +586,12 @@ const UploadDocument = () => {
               setHasMoreDocs(true);
               DocMasterList({ page: 0, search: txt });
             }}
-            api={api}
-            setRows={setRows}
             loading={dLoading}
             onLazyLoad={DocMasterList}
             page={dPage}
             setPage={setDPage}
             hasMore={hasMoreDocs}
+            PopperProps={{ placement: "top-start" }}
           />
         );
       },
@@ -569,10 +603,13 @@ const UploadDocument = () => {
     //   flex: 1,
     //   renderCell: (params) => {
     //     const { id, field, value, api, row } = params;
-    //     const isDisabled = row.isDisabled;
+    //     // const isDisabled = row.isDisabled;
+    //     const isDisabled = row.isDisabled || !row.DocType;
 
     //     const selectedValues = Array.isArray(value) ? value : [];
     //     const availableSubDocs = subDocMap[id] || [];
+
+    //     // LOCAL search state ONLY for this dropdown (no UI in DataGrid)
 
     //     const handleChange = (event) => {
     //       const newValues = event.target.value;
@@ -581,6 +618,10 @@ const UploadDocument = () => {
     //       );
     //       api.updateRows([{ id, [field]: newValues }]);
     //     };
+
+    //     const filteredDocs = availableSubDocs.filter((o) =>
+    //       o.NameMR.toLowerCase().includes(searchText.toLowerCase())
+    //     );
 
     //     return (
     //       <Tooltip
@@ -596,18 +637,65 @@ const UploadDocument = () => {
     //           disabled={isDisabled}
     //           variant="standard"
     //           renderValue={(selected) => selected.join(", ")}
+    //           // MenuProps={{
+    //           //   disablePortal: false,
+
+    //           // }}
     //           MenuProps={{
-    //             PaperProps: {
-    //               style: { maxHeight: 250, maxWidth: 200, overflowY: "auto" },
+    //              PaperProps: {
+    //               style: {
+    //                 maxHeight: 260,
+    //                 width: 250,
+    //                 overflowY: "auto",
+    //               },
     //             },
+    //             PopoverClasses: { root: "missing-popover" },
+    //             anchorOrigin: {
+    //               vertical: "bottom",
+    //               horizontal: "left",
+    //             },
+    //             transformOrigin: {
+    //               vertical: "top",
+    //               horizontal: "left",
+    //             },
+    //             modifiers: [
+    //     {
+    //       name: "flip",
+    //       enabled: true,
+    //       options: {
+    //         fallbackPlacements: ["top", "bottom-start", "top-start"],
+    //       },
+    //     },
+    //     {
+    //       name: "preventOverflow",
+    //       enabled: true,
+    //     },
+    //   ],
     //           }}
     //           sx={{
     //             minWidth: 250,
     //             paddingLeft: 3.5,
     //           }}
     //         >
-    //           {availableSubDocs.length > 0 ? (
-    //             availableSubDocs.map((option) => (
+    //           {/* SEARCH BOX INSIDE MENU */}
+    //           <MenuItem disableRipple disableTouchRipple>
+    //             <InputBase
+    //               autoFocus
+    //               placeholder="Search..."
+    //               value={searchText}
+    //               onChange={(e) => setSearchText(e.target.value)}
+    //               sx={{
+    //                 width: "100%",
+    //                 borderBottom: "1px solid #ddd",
+    //                 pb: 0.5,
+    //                 fontSize: 14,
+    //               }}
+    //             />
+    //           </MenuItem>
+
+    //           {/* FILTERED OPTIONS */}
+    //           {filteredDocs.length > 0 ? (
+    //             filteredDocs.map((option) => (
     //               <MenuItem
     //                 key={option.value}
     //                 value={option.NameMR}
@@ -621,111 +709,81 @@ const UploadDocument = () => {
     //                   checked={selectedValues.indexOf(option.NameMR) > -1}
     //                   size="small"
     //                 />
-    //                 <ListItemText
-    //                   primary={option.NameMR}
-    //                   sx={{
-    //                     whiteSpace: "normal",
-    //                   }}
-    //                 />
+    //                 <ListItemText primary={option.NameMR} />
     //               </MenuItem>
     //             ))
     //           ) : (
-    //             <MenuItem disabled>No any sub document</MenuItem>
+    //             <MenuItem disabled>No document found</MenuItem>
     //           )}
     //         </Select>
     //       </Tooltip>
     //     );
     //   },
     // },
+    // ---------------
+     
     {
       field: "MissingDocs",
       headerName: "MISSING DOCUMENT",
       flex: 1,
       renderCell: (params) => {
-        const { id, field, value, api, row } = params;
-        const isDisabled = row.isDisabled;
-
-        const selectedValues = Array.isArray(value) ? value : [];
-        const availableSubDocs = subDocMap[id] || [];
-
-        // LOCAL search state ONLY for this dropdown (no UI in DataGrid)
-
-        const handleChange = (event) => {
-          const newValues = event.target.value;
-          setRows((prev) =>
-            prev.map((r) => (r.id === id ? { ...r, [field]: newValues } : r))
-          );
-          api.updateRows([{ id, [field]: newValues }]);
-        };
-
-        const filteredDocs = availableSubDocs.filter((o) =>
-          o.NameMR.toLowerCase().includes(searchText.toLowerCase())
-        );
+        const { row } = params;
+        const isDisabled = row.isDisabled || !row.DocType;
+        const docs = row.MissingDocs || [];
 
         return (
-          <Tooltip
-            title={selectedValues.join(", ") || ""}
-            arrow
-            placement="top"
+          <Box
+            sx={{
+              display: "flex",
+              alignItems: "center",
+              gap: 1,
+              width: "100%",
+            }}
           >
-            <Select
-              multiple
-              value={selectedValues}
-              onChange={handleChange}
-              fullWidth
+            {/* Modal open button */}
+            <IconButton
+              size="small"
+              onClick={() => handleOpenModal(row)}
               disabled={isDisabled}
-              variant="standard"
-              renderValue={(selected) => selected.join(", ")}
-              MenuProps={{
-                PaperProps: {
-                  style: { maxHeight: 260, width: 230, overflowY: "auto" },
-                },
-              }}
-              sx={{
-                minWidth: 250,
-                paddingLeft: 3.5,
-              }}
+              sx={{ flexShrink: 0 }}
             >
-              {/* 🔎 SEARCH BOX INSIDE MENU */}
-              <MenuItem disableRipple disableTouchRipple>
-                <InputBase
-                  autoFocus
-                  placeholder="Search..."
-                  value={searchText}
-                  onChange={(e) => setSearchText(e.target.value)}
-                  sx={{
-                    width: "100%",
-                    borderBottom: "1px solid #ddd",
-                    pb: 0.5,
-                    fontSize: 14,
-                  }}
-                />
-              </MenuItem>
+              <ListIcon fontSize="small" />
+            </IconButton>
 
-              {/* FILTERED OPTIONS */}
-              {filteredDocs.length > 0 ? (
-                filteredDocs.map((option) => (
-                  <MenuItem
-                    key={option.value}
-                    value={option.NameMR}
-                    sx={{
-                      whiteSpace: "normal",
-                      wordWrap: "break-word",
-                      alignItems: "flex-start",
-                    }}
-                  >
-                    <Checkbox
-                      checked={selectedValues.indexOf(option.NameMR) > -1}
+            {/* CHIPS + TOOLTIP */}
+            <Tooltip title={docs.join(", ") || ""} placement="top" arrow>
+              <Box
+                onClick={() => !isDisabled && handleOpenModal(row)}
+                sx={{
+                  display: "flex",
+                  flexWrap: "wrap",
+                  gap: 0.5,
+                  maxHeight: 48,
+                  overflow: "hidden",
+                  flex: 1,
+                }}
+              >
+                {docs.length > 0 ? (
+                  docs.map((d, idx) => (
+                    <Chip
+                      key={idx}
+                      label={d}
                       size="small"
+                      sx={{
+                        maxWidth: 120,
+                        textOverflow: "ellipsis",
+                        overflow: "hidden",
+                      }}
                     />
-                    <ListItemText primary={option.NameMR} />
-                  </MenuItem>
-                ))
-              ) : (
-                <MenuItem disabled>No document found</MenuItem>
-              )}
-            </Select>
-          </Tooltip>
+                  ))
+                ) : (
+                  <Typography variant="caption" sx={{ opacity: 0.6 }}>
+                    Add Document
+                  </Typography>
+                )}
+              </Box>
+            </Tooltip>
+          </Box>
         );
       },
     },
@@ -1093,12 +1151,9 @@ const UploadDocument = () => {
   //   const maxSize = 1 * 1024 * 1024; // 1 MB
 
   //   const files = Array.from(e.target.files);
-
-  //   // filter invalid files
   //   const validFiles = files.filter((file) => {
   //     const ext = file.name.split(".").pop().toLowerCase();
 
-  //     // Check file type
   //     if (!allowedExt.includes(ext)) {
   //       Swal.fire({
   //         icon: "error",
@@ -1109,7 +1164,6 @@ const UploadDocument = () => {
   //       return false;
   //     }
 
-  //     // Check file size
   //     if (file.size > maxSize) {
   //       Swal.fire({
   //         toast: true,
@@ -1128,10 +1182,12 @@ const UploadDocument = () => {
 
   //   if (validFiles.length === 0) return;
 
+  //   // const userData = JSON.parse(sessionStorage.getItem("userData") || "{}");
+  //   const currentUser = userSession.Username || userSession.userId || "";
+
   //   const newRows = await Promise.all(
   //     validFiles.map(async (file, index) => {
   //       const ext = file.name.split(".").pop().toLowerCase();
-
   //       return {
   //         id: Date.now() + index,
   //         name: file.name,
@@ -1139,18 +1195,16 @@ const UploadDocument = () => {
   //         SrcPath: "",
   //         File: file,
   //         FileExt: ext,
-  //         FileName: file.name,
-
-  //         DocReqDate: dayjs().format("YYYY-MM-DD"),
-  //         IssuedBy: "",
+  //          IssuedBy: "",
   //         DocType: "",
-  //         // DocEntry: "",
   //         Status: 1,
   //         CreatedDate: dayjs().format("YYYY-MM-DD"),
   //         ModifiedDate: dayjs().format("YYYY-MM-DD"),
-  //         ModifiedBy: userSession.userId,
-  //         CreatedBy: userSession.userId,
-  //         UserId: userSession.userId,
+  //         DocReqDate: dayjs().format("YYYY-MM-DD"),
+  //         CreatedBy: currentUser,
+  //         ModifiedBy: currentUser,
+  //         UserId: currentUser,
+  //         isNew: false,
   //       };
   //     })
   //   );
@@ -1161,6 +1215,7 @@ const UploadDocument = () => {
   //     fileInputRef.current.value = "";
   //   }
   // };
+
   const handleFileUpload = async (e) => {
     const allowedExt = ["jpg", "jpeg", "png", "pdf"];
     const maxSize = 1 * 1024 * 1024; // 1 MB
@@ -1197,38 +1252,36 @@ const UploadDocument = () => {
 
     if (validFiles.length === 0) return;
 
-    // const userData = JSON.parse(sessionStorage.getItem("userData") || "{}");
     const currentUser = userSession.Username || userSession.userId || "";
 
-    const newRows = await Promise.all(
-      validFiles.map(async (file, index) => {
-        const ext = file.name.split(".").pop().toLowerCase();
-        return {
-          id: Date.now() + index,
-          name: file.name,
-          type: ext,
-          SrcPath: "",
-          File: file,
-          FileExt: ext,
-          FileName: file.name,
-          IssuedBy: "",
-          DocType: "",
-          Status: 1,
-          CreatedDate: dayjs().format("YYYY-MM-DD"),
-          ModifiedDate: dayjs().format("YYYY-MM-DD"),
-          DocReqDate: dayjs().format("YYYY-MM-DD"),
-          CreatedBy: currentUser,
-          ModifiedBy: currentUser,
-          UserId: currentUser,
-        };
-      })
-    );
+    const newRows = validFiles.map((file, index) => {
+      const ext = file.name.split(".").pop().toLowerCase();
+      return {
+        id: Date.now() + index,
+        name: file.name,
+        type: ext,
+        SrcPath: "",
+        File: file,
+        FileExt: ext,
+        // keep file name including extension or strip as you prefer
+        // FileName: file.name,
+        IssuedBy: "",
+        DocType: "",
+        Status: 1,
+        CreatedDate: dayjs().format("YYYY-MM-DD"),
+        ModifiedDate: dayjs().format("YYYY-MM-DD"),
+        DocReqDate: dayjs().format("YYYY-MM-DD"),
+        CreatedBy: currentUser,
+        ModifiedBy: currentUser,
+        UserId: currentUser,
+        isNew: false, // important: uploaded rows are NOT "new/missing"
+        isFileNameEdited: true, // treat uploaded file as already having a filename (avoid overwrite)
+      };
+    });
 
     setRows((prev) => [...prev, ...newRows]);
 
-    if (fileInputRef.current) {
-      fileInputRef.current.value = "";
-    }
+    if (fileInputRef.current) fileInputRef.current.value = "";
   };
 
   const handleChangeFile = async (e, rowId) => {
@@ -1257,7 +1310,7 @@ const UploadDocument = () => {
               name: file.name,
               File: file,
               FileExt: ext,
-              FileName: file.name,
+              // FileName: file.name,
             }
           : row
       )
@@ -1275,6 +1328,24 @@ const UploadDocument = () => {
         icon: "warning",
         title: "Add Document",
         text: `Please upload at least one document before submitting.`,
+      });
+      return;
+    }
+
+    const missingFileName = rows.find(
+      (row) => row.FileExt && (!row.FileName || row.FileName.trim() === "")
+    );
+
+    if (missingFileName) {
+      Swal.fire({
+        toast: true,
+        icon: "warning",
+        title: "Missing File Name",
+        text: "File Name is required for uploaded Document.",
+        position: "center",
+        showConfirmButton: false,
+        timer: 5000,
+        timerProgressBar: true,
       });
       return;
     }
@@ -1325,13 +1396,7 @@ const UploadDocument = () => {
       formData.append(`oDocLines[${index}].Id`, row.Id || "");
       formData.append(`oDocLines[${index}].LineNum`, row.LineNum || "");
       formData.append(`oDocLines[${index}].FileExt`, row.FileExt || "");
-      // formData.append(
-      //   `oDocLines[${index}].FileName`,
-      //   row.FileName
-      //     ? row.FileName.substring(0, row.FileName.lastIndexOf(".")) ||
-      //         row.FileName
-      //     : row.DocType
-      // );
+
       formData.append(
         `oDocLines[${index}].FileName`,
         row.FileName && row.FileName.trim() !== ""
@@ -1484,26 +1549,6 @@ const UploadDocument = () => {
     getAllDocList(currentPage, searchText, limit);
   }, [currentPage, searchText]);
 
-  // const gazettedList = async (params = {}) => {
-  //   setLoading(true);
-  //   try {
-  //     // Default parameters
-  //     const queryParams = { Status: "1", ...params };
-
-  //     // Fetch data
-  //     const { data } = await axios.get(`${BASE_URL}GazOfficers`, {
-  //       params: queryParams,
-  //     });
-
-  //     if (data.values) {
-  //       setgazeteList(data.values);
-  //     }
-  //   } catch (error) {
-  //     console.error("Error fetching data:", error);
-  //   } finally {
-  //     setLoading(false);
-  //   }
-  // };
   const gazettedList = async ({ page = 0, search = "" } = {}) => {
     if (scrollLockGaz || !hasMoreGazette) return;
     setScrollLockGaz(true);
@@ -1610,6 +1655,7 @@ const UploadDocument = () => {
       CreatedBy: CreatedBy,
       isDisabled: false,
       isNew: true,
+      isFileNameEdited: false, // allow auto-fill from DocType until user edits
     };
     setRows((prev) => [...prev, newRow]);
   };
@@ -1629,7 +1675,7 @@ const UploadDocument = () => {
           sx={{
             width: "100%",
             maxWidth: 1400,
-            Height: 3000,
+            Height: 3300,
             position: "absolute",
             top: "50%",
             left: "50%",
@@ -1817,9 +1863,10 @@ const UploadDocument = () => {
               />
             </Grid>
 
-            <Grid item xs={12} style={{ height: 450, paddingBottom: 40 }}>
+            <Grid item xs={12} style={{ height: 550, paddingBottom: 40 }}>
               <DataGrid
                 rows={updatedRows}
+                // rows={[...updatedRows].sort((a, b) => b.id - a.id)}
                 columns={visibleColumns}
                 pageSize={5}
                 rowsPerPageOptions={[5]}
@@ -1893,6 +1940,95 @@ const UploadDocument = () => {
           </Grid>
         </Paper>
       </Modal>
+
+      <Dialog
+        open={modalOpen}
+        onClose={() => setModalOpen(false)}
+        // maxWidth="xs"
+        fullWidth
+        PaperProps={{
+          sx: {
+            height: 600,
+            minHeight: 500,
+            width: 500,
+            maxHeight: 650,
+            mt: 5,
+            position: "relative",
+            overflowY: "auto",
+            borderRadius: 2,
+            px: 2,
+          },
+        }}
+      >
+        <DialogTitle>
+          <Grid
+            item
+            xs={12}
+            sx={{ display: "flex", justifyContent: "space-between" }}
+          >
+            <Typography fontWeight="bold"> Select Missing Documents</Typography>
+
+            <IconButton onClick={() => setModalOpen(false)}>
+              <CloseIcon />
+            </IconButton>
+          </Grid>
+          <hr />
+
+          <TextField
+            placeholder="Search..."
+            fullWidth
+            size="small"
+            value={searchText}
+            onChange={(e) => setSearchText(e.target.value)}
+            InputProps={{
+              endAdornment: searchText && (
+                <InputAdornment position="end">
+                  <IconButton
+                    size="small"
+                    onClick={() => setSearchText("")}
+                    edge="end"
+                  >
+                    <ClearIcon fontSize="small" />
+                  </IconButton>
+                </InputAdornment>
+              ),
+            }}
+          />
+        </DialogTitle>
+        <DialogContent>
+          <List>
+            {(subDocMap[currentRowId] || [])
+              .filter((d) =>
+                d.NameMR.toLowerCase().includes(searchText.toLowerCase())
+              )
+              .map((doc) => (
+                <ListItem
+                  key={doc.value}
+                  button
+                  onClick={() => {
+                    if (tempSelection.includes(doc.NameMR)) {
+                      setTempSelection(
+                        tempSelection.filter((d) => d !== doc.NameMR)
+                      );
+                    } else {
+                      setTempSelection([...tempSelection, doc.NameMR]);
+                    }
+                  }}
+                >
+                  <Checkbox checked={tempSelection.includes(doc.NameMR)} />
+                  <ListItemText primary={doc.NameMR} />
+                </ListItem>
+              ))}
+          </List>
+        </DialogContent>
+        <DialogActions>
+          {/* <Button onClick={() => setModalOpen(false)}>Cancel</Button> */}
+          <Button onClick={handleSaveModal} variant="contained">
+            Save
+          </Button>
+        </DialogActions>
+      </Dialog>
+
       <Grid
         container
         md={12}

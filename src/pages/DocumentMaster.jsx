@@ -40,6 +40,7 @@ const DocumentMaster = () => {
 
   const originalDataRef = React.useRef(null);
   const firstLoad = React.useRef(true);
+ const selectedSubDocsRef = React.useRef([]);  
 
   //  ===============
   const [page, setPage] = React.useState(0);
@@ -52,14 +53,7 @@ const DocumentMaster = () => {
   const canEdit = checkAccess(5, "IsEdit");
   const canDelete = checkAccess(5, "IsDelete");
 
-  const [CreateSubDocRows, setCreateSubDocRows] = React.useState([
-    {
-      id: Date.now(),
-      NameMR: "",
-      srNo: "",
-      isDisabled: false,
-    },
-  ]);
+  const [CreateSubDocRows, setCreateSubDocRows] = React.useState([]);
 
   // React Hook Form initialization
   const {
@@ -91,6 +85,8 @@ const DocumentMaster = () => {
         CreateSubDocRows: [],
       });
       setCreateSubDocRows([]);
+              DocMasterListTemp(0, null);
+
     }
     // if (ClearUpdateButton === "RESET") {
     //   reset(originalDataRef.current);
@@ -110,6 +106,8 @@ const DocumentMaster = () => {
       }));
 
       setCreateSubDocRows(oldRows);
+               DocMasterListTemp(0, null);
+
     }
   };
 
@@ -125,14 +123,10 @@ const DocumentMaster = () => {
 
     setOn(true);
 
-    setCreateSubDocRows([
-      {
-        id: Date.now(),
-        NameMR: "",
-        srNo: "",
-        isDisabled: false,
-      },
-    ]);
+    setCreateSubDocRows([])
+       setCreateSubDocRows((prevRows) =>
+    prevRows.map((row) => ({ ...row, isChecked: false }))
+  );
   };
 
   const validationAlert = (message) => {
@@ -157,6 +151,7 @@ const DocumentMaster = () => {
         validationAlert("Please fill in all required fields");
         return;
       }
+      const selectedRows = CreateSubDocRows.filter((r) => r.isChecked);
 
       const payload = {
         Id: null || formData.Id,
@@ -170,11 +165,11 @@ const DocumentMaster = () => {
         Description: formData.Description || "",
         Status: formData.Status || "1",
         IsMainDoc: formData.IsMainDoc,
-              Status: formData.Status === false ? 0 : 1,
+        Status: formData.Status === false ? 0 : 1,
 
-
-        SubDocs: CreateSubDocRows.filter((row) => row.NameMR).map(
-          (row, index) => ({
+        SubDocs: selectedRows
+          .filter((row) => row.NameMR)
+          .map((row, index) => ({
             LineNum: 0,
             Id: 0,
             Status: 1,
@@ -185,8 +180,7 @@ const DocumentMaster = () => {
             NameEN: "",
             NameMR: row.NameMR,
             Description: row.Description || "",
-          })
-        ),
+          })),
       };
       let response;
 
@@ -357,12 +351,12 @@ const DocumentMaster = () => {
       firstLoad.current = false;
     }
   }, []);
- 
-// React.useEffect(() => {
-//   if (isMainDoc === true) {
-//     setCreateSubDocRows([]);  
-//   }
-// }, [isMainDoc]);
+
+  // React.useEffect(() => {
+  //   if (isMainDoc === true) {
+  //     setCreateSubDocRows([]);
+  //   }
+  // }, [isMainDoc]);
 
   // =========================
 
@@ -581,7 +575,7 @@ const DocumentMaster = () => {
         </Tooltip>
       ),
     },
-     {
+    {
       field: "Status",
       headerName: "Status",
       width: 80,
@@ -604,7 +598,7 @@ const DocumentMaster = () => {
     },
   ];
 
-   const buttonStyles = {
+  const buttonStyles = {
     border: "none",
     borderRadius: "4px",
     padding: "4px 8px",
@@ -614,8 +608,7 @@ const DocumentMaster = () => {
     width: 55,
   };
 
-
-    const activeButtonStyle = {
+  const activeButtonStyle = {
     ...buttonStyles,
     backgroundColor: "green",
   };
@@ -624,7 +617,6 @@ const DocumentMaster = () => {
     ...buttonStyles,
     backgroundColor: "#dc3545",
   };
-
 
   const [selectedDocs, setSelectedDocs] = React.useState([]);
 
@@ -636,6 +628,34 @@ const DocumentMaster = () => {
       setSelectedDocs((prev) => prev.filter((x) => x !== deletedDoc));
     }
   };
+  // React.useEffect(() => {
+  //   if (docOptions && docOptions.length > 0) {
+  //     const formatted = docOptions.map((d, idx) => ({
+  //       id: idx + 1,
+  //       NameMR: d.NameMR,
+  //       isChecked: false,   // <-- NEW
+  //     }));
+  //     setCreateSubDocRows(formatted);
+  //   }
+  // }, [docOptions]);
+  React.useEffect(() => {
+    if (!docOptions || docOptions.length === 0) return;
+
+    // Step-1: Existing selected IDs (from update API)
+    const selected = (CreateSubDocRows || [])
+      .filter((x) => x.isChecked || x.LineNum) // if update data has LineNum
+      .map((x) => x.NameMR);
+
+    // Step-2: Build row list from all docOptions
+    const formatted = docOptions.map((d, idx) => ({
+      id: idx + 1,
+      NameMR: d.NameMR,
+      isChecked: selected.includes(d.NameMR), // <-- mark checked if matched
+    }));
+
+    // Step-3: Set to grid
+    setCreateSubDocRows(formatted);
+  }, [docOptions]);
 
   const columnssubDoc = [
     {
@@ -650,22 +670,22 @@ const DocumentMaster = () => {
         return index + 1;
       },
     },
-    {
-      field: "actions",
-      headerName: "Action",
-      width: 80,
-      align: "center",
-      headerAlign: "center",
-      renderCell: (params) => (
-        <Button
-          size="small"
-          sx={{ color: "red" }}
-          onClick={() => handleDeleteRow(params.row.id)}
-        >
-          <DeleteForeverIcon />
-        </Button>
-      ),
-    },
+    // {
+    //   field: "actions",
+    //   headerName: "Action",
+    //   width: 80,
+    //   align: "center",
+    //   headerAlign: "center",
+    //   renderCell: (params) => (
+    //     <Button
+    //       size="small"
+    //       sx={{ color: "red" }}
+    //       onClick={() => handleDeleteRow(params.row.id)}
+    //     >
+    //       <DeleteForeverIcon />
+    //     </Button>
+    //   ),
+    // },
 
     // {
     //   field: "NameMR",
@@ -674,158 +694,164 @@ const DocumentMaster = () => {
     //   renderCell: (params) => {
     //     const currentValue = params.row.NameMR;
 
-    //     const handleChange = (e) => {
-    //       const newValue = e.target.value;
+    //     // Filter options to avoid duplicates
+    //     const filteredOptions = docOptions.filter(
+    //       (opt) =>
+    //         !selectedDocs.includes(opt.NameMR) || opt.NameMR === currentValue
+    //     );
+
+    //     const handleChange = (e, newValue) => {
+    //       if (!newValue) return;
 
     //       // Update grid rows
     //       setCreateSubDocRows((prev) =>
     //         prev.map((r) =>
-    //           r.id === params.row.id ? { ...r, NameMR: newValue } : r
+    //           r.id === params.row.id ? { ...r, NameMR: newValue.NameMR } : r
     //         )
     //       );
 
     //       // Update selected documents list
     //       setSelectedDocs((prev) => {
     //         const withoutCurrent = prev.filter((x) => x !== currentValue);
-    //         return [...withoutCurrent, newValue];
+    //         return [...withoutCurrent, newValue.NameMR];
     //       });
     //     };
 
-    //     // Filter dropdown (hide selected except current row value)
-    //     const filteredOptions = docOptions.filter(
-    //       (opt) => !selectedDocs.includes(opt.NameMR) || opt.NameMR === currentValue
-    //     );
-
     //     return (
     //       <Tooltip title={params.value || ""}>
-    //         <Select
-    //           value={params.value || ""}
+    //         <Autocomplete
+    //           disablePortal
+    //           ListboxComponent={CustomListBox} //  Use custom scroll logic
+    //           value={
+    //             docOptions.find((opt) => opt.NameMR === currentValue) || null
+    //           }
     //           onChange={handleChange}
-    //           fullWidth
-    //           variant="standard"
-    //           MenuProps={{
-    //             PaperProps: { style: { maxHeight: 200, maxWidth: 200 } },
-    //           }}
-    //           sx={{ minWidth: 250 }}
-    //         >
-    //           {filteredOptions.length > 0 ? (
-    //             filteredOptions.map((opt, i) => (
-    //               <MenuItem
-    //                 key={i}
-    //                 value={opt.NameMR}
-    //                 sx={{
-    //                   whiteSpace: "normal",
-    //                   wordWrap: "break-word",
-    //                   alignItems: "flex-start",
-    //                 }}
-    //               >
-    //                 {opt.NameMR}
-    //               </MenuItem>
-    //             ))
-    //           ) : (
-    //             <MenuItem disabled>No options available</MenuItem>
+    //           options={filteredOptions}
+    //           getOptionLabel={(option) => option.NameMR}
+    //           renderInput={(params) => (
+    //             <TextField
+    //               {...params}
+    //               variant="standard"
+    //               placeholder="Select..."
+    //             />
     //           )}
-    //         </Select>
+    //           fullWidth
+    //           sx={{ minWidth: 250 }}
+    //         />
     //       </Tooltip>
     //     );
     //   },
-    // }
+    // },
+    {
+      field: "isChecked",
+      headerName: "Select",
+      width: 70,
+      align: "center",
+      headerAlign: "center",
+      renderCell: (params) => (
+        <Checkbox
+          checked={params.row.isChecked}
+          onChange={() => toggleCheck(params.row.id)}
+        />
+      ),
+    },
 
-    // ========================
     {
       field: "NameMR",
       headerName: "DOCUMENT NAME",
-      width: 250,
-      renderCell: (params) => {
-        const currentValue = params.row.NameMR;
-
-        // Filter options to avoid duplicates
-        const filteredOptions = docOptions.filter(
-          (opt) =>
-            !selectedDocs.includes(opt.NameMR) || opt.NameMR === currentValue
-        );
-
-        const handleChange = (e, newValue) => {
-          if (!newValue) return;
-
-          // Update grid rows
-          setCreateSubDocRows((prev) =>
-            prev.map((r) =>
-              r.id === params.row.id ? { ...r, NameMR: newValue.NameMR } : r
-            )
-          );
-
-          // Update selected documents list
-          setSelectedDocs((prev) => {
-            const withoutCurrent = prev.filter((x) => x !== currentValue);
-            return [...withoutCurrent, newValue.NameMR];
-          });
-        };
-
-        return (
-          <Tooltip title={params.value || ""}>
-            <Autocomplete
-              disablePortal
-              ListboxComponent={CustomListBox} //  Use custom scroll logic
-              value={
-                docOptions.find((opt) => opt.NameMR === currentValue) || null
-              }
-              onChange={handleChange}
-              options={filteredOptions}
-              getOptionLabel={(option) => option.NameMR}
-              renderInput={(params) => (
-                <TextField
-                  {...params}
-                  variant="standard"
-                  placeholder="Select..."
-                />
-              )}
-              fullWidth
-              sx={{ minWidth: 250 }}
-            />
-          </Tooltip>
-        );
-      },
+      flex: 1,
+      renderCell: (params) => (
+        <Tooltip title={params.value || ""}>
+          <span>{params.value}</span>
+        </Tooltip>
+      ),
     },
   ];
 
-  const handleUpdate = async (rowData) => {
-    setSaveUpdateButton("UPDATE");
-    setClearUpdateButton("RESET");
-    setOn(true);
-
-    try {
-      setLoading(true);
-      const apiUrl = `${BASE_URL}DocsMaster/${rowData.Id}`;
-      const response = await axios.get(apiUrl);
-
-      if (response.data.values) {
-        const Document = response.data.values;
-        originalDataRef.current = Document;
-
-        setValue("Id", Document.Id);
-        setValue("NameEN", Document.NameEN);
-        setValue("NameMR", Document.NameMR);
-        setValue("Description", Document.Description);
-        setValue("Status", Document.Status);
-        setValue("IsMainDoc", Document.IsMainDoc);
-        setValue("Status", Document.Status);
-
-
-        const subDocs = (Document.SubDocs || []).map((subDoc, index) => ({
-          id: subDoc.LineNum || index + 1,
-          ...subDoc,
-        }));
-        setCreateSubDocRows(subDocs);
-
-        await DocMasterListTemp(Document.Id);
-      }
-    } catch (error) {
-      console.error("Error fetching Document data:", error);
-    } finally {
-      setLoading(false);
-    }
+  const toggleCheck = (id) => {
+    setCreateSubDocRows((prev) =>
+      prev.map((r) => (r.id === id ? { ...r, isChecked: !r.isChecked } : r))
+    );
   };
+
+  // const handleUpdate = async (rowData) => {
+  //   setSaveUpdateButton("UPDATE");
+  //   setClearUpdateButton("RESET");
+  //   setOn(true);
+
+  //   try {
+  //     setLoading(true);
+  //     const apiUrl = `${BASE_URL}DocsMaster/${rowData.Id}`;
+  //     const response = await axios.get(apiUrl);
+
+  //     if (response.data.values) {
+  //       const Document = response.data.values;
+  //       originalDataRef.current = Document;
+
+  //       setValue("Id", Document.Id);
+  //       setValue("NameEN", Document.NameEN);
+  //       setValue("NameMR", Document.NameMR);
+  //       setValue("Description", Document.Description);
+  //       setValue("Status", Document.Status);
+  //       setValue("IsMainDoc", Document.IsMainDoc);
+  //       setValue("Status", Document.Status);
+
+  //       // const subDocs = (Document.SubDocs || []).map((subDoc, index) => ({
+  //       //   id: subDoc.LineNum || index + 1,
+  //       //   ...subDoc,
+  //       // }));
+  //       // setCreateSubDocRows(subDocs);
+  //       const subDocs = (Document.SubDocs || []).map((subDoc, index) => ({
+  //         id: subDoc.LineNum || index + 1,
+  //         NameMR: subDoc.NameMR,
+  //         isChecked: true, // <--- HERE
+  //       }));
+  //       setCreateSubDocRows(subDocs);
+
+  //       await DocMasterListTemp(Document.Id);
+
+        
+  //     }
+  //   } catch (error) {
+  //     console.error("Error fetching Document data:", error);
+  //   } finally {
+  //     setLoading(false);
+  //   }
+  // };
+  const handleUpdate = async (rowData) => {
+  setSaveUpdateButton("UPDATE");
+  setClearUpdateButton("RESET");
+  setOn(true);
+
+  try {
+    setLoading(true);
+    const apiUrl = `${BASE_URL}DocsMaster/${rowData.Id}`;
+    const response = await axios.get(apiUrl);
+
+    if (response.data.values) {
+      const Document = response.data.values;
+      originalDataRef.current = Document;
+
+      setValue("Id", Document.Id);
+      setValue("NameEN", Document.NameEN);
+      setValue("NameMR", Document.NameMR);
+      setValue("Description", Document.Description);
+      setValue("Status", Document.Status);
+      setValue("IsMainDoc", Document.IsMainDoc);
+      setValue("Status", Document.Status);
+
+      // Store selected subdocs temporarily
+      selectedSubDocsRef.current = (Document.SubDocs || []).map((s) => s.NameMR);
+
+       await DocMasterListTemp(0, null);
+    }
+  } catch (error) {
+    console.error("Error fetching Document data:", error);
+  } finally {
+    setLoading(false);
+  }
+};
+
 
   const handleAddRow = () => {
     setCreateSubDocRows((prevRows) => [
@@ -839,42 +865,54 @@ const DocumentMaster = () => {
     ]);
   };
 
+  
   const DocMasterListTemp = async (page = 0, excludeId = null) => {
-    if (scrollLock || !hasMore) return;
-    setScrollLock(true);
-    setLoading(true);
+  if (scrollLock || !hasMore) return;
+  setScrollLock(true);
+  setLoading(true);
 
-    try {
-      const { data } = await axios.get(`${BASE_URL}DocsMaster`, {
-        params: { Status: "1", page },
-      });
+  try {
+    let { data } = await axios.get(`${BASE_URL}DocsMaster`, {
+      params: { Status: "1", page },
+    });
 
-      const newDocs = data?.values || [];
+    let newDocs = data?.values || [];
 
-      if (excludeId) {
-        newDocs = newDocs.filter((doc) => Number(doc.Id) !== Number(excludeId));
-      }
-
-      if (newDocs.length === 0) {
-        setHasMore(false);
-        return;
-      }
-
-      setDocOptions((prev) => (page === 0 ? newDocs : [...prev, ...newDocs]));
-    } catch (err) {
-      console.error("Error fetching DocsMaster:", err);
-    } finally {
-      setLoading(false);
-      setTimeout(() => setScrollLock(false), 300);
+      if (!excludeId && page === 0) {
+      setDocOptions(newDocs);
+      markCheckedRows(newDocs);  
+    } else {
+      setDocOptions((prev) => [...prev, ...newDocs]);
+      markCheckedRows([...docOptions, ...newDocs]);  
     }
-  };
+  } catch (err) {
+    console.error("Error fetching DocsMaster:", err);
+  } finally {
+    setLoading(false);
+    setTimeout(() => setScrollLock(false), 300);
+  }
+};
+
+
+const markCheckedRows = (fullList) => {
+  const selected = selectedSubDocsRef.current || [];  
+
+  const formatted = fullList.map((d, idx) => ({
+    id: idx + 1,
+    NameMR: d.NameMR,
+    isChecked: selected.includes(d.NameMR),
+  }));
+
+  setCreateSubDocRows(formatted);
+};
+
 
   return (
     <>
       {loaderOpen && <Loader open={loaderOpen} />}
       <Modal
         open={on}
-         sx={{
+        sx={{
           backdropFilter: "blur(5px)",
           backgroundColor: "rgba(0, 0, 0, 0.3)",
         }}
@@ -883,14 +921,14 @@ const DocumentMaster = () => {
           elevation={10}
           sx={{
             width: "100%",
-            maxWidth: 450,
+            maxWidth: 700,
             position: "absolute",
             top: "50%",
             left: "50%",
             transform: "translate(-50%, -50%)",
             justifyContent: "center",
             overflow: "auto",
-            maxHeight: "90vh",
+            maxHeight: "100vh",
           }}
         >
           <Grid
@@ -974,8 +1012,7 @@ const DocumentMaster = () => {
                 />
               </Grid>
 
-              <Grid item xs={12}></Grid>
-              <Grid item xs={8}>
+               <Grid item xs={8}>
                 <Controller
                   name="IsMainDoc"
                   control={control}
@@ -986,52 +1023,61 @@ const DocumentMaster = () => {
                         <Checkbox
                           {...field}
                           checked={field.value === true}
-                          onChange={(e) =>
-                            field.onChange(e.target.checked ? true : false)
-                          }
+                          // onChange={(e) =>
+                          //   field.onChange(e.target.checked ? true : false)
+                          // }
+                             onChange={(e) => {
+              const isChecked = e.target.checked;
+              field.onChange(isChecked); // update form state
+
+              // Reset all DataGrid checkboxes
+              setCreateSubDocRows((prevRows) =>
+                prevRows.map((row) => ({ ...row, isChecked: false }))
+              );
+            }}
                         />
                       }
                       label="Is Main Document"
                     />
                   )}
                 />
-              </Grid> 
-                  <Grid
-                              item
-                              xs={6}
-                              sm={4}
-                              md={4}
-                              display="flex"
-                              alignItems="center"
-                              justifyContent="flex-start"
-                            >
-                              <Controller
-                                name="Status"
-                                control={control}
-                                defaultValue={false}
-                                render={({ field }) => (
-                                  <FormControlLabel
-                                    sx={{ ml: 1 }}
-                                    control={
-                                      <Checkbox
-                                        {...field}
-                                        checked={field.value}
-                                        onChange={(e) => field.onChange(e.target.checked)}
-                                        size="medium"
-                                        color="primary"
-                                      />
-                                    }
-                                    label="Active"
-                                  />
-                                )}
-                              />
-                            </Grid>
+              </Grid>
+              <Grid
+                item
+                xs={6}
+                sm={4}
+                md={4}
+                display="flex"
+                alignItems="center"
+                justifyContent="flex-start"
+              >
+                <Controller
+                  name="Status"
+                  control={control}
+                  defaultValue={false}
+                  render={({ field }) => (
+                    <FormControlLabel
+                      sx={{ ml: 1 }}
+                      control={
+                        <Checkbox
+                          {...field}
+                          checked={field.value}
+                          onChange={(e) => field.onChange(e.target.checked)}
+                          size="medium"
+                          color="primary"
+                        />
+                      }
+                      label="Active"
+                    />
+                  )}
+                />
+              </Grid>
             </Grid>
 
             {/* ========================================================== */}
             {isMainDoc && (
               <>
-                <Grid
+                {/* <Grid
                   item
                   xs={12}
                   display="flex"
@@ -1063,7 +1109,7 @@ const DocumentMaster = () => {
                   >
                     Add Document Row
                   </Button>
-                </Grid>
+                </Grid> */}
 
                 {/* DATAGRID SECTION */}
 
