@@ -53,18 +53,30 @@ export default function LazyAutocomplete({
   page,
   setPage,
   hasMore,
+    onChangeValue,   
+
 }) {
   const selectedObj = list.find((x) => x[displayField] === value) || null;
-
+ 
   const handleChange = (_, newValue) => {
-    if (!newValue) return;
-    api.updateRows([{ id, [field]: newValue[displayField] }]);
-    setRows((p) =>
-      p.map((r) =>
-        r.id === id ? { ...r, [field]: newValue[displayField] } : r
-      )
-    );
-  };
+  if (!newValue) return;
+
+  const updatedValue = newValue[displayField];
+
+  // INTERNAL grid update
+  api.updateRows([{ id, [field]: updatedValue }]);
+  setRows((p) =>
+    p.map((r) =>
+      r.id === id ? { ...r, [field]: updatedValue } : r
+    )
+  );
+
+  // EXTERNAL callback (for parent)
+  if (typeof onChangeValue === "function") {
+    onChangeValue(newValue);
+  }
+};
+
 
   return (
     <Tooltip title={value || ""} arrow placement="top">

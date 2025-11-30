@@ -15,6 +15,7 @@ import {
   DialogActions,
   DialogContent,
   DialogTitle,
+  Divider,
   FormControlLabel,
   Grid,
   IconButton,
@@ -116,7 +117,7 @@ const UploadDocument = () => {
     oDocLines: [],
   };
 
-  const { handleSubmit, control, reset } = useForm({
+  const { handleSubmit, control, reset, watch, setValue } = useForm({
     defaultValues: {
       initial,
     },
@@ -139,53 +140,7 @@ const UploadDocument = () => {
   const [search, setSearch] = React.useState("");
 
   // ------------ COMMON LISTBOX ------------
-  // const CommonListBox = React.forwardRef(function CommonListBox(props, ref) {
-  //   const {
-  //     children,
-  //     onLazyLoad,
-  //     loading,
-  //     hasMore,
-  //     pageSetter,
-  //     page,
-  //     search,
-  //     ...other
-  //   } = props;
 
-  //   const handleScroll = (event) => {
-  //     const list = event.currentTarget;
-  //     const bottom = list.scrollHeight - (list.scrollTop + list.clientHeight);
-
-  //     if (bottom < 30 && !loading && hasMore) {
-  //       const nextPage = page + 1;
-  //       pageSetter(nextPage);
-  //       onLazyLoad({ page: nextPage, search: search });
-  //     }
-  //   };
-
-  //   return (
-  //     <ul
-  //       {...other}
-  //       ref={ref}
-  //       style={{ maxHeight: 250, overflow: "auto" }}
-  //       onScroll={handleScroll}
-  //     >
-  //       {children}
-  //     </ul>
-  //   );
-  // });
-  // --------------------
-  // React.useEffect(() => {
-  //   setRows((prevRows) =>
-  //     prevRows.map((row) => {
-  //       // Auto-update FileName only if DocType exists
-  //       // Remove previous FileName if you want to overwrite every time
-  //       if (row.DocType) {
-  //         return { ...row, FileName: row.DocType };
-  //       }
-  //       return row;
-  //     })
-  //   );
-  // }, [rows.map((r) => r.DocType).join(",")]); // trigger effect when any DocType changes
   React.useEffect(() => {
     let changed = false;
     const updated = rows.map((r) => {
@@ -218,6 +173,8 @@ const UploadDocument = () => {
         r.id === currentRowId ? { ...r, MissingDocs: tempSelection } : r
       )
     );
+    console.log("dff", tempSelection);
+
     setModalOpen(false);
   };
 
@@ -457,7 +414,6 @@ const UploadDocument = () => {
 
         // ----------------- LOCKED FIELD -----------------
         if (!isEditable) {
-          // ✅ Update the row immediately if value is missing
           if (value !== stored) {
             api.updateRows([{ id, [field]: stored }]);
             setRows((prev) =>
@@ -559,6 +515,7 @@ const UploadDocument = () => {
                     ...r,
                     DocType: selectedValue,
                     FileName: selectedValue,
+                    MissingDocs: [],
                   };
                 }
                 return { ...r, DocType: selectedValue };
@@ -578,7 +535,7 @@ const UploadDocument = () => {
             disabled={row.isDisabled}
             api={api}
             setRows={setRows}
-            onChangeValue={handleSelectDocType}
+            // onChangeValue={handleSelectDocType}
             searchValue={docSearch}
             onSearch={(txt) => {
               setDocSearch(txt);
@@ -592,6 +549,19 @@ const UploadDocument = () => {
             setPage={setDPage}
             hasMore={hasMoreDocs}
             PopperProps={{ placement: "top-start" }}
+            // onChangeValue={(selected) => {
+            //   handleSelectDocType(selected);
+            //   setRows((prev) =>
+            //     prev.map((r) => (r.id === id ? { ...r, MissingDocs: [] } : r))
+            //   );
+            // }}
+            onChangeValue={(selected) => {
+              handleSelectDocType(selected);
+
+              setRows((prev) =>
+                prev.map((r) => (r.id === id ? { ...r, MissingDocs: [] } : r))
+              );
+            }}
           />
         );
       },
@@ -721,7 +691,7 @@ const UploadDocument = () => {
     //   },
     // },
     // ---------------
-     
+
     {
       field: "MissingDocs",
       headerName: "MISSING DOCUMENT",
@@ -731,59 +701,67 @@ const UploadDocument = () => {
         const isDisabled = row.isDisabled || !row.DocType;
         const docs = row.MissingDocs || [];
 
-        return (
-          <Box
-            sx={{
-              display: "flex",
-              alignItems: "center",
-              gap: 1,
-              width: "100%",
-            }}
-          >
-            {/* Modal open button */}
-            <IconButton
-              size="small"
-              onClick={() => handleOpenModal(row)}
-              disabled={isDisabled}
-              sx={{ flexShrink: 0 }}
-            >
-              <ListIcon fontSize="small" />
-            </IconButton>
+        const tooltipMessage = isDisabled
+          ? "Please select document type first"
+          : docs.length > 0
+          ? docs.join(", ")
+          : "Add Missing Document";
 
-            {/* CHIPS + TOOLTIP */}
-            <Tooltip title={docs.join(", ") || ""} placement="top" arrow>
-              <Box
-                onClick={() => !isDisabled && handleOpenModal(row)}
-                sx={{
-                  display: "flex",
-                  flexWrap: "wrap",
-                  gap: 0.5,
-                  maxHeight: 48,
-                  overflow: "hidden",
-                  flex: 1,
-                }}
+        return (
+          <Tooltip title={tooltipMessage} placement="top" arrow>
+            <Box
+              sx={{
+                display: "flex",
+                alignItems: "center",
+                gap: 1,
+                width: "100%",
+              }}
+            >
+              {/* Modal open button */}
+              <IconButton
+                size="small"
+                onClick={() => handleOpenModal(row)}
+                disabled={isDisabled}
+                sx={{ flexShrink: 0 }}
               >
-                {docs.length > 0 ? (
-                  docs.map((d, idx) => (
-                    <Chip
-                      key={idx}
-                      label={d}
-                      size="small"
-                      sx={{
-                        maxWidth: 120,
-                        textOverflow: "ellipsis",
-                        overflow: "hidden",
-                      }}
-                    />
-                  ))
-                ) : (
-                  <Typography variant="caption" sx={{ opacity: 0.6 }}>
-                    Add Document
-                  </Typography>
-                )}
-              </Box>
-            </Tooltip>
-          </Box>
+                <ListIcon fontSize="small" />
+              </IconButton>
+
+              {/* CHIPS + TOOLTIP */}
+              {/* <Tooltip title={docs.join(", ") || ""} placement="top" arrow> */}
+                <Box
+                  onClick={() => !isDisabled && handleOpenModal(row)}
+                  sx={{
+                    display: "flex",
+                    flexWrap: "wrap",
+                    gap: 0.5,
+                    maxHeight: 48,
+                    overflow: "hidden",
+                    flex: 1,
+                  }}
+                >
+                  {docs.length > 0 ? (
+                    docs.map((d, idx) => (
+                      <Chip
+                        key={idx}
+                        label={d}
+                        size="small"
+                        sx={{
+                          maxWidth: 120,
+                          textOverflow: "ellipsis",
+                          overflow: "hidden",
+                        }}
+                      />
+                    ))
+                  ) : (
+                    <Typography variant="caption" sx={{ opacity: 0.6 }}>
+                      Add Missing Document
+                    </Typography>
+                  )}
+                </Box>
+              {/* </Tooltip> */}
+            </Box>
+          </Tooltip>
         );
       },
     },
@@ -1964,14 +1942,32 @@ const UploadDocument = () => {
           <Grid
             item
             xs={12}
-            sx={{ display: "flex", justifyContent: "space-between" }}
+            sx={{
+              display: "flex",
+              justifyContent: "center",
+              alignItems: "center",
+              position: "relative",
+            }}
           >
-            <Typography fontWeight="bold"> Select Missing Documents</Typography>
+            <Typography
+              fontWeight="bold"
+              sx={{
+                position: "absolute",
+                left: "50%",
+                transform: "translateX(-50%)",
+              }}
+            >
+              Select Missing Documents
+            </Typography>
 
-            <IconButton onClick={() => setModalOpen(false)}>
+            <IconButton
+              onClick={() => setModalOpen(false)}
+              sx={{ marginLeft: "auto" }}
+            >
               <CloseIcon />
             </IconButton>
           </Grid>
+
           <hr />
 
           <TextField
@@ -2091,7 +2087,7 @@ const UploadDocument = () => {
               }}
             >
               <AddIcon />
-              Add Document
+              Upload Document
             </Button>
           </span>
         </Tooltip>
