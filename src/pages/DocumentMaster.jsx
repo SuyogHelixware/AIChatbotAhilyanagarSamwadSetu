@@ -187,22 +187,21 @@ const DocumentMaster = () => {
         validationAlert("Please fill in all required fields");
         return;
       }
-      // const allAvailableSubDocs = await fetchAllDocsMasterForSubDocs();
-      // const selectedRows = CreateSubDocRows.filter((r) => r.isChecked);
-      const selectedSubDocsForPayload = selectedSubDocsNames
-        .filter((name) => name)
-        .map((name) => ({
-          LineNum: 0,
-          Id: 0,
-          Status: 1,
-          CreatedDate: dayjs().format("YYYY-MM-DD"),
-          CreatedBy: sessionStorage.getItem("userId"),
-          ModifiedDate: dayjs().format("YYYY-MM-DD"),
-          ModifiedBy: sessionStorage.getItem("userId"),
-          NameEN: "",
-          NameMR: name,
-          Description: "",
-        }));
+     
+      // const selectedSubDocsForPayload = selectedSubDocsNames
+      //   .filter((name) => name)
+      //   .map((name) => ({
+      //     LineNum: 0,
+      //     Id: 0,
+      //     Status: 1,
+      //     CreatedDate: dayjs().format("YYYY-MM-DD"),
+      //     CreatedBy: sessionStorage.getItem("userId"),
+      //     ModifiedDate: dayjs().format("YYYY-MM-DD"),
+      //     ModifiedBy: sessionStorage.getItem("userId"),
+      //     NameEN: "",
+      //     NameMR: name,
+      //     Description: "",
+      //   }));
 
       const payload = {
         Id: null || formData.Id,
@@ -231,7 +230,24 @@ const DocumentMaster = () => {
         //     NameMR: row.NameMR,
         //     Description: row.Description || "",
         //   })),
-        SubDocs: formData.IsMainDoc ? selectedSubDocsForPayload : [], // Only include subdocs if it's a main doc
+
+
+        // SubDocs: formData.IsMainDoc ? selectedSubDocsForPayload : [], // Only include subdocs if it's a main doc
+
+         SubDocs: rows
+          .filter((row) => row.isChecked === true)
+          .map((row) => ({
+            LineNum: 0,
+            Id: 0,
+            Status: 1,
+            CreatedDate: dayjs().format("YYYY-MM-DD"),
+            CreatedBy: sessionStorage.getItem("userId"),
+            ModifiedDate: dayjs().format("YYYY-MM-DD"),
+            ModifiedBy: sessionStorage.getItem("userId"),
+            NameEN: row.NameEN,
+            NameMR: row.NameMR,
+            Description: row.Description,
+          })),
       };
       let response;
 
