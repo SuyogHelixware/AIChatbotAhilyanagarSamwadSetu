@@ -50,6 +50,7 @@ import LazyAutocomplete from "../components/Autocomplete";
 
 import ListIcon from "@mui/icons-material/List";
 import ClearIcon from "@mui/icons-material/Clear";
+import SearchIcon from "@mui/icons-material/Search";
 
 const UploadDocument = () => {
   const [loaderOpen, setLoaderOpen] = React.useState(false);
@@ -1673,283 +1674,294 @@ const UploadDocument = () => {
         sx={{
           backdropFilter: "blur(5px)",
           backgroundColor: "rgba(0, 0, 0, 0.3)",
+          overflow: "auto",
         }}
       >
         <Paper
           elevation={10}
           sx={{
-            width: "100%",
+            width: "95%",
             maxWidth: 1400,
-            Height: 3300,
+            maxHeight: "90vh",
+            overflowY: "auto",
             position: "absolute",
             top: "50%",
             left: "50%",
             transform: "translate(-50%, -50%)",
+            borderRadius: 2,
           }}
         >
-          <Grid
-            container
-            spacing={3}
-            padding={3}
-            component="form"
-            onSubmit={handleSubmit(onSubmit)}
-          >
-            {/* Header */}
+          <Box sx={{ p: 3 }}>
             <Grid
-              item
-              xs={12}
-              sx={{ display: "flex", justifyContent: "space-between" }}
+              container
+              spacing={3}
+              // padding={3}
+              component="form"
+              onSubmit={handleSubmit(onSubmit)}
             >
-              <Typography fontWeight="bold"> UPLOAD DOCUMENT</Typography>
-              <IconButton onClick={handleClose}>
-                <CloseIcon />
-              </IconButton>
-            </Grid>
+              {/* Header */}
+              <Grid
+                item
+                xs={12}
+                sx={{ display: "flex", justifyContent: "space-between" }}
+              >
+                <Typography fontWeight="bold"> UPLOAD DOCUMENT</Typography>
+                <IconButton onClick={handleClose}>
+                  <CloseIcon />
+                </IconButton>
+              </Grid>
 
-            <Grid item xs={6} md={4}>
-              <Controller
-                name="Name"
-                control={control}
-                defaultValue=""
-                rules={{
-                  required: "Name is required",
-                  validate: (value) =>
-                    value.trim() !== "" || "Name cannot be just spaces",
-                  maxLength: {
-                    value: 100,
-                    message: "Name cannot exceed 100 characters",
-                  },
-                }}
-                render={({ field, fieldState: { error } }) => (
-                  <Tooltip title={field.value || ""} arrow placement="top">
-                    <div style={{ width: "100%" }}>
-                      <TextField
-                        {...field}
-                        inputRef={field.ref}
-                        label="ENTER NAME"
-                        size="small"
-                        inputProps={{ maxLength: 100 }}
-                        error={!!error}
-                        helperText={error?.message}
-                      />
-                    </div>
-                  </Tooltip>
-                )}
-              />
-            </Grid>
-            <Grid item xs={6} md={4}>
-              <Controller
-                name="MobileNo"
-                control={control}
-                rules={{
-                  required: "Mobile number is required",
-                  pattern: {
-                    value: /^[0-9]{10}$/,
-                    message: "Enter a valid 10-digit mobile number",
-                  },
-                }}
-                render={({ field, fieldState }) => (
-                  <TextField
-                    {...field}
-                    label=" ENTER MOBILE NO"
-                    // fullWidth
-                    disabled={isMobileDisabled}
-                    size="small"
-                    error={!!fieldState.error}
-                    helperText={fieldState.error?.message}
-                    inputProps={{
-                      maxLength: 10,
-                      inputMode: "numeric",
-                      pattern: "[0-9]*",
-                    }}
-                    onChange={(e) => {
-                      const value = e.target.value.replace(/\D/g, "");
-                      if (value.length <= 10) {
-                        field.onChange(value);
-                      }
-                    }}
-                    InputProps={{
-                      startAdornment: (
-                        <span style={{ marginRight: 8 }}>+91</span>
-                      ),
-                    }}
-                  />
-                )}
-              />{" "}
-            </Grid>
-            <Grid item xs={6} md={4}>
-              <Controller
-                name="Email"
-                control={control}
-                defaultValue=""
-                render={({ field }) => (
-                  <InputTextField
-                    {...field}
-                    label="ENTER EMAIL ID"
-                    type="email"
-                    size="small"
-                    rows={1}
-                  />
-                )}
-              />
-            </Grid>
-            <Grid item xs={6} md={4}>
-              <Controller
-                name="Address"
-                control={control}
-                render={({ field }) => (
-                  <Tooltip title={field.value || ""} arrow placement="top">
-                    <div style={{ width: "100%" }}>
-                      <InputDescriptionField
-                        {...field}
-                        label="ENTER ADDRESS"
-                        size="small"
-                        fullWidth
-                      />
-                    </div>
-                  </Tooltip>
-                )}
-              />
-            </Grid>
+              {/* <Grid item xs={6} md={4}> */}
+              <Grid item xs={12} sm={6} md={4}>
+                <Controller
+                  name="Name"
+                  control={control}
+                  defaultValue=""
+                  rules={{
+                    required: "Name is required",
+                    validate: (value) =>
+                      value.trim() !== "" || "Name cannot be just spaces",
+                    maxLength: {
+                      value: 100,
+                      message: "Name cannot exceed 100 characters",
+                    },
+                  }}
+                  render={({ field, fieldState: { error } }) => (
+                    <Tooltip title={field.value || ""} arrow placement="top">
+                      <div style={{ width: "100%" }}>
+                        <TextField
+                          {...field}
+                          inputRef={field.ref}
+                          label="ENTER NAME"
+                          size="small"
+                          inputProps={{ maxLength: 100 }}
+                          error={!!error}
+                          helperText={error?.message}
+                        />
+                      </div>
+                    </Tooltip>
+                  )}
+                />
+              </Grid>
+              {/* <Grid item xs={6} md={4}> */}
+              <Grid item xs={12} sm={6} md={4}>
+                <Controller
+                  name="MobileNo"
+                  control={control}
+                  rules={{
+                    required: "Mobile number is required",
+                    pattern: {
+                      value: /^[0-9]{10}$/,
+                      message: "Enter a valid 10-digit mobile number",
+                    },
+                  }}
+                  render={({ field, fieldState }) => (
+                    <TextField
+                      {...field}
+                      label=" ENTER MOBILE NO"
+                      // fullWidth
+                      disabled={isMobileDisabled}
+                      size="small"
+                      error={!!fieldState.error}
+                      helperText={fieldState.error?.message}
+                      inputProps={{
+                        maxLength: 10,
+                        inputMode: "numeric",
+                        pattern: "[0-9]*",
+                      }}
+                      onChange={(e) => {
+                        const value = e.target.value.replace(/\D/g, "");
+                        if (value.length <= 10) {
+                          field.onChange(value);
+                        }
+                      }}
+                      InputProps={{
+                        startAdornment: (
+                          <span style={{ marginRight: 8 }}>+91</span>
+                        ),
+                      }}
+                    />
+                  )}
+                />{" "}
+              </Grid>
+              {/* <Grid item xs={6} md={4}> */}
+              <Grid item xs={12} sm={6} md={4}>
+                <Controller
+                  name="Email"
+                  control={control}
+                  defaultValue=""
+                  render={({ field }) => (
+                    <InputTextField
+                      {...field}
+                      label="ENTER EMAIL ID"
+                      type="email"
+                      size="small"
+                      rows={1}
+                    />
+                  )}
+                />
+              </Grid>
+              {/* <Grid item xs={6} md={4}> */}
+              <Grid item xs={12} sm={6} md={4}>
+                <Controller
+                  name="Address"
+                  control={control}
+                  render={({ field }) => (
+                    <Tooltip title={field.value || ""} arrow placement="top">
+                      <div style={{ width: "100%" }}>
+                        <InputDescriptionField
+                          {...field}
+                          label="ENTER ADDRESS"
+                          size="small"
+                          fullWidth
+                        />
+                      </div>
+                    </Tooltip>
+                  )}
+                />
+              </Grid>
 
-            <Grid
+              {/* <Grid
               item
               xs={6}
               md={4}
               sx={{ display: "flex", justifyContent: "flex-center" }}
-            >
-              <Button
-                variant="contained"
-                size="small"
-                component={isAddMissing ? undefined : "label"}
-                sx={{
-                  width: 130,
-                  height: 40,
-                  color: "white",
-                  background:
-                    "linear-gradient(to right, rgb(0, 90, 91), rgb(22, 149, 153))",
-                  fontSize: "0.79rem",
-                }}
-                onClick={isAddMissing ? handleAddRow : undefined}
-              >
-                {isAddMissing ? (
-                  <>
-                    <AddIcon sx={{ mr: 0.5 }} />
-                    Add Row
-                  </>
-                ) : (
-                  <>
-                    Upload File
-                    <input
-                      type="file"
-                      accept=".jpg,.jpeg,.png,.pdf"
-                      hidden
-                      multiple
-                      ref={fileInputRef}
-                      onChange={handleFileUpload}
+            > */}
+              <Grid item xs={12} sm={6} md={4}>
+                <Button
+                  variant="contained"
+                  size="small"
+                  component={isAddMissing ? undefined : "label"}
+                  sx={{
+                    width: 130,
+                    height: 40,
+                    color: "white",
+                    background:
+                      "linear-gradient(to right, rgb(0, 90, 91), rgb(22, 149, 153))",
+                    fontSize: "0.79rem",
+                  }}
+                  onClick={isAddMissing ? handleAddRow : undefined}
+                >
+                  {isAddMissing ? (
+                    <>
+                      <AddIcon sx={{ mr: 0.5 }} />
+                      Add Row
+                    </>
+                  ) : (
+                    <>
+                      Upload File
+                      <input
+                        type="file"
+                        accept=".jpg,.jpeg,.png,.pdf"
+                        hidden
+                        multiple
+                        ref={fileInputRef}
+                        onChange={handleFileUpload}
+                      />
+                    </>
+                  )}
+                </Button>
+              </Grid>
+
+              {/* Checkbox Field */}
+              {/* <Grid item xs={6} md={4}> */}
+              <Grid item xs={12} sm={6} md={4}>
+                <FormControlLabel
+                  control={
+                    <Checkbox
+                      checked={isAddMissing}
+                      onChange={(e) => setIsAddMissing(e.target.checked)}
+                      size="medium"
+                      sx={{ color: "rgb(0, 90, 91)" }}
                     />
-                  </>
-                )}
-              </Button>
-            </Grid>
-
-            {/* Checkbox Field */}
-            <Grid item xs={6} md={4}>
-              <FormControlLabel
-                control={
-                  <Checkbox
-                    checked={isAddMissing}
-                    onChange={(e) => setIsAddMissing(e.target.checked)}
-                    size="medium"
-                    sx={{ color: "rgb(0, 90, 91)" }}
-                  />
-                }
-                label="Add Missing Document"
-              />
-            </Grid>
-
-            <Grid item xs={12} style={{ height: 550, paddingBottom: 40 }}>
-              <DataGrid
-                rows={updatedRows}
-                // rows={[...updatedRows].sort((a, b) => b.id - a.id)}
-                columns={visibleColumns}
-                pageSize={5}
-                rowsPerPageOptions={[5]}
-                disableRowSelectionOnClick
-                hideFooter
-                className="datagrid-style"
-                getRowClassName={(params) =>
-                  params.row.isDisabled ? "disabled-row" : ""
-                }
-                isCellEditable={(params) => !params.row.isDisabled}
-                onRowClick={(params, event) => {
-                  if (params.row.isDisabled) {
-                    event.stopPropagation();
                   }
-                }}
+                  label="Add Missing Document"
+                />
+              </Grid>
+
+              {/* <Grid item xs={12} style={{ height: 550, paddingBottom: 40 }}> */}
+              <Grid item xs={12} sx={{ height: 530, mt: 2 }}>
+                <DataGrid
+                  rows={updatedRows}
+                  // rows={[...updatedRows].sort((a, b) => b.id - a.id)}
+                  columns={visibleColumns}
+                  pageSize={5}
+                  rowsPerPageOptions={[5]}
+                  disableRowSelectionOnClick
+                  hideFooter
+                  className="datagrid-style"
+                  getRowClassName={(params) =>
+                    params.row.isDisabled ? "disabled-row" : ""
+                  }
+                  isCellEditable={(params) => !params.row.isDisabled}
+                  onRowClick={(params, event) => {
+                    if (params.row.isDisabled) {
+                      event.stopPropagation();
+                    }
+                  }}
+                  sx={{
+                    "& .MuiDataGrid-columnHeaders": {
+                      backgroundColor: (theme) =>
+                        theme.palette.custome.datagridcolor,
+                    },
+                    "& .MuiDataGrid-row:hover": {
+                      boxShadow: "0px 4px 20px rgba(0, 0, 0.2, 0.2)",
+                    },
+                    "& .disabled-row": {
+                      pointerEvents: "auto",
+                      opacity: 0.7,
+                    },
+                  }}
+                />
+              </Grid>
+              {/* Footer */}
+              <Grid
+                item
+                xs={12}
                 sx={{
-                  "& .MuiDataGrid-columnHeaders": {
-                    backgroundColor: (theme) =>
-                      theme.palette.custome.datagridcolor,
-                  },
-                  "& .MuiDataGrid-row:hover": {
-                    boxShadow: "0px 4px 20px rgba(0, 0, 0.2, 0.2)",
-                  },
-                  "& .disabled-row": {
-                    pointerEvents: "auto",
-                    opacity: 0.7,
-                  },
-                }}
-              />
-            </Grid>
-            {/* Footer */}
-            <Grid
-              item
-              xs={12}
-              sx={{
-                display: "flex",
-                justifyContent: "space-between",
-                position: "absolute",
-                bottom: 10,
-                left: 10,
-                right: 10,
-              }}
-            >
-              <Button
-                size="small"
-                onClick={clearFormData}
-                sx={{
-                  p: 1,
-                  width: 80,
-                  color: "rgb(0, 90, 91)",
-                  border: "1px solid rgb(0, 90, 91)",
-                  borderRadius: "8px",
+                  display: "flex",
+                  justifyContent: "space-between",
+                  position: "absolute",
+                  bottom: 10,
+                  left: 10,
+                  right: 10,
                 }}
               >
-                {ClearUpdateButton}
-              </Button>
-              <Button
-                type="submit"
-                size="small"
-                sx={{
-                  p: 1,
-                  width: 80,
-                  color: "white",
-                  background:
-                    "linear-gradient(to right, rgb(0, 90, 91), rgb(22, 149, 153))",
-                }}
-              >
-                {SaveUpdateButton}
-              </Button>
+                <Button
+                  size="small"
+                  onClick={clearFormData}
+                  sx={{
+                    p: 1,
+                    width: 80,
+                    color: "rgb(0, 90, 91)",
+                    border: "1px solid rgb(0, 90, 91)",
+                    borderRadius: "8px",
+                  }}
+                >
+                  {ClearUpdateButton}
+                </Button>
+                <Button
+                  type="submit"
+                  size="small"
+                  sx={{
+                    p: 1,
+                    width: 80,
+                    color: "white",
+                    background:
+                      "linear-gradient(to right, rgb(0, 90, 91), rgb(22, 149, 153))",
+                  }}
+                >
+                  {SaveUpdateButton}
+                </Button>
+              </Grid>
             </Grid>
-          </Grid>
+          </Box>
         </Paper>
       </Modal>
 
-      <Dialog
+      {/* <Dialog
         open={modalOpen}
         onClose={() => setModalOpen(false)}
-        // maxWidth="xs"
         fullWidth
         PaperProps={{
           sx: {
@@ -2045,9 +2057,191 @@ const UploadDocument = () => {
           </List>
         </DialogContent>
         <DialogActions>
-          {/* <Button onClick={() => setModalOpen(false)}>Cancel</Button> */}
-          <Button onClick={handleSaveModal} variant="contained">
+          <Button
+            onClick={handleSaveModal}
+            size="small"
+            sx={{
+              p: 1,
+              width: 80,
+              color: "white",
+              background:
+                "linear-gradient(to right, rgb(0, 90, 91), rgb(22, 149, 153))",
+            }}
+            variant="contained"
+          >
             Save
+          </Button>
+        </DialogActions>
+      </Dialog> */}
+      <Dialog
+        open={modalOpen}
+        onClose={() => setModalOpen(false)}
+        fullWidth
+        PaperProps={{
+          sx: {
+            height: 600,
+            maxHeight: 650,
+            width: 500,
+            borderRadius: 3,
+            overflow: "hidden",
+            boxShadow:
+              "0px 4px 20px rgba(0,0,0,0.1), 0 0 0 1px rgba(255,255,255,0.2) inset",
+          },
+        }}
+      >
+        {/* Sticky Header */}
+        <Box
+          sx={{
+            position: "sticky",
+            top: 0,
+            zIndex: 20,
+            // background: "white",
+            borderBottom: "1px solid #eee",
+            px: 2,
+            py: 1.5,
+          }}
+        >
+          <Grid
+            container
+            alignItems="center"
+            justifyContent="center"
+            sx={{ position: "relative" }}
+          >
+            <Typography
+              fontWeight="600"
+              fontSize={17}
+              sx={{
+                position: "absolute",
+                left: "50%",
+                transform: "translateX(-50%)",
+              }}
+            >
+              Select Missing Documents
+            </Typography>
+
+            <IconButton
+              onClick={() => setModalOpen(false)}
+              sx={{ ml: "auto" }}
+              size="small"
+            >
+              <CloseIcon />
+            </IconButton>
+          </Grid>
+
+          {/* Search Box */}
+          <TextField
+            placeholder="Search documents..."
+            fullWidth
+            size="small"
+            value={searchText}
+            sx={{
+              mt: 2,
+              "& .MuiOutlinedInput-root": {
+                borderRadius: 2,
+               },
+            }}
+            onChange={(e) => setSearchText(e.target.value)}
+            InputProps={{
+              startAdornment: (
+                <InputAdornment position="start">
+                  <SearchIcon sx={{ color: "#777" }} />
+                </InputAdornment>
+              ),
+              endAdornment: searchText && (
+                <InputAdornment position="end">
+                  <IconButton size="small" onClick={() => setSearchText("")}>
+                    <ClearIcon fontSize="small" />
+                  </IconButton>
+                </InputAdornment>
+              ),
+            }}
+          />
+        </Box>
+
+        {/* List */}
+        <DialogContent sx={{ px: 0, mt: 1 }}>
+          <List disablePadding>
+            {(subDocMap[currentRowId] || [])
+              .filter((d) =>
+                d.NameMR.toLowerCase().includes(searchText.toLowerCase())
+              )
+              .map((doc) => {
+                const checked = tempSelection.includes(doc.NameMR);
+
+                return (
+                  <ListItem
+                    key={doc.value}
+                    button
+                    onClick={() => {
+                      if (checked) {
+                        setTempSelection(
+                          tempSelection.filter((d) => d !== doc.NameMR)
+                        );
+                      } else {
+                        setTempSelection([...tempSelection, doc.NameMR]);
+                      }
+                    }}
+                    sx={{
+                      px: 2,
+                      py: 1,
+                      transition: "0.2s",
+                      background: checked
+                        ? "rgba(0,150,136,0.08)"
+                        : "transparent",
+                      "&:hover": {
+                        background: checked
+                          ? "rgba(0,150,136,0.15)"
+                          : "rgba(0,0,0,0.04)",
+                      },
+                    }}
+                  >
+                    <Checkbox
+                      checked={checked}
+                      sx={{
+                        "&.Mui-checked": {
+                          color: "rgb(22,149,153)",
+                        },
+                      }}
+                    />
+                    <ListItemText
+                      primary={doc.NameMR}
+                      primaryTypographyProps={{
+                        fontSize: 14,
+                        fontWeight: checked ? "600" : "400",
+                      }}
+                    />
+                  </ListItem>
+                );
+              })}
+          </List>
+        </DialogContent>
+
+        {/* Footer */}
+        <DialogActions
+          sx={{
+            p: 2,
+            borderTop: "1px solid #eee",
+           }}
+        >
+          <Button
+            onClick={handleSaveModal}
+            size="small"
+            fullWidth
+            sx={{
+              p: 1,
+              fontWeight: 600,
+              color: "white",
+              borderRadius: 2,
+              textTransform: "none",
+              background:
+                "linear-gradient(to right, rgb(0,90,91), rgb(22,149,153))",
+              "&:hover": {
+                opacity: 0.9,
+              },
+            }}
+            variant="contained"
+          >
+            Save Selection
           </Button>
         </DialogActions>
       </Dialog>

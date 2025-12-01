@@ -32,8 +32,7 @@ import Loader from "../components/Loader";
 import CollapsibleMenuGrid from "../components/MenuWithOneCollapse";
 import { BASE_URL } from "../Constant";
 import { useThemeMode } from "../Dashboard/Theme";
-
- import SearchIcon from "@mui/icons-material/Search";
+import SearchIcon from "@mui/icons-material/Search";
 
 const RoleCreation = () => {
   const [loaderOpen, setLoaderOpen] = React.useState(false);
@@ -64,7 +63,6 @@ const RoleCreation = () => {
   const [expandedRowIds, setExpandedRowIds] = React.useState([]);
   const [menuSearch, setMenuSearch] = React.useState("");
 
-  const [initialSelectedIds, setInitialSelectedIds] = React.useState([]);
   const [disabledMenuIds, setDisabledMenuIds] = React.useState([]);
 
   const initial = {
@@ -718,10 +716,10 @@ const RoleCreation = () => {
     });
     setRoleTableData((prev) => [...prev, ...selectedData]);
     setOpenMenu(false);
-    setDisabledMenuIds((prev) => [
-      ...prev,
-      ...selectedData.map((x) => x.SubMenuId),
-    ]);
+    // setDisabledMenuIds((prev) => [
+    //   ...prev,
+    //   ...selectedData.map((x) => x.SubMenuId),
+    // ]);
   };
 
   const clearFormData = () => {
@@ -1048,7 +1046,7 @@ const RoleCreation = () => {
     setPickerInitialSelectedIds(initialSelectedIds);
     setPickerDisabledSubmenuIds(disabledSubmenuIds);
     setOpenMenu(true);
-     setMenuSearch("")
+    setMenuSearch("");
   };
 
   const prepareExistingMenus = (roleTableData) => {
@@ -1081,12 +1079,20 @@ const RoleCreation = () => {
         <Grid
           item
           xs={12}
-          sx={{ display: "flex", justifyContent: "space-between" }}
+          alignItems="center"
+          sx={{
+            display: "flex",
+            flexWrap: "wrap",
+            justifyContent: {
+              xs: "center",
+              sm: "space-between",
+            },
+            gap: 2,
+          }}
         >
           <DialogTitle>MENUS</DialogTitle>
 
           <div style={{ display: "flex", alignItems: "center", gap: 8 }}>
-           
             <TextField
               size="small"
               placeholder="Search Menu here..."
@@ -1101,10 +1107,7 @@ const RoleCreation = () => {
                 ),
                 endAdornment: menuSearch ? (
                   <InputAdornment position="end">
-                    <IconButton
-                      size="small"
-                      onClick={() => setMenuSearch("")}  
-                    >
+                    <IconButton size="small" onClick={() => setMenuSearch("")}>
                       <CloseIcon fontSize="small" />
                     </IconButton>
                   </InputAdornment>
@@ -1158,6 +1161,10 @@ const RoleCreation = () => {
         sx={{
           backdropFilter: "blur(5px)",
           backgroundColor: "rgba(0, 0, 0, 0.3)",
+          display: "flex",
+          justifyContent: "center",
+          alignItems: "center",
+          p: 2,
         }}
       >
         <Paper
@@ -1165,11 +1172,14 @@ const RoleCreation = () => {
           sx={{
             width: "100%",
             maxWidth: 1400,
-            Height: 4500,
-            position: "absolute",
-            top: "50%",
-            left: "50%",
-            transform: "translate(-50%, -50%)",
+            maxHeight: "90vh",
+            overflowY: "auto",
+            borderRadius: 2,
+            position: "relative",
+
+            // hide scrollbar
+            "&::-webkit-scrollbar": { display: "none" },
+            scrollbarWidth: "none",
           }}
         >
           <Grid
@@ -1462,8 +1472,19 @@ const RoleCreation = () => {
         item
         lg={12}
         component={Paper}
-        sx={{ height: "76vh", width: "100%" }}
-      >
+        elevation={3}
+        sx={{
+          width: "100%",
+          p: 1,
+          height: {
+            xs: "70vh", // mobile
+            sm: "72vh", // tablets
+            md: "74vh", // desktops
+            lg: "76vh", // large screens
+          },
+        }}
+
+       >
         <DataGrid
           className="datagrid-style"
           sx={{

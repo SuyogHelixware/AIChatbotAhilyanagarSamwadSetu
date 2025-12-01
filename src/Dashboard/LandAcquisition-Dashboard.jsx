@@ -31,9 +31,8 @@ export default function LandAcquisition() {
   const [barCounts, setBarCounts] = useState([]);
   const [pieData, setPieData] = useState([]);
 
-    const [chartfromDate, setchartFromDate] = useState(dayjs().startOf("month"));
-    const [charttoDate, setchartToDate] = useState(dayjs());
-  
+  const [chartfromDate, setchartFromDate] = useState(dayjs().startOf("month"));
+  const [charttoDate, setchartToDate] = useState(dayjs());
 
   const officerColumns = [
     {
@@ -216,7 +215,7 @@ export default function LandAcquisition() {
       HandleOfficerList(fromDate, toDate);
       getYearlyBarChart(chartfromDate, charttoDate);
     }
-  }, [fromDate, toDate ,chartfromDate, charttoDate]);
+  }, [fromDate, toDate, chartfromDate, charttoDate]);
 
   // ----------------------------------
 
@@ -429,21 +428,50 @@ export default function LandAcquisition() {
 
           <Grid item xs={12} md={12}>
             <Paper elevation={6} sx={{ borderRadius: 3, py: 3 }}>
-              {/* <h3 style={{ marginLeft: 10, marginBottom: 10 }}>
-                Certificates Generated Per Month
-              </h3> */}
               <Grid
                 container
                 alignItems="center"
-                sx={{ mb: 2, position: "relative" }}
+                sx={{
+                  mb: 2,
+                  px: 1,
+                }}
               >
-                <Grid item xs={6} md={12} sx={{ textAlign: "center" }}>
-                  <Typography variant="h6" fontWeight={"bold"}>
+                <Grid
+                  item
+                  xs={12}
+                  md={10}
+                  sx={{
+                    display: "flex",
+                    justifyContent: {
+                      xs: "center",
+                      md: "center",
+                    },
+                    mb: { xs: 1, md: 0 },
+                  }}
+                >
+                  <Typography
+                    variant="h6"
+                    fontWeight={"bold"}
+                    sx={{
+                      mr: { md: "-150px" },
+                    }}
+                  >
                     Certificates Generated Per Month
                   </Typography>
                 </Grid>
 
-                <Grid item xs={6} md={12} sx={{ position: "absolute", right: 0 }}>
+                <Grid
+                  item
+                  xs={12}
+                  md={2}
+                  sx={{
+                    display: "flex",
+                    justifyContent: {
+                      xs: "center",
+                      md: "flex-end",
+                    },
+                  }}
+                >
                   <CustomMuiRangePicker
                     fromDate={chartfromDate}
                     toDate={charttoDate}
