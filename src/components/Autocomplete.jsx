@@ -58,12 +58,42 @@ export default function LazyAutocomplete({
 }) {
   const selectedObj = list.find((x) => x[displayField] === value) || null;
  
-  const handleChange = (_, newValue) => {
+//   const handleChange = (_, newValue) => {
+//   if (!newValue) return;
+
+//   const updatedValue = newValue[displayField];
+
+//   // INTERNAL grid update
+//   api.updateRows([{ id, [field]: updatedValue }]);
+//   setRows((p) =>
+//     p.map((r) =>
+//       r.id === id ? { ...r, [field]: updatedValue } : r
+//     )
+//   );
+
+//   // EXTERNAL callback (for parent)
+//   if (typeof onChangeValue === "function") {
+//     onChangeValue(newValue);
+//   }
+// };
+
+const handleChange = (_, newValue, reason) => {
+
+  // When click on  clear
+  if (reason === "clear") {
+    api.updateRows([{ id, [field]: "" }]);
+    setRows((p) =>
+      p.map((r) => (r.id === id ? { ...r, [field]: "" } : r))
+    );
+
+    if (onChangeValue) onChangeValue(null);
+    return;
+  }
+
   if (!newValue) return;
 
   const updatedValue = newValue[displayField];
 
-  // INTERNAL grid update
   api.updateRows([{ id, [field]: updatedValue }]);
   setRows((p) =>
     p.map((r) =>
@@ -71,12 +101,8 @@ export default function LazyAutocomplete({
     )
   );
 
-  // EXTERNAL callback (for parent)
-  if (typeof onChangeValue === "function") {
-    onChangeValue(newValue);
-  }
+  if (onChangeValue) onChangeValue(newValue);
 };
-
 
   return (
     <Tooltip title={value || ""} arrow placement="top">
@@ -98,9 +124,13 @@ export default function LazyAutocomplete({
         value={selectedObj}
         onChange={handleChange}
         /* Prevent Blank On Close */
-        onClose={() => {
-          if (value) api.updateRows([{ id, [field]: value }]);
-        }}
+        // onClose={() => {
+        //   if (value) api.updateRows([{ id, [field]: value }]);
+        // }}
+        onClose={(_, reason) => {
+  if (reason === "clear") return;  
+}}
+
         options={list}
         getOptionLabel={(o) => o[displayField] || ""}
         renderInput={(params) => (

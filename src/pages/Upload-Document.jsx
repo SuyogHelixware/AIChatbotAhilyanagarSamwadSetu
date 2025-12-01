@@ -551,15 +551,27 @@ const UploadDocument = () => {
             PopperProps={{ placement: "top-start" }}
             // onChangeValue={(selected) => {
             //   handleSelectDocType(selected);
+
             //   setRows((prev) =>
             //     prev.map((r) => (r.id === id ? { ...r, MissingDocs: [] } : r))
             //   );
             // }}
             onChangeValue={(selected) => {
-              handleSelectDocType(selected);
+              const selectedValue = selected?.NameMR || "";
 
+              // update row when cleared or selected
               setRows((prev) =>
-                prev.map((r) => (r.id === id ? { ...r, MissingDocs: [] } : r))
+                prev.map((r) => {
+                  if (r.id === id) {
+                    return {
+                      ...r,
+                      DocType: selectedValue,
+                      FileName: r.isNew ? selectedValue : r.FileName,
+                      MissingDocs: [],
+                    };
+                  }
+                  return r;
+                })
               );
             }}
           />
@@ -729,36 +741,36 @@ const UploadDocument = () => {
 
               {/* CHIPS + TOOLTIP */}
               {/* <Tooltip title={docs.join(", ") || ""} placement="top" arrow> */}
-                <Box
-                  onClick={() => !isDisabled && handleOpenModal(row)}
-                  sx={{
-                    display: "flex",
-                    flexWrap: "wrap",
-                    gap: 0.5,
-                    maxHeight: 48,
-                    overflow: "hidden",
-                    flex: 1,
-                  }}
-                >
-                  {docs.length > 0 ? (
-                    docs.map((d, idx) => (
-                      <Chip
-                        key={idx}
-                        label={d}
-                        size="small"
-                        sx={{
-                          maxWidth: 120,
-                          textOverflow: "ellipsis",
-                          overflow: "hidden",
-                        }}
-                      />
-                    ))
-                  ) : (
-                    <Typography variant="caption" sx={{ opacity: 0.6 }}>
-                      Add Missing Document
-                    </Typography>
-                  )}
-                </Box>
+              <Box
+                onClick={() => !isDisabled && handleOpenModal(row)}
+                sx={{
+                  display: "flex",
+                  flexWrap: "wrap",
+                  gap: 0.5,
+                  maxHeight: 48,
+                  overflow: "hidden",
+                  flex: 1,
+                }}
+              >
+                {docs.length > 0 ? (
+                  docs.map((d, idx) => (
+                    <Chip
+                      key={idx}
+                      label={d}
+                      size="small"
+                      sx={{
+                        maxWidth: 120,
+                        textOverflow: "ellipsis",
+                        overflow: "hidden",
+                      }}
+                    />
+                  ))
+                ) : (
+                  <Typography variant="caption" sx={{ opacity: 0.6 }}>
+                    Add Missing Document
+                  </Typography>
+                )}
+              </Box>
               {/* </Tooltip> */}
             </Box>
           </Tooltip>
@@ -1562,8 +1574,23 @@ const UploadDocument = () => {
         params: queryParams,
       });
 
+      // if (data.values) {
+      //   setDocmasterList(data.values);
+      // }
+      const list = data.values || [];
+
+      // If no data → stop further loading
+      if (list.length === 0) {
+        setHasMoreDocs(false);
+        return;
+      }
+
       if (data.values) {
-        setDocmasterList(data.values);
+        if (params.page === 0 || params.search) {
+          setDocmasterList(data.values);
+        } else {
+          setDocmasterList((prev) => [...prev, ...data.values]);
+        }
       }
     } catch (error) {
       console.error("Error fetching data:", error);
