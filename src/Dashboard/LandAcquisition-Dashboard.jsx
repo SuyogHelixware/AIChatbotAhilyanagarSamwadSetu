@@ -30,6 +30,7 @@ export default function LandAcquisition() {
   const [barMonths, setBarMonths] = useState([]);
   const [barCounts, setBarCounts] = useState([]);
   const [pieData, setPieData] = useState([]);
+  const [pieColorMode, setPieColorMode] = useState("normal");
 
   const [chartfromDate, setchartFromDate] = useState(dayjs().startOf("month"));
   const [charttoDate, setchartToDate] = useState(dayjs());
@@ -85,6 +86,18 @@ export default function LandAcquisition() {
       if (response.data && response.data.values) {
         const v = response.data.values;
 
+        const docs = v.TotalDocsLandAcqui ?? 0;
+        const missing = v.TotalMissingDocsLandAcqui ?? 0;
+
+        if (
+          (docs === 0 || docs === null) &&
+          (missing === 0 || missing === null)
+        ) {
+          setPieData([{ id: 0, value: 1, label: "No Data" }]);
+          setPieColorMode("empty");
+          return;
+        }
+
         setCounts({
           TotalMissingDocsLandAcqui: v.TotalMissingDocsLandAcqui || 0,
           TotalDocsLandAcqui: v.TotalDocsLandAcqui || 0,
@@ -95,12 +108,13 @@ export default function LandAcquisition() {
         setPieData([
           { id: 0, value: v.TotalDocsLandAcqui || 0, label: "Docs" },
           { id: 1, value: v.TotalMissingDocsLandAcqui || 0, label: "Missing" },
-          // { id: 2, value: v.TotalWPMsgSuccess || 0, label: "Success" },
-          // { id: 3, value: v.TotalWPMsgFailed || 0, label: "Failed" },
         ]);
+        setPieColorMode("normal");
       }
     } catch (error) {
       console.error("API Error:", error);
+      setPieData([{ id: 0, value: 0, label: "" }]);
+      setPieColorMode("empty");
     }
   };
 
@@ -418,7 +432,12 @@ export default function LandAcquisition() {
                     },
                   ]}
                   height={296}
-                  colors={["#28A745", "#EF6C00"]}
+                  // colors={["#28A745", "#EF6C00"]}
+                  colors={
+                    pieColorMode === "empty"
+                      ? ["#d62e25ff"]
+                      : ["#28A745", "#EF6C00"]
+                  }
                 />
               </div>
             </Paper>
