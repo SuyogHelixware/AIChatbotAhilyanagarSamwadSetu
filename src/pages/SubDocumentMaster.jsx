@@ -138,21 +138,6 @@ const SubDocumentMaster = () => {
         return;
       }
 
-      const selectedSubDocsForPayload = selectedSubDocsNames
-        .filter((name) => name)
-        .map((name) => ({
-          LineNum: 0,
-          Id: 0,
-          Status: 1,
-          CreatedDate: dayjs().format("YYYY-MM-DD"),
-          CreatedBy: sessionStorage.getItem("userId"),
-          ModifiedDate: dayjs().format("YYYY-MM-DD"),
-          ModifiedBy: sessionStorage.getItem("userId"),
-          NameEN: "",
-          NameMR: name,
-          Description: "",
-        }));
-
       const payload = {
         Id: null || formData.Id,
         CreatedDate: dayjs().format("YYYY-MM-DD"),
@@ -166,21 +151,20 @@ const SubDocumentMaster = () => {
         IsMainDoc: formData.IsMainDoc,
         Status: formData.Status === false ? 0 : 1,
 
-        // SubDocs: selectedRows
-        //   .filter((row) => row.NameMR)
-        //   .map((row, index) => ({
-        //     LineNum: 0,
-        //     Id: 0,
-        //     Status: 1,
-        //     CreatedDate: dayjs().format("YYYY-MM-DD"),
-        //     CreatedBy: sessionStorage.getItem("userId"),
-        //     ModifiedDate: dayjs().format("YYYY-MM-DD"),
-        //     ModifiedBy: sessionStorage.getItem("userId"),
-        //     NameEN: "",
-        //     NameMR: row.NameMR,
-        //     Description: row.Description || "",
-        //   })),
-        SubDocs: formData.IsMainDoc ? selectedSubDocsForPayload : [],
+        SubDocs: rows
+          .filter((row) => row.isChecked === true)
+          .map((row) => ({
+            LineNum: 0,
+            Id: 0,
+            Status: 1,
+            CreatedDate: dayjs().format("YYYY-MM-DD"),
+            CreatedBy: sessionStorage.getItem("userId"),
+            ModifiedDate: dayjs().format("YYYY-MM-DD"),
+            ModifiedBy: sessionStorage.getItem("userId"),
+            NameEN: row.NameEN,
+            NameMR: row.NameMR,
+            Description: row.Description,
+          })),
       };
       let response;
 
