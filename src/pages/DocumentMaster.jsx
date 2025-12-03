@@ -1,9 +1,12 @@
 import AddIcon from "@mui/icons-material/Add";
+import AddCircleOutlineIcon from "@mui/icons-material/AddCircleOutline";
 import ClearIcon from "@mui/icons-material/Clear";
 import CloseIcon from "@mui/icons-material/Close";
 import DeleteForeverIcon from "@mui/icons-material/DeleteForever";
 import EditNoteIcon from "@mui/icons-material/EditNote";
 import SearchIcon from "@mui/icons-material/Search";
+import React, { useEffect, useState } from "react";
+
 import {
   Box,
   Button,
@@ -26,7 +29,6 @@ import {
 import { DataGrid, GridToolbar } from "@mui/x-data-grid";
 import axios from "axios";
 import dayjs from "dayjs";
-import * as React from "react";
 import { Controller, useForm } from "react-hook-form";
 import Swal from "sweetalert2";
 import Loader from "../components/Loader";
@@ -38,32 +40,50 @@ const DocumentMaster = () => {
   const [DocumentData, setDocumentData] = React.useState([]);
   const [on, setOn] = React.useState(false);
   const [SaveUpdateButton, setSaveUpdateButton] = React.useState("UPDATE");
+  const [SaveSubDocUpdateButton, setSaveSubDocUpdateButton] =
+    React.useState("UPDATE");
   const [ClearUpdateButton, setClearUpdateButton] = React.useState("RESET");
+  const [ClearSubDocUpdateButton, setClearSubDocUpdateButton] =
+    React.useState("RESET");
   const [totalRows, setTotalRows] = React.useState("");
   const [currentPage, setCurrentPage] = React.useState(0);
   const [loading, setLoading] = React.useState(false);
   const [searchText, setSearchText] = React.useState("");
   const [limit, setLimit] = React.useState(20);
   const originalDataRef = React.useRef(null);
+  const originalSubDocsDataRef = React.useRef(null);
   const firstLoad = React.useRef(true);
   const selectedSubDocsRef = React.useRef([]);
   const { checkAccess } = useThemeMode();
-  const canAdd = checkAccess(5, "IsAdd");
-  const canEdit = checkAccess(5, "IsEdit");
-  const canDelete = checkAccess(5, "IsDelete");
-  const [selectedSubDocsNames, setSelectedSubDocsNames] = React.useState([]);
   const scrollRef = React.useRef(null);
   const [SubPage, setSubPage] = React.useState(0);
   const [hasSubMore, setSubHasMore] = React.useState(true);
   const [rows, setRows] = React.useState([]);
   const [searchSubText, setSearchSubText] = React.useState("");
+  const [OpenSubDocModal, setOpenSubDocModal] = React.useState(false);
+
+  const canAdd = checkAccess(5, "IsAdd");
+  const canEdit = checkAccess(5, "IsEdit");
+  const canDelete = checkAccess(5, "IsDelete");
+
+  const HandleOnSubDocModalClose = () => {
+    setOpenSubDocModal(false);
+  };
+
+  const HandleOPenSubDocModal = () => {
+    setOpenSubDocModal(true);
+    setSaveSubDocUpdateButton("SAVE");
+    setClearSubDocUpdateButton("CLEAR");
+    SubsetValue("SubNameEN", "");
+    SubsetValue("SubNameMR", "");
+    SubsetValue("SubDescription", "");
+  };
 
   const {
     handleSubmit,
     control,
     setValue,
     reset,
-    watch,
     getValues,
     formState: { errors },
   } = useForm({
@@ -72,9 +92,29 @@ const DocumentMaster = () => {
       NameMR: "",
       Description: "",
       Status: 1,
+      isMainDoc: true,
+      SubNameEN: "",
+      SubNameEN: "",
+      SubDescription: "",
     },
   });
-  const isMainDoc = watch("IsMainDoc");
+
+  const {
+    handleSubmit: handleSubmitSubModal,
+    control: SubControl,
+    setValue: SubsetValue,
+    reset: Subreset,
+    getValues: SubgetValues,
+    formState: { errors: Suberrors },
+  } = useForm({
+    defaultValues: {
+      Status: 1,
+      IsMainDoc: false,
+      SubNameEN: "",
+      SubNameEN: "",
+      SubDescription: "",
+    },
+  });
 
   const clearFormData = () => {
     if (ClearUpdateButton === "CLEAR") {
@@ -86,13 +126,34 @@ const DocumentMaster = () => {
         IsMainDoc: false,
         CreateSubDocRows: [],
       });
-      setSelectedSubDocsNames([]);
+      Subreset({
+        SubNameEN: "",
+        SubNameMR: "",
+        SubDescription: "",
+        Status: 1,
+      });
     }
 
     if (ClearUpdateButton === "RESET") {
       const old = originalDataRef.current;
       if (!old) return;
       reset(old);
+    }
+
+    if (ClearSubDocUpdateButton === "CLEAR") {
+      Subreset({
+        SubNameEN: "",
+        SubNameMR: "",
+        SubDescription: "",
+        Status: 1,
+        IsMainDoc: false,
+      });
+    }
+
+    if (ClearSubDocUpdateButton === "RESET") {
+      const oldSubDoc = originalSubDocsDataRef.current;
+      if (!oldSubDoc) return;
+      Subreset(oldSubDoc);
     }
   };
 
@@ -108,10 +169,17 @@ const DocumentMaster = () => {
     setValue("NameMR", "");
     setValue("Description", "");
     setOn(true);
-    setSelectedSubDocsNames([]);
-    setValue("IsMainDoc", false);
+    // setSelectedSubDocsNames([]);
+    setValue("IsMainDoc", true);
     resetTableAndFetch();
-    setRows([]);
+
+    setRows((prev) =>
+      prev.map((r) => ({
+        ...r,
+        isChecked: false,
+      }))
+    );
+    selectedSubDocsRef.current = [];
   };
 
   const validationAlert = (message) => {
@@ -137,21 +205,6 @@ const DocumentMaster = () => {
         return;
       }
 
-      const selectedSubDocsForPayload = selectedSubDocsNames
-        .filter((name) => name)
-        .map((name) => ({
-          LineNum: 0,
-          Id: 0,
-          Status: 1,
-          CreatedDate: dayjs().format("YYYY-MM-DD"),
-          CreatedBy: sessionStorage.getItem("userId"),
-          ModifiedDate: dayjs().format("YYYY-MM-DD"),
-          ModifiedBy: sessionStorage.getItem("userId"),
-          NameEN: "",
-          NameMR: name,
-          Description: "",
-        }));
-
       const payload = {
         Id: null || formData.Id,
         CreatedDate: dayjs().format("YYYY-MM-DD"),
@@ -165,21 +218,20 @@ const DocumentMaster = () => {
         IsMainDoc: formData.IsMainDoc,
         Status: formData.Status === false ? 0 : 1,
 
-        // SubDocs: selectedRows
-        //   .filter((row) => row.NameMR)
-        //   .map((row, index) => ({
-        //     LineNum: 0,
-        //     Id: 0,
-        //     Status: 1,
-        //     CreatedDate: dayjs().format("YYYY-MM-DD"),
-        //     CreatedBy: sessionStorage.getItem("userId"),
-        //     ModifiedDate: dayjs().format("YYYY-MM-DD"),
-        //     ModifiedBy: sessionStorage.getItem("userId"),
-        //     NameEN: "",
-        //     NameMR: row.NameMR,
-        //     Description: row.Description || "",
-        //   })),
-        SubDocs: formData.IsMainDoc ? selectedSubDocsForPayload : [],
+        SubDocs: rows
+          .filter((row) => row.isChecked === true)
+          .map((row) => ({
+            LineNum: 0,
+            Id: 0,
+            Status: 1,
+            CreatedDate: dayjs().format("YYYY-MM-DD"),
+            CreatedBy: sessionStorage.getItem("userId"),
+            ModifiedDate: dayjs().format("YYYY-MM-DD"),
+            ModifiedBy: sessionStorage.getItem("userId"),
+            NameEN: row.NameEN,
+            NameMR: row.NameMR,
+            Description: row.Description,
+          })),
       };
       let response;
 
@@ -258,11 +310,11 @@ const DocumentMaster = () => {
 
       const apiPage = page;
 
-      let apiUrl = `${BASE_URL}DocsMaster?Page=${apiPage}&Limit=${limit}`;
+      let apiUrl = `${BASE_URL}DocsMaster?Page=${apiPage}&Limit=${limit}&IsMainDoc=${true}`;
       if (searchText) {
         apiUrl = `${BASE_URL}DocsMaster?SearchText=${encodeURIComponent(
           searchText
-        )}&Page=${apiPage}&Limit=${limit}`;
+        )}&Page=${apiPage}&Limit=${limit}&IsMainDoc=${true}`;
       }
 
       const response = await axios.get(apiUrl);
@@ -274,6 +326,11 @@ const DocumentMaster = () => {
             id: page * limit + index + 1,
           }))
         );
+        const allData = response.data.values.map((item, index) => ({
+          ...item,
+          id: page * limit + index + 1,
+        }));
+        // setDocumentData(allData.filter((x) => x.IsMainDoc === true));
 
         setTotalRows(response.data.count || 0);
       } else {
@@ -350,10 +407,12 @@ const DocumentMaster = () => {
     {
       field: "actions",
       headerName: "Action",
-      width: 150,
       headerAlign: "center",
       align: "center",
       sortable: false,
+      minWidth: 90,
+      maxWidth: 110,
+      flex: 0.3,
       renderCell: (params) => (
         <strong>
           <Tooltip
@@ -398,10 +457,12 @@ const DocumentMaster = () => {
     {
       field: "srNo",
       headerName: "SR NO",
-      width: 80,
       sortable: false,
       headerAlign: "center",
       align: "center",
+      minWidth: 65,
+      maxWidth: 80,
+      flex: 0.2,
       renderCell: (params) => {
         const page = params.api.state.pagination.paginationModel.page;
         const pageSize = params.api.state.pagination.paginationModel.pageSize;
@@ -410,31 +471,32 @@ const DocumentMaster = () => {
       },
     },
 
-    {
-      field: "IsMainDoc",
-      headerName: "MAIN DOCUMENT",
-      width: 120,
-      sortable: false,
-      renderCell: (params) => (
-        <Checkbox
-          checked={params.value === true}
-          color="success"
-          size="medium"
-          onChange={(e) => {
-            const newValue = e.target.checked;
-            params.api.setEditCellValue({
-              id: params.id,
-              field: "IsMainDoc",
-              value: newValue,
-            });
-          }}
-        />
-      ),
-    },
+    // {
+    //   field: "IsMainDoc",
+    //   headerName: "MAIN DOCUMENT",
+    //   width: 120,
+    //   sortable: false,
+    //   renderCell: (params) => (
+    //     <Checkbox
+    //       checked={params.value === true}
+    //       color="success"
+    //       size="medium"
+    //       onChange={(e) => {
+    //         const newValue = e.target.checked;
+    //         params.api.setEditCellValue({
+    //           id: params.id,
+    //           field: "IsMainDoc",
+    //           value: newValue,
+    //         });
+    //       }}
+    //     />
+    //   ),
+    // },
     {
       field: "NameEN",
       headerName: "DOCUMENT NAME",
-      width: 300,
+      minWidth: 250,
+      flex: 1.2,
       headerAlign: "center",
       align: "center",
       sortable: false,
@@ -457,7 +519,8 @@ const DocumentMaster = () => {
     {
       field: "NameMR",
       headerName: "DOCUMENT NAME MARATHI",
-      width: 300,
+      minWidth: 250,
+      flex: 1.2,
       headerAlign: "center",
       align: "center",
       sortable: false,
@@ -481,7 +544,8 @@ const DocumentMaster = () => {
     {
       field: "Description",
       headerName: "DOCUMENT DESCRIPTION",
-      width: 500,
+      minWidth: 350,
+      flex: 1.8,
       sortable: false,
       renderCell: (params) => (
         <Tooltip title={params.value || ""} arrow placement="top-start">
@@ -502,7 +566,9 @@ const DocumentMaster = () => {
     {
       field: "Status",
       headerName: "Status",
-      width: 80,
+      minWidth: 80,
+      maxWidth: 100,
+      flex: 0.3,
       headerAlign: "center",
       align: "center",
       sortable: false,
@@ -576,12 +642,12 @@ const DocumentMaster = () => {
         setValue("Status", Document.Status);
         const existingNames = (Document.SubDocs || []).map((s) => s.NameMR);
         selectedSubDocsRef.current = existingNames;
-        setSelectedSubDocsNames(existingNames);
+        // setSelectedSubDocsNames(existingNames);
         setRows([]);
         setSubPage(0);
         setSubHasMore(true);
 
-        const newRows = await HandleSubDocs(0, null);
+        const newRows = await HandleSubDocsTableList(0, null);
         const updatedRows = newRows.map((r) => ({
           ...r,
           isChecked: existingNames.includes(r.NameMR),
@@ -596,7 +662,45 @@ const DocumentMaster = () => {
     }
   };
 
-  const HandleSubDocs = async (pageNo, search = searchSubText) => {
+  const handleUpdateSubDoc = async (rowData) => {
+    setSaveSubDocUpdateButton("UPDATE");
+    setClearSubDocUpdateButton("RESET");
+    setOpenSubDocModal(true);
+    setSearchText("");
+    try {
+      setLoading(true);
+      const apiUrl = `${BASE_URL}DocsMaster/${rowData.Id}`;
+      const response = await axios.get(apiUrl);
+      if (response.data.values) {
+        const SubDocument = response.data.values;
+
+        SubsetValue("Id", SubDocument.Id);
+        SubsetValue("SubNameEN", SubDocument.NameEN);
+        SubsetValue("SubNameMR", SubDocument.NameMR);
+        SubsetValue("SubDescription", SubDocument.Description);
+        SubsetValue("Status", SubDocument.Status);
+        SubsetValue("IsMainDoc", SubDocument.IsMainDoc);
+
+        setSubPage(0);
+
+        // store original values
+        originalSubDocsDataRef.current = {
+          SubNameEN: SubDocument.NameEN,
+          SubNameMR: SubDocument.NameMR,
+          SubDescription: SubDocument.Description,
+          Status: SubDocument.Status,
+          IsMainDoc: SubDocument.IsMainDoc,
+          Id: SubDocument.Id,
+        };
+      }
+    } catch (error) {
+      console.error("Error fetching Document data:", error);
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  const HandleSubDocsTableList = async (pageNo, search = searchSubText) => {
     if (loading) return [];
     setLoading(true);
     try {
@@ -639,7 +743,7 @@ const DocumentMaster = () => {
     const isBottom = el.scrollHeight - el.scrollTop <= el.clientHeight + 30;
 
     if (isBottom) {
-      HandleSubDocs(SubPage);
+      HandleSubDocsTableList(SubPage);
     }
   };
 
@@ -649,7 +753,103 @@ const DocumentMaster = () => {
     setSubHasMore(true);
     setSearchSubText(text);
 
-    setTimeout(() => HandleSubDocs(0, text), 0);
+    setTimeout(() => HandleSubDocsTableList(0, text), 0);
+  };
+
+  const handleSubmit01 = async (SubformData) => {
+    try {
+      const requiredFields = ["SubNameEN", "SubNameMR"];
+      const emptyRequiredFields = requiredFields.filter(
+        (field) => !SubformData[field]?.trim()
+      );
+
+      if (emptyRequiredFields.length > 0) {
+        validationAlert("Please fill in all required fields");
+        return;
+      }
+
+      const payload = {
+        Id: null || SubformData.Id,
+        CreatedDate: dayjs().format("YYYY-MM-DD"),
+        CreatedBy: sessionStorage.getItem("userId"),
+        ModifiedBy: sessionStorage.getItem("userId"),
+        ModifiedDate: dayjs().format("YYYY-MM-DD"),
+        NameEN: SubformData.SubNameEN,
+        NameMR: SubformData.SubNameMR,
+        Description: SubformData.SubDescription || "",
+        IsMainDoc: SubformData.IsMainDoc,
+        Status: 1,
+      };
+      let response;
+
+      if (SaveSubDocUpdateButton === "SAVE") {
+        setLoaderOpen(true);
+        response = await axios.post(`${BASE_URL}DocsMaster`, payload);
+      } else {
+        if (!SubformData.Id) {
+          Swal.fire({
+            position: "center",
+            icon: "error",
+            toast: true,
+            title: "Update Failed",
+            text: "Invalid Document ID",
+            showConfirmButton: true,
+          });
+          return;
+        }
+
+        const result = await Swal.fire({
+          text: "Do you want to Update...?",
+          icon: "warning",
+          showCancelButton: true,
+          confirmButtonColor: "#3085d6",
+          cancelButtonColor: "#d33",
+          confirmButtonText: "Yes, Update it!",
+        });
+
+        if (!result.isConfirmed) {
+          return;
+        }
+
+        setLoaderOpen(true);
+        response = await axios.put(
+          `${BASE_URL}DocsMaster/${SubformData.Id}`,
+          payload
+        );
+      }
+
+      setLoaderOpen(false);
+
+      if (response.data.success) {
+        Swal.fire({
+          position: "center",
+          icon: "success",
+          toast: true,
+          title:
+            SaveSubDocUpdateButton === "SAVE"
+              ? "Sub-Document Added Successfully"
+              : "Sub-Document Updated Successfully",
+          showConfirmButton: false,
+          timer: 1000,
+        });
+        HandleOnSubDocModalClose();
+        setRows([]);
+        setSubHasMore(true);
+        HandleSubDocsTableList(0, searchText);
+      } else {
+        throw new Error(response.data.message);
+      }
+    } catch (error) {
+      setLoaderOpen(false);
+      Swal.fire({
+        position: "center",
+        icon: "error",
+        toast: true,
+        title: "Failed",
+        text: error.message,
+        showConfirmButton: true,
+      });
+    }
   };
 
   return (
@@ -757,11 +957,11 @@ const DocumentMaster = () => {
                 />
               </Grid>
 
-              <Grid item xs={8}>
+              {/* <Grid item xs={8}>
                 <Controller
                   name="IsMainDoc"
                   control={control}
-                  defaultValue={false}
+                  defaultValue={true}
                   render={({ field }) => (
                     <FormControlLabel
                       control={
@@ -797,8 +997,8 @@ const DocumentMaster = () => {
                     />
                   )}
                 />
-              </Grid>
-              <Grid
+              </Grid> */}
+              {/* <Grid
                 item
                 xs={6}
                 sm={4}
@@ -833,145 +1033,195 @@ const DocumentMaster = () => {
                     />
                   )}
                 />
-              </Grid>
+              </Grid> */}
             </Grid>
 
             {/* ========================================================== */}
-            {isMainDoc && (
-              <>
-                {/* SEARCH BOX */}
-                <Box
-                  sx={{
-                    display: "flex",
-                    justifyContent: "flex-end",
-                    mb: 1,
-                    px: 1,
-                  }}
-                >
-                  <TextField
-                    placeholder="Search Document..."
-                    value={searchSubText}
-                    onChange={(e) => resetTableAndFetch(e.target.value)}
-                    size="small"
-                    InputProps={{
-                      startAdornment: (
-                        <InputAdornment position="start">
-                          <SearchIcon sx={{ color: "#777" }} />
-                        </InputAdornment>
-                      ),
-                      endAdornment: searchSubText && (
-                        <InputAdornment position="end">
-                          <IconButton
-                            onClick={() => resetTableAndFetch("")}
-                            edge="end"
-                            size="small"
-                          >
-                            <ClearIcon />
-                          </IconButton>
-                        </InputAdornment>
-                      ),
-                      sx: { borderRadius: "8px", paddingRight: "4px" },
-                    }}
-                    sx={{
-                      width: {
-                        xs: "100%",
-                        sm: "280px",
-                        md: "300px",
-                      },
-                      "& .MuiOutlinedInput-root": {
-                        borderRadius: "12px",
-                      },
-                    }}
+
+            <Box
+              sx={{
+                display: "flex",
+                flexWrap: "wrap",
+                justifyContent: "space-between",
+                alignItems: "center",
+                gap: 2,
+                mb: 2,
+                mt: 2,
+              }}
+            >
+              {/* Active Checkbox */}
+              <Controller
+                name="Status"
+                control={control}
+                defaultValue={false}
+                render={({ field }) => (
+                  <FormControlLabel
+                    sx={{ ml: 1 }}
+                    label={<span style={{ fontWeight: "bold" }}>Active</span>}
+                    control={
+                      <Checkbox
+                        {...field}
+                        checked={field.value}
+                        onChange={(e) => field.onChange(e.target.checked)}
+                        size="medium"
+                        color="primary"
+                        sx={{
+                          "& .MuiSvgIcon-root": {
+                            fontSize: 26,
+                            fontWeight: 700,
+                          },
+                        }}
+                      />
+                    }
                   />
-                </Box>
+                )}
+              />
 
-                <Box
-                  ref={scrollRef}
-                  onScroll={handleScroll}
-                  sx={{
-                    height: { xs: 250, sm: 350, md: 400 },
-                    width: "100%",
-                    overflowY: "auto",
-                    border: "1px solid #ddd",
-                    borderRadius: "8px",
-                    maxWidth: "100%",
-                  }}
-                >
-                  <Table stickyHeader>
-                    <TableHead>
-                      <TableRow>
-                        <TableCell
-                          sx={{
-                            fontWeight: "bold",
-                            fontSize: "13px",
-                            whiteSpace: "nowrap",
-                          }}
-                        >
-                          SR NO
-                        </TableCell>
-                        <TableCell
-                          sx={{
-                            fontWeight: "bold",
-                            fontSize: "13px",
-                            whiteSpace: "nowrap",
-                          }}
-                        >
-                          SELECT
-                        </TableCell>
-                        <TableCell
-                          sx={{
-                            fontWeight: "bold",
-                            fontSize: "13px",
-                            textAlign: "center",
-                            paddingRight: { xs: 0, md: "80px" },
-                            whiteSpace: "nowrap",
-                          }}
-                        >
-                          DOCUMENT NAME
-                        </TableCell>
-                      </TableRow>
-                    </TableHead>
+              {/* Add Button */}
+              <Tooltip title="Add Sub Document" arrow>
+                <IconButton onClick={() => HandleOPenSubDocModal()}>
+                  <AddCircleOutlineIcon sx={{ fontSize: 32, color: "#555" }} />
+                </IconButton>
+              </Tooltip>
 
-                    <TableBody>
-                      {rows.map((row, i) => (
-                        <TableRow
-                          key={row.id}
-                          sx={{
-                            "& .MuiTableCell-root": { padding: "9px 15px" },
-                          }}
-                        >
-                          <TableCell>{i + 1}</TableCell>
+              {/* Search Box */}
+              <TextField
+                placeholder="Search Document..."
+                value={searchSubText}
+                onChange={(e) => resetTableAndFetch(e.target.value)}
+                size="small"
+                InputProps={{
+                  startAdornment: (
+                    <InputAdornment position="start">
+                      <SearchIcon sx={{ color: "#777" }} />
+                    </InputAdornment>
+                  ),
+                  endAdornment: searchSubText && (
+                    <InputAdornment position="end">
+                      <IconButton
+                        onClick={() => resetTableAndFetch("")}
+                        edge="end"
+                        size="small"
+                      >
+                        <ClearIcon />
+                      </IconButton>
+                    </InputAdornment>
+                  ),
+                  sx: { borderRadius: "8px", paddingRight: "4px" },
+                }}
+                sx={{
+                  width: {
+                    xs: "100%",
+                    sm: "250px",
+                    md: "280px",
+                  },
+                  "& .MuiOutlinedInput-root": {
+                    borderRadius: "12px",
+                  },
+                }}
+              />
+            </Box>
 
-                          <TableCell>
-                            <Checkbox
-                              checked={row.isChecked || false}
-                              onChange={() => toggleCheck(row)}
-                            />
-                          </TableCell>
+            <Box
+              ref={scrollRef}
+              onScroll={handleScroll}
+              sx={{
+                height: { xs: 250, sm: 350, md: 400 },
+                width: "100%",
+                overflowY: "auto",
+                border: "1px solid #ddd",
+                borderRadius: "8px",
+                maxWidth: "100%",
+              }}
+            >
+              <Table stickyHeader>
+                <TableHead>
+                  <TableRow>
+                    <TableCell
+                      sx={{
+                        fontWeight: "bold",
+                        fontSize: "13px",
+                        whiteSpace: "nowrap",
+                      }}
+                    >
+                      SR NO
+                    </TableCell>
+                    <TableCell
+                      sx={{
+                        fontWeight: "bold",
+                        fontSize: "13px",
+                        whiteSpace: "nowrap",
+                      }}
+                    >
+                      ACTION
+                    </TableCell>
+                    <TableCell
+                      sx={{
+                        fontWeight: "bold",
+                        fontSize: "13px",
+                        whiteSpace: "nowrap",
+                      }}
+                    >
+                      SELECT
+                    </TableCell>
+                    <TableCell
+                      sx={{
+                        fontWeight: "bold",
+                        fontSize: "13px",
+                        textAlign: "center",
+                        paddingRight: { xs: 0, md: "80px" },
+                        whiteSpace: "nowrap",
+                      }}
+                    >
+                      DOCUMENT NAME
+                    </TableCell>
+                  </TableRow>
+                </TableHead>
 
-                          <TableCell
-                            onClick={() => toggleCheck(row)}
-                            sx={{ cursor: "pointer" }}
-                          >
-                            <Tooltip title={row.NameMR || ""}>
-                              <span>{row.NameMR}</span>
-                            </Tooltip>
-                          </TableCell>
-                        </TableRow>
-                      ))}
+                <TableBody>
+                  {rows.map((row, i) => (
+                    <TableRow
+                      key={row.id}
+                      sx={{
+                        "& .MuiTableCell-root": { padding: "9px 15px" },
+                      }}
+                    >
+                      <TableCell>{i + 1}</TableCell>
+                      <TableCell>
+                        <EditNoteIcon
+                          sx={{ cursor: "pointer", color: "#1976d2" }}
+                          onClick={() => handleUpdateSubDoc(row)}
+                        />
+                      </TableCell>
 
-                      {loading && (
-                        <TableRow>
-                          <TableCell colSpan={3} align="center">
-                            Loading...
-                          </TableCell>
-                        </TableRow>
-                      )}
-                    </TableBody>
-                  </Table>
-                </Box>
-              </>
-            )}
+                      <TableCell>
+                        <Checkbox
+                          checked={row.isChecked || false}
+                          onChange={() => toggleCheck(row)}
+                        />
+                      </TableCell>
+
+                      <TableCell
+                        onClick={() => toggleCheck(row)}
+                        sx={{ cursor: "pointer" }}
+                      >
+                        <Tooltip title={row.NameMR || ""}>
+                          <span>{row.NameMR}</span>
+                        </Tooltip>
+                      </TableCell>
+                    </TableRow>
+                  ))}
+
+                  {loading && (
+                    <TableRow>
+                      <TableCell colSpan={3} align="center">
+                        Loading...
+                      </TableCell>
+                    </TableRow>
+                  )}
+                </TableBody>
+              </Table>
+            </Box>
 
             {/* =====================Footer=================== */}
             <Grid
@@ -1035,7 +1285,7 @@ const DocumentMaster = () => {
           </Grid>
         </Paper>
       </Modal>
-      <Grid
+      {/* <Grid
         container
         md={12}
         lg={12}
@@ -1063,55 +1313,221 @@ const DocumentMaster = () => {
         >
           Manage Documents
         </Typography>
-      </Grid>
-      <Grid container spacing={2} marginBottom={1} justifyContent="flex-end">
-        <Grid textAlign={"end"} marginBottom={1}>
-          <Tooltip
-            title={!canAdd ? "You don't have Add permission" : ""}
-            placement="top"
+      </Grid> */}
+      {/* ========Sub Doc Modal=============== */}
+
+      <Modal
+        open={OpenSubDocModal}
+        sx={{
+          backdropFilter: "blur(2px)",
+          backgroundColor: "rgba(0, 0, 0, 0.3)",
+        }}
+      >
+        <Paper
+          elevation={10}
+          sx={{
+            width: "100%",
+            maxWidth: 500,
+            position: "absolute",
+            top: "50%",
+            left: "50%",
+            transform: "translate(-50%, -50%)",
+            justifyContent: "center",
+            overflow: "auto",
+            maxHeight: "80vh",
+          }}
+        >
+          <Grid
+            container
+            component="form"
+            spacing={3}
+            padding={3}
+            flexDirection="column"
+            onSubmit={handleSubmitSubModal(handleSubmit01)}
           >
-            <span>
+            {/* HEADER */}
+            <Grid
+              item
+              xs={12}
+              display="flex"
+              justifyContent="space-between"
+              alignItems="center"
+            >
+              <Typography fontWeight="bold" textAlign={"center"}>
+                ADD SUB-DOCUMENT
+              </Typography>
+              <IconButton onClick={HandleOnSubDocModalClose}>
+                <CloseIcon />
+              </IconButton>
+            </Grid>
+
+            {/* FORM FIELDS */}
+            <Grid container item xs={12} spacing={2}>
+              <Grid item xs={12} sm={6} lg={6}>
+                <Controller
+                  name="SubNameEN"
+                  control={SubControl}
+                  rules={{ required: "This field is required" }}
+                  render={({ field, fieldState }) => (
+                    <TextField
+                      {...field}
+                      fullWidth
+                      label="DOCUMENT NAME (ENGLISH)"
+                      size="small"
+                      InputLabelProps={{ shrink: true }}
+                      error={!!fieldState.error}
+                      helperText={fieldState.error?.message}
+                    />
+                  )}
+                />
+              </Grid>
+
+              <Grid item xs={12} sm={6} lg={6}>
+                <Controller
+                  name="SubNameMR"
+                  control={SubControl}
+                  rules={{ required: "This field is required" }}
+                  render={({ field, fieldState }) => (
+                    <TextField
+                      {...field}
+                      fullWidth
+                      label="DOCUMENT NAME (MARATHI)"
+                      size="small"
+                      InputLabelProps={{ shrink: true }}
+                      error={!!fieldState.error}
+                      helperText={fieldState.error?.message}
+                    />
+                  )}
+                />
+              </Grid>
+
+              <Grid item xs={12}>
+                <Controller
+                  name="SubDescription"
+                  control={SubControl}
+                  render={({ field }) => (
+                    <TextField
+                      {...field}
+                      fullWidth
+                      multiline
+                      minRows={2}
+                      label="DESCRIPTION"
+                      size="small"
+                    />
+                  )}
+                />
+              </Grid>
+            </Grid>
+
+            {/* =====================Footer=================== */}
+            <Grid
+              item
+              xs={12}
+              md={12}
+              display="flex"
+              justifyContent="space-between"
+              alignItems="center"
+              sx={{
+                position: "sticky",
+                borderTop: "1px solid #ddd",
+                zIndex: 20,
+                bottom: 2,
+                left: 5,
+                right: 0,
+              }}
+            >
               <Button
-                onClick={handleOnSave}
-                disabled={!canAdd}
-                type="text"
-                size="medium"
+                size="small"
+                onClick={() => clearFormData()}
                 sx={{
-                  pr: 2,
-                  mb: 0,
-                  mt: 2,
+                  p: 1,
+                  width: 80,
+                  color: "rgb(0, 90, 91)",
+                  background: "transparent",
+                  border: "1px solid rgb(0, 90, 91)",
+                  borderRadius: "8px",
+                  transition: "all 0.2s ease-in-out",
+                  "&:hover": {
+                    background: "rgba(0, 90, 91, 0.1)",
+                    transform: "translateY(2px)",
+                  },
+                }}
+              >
+                {ClearSubDocUpdateButton}
+              </Button>
+              <Button
+                type="submit"
+                size="small"
+                sx={{
+                  marginTop: 1,
+                  p: 1,
+                  width: 80,
                   color: "white",
                   background:
                     "linear-gradient(to right, rgb(0, 90, 91), rgb(22, 149, 153))",
-                  borderRadius: "8px",
-                  transition: "all 0.2s ease-in-out",
-                  boxShadow: "0 4px 8px rgba(0, 90, 91, 0.3)",
+                  boxShadow: 5,
                   "&:hover": {
                     transform: "translateY(2px)",
                     boxShadow: "0 2px 4px rgba(0, 90, 91, 0.2)",
                   },
-                  "& .MuiButton-label": {
-                    display: "flex",
-                    alignItems: "center",
-                  },
-                  "& .MuiSvgIcon-root": {
-                    marginRight: "10px",
-                  },
                 }}
               >
-                <AddIcon />
-                Add Document
+                {SaveSubDocUpdateButton}
               </Button>
-            </span>
-          </Tooltip>
-        </Grid>
+            </Grid>
+
+            <Grid />
+          </Grid>
+        </Paper>
+      </Modal>
+
+      {/* =================== */}
+      <Grid container spacing={2} marginBottom={1} justifyContent="flex-end">
+        <Tooltip
+          title={!canAdd ? "You don't have Add permission" : ""}
+          placement="top"
+        >
+          <span>
+            <Button
+              onClick={handleOnSave}
+              disabled={!canAdd}
+              type="text"
+              size="medium"
+              sx={{
+                pr: 2,
+                mb: 0,
+                mt: 2,
+                color: "white",
+                background:
+                  "linear-gradient(to right, rgb(0, 90, 91), rgb(22, 149, 153))",
+                borderRadius: "8px",
+                transition: "all 0.2s ease-in-out",
+                boxShadow: "0 4px 8px rgba(0, 90, 91, 0.3)",
+                "&:hover": {
+                  transform: "translateY(2px)",
+                  boxShadow: "0 2px 4px rgba(0, 90, 91, 0.2)",
+                },
+                "& .MuiButton-label": {
+                  display: "flex",
+                  alignItems: "center",
+                },
+                "& .MuiSvgIcon-root": {
+                  marginRight: "10px",
+                },
+              }}
+            >
+              <AddIcon />
+              Add Document
+            </Button>
+          </span>
+        </Tooltip>
       </Grid>
       <Grid
         container
         item
         lg={12}
         component={Paper}
-        sx={{ height: "75vh", width: "100%" }}
+        sx={{ height: "66.5vh", width: "100%" }}
       >
         <DataGrid
           className="datagrid-style"

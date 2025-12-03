@@ -31,6 +31,7 @@ import SJYGandhiDashboard from "../Dashboard/SJYGandhi-Dashboard";
 import LandAcquistionReport from "../pages/Reports/LandAcquistion-Report";
 import SJYGandhiReport from "../pages/Reports/SJYGandhi-Report";
 import LandAcquisition from "../Dashboard/LandAcquisition-Dashboard";
+import ManageDocPage from "../pages/ManageDocPage";
 
 export default function Routing() {
   const { roleAccess } = useThemeMode();
@@ -41,8 +42,7 @@ export default function Routing() {
         <Routes>
           <Route path="/" element={<Signin />} />
           <Route path="forgot-password" element={<ForgotPassword />} />
-          {/* 👈 Add this route */}
-          <Route path="dashboard" element={<Dashboard />}>
+           <Route path="dashboard" element={<Dashboard />}>
             {/* <Route path="home" element={<Home />} /> */}
             <Route
               path="home"
@@ -77,8 +77,7 @@ export default function Routing() {
                 </ProtectedRoute>
               }
             />
-            {/* <Route path="RoleCreation" element={<RoleCreation />} /> */}
-            <Route
+             <Route
               path="RoleCreation"
               element={
                 <ProtectedRoute menuId={12} roleAccess={roleAccess}>
@@ -86,8 +85,7 @@ export default function Routing() {
                 </ProtectedRoute>
               }
             />
-            {/* <Route path="department" element={<Department />} /> */}
-            <Route
+             <Route
               path="department"
               element={
                 <ProtectedRoute menuId={6} roleAccess={roleAccess}>
@@ -95,8 +93,7 @@ export default function Routing() {
                 </ProtectedRoute>
               }
             />
-            {/* <Route path="Services" element={<Services />} /> */}
-            <Route
+             <Route
               path="Services"
               element={
                 <ProtectedRoute menuId={7} roleAccess={roleAccess}>
@@ -113,17 +110,23 @@ export default function Routing() {
                 </ProtectedRoute>
               }
             />
-            {/* <Route path="DocumentMaster" element={<DocumentMaster />} /> */}
-            <Route
+             {/* <Route
               path="DocumentMaster"
               element={
                 <ProtectedRoute menuId={5} roleAccess={roleAccess}>
                   <DocumentMaster />
                 </ProtectedRoute>
               }
+            /> */}
+               <Route
+              path="ManageDocPage"
+              element={
+                <ProtectedRoute menuId={5} roleAccess={roleAccess}>
+                  <ManageDocPage />
+                </ProtectedRoute>
+              }
             />
-            {/* <Route path="ManageDocumentsPage" element={<ManageDocumentsPage />} /> */}
-            {/* <Route path="EmailSetup" element={<EmailSetup />} /> */}
+            
             <Route
               path="EmailSetup"
               element={
@@ -141,8 +144,7 @@ export default function Routing() {
                 </ProtectedRoute>
               }
             />
-            {/* <Route path="Upload-Document" element={<UploadDocument />} /> */}
-            {/* <Route path="Report" element={<Report />} /> */}
+            
             <Route
               path="Upload-Document"
               element={
@@ -159,8 +161,7 @@ export default function Routing() {
                 </ProtectedRoute>
               }
             />
-            {/* <Route path="SanjayGandhi" element={<SanjayGandhi />} /> */}
-            <Route
+             <Route
               path="Rehabilitation"
               element={
                 <ProtectedRoute menuId={11} roleAccess={roleAccess}>

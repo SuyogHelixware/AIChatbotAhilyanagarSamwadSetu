@@ -283,13 +283,18 @@ export default function Dashboard() {
     //   path: "EmailSetup",
     //   menuId: 2,
     // },
-
-    {
+ {
       label: "Documents Master",
       icon: <DescriptionIcon />,
-      path: "DocumentMaster",
+      path: "ManageDocPage",
       menuId: 5,
     },
+    // {
+    //   label: "Documents Master",
+    //   icon: <DescriptionIcon />,
+    //   path: "DocumentMaster",
+    //   menuId: 5,
+    // },
     {
       label: "Gazetted Master",
       icon: <ChecklistIcon />,
