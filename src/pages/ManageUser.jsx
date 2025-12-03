@@ -764,26 +764,42 @@ export default function ManageUsers() {
         sx={{
           backdropFilter: "blur(5px)",
           backgroundColor: "rgba(0, 0, 0, 0.3)",
+          display: "flex",
+          justifyContent: "center",
+          alignItems: "center",
         }}
       >
         <Paper
           elevation={10}
+          // sx={{
+          //   width: "90%",
+          //   maxWidth: 650,
+          //   height: 600,
+          //   position: "absolute",
+          //   top: "50%",
+          //   left: "50%",
+          //   transform: "translate(-50%, -50%)",
+          //   padding: 3,
+          //   justifyContent: "center",
+          //   textAlign: "center",
+          //   overflowY: { xs: "scroll", md: "auto" },
+          //   "&::-webkit-scrollbar": {
+          //     display: "none",
+          //   },
+          //   msOverflowStyle: "none",
+          //   scrollbarWidth: "none",
+          // }}
+
           sx={{
-            width: "90%",
-            maxWidth: 650,
-            height: 600,
-            position: "absolute",
-            top: "50%",
-            left: "50%",
-            transform: "translate(-50%, -50%)",
-            padding: 3,
-            justifyContent: "center",
-            textAlign: "center",
-            overflowY: { xs: "scroll", md: "auto" },
-            "&::-webkit-scrollbar": {
-              display: "none",
-            },
-            msOverflowStyle: "none",
+            width: { xs: "95%", sm: "90%", md: 650 },
+            maxHeight: { xs: "90vh", md: "85vh" },
+            overflowY: "auto",
+            position: "relative",
+            p: 3,
+            borderRadius: 2,
+
+            // Hide scrollbar
+            "&::-webkit-scrollbar": { display: "none" },
             scrollbarWidth: "none",
           }}
         >
@@ -1344,8 +1360,7 @@ export default function ManageUsers() {
               <Button
                 type="submit"
                 size="small"
-                // onClick={() => OnSubmit(data.Id)}
-                sx={{
+                 sx={{
                   p: 1,
                   width: 80,
                   color: "white",

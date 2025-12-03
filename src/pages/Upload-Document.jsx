@@ -7,12 +7,22 @@ import EditNoteIcon from "@mui/icons-material/EditNote";
 import RemoveRedEyeIcon from "@mui/icons-material/RemoveRedEye";
 import {
   Autocomplete,
+  Box,
   Button,
   Checkbox,
+  Chip,
+  Dialog,
+  DialogActions,
+  DialogContent,
+  DialogTitle,
+  Divider,
   FormControlLabel,
   Grid,
   IconButton,
+  InputAdornment,
   InputBase,
+  List,
+  ListItem,
   ListItemText,
   MenuItem,
   Modal,
@@ -30,12 +40,17 @@ import { Controller, useForm } from "react-hook-form";
 import Swal from "sweetalert2";
 import InputTextField, {
   DatePickerField,
+  DatePickerFieldUploadDocModel,
   InputDescriptionField,
 } from "../components/Component";
 import Loader from "../components/Loader";
 import { BASE_URL } from "../Constant";
 import { useThemeMode } from "../Dashboard/Theme";
 import LazyAutocomplete from "../components/Autocomplete";
+
+import ListIcon from "@mui/icons-material/List";
+import ClearIcon from "@mui/icons-material/Clear";
+import SearchIcon from "@mui/icons-material/Search";
 
 const UploadDocument = () => {
   const [loaderOpen, setLoaderOpen] = React.useState(false);
@@ -81,6 +96,15 @@ const UploadDocument = () => {
   const [docSearch, setDocSearch] = React.useState("");
 
   // ======================
+  const [modalOpen, setModalOpen] = React.useState(false);
+  const [currentRowId, setCurrentRowId] = React.useState(null);
+  const [tempSelection, setTempSelection] = React.useState([]);
+  const [OpenModal, setOpenModal] = React.useState("");
+
+  // const [searchText, setSearchText] = useState("");
+  // const handleOpen = () => setOpenModal(true);
+  // const handleClose = () => setOpenModal(false);
+  // ==================
 
   const initial = {
     Status: "1",
@@ -94,7 +118,7 @@ const UploadDocument = () => {
     oDocLines: [],
   };
 
-  const { handleSubmit, control, reset } = useForm({
+  const { handleSubmit, control, reset, watch, setValue } = useForm({
     defaultValues: {
       initial,
     },
@@ -117,40 +141,43 @@ const UploadDocument = () => {
   const [search, setSearch] = React.useState("");
 
   // ------------ COMMON LISTBOX ------------
-  const CommonListBox = React.forwardRef(function CommonListBox(props, ref) {
-    const {
-      children,
-      onLazyLoad,
-      loading,
-      hasMore,
-      pageSetter,
-      page,
-      search,
-      ...other
-    } = props;
 
-    const handleScroll = (event) => {
-      const list = event.currentTarget;
-      const bottom = list.scrollHeight - (list.scrollTop + list.clientHeight);
-
-      if (bottom < 30 && !loading && hasMore) {
-        const nextPage = page + 1;
-        pageSetter(nextPage);
-        onLazyLoad({ page: nextPage, search: search });
+  React.useEffect(() => {
+    let changed = false;
+    const updated = rows.map((r) => {
+      if (
+        r.isNew &&
+        !r.isFileNameEdited &&
+        r.DocType &&
+        r.FileName !== r.DocType
+      ) {
+        changed = true;
+        return { ...r, FileName: r.DocType };
       }
-    };
+      return r;
+    });
 
-    return (
-      <ul
-        {...other}
-        ref={ref}
-        style={{ maxHeight: 250, overflow: "auto" }}
-        onScroll={handleScroll}
-      >
-        {children}
-      </ul>
+    if (changed) setRows(updated);
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [rows.map((r) => r.DocType).join(",")]);
+
+  const handleOpenModal = (row) => {
+    setCurrentRowId(row.id);
+    setTempSelection(row.MissingDocs || []);
+    setModalOpen(true);
+    setSearchText("");
+  };
+
+  const handleSaveModal = () => {
+    setRows((prev) =>
+      prev.map((r) =>
+        r.id === currentRowId ? { ...r, MissingDocs: tempSelection } : r
+      )
     );
-  });
+    console.log("dff", tempSelection);
+
+    setModalOpen(false);
+  };
 
   const DocColumns = [
     {
@@ -232,29 +259,108 @@ const UploadDocument = () => {
       },
     },
 
+    // {
+    //   field: "FileName",
+    //   headerName: "DOCUMENT NAME",
+    //   flex: 1,
+    //   width: 200,
+    //   sortable: false,
+    //   renderCell: (params) => {
+    //     const { id, field, api, value, row } = params;
+    //     const isDisabled = row.isDisabled;
+    //     const handleChange = (event) => {
+    //       const newValue = event.target.value;
+    //       api.updateRows([{ id, [field]: newValue }]);
+    //       setRows((prev) =>
+    //         prev.map((row) =>
+    //           row.id === id ? { ...row, [field]: newValue } : row
+    //         )
+    //       );
+    //     };
+    //     const displayValue = value ? value.replace(/\.[^/.]+$/, "") : "";
+    //     return (
+    //       <Tooltip title={displayValue || ""} arrow placement="top">
+    //         <TextField
+    //           value={displayValue ?? ""}
+    //           onChange={handleChange}
+    //           onKeyDown={(e) => e.stopPropagation()}
+    //           fullWidth
+    //           size="small"
+    //           variant="outlined"
+    //           disabled={isDisabled}
+    //         />
+    //       </Tooltip>
+    //     );
+    //   },
+    // },
+    // {
+    //   field: "FileName",
+    //   headerName: "DOCUMENT NAME",
+    //   flex: 1,
+    //   width: 200,
+    //   sortable: false,
+    //   renderCell: (params) => {
+    //     const { id, api, row } = params;
+    //     const isDisabled = row.isDisabled;
+
+    //     const handleChange = (event) => {
+    //       const newValue = event.target.value;
+    //       api.updateRows([{ id, FileName: newValue }]);
+    //       setRows((prev) =>
+    //         prev.map((r) => (r.id === id ? { ...r, FileName: newValue } : r))
+    //       );
+    //     };
+
+    //     // Show the auto-filled or manually typed value
+    //     const displayValue = row.FileName || "";
+
+    //     return (
+    //       <Tooltip title={displayValue} arrow placement="top">
+    //         <TextField
+    //           value={displayValue}
+    //           onChange={handleChange}
+    //           onKeyDown={(e) => e.stopPropagation()}
+    //           fullWidth
+    //           size="small"
+    //           variant="outlined"
+    //           disabled={isDisabled}
+    //         />
+    //       </Tooltip>
+    //     );
+    //   },
+    // },
     {
       field: "FileName",
       headerName: "DOCUMENT NAME",
       flex: 1,
-      width:200,
+      width: 200,
       sortable: false,
       renderCell: (params) => {
-        const { id, field, api, value, row } = params;
+        const { id, row } = params;
         const isDisabled = row.isDisabled;
+
         const handleChange = (event) => {
           const newValue = event.target.value;
-          api.updateRows([{ id, [field]: newValue }]);
           setRows((prev) =>
-            prev.map((row) =>
-              row.id === id ? { ...row, [field]: newValue } : row
+            prev.map((r) =>
+              r.id === id
+                ? {
+                    ...r,
+                    FileName: newValue,
+                    isFileNameEdited: true,
+                    isNew: r.isNew ?? false,
+                  }
+                : r
             )
           );
         };
-        const displayValue = value ? value.replace(/\.[^/.]+$/, "") : "";
+
+        const displayValue = row.FileName || "";
+
         return (
-          <Tooltip title={displayValue || ""} arrow placement="top">
+          <Tooltip title={displayValue} arrow placement="top">
             <TextField
-              value={displayValue ?? ""}
+              value={displayValue}
               onChange={handleChange}
               onKeyDown={(e) => e.stopPropagation()}
               fullWidth
@@ -270,8 +376,8 @@ const UploadDocument = () => {
     {
       field: "DocReqDate",
       headerName: "DOC REQUEST DATE",
-      flex: 1,
-      width:200,
+      // flex: 1,
+      width: 180,
       renderCell: (params) => {
         const { id, value, api, field, row } = params;
         const isDisabled = row.isDisabled;
@@ -285,7 +391,7 @@ const UploadDocument = () => {
           );
         };
         return (
-          <DatePickerField
+          <DatePickerFieldUploadDocModel
             value={value ? dayjs(value) : dayjs()}
             onChange={handleDateChange}
             disabled={isDisabled}
@@ -294,116 +400,11 @@ const UploadDocument = () => {
       },
     },
 
-    // {
-    //   field: "IssuedBy",
-    //   headerName: "GAZETTED OFFICER",
-    //   flex: 1,
-    //   renderCell: (params) => {
-    //     const { id, field, value, api } = params;
-    //     const isDisabled = params.row.isDisabled;
-
-    //     const gazetteOptions = Array.isArray(gazeteList) ? gazeteList : [];
-
-    //     const userDataStr = sessionStorage.getItem("userData");
-    //     let UserType = null;
-    //     let storedGazOfficer = null;
-
-    //     if (userDataStr) {
-    //       try {
-    //         const userData = JSON.parse(userDataStr);
-    //         UserType = userData.UserType;
-    //         storedGazOfficer = userData.GazOfficer || "";
-    //       } catch (error) {
-    //         console.error("Failed to parse userData:", error);
-    //       }
-    //     }
-
-    //     const handleChange = (e) => {
-    //       const newValue = e.target.value;
-    //       api.updateRows([{ id, [field]: newValue }]);
-    //       setRows((prev) =>
-    //         prev.map((row) =>
-    //           row.id === id ? { ...row, [field]: newValue } : row
-    //         )
-    //       );
-    //     };
-
-    //     const isEditable =
-    //       UserType === "A" ||
-    //       !storedGazOfficer ||
-    //       storedGazOfficer.trim() === "";
-
-    //     //  When disabled (non-admin + GazOfficer present)
-    //     if (!isEditable) {
-    //       // Keep stored value synced
-    //       if (value !== storedGazOfficer) {
-    //         api.updateRows([{ id, [field]: storedGazOfficer }]);
-    //         setRows((prev) =>
-    //           prev.map((row) =>
-    //             row.id === id ? { ...row, [field]: storedGazOfficer } : row
-    //           )
-    //         );
-    //       }
-    //       return (
-    //         <Tooltip title={storedGazOfficer || ""} arrow placement="top">
-    //           <Select
-    //             value={storedGazOfficer || ""}
-    //             disabled={isDisabled}
-    //             fullWidth
-    //             variant="standard"
-    //           >
-    //             <MenuItem value={storedGazOfficer || ""}>
-    //               {storedGazOfficer || ""}
-    //             </MenuItem>
-    //           </Select>
-    //         </Tooltip>
-    //       );
-    //     }
-    //     return (
-    //       <Tooltip title={value || ""} arrow placement="top">
-    //         <Select
-    //           value={value || ""}
-    //           onChange={handleChange}
-    //           fullWidth
-    //           variant="standard"
-    //           MenuProps={{
-    //             PaperProps: {
-    //               style: {
-    //                 maxHeight: 220,
-    //                 overflowY: "auto",
-    //               },
-    //             },
-    //           }}
-    //         >
-    //           {gazetteOptions.length > 0 ? (
-    //             gazetteOptions.map((option) => (
-    //               <MenuItem
-    //                 key={option.Name}
-    //                 value={option.Name}
-    //                 sx={{
-    //                   height: 35,
-    //                   display: "flex",
-    //                   alignItems: "center",
-    //                 }}
-    //               >
-    //                 {option.Name}
-    //               </MenuItem>
-    //             ))
-    //           ) : (
-    //             <MenuItem disabled>No officers found</MenuItem>
-    //           )}
-    //         </Select>
-    //       </Tooltip>
-    //     );
-    //   },
-    // },
-    // {
-  
     {
       field: "IssuedBy",
       headerName: "GAZETTED OFFICER",
       flex: 1,
-            width:200,
+      width: 220,
 
       renderCell: (params) => {
         const { id, field, value, api } = params;
@@ -414,7 +415,6 @@ const UploadDocument = () => {
 
         // ----------------- LOCKED FIELD -----------------
         if (!isEditable) {
-          // ✅ Update the row immediately if value is missing
           if (value !== stored) {
             api.updateRows([{ id, [field]: stored }]);
             setRows((prev) =>
@@ -458,6 +458,7 @@ const UploadDocument = () => {
               page={gPage}
               setPage={setGPage}
               hasMore={hasMoreGazette}
+              PopperProps={{ placement: "top-start" }}
             />
           </Tooltip>
         );
@@ -470,62 +471,30 @@ const UploadDocument = () => {
     //   flex: 1,
     //   renderCell: (params) => {
     //     const { id, field, value, api, row } = params;
-    //     const isDisabled = row.isDisabled;
-
-    //     const handleChange = (e) => {
-    //       const newValue = e.target.value;
-
-    //       // find selected document in master list
-    //       const selectedDoc = DocmasterList.find(
-    //         (doc) => doc.NameMR === newValue
-    //       );
-
-    //       // update subdoc list for that row
-    //       setSubDocMap((prev) => ({
-    //         ...prev,
-    //         [id]: selectedDoc?.SubDocs || [],
-    //       }));
-
-    //       // update DataGrid & rows
-    //       api.updateRows([{ id, [field]: newValue, MissingDocs: [] }]);
-    //       setRows((prev) =>
-    //         prev.map((row) =>
-    //           row.id === id
-    //             ? { ...row, [field]: newValue, MissingDocs: [] }
-    //             : row
-    //         )
-    //       );
-    //     };
 
     //     return (
-    //       <Tooltip title={value || ""} arrow placement="top">
-    //         <Select
-    //           value={value || ""}
-    //           onChange={handleChange}
-    //           fullWidth
-    //           disabled={isDisabled}
-    //           variant="standard"
-    //           MenuProps={{
-    //             PaperProps: {
-    //               style: { maxHeight: 200, overflowY: "auto" },
-    //             },
-    //           }}
-    //         >
-    //           {DocmasterList.length > 0 ? (
-    //             DocmasterList.map((option) => (
-    //               <MenuItem
-    //                 key={option.value}
-    //                 value={option.NameMR}
-    //                 sx={{ height: 35, display: "flex", alignItems: "center" }}
-    //               >
-    //                 {option.NameMR}
-    //               </MenuItem>
-    //             ))
-    //           ) : (
-    //             <MenuItem disabled>No options available</MenuItem>
-    //           )}
-    //         </Select>
-    //       </Tooltip>
+    //       <LazyAutocomplete
+    //         id={id}
+    //         field={field}
+    //         value={value}
+    //         list={DocmasterList}
+    //         displayField="NameMR"
+    //         disabled={row.isDisabled}
+    //         searchValue={docSearch}
+    //         onSearch={(txt) => {
+    //           setDocSearch(txt);
+    //           setDPage(0);
+    //           setHasMoreDocs(true);
+    //           DocMasterList({ page: 0, search: txt });
+    //         }}
+    //         api={api}
+    //         setRows={setRows}
+    //         loading={dLoading}
+    //         onLazyLoad={DocMasterList}
+    //         page={dPage}
+    //         setPage={setDPage}
+    //         hasMore={hasMoreDocs}
+    //       />
     //     );
     //   },
     // },
@@ -534,16 +503,40 @@ const UploadDocument = () => {
       headerName: "DOCUMENT TYPE",
       flex: 1,
       renderCell: (params) => {
-        const { id, field, value, api, row } = params;
+        const { id, api, row } = params;
+
+        const handleSelectDocType = (selected) => {
+          const selectedValue = selected?.NameMR || "";
+
+          setRows((prev) =>
+            prev.map((r) => {
+              if (r.id === id) {
+                if (r.isNew) {
+                  return {
+                    ...r,
+                    DocType: selectedValue,
+                    FileName: selectedValue,
+                    MissingDocs: [],
+                  };
+                }
+                return { ...r, DocType: selectedValue };
+              }
+              return r;
+            })
+          );
+        };
 
         return (
           <LazyAutocomplete
             id={id}
-            field={field}
-            value={value}
+            field="DocType"
+            value={row.DocType}
             list={DocmasterList}
             displayField="NameMR"
             disabled={row.isDisabled}
+            api={api}
+            setRows={setRows}
+            // onChangeValue={handleSelectDocType}
             searchValue={docSearch}
             onSearch={(txt) => {
               setDocSearch(txt);
@@ -551,13 +544,37 @@ const UploadDocument = () => {
               setHasMoreDocs(true);
               DocMasterList({ page: 0, search: txt });
             }}
-            api={api}
-            setRows={setRows}
             loading={dLoading}
             onLazyLoad={DocMasterList}
             page={dPage}
             setPage={setDPage}
             hasMore={hasMoreDocs}
+            PopperProps={{ placement: "top-start" }}
+            // onChangeValue={(selected) => {
+            //   handleSelectDocType(selected);
+
+            //   setRows((prev) =>
+            //     prev.map((r) => (r.id === id ? { ...r, MissingDocs: [] } : r))
+            //   );
+            // }}
+            onChangeValue={(selected) => {
+              const selectedValue = selected?.NameMR || "";
+
+              // update row when cleared or selected
+              setRows((prev) =>
+                prev.map((r) => {
+                  if (r.id === id) {
+                    return {
+                      ...r,
+                      DocType: selectedValue,
+                      FileName: r.isNew ? selectedValue : r.FileName,
+                      MissingDocs: [],
+                    };
+                  }
+                  return r;
+                })
+              );
+            }}
           />
         );
       },
@@ -569,10 +586,13 @@ const UploadDocument = () => {
     //   flex: 1,
     //   renderCell: (params) => {
     //     const { id, field, value, api, row } = params;
-    //     const isDisabled = row.isDisabled;
+    //     // const isDisabled = row.isDisabled;
+    //     const isDisabled = row.isDisabled || !row.DocType;
 
     //     const selectedValues = Array.isArray(value) ? value : [];
     //     const availableSubDocs = subDocMap[id] || [];
+
+    //     // LOCAL search state ONLY for this dropdown (no UI in DataGrid)
 
     //     const handleChange = (event) => {
     //       const newValues = event.target.value;
@@ -581,6 +601,10 @@ const UploadDocument = () => {
     //       );
     //       api.updateRows([{ id, [field]: newValues }]);
     //     };
+
+    //     const filteredDocs = availableSubDocs.filter((o) =>
+    //       o.NameMR.toLowerCase().includes(searchText.toLowerCase())
+    //     );
 
     //     return (
     //       <Tooltip
@@ -596,18 +620,65 @@ const UploadDocument = () => {
     //           disabled={isDisabled}
     //           variant="standard"
     //           renderValue={(selected) => selected.join(", ")}
+    //           // MenuProps={{
+    //           //   disablePortal: false,
+
+    //           // }}
     //           MenuProps={{
-    //             PaperProps: {
-    //               style: { maxHeight: 250, maxWidth: 200, overflowY: "auto" },
+    //              PaperProps: {
+    //               style: {
+    //                 maxHeight: 260,
+    //                 width: 250,
+    //                 overflowY: "auto",
+    //               },
     //             },
+    //             PopoverClasses: { root: "missing-popover" },
+    //             anchorOrigin: {
+    //               vertical: "bottom",
+    //               horizontal: "left",
+    //             },
+    //             transformOrigin: {
+    //               vertical: "top",
+    //               horizontal: "left",
+    //             },
+    //             modifiers: [
+    //     {
+    //       name: "flip",
+    //       enabled: true,
+    //       options: {
+    //         fallbackPlacements: ["top", "bottom-start", "top-start"],
+    //       },
+    //     },
+    //     {
+    //       name: "preventOverflow",
+    //       enabled: true,
+    //     },
+    //   ],
     //           }}
     //           sx={{
     //             minWidth: 250,
     //             paddingLeft: 3.5,
     //           }}
     //         >
-    //           {availableSubDocs.length > 0 ? (
-    //             availableSubDocs.map((option) => (
+    //           {/* SEARCH BOX INSIDE MENU */}
+    //           <MenuItem disableRipple disableTouchRipple>
+    //             <InputBase
+    //               autoFocus
+    //               placeholder="Search..."
+    //               value={searchText}
+    //               onChange={(e) => setSearchText(e.target.value)}
+    //               sx={{
+    //                 width: "100%",
+    //                 borderBottom: "1px solid #ddd",
+    //                 pb: 0.5,
+    //                 fontSize: 14,
+    //               }}
+    //             />
+    //           </MenuItem>
+
+    //           {/* FILTERED OPTIONS */}
+    //           {filteredDocs.length > 0 ? (
+    //             filteredDocs.map((option) => (
     //               <MenuItem
     //                 key={option.value}
     //                 value={option.NameMR}
@@ -621,110 +692,88 @@ const UploadDocument = () => {
     //                   checked={selectedValues.indexOf(option.NameMR) > -1}
     //                   size="small"
     //                 />
-    //                 <ListItemText
-    //                   primary={option.NameMR}
-    //                   sx={{
-    //                     whiteSpace: "normal",
-    //                   }}
-    //                 />
+    //                 <ListItemText primary={option.NameMR} />
     //               </MenuItem>
     //             ))
     //           ) : (
-    //             <MenuItem disabled>No any sub document</MenuItem>
+    //             <MenuItem disabled>No document found</MenuItem>
     //           )}
     //         </Select>
     //       </Tooltip>
     //     );
     //   },
     // },
+    // ---------------
+
     {
       field: "MissingDocs",
       headerName: "MISSING DOCUMENT",
       flex: 1,
       renderCell: (params) => {
-        const { id, field, value, api, row } = params;
-        const isDisabled = row.isDisabled;
+        const { row } = params;
+        const isDisabled = row.isDisabled || !row.DocType;
+        const docs = row.MissingDocs || [];
 
-        const selectedValues = Array.isArray(value) ? value : [];
-        const availableSubDocs = subDocMap[id] || [];
-
-        // LOCAL search state ONLY for this dropdown (no UI in DataGrid)
-
-        const handleChange = (event) => {
-          const newValues = event.target.value;
-          setRows((prev) =>
-            prev.map((r) => (r.id === id ? { ...r, [field]: newValues } : r))
-          );
-          api.updateRows([{ id, [field]: newValues }]);
-        };
-
-        const filteredDocs = availableSubDocs.filter((o) =>
-          o.NameMR.toLowerCase().includes(searchText.toLowerCase())
-        );
+        const tooltipMessage = isDisabled
+          ? "Please select document type first"
+          : docs.length > 0
+          ? docs.join(", ")
+          : "Add Missing Document";
 
         return (
-          <Tooltip
-            title={selectedValues.join(", ") || ""}
-            arrow
-            placement="top"
-          >
-            <Select
-              multiple
-              value={selectedValues}
-              onChange={handleChange}
-              fullWidth
-              disabled={isDisabled}
-              variant="standard"
-              renderValue={(selected) => selected.join(", ")}
-              MenuProps={{
-                PaperProps: {
-                  style: { maxHeight: 260, width: 230, overflowY: "auto" },
-                },
-              }}
+          <Tooltip title={tooltipMessage} placement="top" arrow>
+            <Box
               sx={{
-                minWidth: 250,
-                paddingLeft: 3.5,
+                display: "flex",
+                alignItems: "center",
+                gap: 1,
+                width: "100%",
               }}
             >
-              {/* 🔎 SEARCH BOX INSIDE MENU */}
-              <MenuItem disableRipple disableTouchRipple>
-                <InputBase
-                  autoFocus
-                  placeholder="Search..."
-                  value={searchText}
-                  onChange={(e) => setSearchText(e.target.value)}
-                  sx={{
-                    width: "100%",
-                    borderBottom: "1px solid #ddd",
-                    pb: 0.5,
-                    fontSize: 14,
-                  }}
-                />
-              </MenuItem>
+              {/* Modal open button */}
+              <IconButton
+                size="small"
+                onClick={() => handleOpenModal(row)}
+                disabled={isDisabled}
+                sx={{ flexShrink: 0 }}
+              >
+                <ListIcon fontSize="small" />
+              </IconButton>
 
-              {/* FILTERED OPTIONS */}
-              {filteredDocs.length > 0 ? (
-                filteredDocs.map((option) => (
-                  <MenuItem
-                    key={option.value}
-                    value={option.NameMR}
-                    sx={{
-                      whiteSpace: "normal",
-                      wordWrap: "break-word",
-                      alignItems: "flex-start",
-                    }}
-                  >
-                    <Checkbox
-                      checked={selectedValues.indexOf(option.NameMR) > -1}
+              {/* CHIPS + TOOLTIP */}
+              {/* <Tooltip title={docs.join(", ") || ""} placement="top" arrow> */}
+              <Box
+                onClick={() => !isDisabled && handleOpenModal(row)}
+                sx={{
+                  display: "flex",
+                  flexWrap: "wrap",
+                  gap: 0.5,
+                  maxHeight: 48,
+                  overflow: "hidden",
+                  flex: 1,
+                }}
+              >
+                {docs.length > 0 ? (
+                  docs.map((d, idx) => (
+                    <Chip
+                      key={idx}
+                      label={d}
                       size="small"
+                      sx={{
+                        maxWidth: 120,
+                        textOverflow: "ellipsis",
+                        overflow: "hidden",
+                      }}
                     />
-                    <ListItemText primary={option.NameMR} />
-                  </MenuItem>
-                ))
-              ) : (
-                <MenuItem disabled>No document found</MenuItem>
-              )}
-            </Select>
+                  ))
+                ) : (
+                  <Typography variant="caption" sx={{ opacity: 0.6 }}>
+                    Add Missing Document
+                  </Typography>
+                )}
+              </Box>
+              {/* </Tooltip> */}
+            </Box>
           </Tooltip>
         );
       },
@@ -1093,12 +1142,9 @@ const UploadDocument = () => {
   //   const maxSize = 1 * 1024 * 1024; // 1 MB
 
   //   const files = Array.from(e.target.files);
-
-  //   // filter invalid files
   //   const validFiles = files.filter((file) => {
   //     const ext = file.name.split(".").pop().toLowerCase();
 
-  //     // Check file type
   //     if (!allowedExt.includes(ext)) {
   //       Swal.fire({
   //         icon: "error",
@@ -1109,7 +1155,6 @@ const UploadDocument = () => {
   //       return false;
   //     }
 
-  //     // Check file size
   //     if (file.size > maxSize) {
   //       Swal.fire({
   //         toast: true,
@@ -1128,10 +1173,12 @@ const UploadDocument = () => {
 
   //   if (validFiles.length === 0) return;
 
+  //   // const userData = JSON.parse(sessionStorage.getItem("userData") || "{}");
+  //   const currentUser = userSession.Username || userSession.userId || "";
+
   //   const newRows = await Promise.all(
   //     validFiles.map(async (file, index) => {
   //       const ext = file.name.split(".").pop().toLowerCase();
-
   //       return {
   //         id: Date.now() + index,
   //         name: file.name,
@@ -1139,18 +1186,16 @@ const UploadDocument = () => {
   //         SrcPath: "",
   //         File: file,
   //         FileExt: ext,
-  //         FileName: file.name,
-
-  //         DocReqDate: dayjs().format("YYYY-MM-DD"),
-  //         IssuedBy: "",
+  //          IssuedBy: "",
   //         DocType: "",
-  //         // DocEntry: "",
   //         Status: 1,
   //         CreatedDate: dayjs().format("YYYY-MM-DD"),
   //         ModifiedDate: dayjs().format("YYYY-MM-DD"),
-  //         ModifiedBy: userSession.userId,
-  //         CreatedBy: userSession.userId,
-  //         UserId: userSession.userId,
+  //         DocReqDate: dayjs().format("YYYY-MM-DD"),
+  //         CreatedBy: currentUser,
+  //         ModifiedBy: currentUser,
+  //         UserId: currentUser,
+  //         isNew: false,
   //       };
   //     })
   //   );
@@ -1161,6 +1206,7 @@ const UploadDocument = () => {
   //     fileInputRef.current.value = "";
   //   }
   // };
+
   const handleFileUpload = async (e) => {
     const allowedExt = ["jpg", "jpeg", "png", "pdf"];
     const maxSize = 1 * 1024 * 1024; // 1 MB
@@ -1197,38 +1243,36 @@ const UploadDocument = () => {
 
     if (validFiles.length === 0) return;
 
-    // const userData = JSON.parse(sessionStorage.getItem("userData") || "{}");
     const currentUser = userSession.Username || userSession.userId || "";
 
-    const newRows = await Promise.all(
-      validFiles.map(async (file, index) => {
-        const ext = file.name.split(".").pop().toLowerCase();
-        return {
-          id: Date.now() + index,
-          name: file.name,
-          type: ext,
-          SrcPath: "",
-          File: file,
-          FileExt: ext,
-          FileName: file.name,
-          IssuedBy: "",
-          DocType: "",
-          Status: 1,
-          CreatedDate: dayjs().format("YYYY-MM-DD"),
-          ModifiedDate: dayjs().format("YYYY-MM-DD"),
-          DocReqDate: dayjs().format("YYYY-MM-DD"),
-          CreatedBy: currentUser,
-          ModifiedBy: currentUser,
-          UserId: currentUser,
-        };
-      })
-    );
+    const newRows = validFiles.map((file, index) => {
+      const ext = file.name.split(".").pop().toLowerCase();
+      return {
+        id: Date.now() + index,
+        name: file.name,
+        type: ext,
+        SrcPath: "",
+        File: file,
+        FileExt: ext,
+        // keep file name including extension or strip as you prefer
+        // FileName: file.name,
+        IssuedBy: "",
+        DocType: "",
+        Status: 1,
+        CreatedDate: dayjs().format("YYYY-MM-DD"),
+        ModifiedDate: dayjs().format("YYYY-MM-DD"),
+        DocReqDate: dayjs().format("YYYY-MM-DD"),
+        CreatedBy: currentUser,
+        ModifiedBy: currentUser,
+        UserId: currentUser,
+        isNew: false, // important: uploaded rows are NOT "new/missing"
+        isFileNameEdited: true, // treat uploaded file as already having a filename (avoid overwrite)
+      };
+    });
 
     setRows((prev) => [...prev, ...newRows]);
 
-    if (fileInputRef.current) {
-      fileInputRef.current.value = "";
-    }
+    if (fileInputRef.current) fileInputRef.current.value = "";
   };
 
   const handleChangeFile = async (e, rowId) => {
@@ -1257,7 +1301,7 @@ const UploadDocument = () => {
               name: file.name,
               File: file,
               FileExt: ext,
-              FileName: file.name,
+              // FileName: file.name,
             }
           : row
       )
@@ -1275,6 +1319,24 @@ const UploadDocument = () => {
         icon: "warning",
         title: "Add Document",
         text: `Please upload at least one document before submitting.`,
+      });
+      return;
+    }
+
+    const missingFileName = rows.find(
+      (row) => row.FileExt && (!row.FileName || row.FileName.trim() === "")
+    );
+
+    if (missingFileName) {
+      Swal.fire({
+        toast: true,
+        icon: "warning",
+        title: "Missing File Name",
+        text: "File Name is required for uploaded Document.",
+        position: "center",
+        showConfirmButton: false,
+        timer: 5000,
+        timerProgressBar: true,
       });
       return;
     }
@@ -1325,13 +1387,7 @@ const UploadDocument = () => {
       formData.append(`oDocLines[${index}].Id`, row.Id || "");
       formData.append(`oDocLines[${index}].LineNum`, row.LineNum || "");
       formData.append(`oDocLines[${index}].FileExt`, row.FileExt || "");
-      // formData.append(
-      //   `oDocLines[${index}].FileName`,
-      //   row.FileName
-      //     ? row.FileName.substring(0, row.FileName.lastIndexOf(".")) ||
-      //         row.FileName
-      //     : row.DocType
-      // );
+
       formData.append(
         `oDocLines[${index}].FileName`,
         row.FileName && row.FileName.trim() !== ""
@@ -1484,26 +1540,6 @@ const UploadDocument = () => {
     getAllDocList(currentPage, searchText, limit);
   }, [currentPage, searchText]);
 
-  // const gazettedList = async (params = {}) => {
-  //   setLoading(true);
-  //   try {
-  //     // Default parameters
-  //     const queryParams = { Status: "1", ...params };
-
-  //     // Fetch data
-  //     const { data } = await axios.get(`${BASE_URL}GazOfficers`, {
-  //       params: queryParams,
-  //     });
-
-  //     if (data.values) {
-  //       setgazeteList(data.values);
-  //     }
-  //   } catch (error) {
-  //     console.error("Error fetching data:", error);
-  //   } finally {
-  //     setLoading(false);
-  //   }
-  // };
   const gazettedList = async ({ page = 0, search = "" } = {}) => {
     if (scrollLockGaz || !hasMoreGazette) return;
     setScrollLockGaz(true);
@@ -1539,8 +1575,23 @@ const UploadDocument = () => {
         params: queryParams,
       });
 
+      // if (data.values) {
+      //   setDocmasterList(data.values);
+      // }
+      const list = data.values || [];
+
+      // If no data → stop further loading
+      if (list.length === 0) {
+        setHasMoreDocs(false);
+        return;
+      }
+
       if (data.values) {
-        setDocmasterList(data.values);
+        if (params.page === 0 || params.search) {
+          setDocmasterList(data.values);
+        } else {
+          setDocmasterList((prev) => [...prev, ...data.values]);
+        }
       }
     } catch (error) {
       console.error("Error fetching data:", error);
@@ -1610,6 +1661,7 @@ const UploadDocument = () => {
       CreatedBy: CreatedBy,
       isDisabled: false,
       isNew: true,
+      isFileNameEdited: false, // allow auto-fill from DocType until user edits
     };
     setRows((prev) => [...prev, newRow]);
   };
@@ -1622,277 +1674,578 @@ const UploadDocument = () => {
         sx={{
           backdropFilter: "blur(5px)",
           backgroundColor: "rgba(0, 0, 0, 0.3)",
+          overflow: "auto",
         }}
       >
         <Paper
           elevation={10}
           sx={{
-            width: "100%",
+            width: "95%",
             maxWidth: 1400,
-            Height: 3000,
+            maxHeight: "90vh",
+            overflowY: "auto",
             position: "absolute",
             top: "50%",
             left: "50%",
             transform: "translate(-50%, -50%)",
+            borderRadius: 2,
           }}
         >
-          <Grid
-            container
-            spacing={3}
-            padding={3}
-            component="form"
-            onSubmit={handleSubmit(onSubmit)}
-          >
-            {/* Header */}
+          <Box sx={{ p: 3 }}>
             <Grid
-              item
-              xs={12}
-              sx={{ display: "flex", justifyContent: "space-between" }}
+              container
+              spacing={3}
+              // padding={3}
+              component="form"
+              onSubmit={handleSubmit(onSubmit)}
             >
-              <Typography fontWeight="bold"> UPLOAD DOCUMENT</Typography>
-              <IconButton onClick={handleClose}>
-                <CloseIcon />
-              </IconButton>
-            </Grid>
+              {/* Header */}
+              <Grid
+                item
+                xs={12}
+                sx={{ display: "flex", justifyContent: "space-between" }}
+              >
+                <Typography fontWeight="bold"> UPLOAD DOCUMENT</Typography>
+                <IconButton onClick={handleClose}>
+                  <CloseIcon />
+                </IconButton>
+              </Grid>
 
-            <Grid item xs={6} md={4}>
-              <Controller
-                name="Name"
-                control={control}
-                defaultValue=""
-                rules={{
-                  required: "Name is required",
-                  validate: (value) =>
-                    value.trim() !== "" || "Name cannot be just spaces",
-                  maxLength: {
-                    value: 100,
-                    message: "Name cannot exceed 100 characters",
-                  },
-                }}
-                render={({ field, fieldState: { error } }) => (
-                  <Tooltip title={field.value || ""} arrow placement="top">
-                    <div style={{ width: "100%" }}>
-                      <TextField
-                        {...field}
-                        inputRef={field.ref}
-                        label="ENTER NAME"
-                        size="small"
-                        inputProps={{ maxLength: 100 }}
-                        error={!!error}
-                        helperText={error?.message}
-                      />
-                    </div>
-                  </Tooltip>
-                )}
-              />
-            </Grid>
-            <Grid item xs={6} md={4}>
-              <Controller
-                name="MobileNo"
-                control={control}
-                rules={{
-                  required: "Mobile number is required",
-                  pattern: {
-                    value: /^[0-9]{10}$/,
-                    message: "Enter a valid 10-digit mobile number",
-                  },
-                }}
-                render={({ field, fieldState }) => (
-                  <TextField
-                    {...field}
-                    label=" ENTER MOBILE NO"
-                    // fullWidth
-                    disabled={isMobileDisabled}
-                    size="small"
-                    error={!!fieldState.error}
-                    helperText={fieldState.error?.message}
-                    inputProps={{
-                      maxLength: 10,
-                      inputMode: "numeric",
-                      pattern: "[0-9]*",
-                    }}
-                    onChange={(e) => {
-                      const value = e.target.value.replace(/\D/g, "");
-                      if (value.length <= 10) {
-                        field.onChange(value);
-                      }
-                    }}
-                    InputProps={{
-                      startAdornment: (
-                        <span style={{ marginRight: 8 }}>+91</span>
-                      ),
-                    }}
-                  />
-                )}
-              />{" "}
-            </Grid>
-            <Grid item xs={6} md={4}>
-              <Controller
-                name="Email"
-                control={control}
-                defaultValue=""
-                render={({ field }) => (
-                  <InputTextField
-                    {...field}
-                    label="ENTER EMAIL ID"
-                    type="email"
-                    size="small"
-                    rows={1}
-                  />
-                )}
-              />
-            </Grid>
-            <Grid item xs={6} md={4}>
-              <Controller
-                name="Address"
-                control={control}
-                render={({ field }) => (
-                  <Tooltip title={field.value || ""} arrow placement="top">
-                    <div style={{ width: "100%" }}>
-                      <InputDescriptionField
-                        {...field}
-                        label="ENTER ADDRESS"
-                        size="small"
-                        fullWidth
-                      />
-                    </div>
-                  </Tooltip>
-                )}
-              />
-            </Grid>
+              {/* <Grid item xs={6} md={4}> */}
+              <Grid item xs={12} sm={6} md={4}>
+                <Controller
+                  name="Name"
+                  control={control}
+                  defaultValue=""
+                  rules={{
+                    required: "Name is required",
+                    validate: (value) =>
+                      value.trim() !== "" || "Name cannot be just spaces",
+                    maxLength: {
+                      value: 100,
+                      message: "Name cannot exceed 100 characters",
+                    },
+                  }}
+                  render={({ field, fieldState: { error } }) => (
+                    <Tooltip title={field.value || ""} arrow placement="top">
+                      <div style={{ width: "100%" }}>
+                        <TextField
+                          {...field}
+                          inputRef={field.ref}
+                          label="ENTER NAME"
+                          size="small"
+                          inputProps={{ maxLength: 100 }}
+                          error={!!error}
+                          helperText={error?.message}
+                        />
+                      </div>
+                    </Tooltip>
+                  )}
+                />
+              </Grid>
+              {/* <Grid item xs={6} md={4}> */}
+              <Grid item xs={12} sm={6} md={4}>
+                <Controller
+                  name="MobileNo"
+                  control={control}
+                  rules={{
+                    required: "Mobile number is required",
+                    pattern: {
+                      value: /^[0-9]{10}$/,
+                      message: "Enter a valid 10-digit mobile number",
+                    },
+                  }}
+                  render={({ field, fieldState }) => (
+                    <TextField
+                      {...field}
+                      label=" ENTER MOBILE NO"
+                      // fullWidth
+                      disabled={isMobileDisabled}
+                      size="small"
+                      error={!!fieldState.error}
+                      helperText={fieldState.error?.message}
+                      inputProps={{
+                        maxLength: 10,
+                        inputMode: "numeric",
+                        pattern: "[0-9]*",
+                      }}
+                      onChange={(e) => {
+                        const value = e.target.value.replace(/\D/g, "");
+                        if (value.length <= 10) {
+                          field.onChange(value);
+                        }
+                      }}
+                      InputProps={{
+                        startAdornment: (
+                          <span style={{ marginRight: 8 }}>+91</span>
+                        ),
+                      }}
+                    />
+                  )}
+                />{" "}
+              </Grid>
+              {/* <Grid item xs={6} md={4}> */}
+              <Grid item xs={12} sm={6} md={4}>
+                <Controller
+                  name="Email"
+                  control={control}
+                  defaultValue=""
+                  render={({ field }) => (
+                    <InputTextField
+                      {...field}
+                      label="ENTER EMAIL ID"
+                      type="email"
+                      size="small"
+                      rows={1}
+                    />
+                  )}
+                />
+              </Grid>
+              {/* <Grid item xs={6} md={4}> */}
+              <Grid item xs={12} sm={6} md={4}>
+                <Controller
+                  name="Address"
+                  control={control}
+                  render={({ field }) => (
+                    <Tooltip title={field.value || ""} arrow placement="top">
+                      <div style={{ width: "100%" }}>
+                        <InputDescriptionField
+                          {...field}
+                          label="ENTER ADDRESS"
+                          size="small"
+                          fullWidth
+                        />
+                      </div>
+                    </Tooltip>
+                  )}
+                />
+              </Grid>
 
-            <Grid
+              {/* <Grid
               item
               xs={6}
               md={4}
               sx={{ display: "flex", justifyContent: "flex-center" }}
-            >
-              <Button
-                variant="contained"
-                size="small"
-                component={isAddMissing ? undefined : "label"}
-                sx={{
-                  width: 130,
-                  height: 40,
-                  color: "white",
-                  background:
-                    "linear-gradient(to right, rgb(0, 90, 91), rgb(22, 149, 153))",
-                  fontSize: "0.79rem",
-                }}
-                onClick={isAddMissing ? handleAddRow : undefined}
-              >
-                {isAddMissing ? (
-                  <>
-                    <AddIcon sx={{ mr: 0.5 }} />
-                    Add Row
-                  </>
-                ) : (
-                  <>
-                    Upload File
-                    <input
-                      type="file"
-                      accept=".jpg,.jpeg,.png,.pdf"
-                      hidden
-                      multiple
-                      ref={fileInputRef}
-                      onChange={handleFileUpload}
+            > */}
+              <Grid item xs={12} sm={6} md={4}>
+                <Button
+                  variant="contained"
+                  size="small"
+                  component={isAddMissing ? undefined : "label"}
+                  sx={{
+                    width: 130,
+                    height: 40,
+                    color: "white",
+                    background:
+                      "linear-gradient(to right, rgb(0, 90, 91), rgb(22, 149, 153))",
+                    fontSize: "0.79rem",
+                  }}
+                  onClick={isAddMissing ? handleAddRow : undefined}
+                >
+                  {isAddMissing ? (
+                    <>
+                      <AddIcon sx={{ mr: 0.5 }} />
+                      Add Row
+                    </>
+                  ) : (
+                    <>
+                      Upload File
+                      <input
+                        type="file"
+                        accept=".jpg,.jpeg,.png,.pdf"
+                        hidden
+                        multiple
+                        ref={fileInputRef}
+                        onChange={handleFileUpload}
+                      />
+                    </>
+                  )}
+                </Button>
+              </Grid>
+
+              {/* Checkbox Field */}
+              {/* <Grid item xs={6} md={4}> */}
+              <Grid item xs={12} sm={6} md={4}>
+                <FormControlLabel
+                  control={
+                    <Checkbox
+                      checked={isAddMissing}
+                      onChange={(e) => setIsAddMissing(e.target.checked)}
+                      size="medium"
+                      sx={{ color: "rgb(0, 90, 91)" }}
                     />
-                  </>
-                )}
-              </Button>
-            </Grid>
-
-            {/* Checkbox Field */}
-            <Grid item xs={6} md={4}>
-              <FormControlLabel
-                control={
-                  <Checkbox
-                    checked={isAddMissing}
-                    onChange={(e) => setIsAddMissing(e.target.checked)}
-                    size="medium"
-                    sx={{ color: "rgb(0, 90, 91)" }}
-                  />
-                }
-                label="Add Missing Document"
-              />
-            </Grid>
-
-            <Grid item xs={12} style={{ height: 450, paddingBottom: 40 }}>
-              <DataGrid
-                rows={updatedRows}
-                columns={visibleColumns}
-                pageSize={5}
-                rowsPerPageOptions={[5]}
-                disableRowSelectionOnClick
-                hideFooter
-                className="datagrid-style"
-                getRowClassName={(params) =>
-                  params.row.isDisabled ? "disabled-row" : ""
-                }
-                isCellEditable={(params) => !params.row.isDisabled}
-                onRowClick={(params, event) => {
-                  if (params.row.isDisabled) {
-                    event.stopPropagation();
                   }
-                }}
+                  label="Add Missing Document"
+                />
+              </Grid>
+
+              {/* <Grid item xs={12} style={{ height: 550, paddingBottom: 40 }}> */}
+              <Grid item xs={12} sx={{ height: 530, mt: 2 }}>
+                <DataGrid
+                  rows={updatedRows}
+                  // rows={[...updatedRows].sort((a, b) => b.id - a.id)}
+                  columns={visibleColumns}
+                  pageSize={5}
+                  rowsPerPageOptions={[5]}
+                  disableRowSelectionOnClick
+                  hideFooter
+                  className="datagrid-style"
+                  getRowClassName={(params) =>
+                    params.row.isDisabled ? "disabled-row" : ""
+                  }
+                  isCellEditable={(params) => !params.row.isDisabled}
+                  onRowClick={(params, event) => {
+                    if (params.row.isDisabled) {
+                      event.stopPropagation();
+                    }
+                  }}
+                  sx={{
+                    "& .MuiDataGrid-columnHeaders": {
+                      backgroundColor: (theme) =>
+                        theme.palette.custome.datagridcolor,
+                    },
+                    "& .MuiDataGrid-row:hover": {
+                      boxShadow: "0px 4px 20px rgba(0, 0, 0.2, 0.2)",
+                    },
+                    "& .disabled-row": {
+                      pointerEvents: "auto",
+                      opacity: 0.7,
+                    },
+                  }}
+                />
+              </Grid>
+              {/* Footer */}
+              <Grid
+                item
+                xs={12}
                 sx={{
-                  "& .MuiDataGrid-columnHeaders": {
-                    backgroundColor: (theme) =>
-                      theme.palette.custome.datagridcolor,
-                  },
-                  "& .MuiDataGrid-row:hover": {
-                    boxShadow: "0px 4px 20px rgba(0, 0, 0.2, 0.2)",
-                  },
-                  "& .disabled-row": {
-                    pointerEvents: "auto",
-                    opacity: 0.7,
-                  },
-                }}
-              />
-            </Grid>
-            {/* Footer */}
-            <Grid
-              item
-              xs={12}
-              sx={{
-                display: "flex",
-                justifyContent: "space-between",
-                position: "absolute",
-                bottom: 10,
-                left: 10,
-                right: 10,
-              }}
-            >
-              <Button
-                size="small"
-                onClick={clearFormData}
-                sx={{
-                  p: 1,
-                  width: 80,
-                  color: "rgb(0, 90, 91)",
-                  border: "1px solid rgb(0, 90, 91)",
-                  borderRadius: "8px",
+                  display: "flex",
+                  justifyContent: "space-between",
+                  position: "absolute",
+                  bottom: 10,
+                  left: 10,
+                  right: 10,
                 }}
               >
-                {ClearUpdateButton}
-              </Button>
-              <Button
-                type="submit"
-                size="small"
-                sx={{
-                  p: 1,
-                  width: 80,
-                  color: "white",
-                  background:
-                    "linear-gradient(to right, rgb(0, 90, 91), rgb(22, 149, 153))",
-                }}
-              >
-                {SaveUpdateButton}
-              </Button>
+                <Button
+                  size="small"
+                  onClick={clearFormData}
+                  sx={{
+                    p: 1,
+                    width: 80,
+                    color: "rgb(0, 90, 91)",
+                    border: "1px solid rgb(0, 90, 91)",
+                    borderRadius: "8px",
+                  }}
+                >
+                  {ClearUpdateButton}
+                </Button>
+                <Button
+                  type="submit"
+                  size="small"
+                  sx={{
+                    p: 1,
+                    width: 80,
+                    color: "white",
+                    background:
+                      "linear-gradient(to right, rgb(0, 90, 91), rgb(22, 149, 153))",
+                  }}
+                >
+                  {SaveUpdateButton}
+                </Button>
+              </Grid>
             </Grid>
-          </Grid>
+          </Box>
         </Paper>
       </Modal>
+
+      {/* <Dialog
+        open={modalOpen}
+        onClose={() => setModalOpen(false)}
+        fullWidth
+        PaperProps={{
+          sx: {
+            height: 600,
+            minHeight: 500,
+            width: 500,
+            maxHeight: 650,
+            mt: 5,
+            position: "relative",
+            overflowY: "auto",
+            borderRadius: 2,
+            px: 2,
+          },
+        }}
+      >
+        <DialogTitle>
+          <Grid
+            item
+            xs={12}
+            sx={{
+              display: "flex",
+              justifyContent: "center",
+              alignItems: "center",
+              position: "relative",
+            }}
+          >
+            <Typography
+              fontWeight="bold"
+              sx={{
+                position: "absolute",
+                left: "50%",
+                transform: "translateX(-50%)",
+              }}
+            >
+              Select Missing Documents
+            </Typography>
+
+            <IconButton
+              onClick={() => setModalOpen(false)}
+              sx={{ marginLeft: "auto" }}
+            >
+              <CloseIcon />
+            </IconButton>
+          </Grid>
+
+          <hr />
+
+          <TextField
+            placeholder="Search..."
+            fullWidth
+            size="small"
+            value={searchText}
+            onChange={(e) => setSearchText(e.target.value)}
+            InputProps={{
+              endAdornment: searchText && (
+                <InputAdornment position="end">
+                  <IconButton
+                    size="small"
+                    onClick={() => setSearchText("")}
+                    edge="end"
+                  >
+                    <ClearIcon fontSize="small" />
+                  </IconButton>
+                </InputAdornment>
+              ),
+            }}
+          />
+        </DialogTitle>
+        <DialogContent>
+          <List>
+            {(subDocMap[currentRowId] || [])
+              .filter((d) =>
+                d.NameMR.toLowerCase().includes(searchText.toLowerCase())
+              )
+              .map((doc) => (
+                <ListItem
+                  key={doc.value}
+                  button
+                  onClick={() => {
+                    if (tempSelection.includes(doc.NameMR)) {
+                      setTempSelection(
+                        tempSelection.filter((d) => d !== doc.NameMR)
+                      );
+                    } else {
+                      setTempSelection([...tempSelection, doc.NameMR]);
+                    }
+                  }}
+                >
+                  <Checkbox checked={tempSelection.includes(doc.NameMR)} />
+                  <ListItemText primary={doc.NameMR} />
+                </ListItem>
+              ))}
+          </List>
+        </DialogContent>
+        <DialogActions>
+          <Button
+            onClick={handleSaveModal}
+            size="small"
+            sx={{
+              p: 1,
+              width: 80,
+              color: "white",
+              background:
+                "linear-gradient(to right, rgb(0, 90, 91), rgb(22, 149, 153))",
+            }}
+            variant="contained"
+          >
+            Save
+          </Button>
+        </DialogActions>
+      </Dialog> */}
+      <Dialog
+        open={modalOpen}
+        onClose={() => setModalOpen(false)}
+        fullWidth
+        PaperProps={{
+          sx: {
+            height: 600,
+            maxHeight: 650,
+            width: 500,
+            borderRadius: 3,
+            overflow: "hidden",
+            boxShadow:
+              "0px 4px 20px rgba(0,0,0,0.1), 0 0 0 1px rgba(255,255,255,0.2) inset",
+          },
+        }}
+      >
+        {/* Sticky Header */}
+        <Box
+          sx={{
+            position: "sticky",
+            top: 0,
+            zIndex: 20,
+            // background: "white",
+            borderBottom: "1px solid #eee",
+            px: 2,
+            py: 1.5,
+          }}
+        >
+          <Grid
+            container
+            alignItems="center"
+            justifyContent="center"
+            sx={{ position: "relative" }}
+          >
+            <Typography
+              fontWeight="600"
+              fontSize={17}
+              sx={{
+                position: "absolute",
+                left: "50%",
+                transform: "translateX(-50%)",
+              }}
+            >
+              Select Missing Documents
+            </Typography>
+
+            <IconButton
+              onClick={() => setModalOpen(false)}
+              sx={{ ml: "auto" }}
+              size="small"
+            >
+              <CloseIcon />
+            </IconButton>
+          </Grid>
+
+          {/* Search Box */}
+          <TextField
+            placeholder="Search documents..."
+            fullWidth
+            size="small"
+            value={searchText}
+            sx={{
+              mt: 2,
+              "& .MuiOutlinedInput-root": {
+                borderRadius: 2,
+               },
+            }}
+            onChange={(e) => setSearchText(e.target.value)}
+            InputProps={{
+              startAdornment: (
+                <InputAdornment position="start">
+                  <SearchIcon sx={{ color: "#777" }} />
+                </InputAdornment>
+              ),
+              endAdornment: searchText && (
+                <InputAdornment position="end">
+                  <IconButton size="small" onClick={() => setSearchText("")}>
+                    <ClearIcon fontSize="small" />
+                  </IconButton>
+                </InputAdornment>
+              ),
+            }}
+          />
+        </Box>
+
+        {/* List */}
+        <DialogContent sx={{ px: 0, mt: 1 }}>
+          <List disablePadding>
+            {(subDocMap[currentRowId] || [])
+              .filter((d) =>
+                d.NameMR.toLowerCase().includes(searchText.toLowerCase())
+              )
+              .map((doc) => {
+                const checked = tempSelection.includes(doc.NameMR);
+
+                return (
+                  <ListItem
+                    key={doc.value}
+                    button
+                    onClick={() => {
+                      if (checked) {
+                        setTempSelection(
+                          tempSelection.filter((d) => d !== doc.NameMR)
+                        );
+                      } else {
+                        setTempSelection([...tempSelection, doc.NameMR]);
+                      }
+                    }}
+                    sx={{
+                      px: 2,
+                      py: 1,
+                      transition: "0.2s",
+                      background: checked
+                        ? "rgba(0,150,136,0.08)"
+                        : "transparent",
+                      "&:hover": {
+                        background: checked
+                          ? "rgba(0,150,136,0.15)"
+                          : "rgba(0,0,0,0.04)",
+                      },
+                    }}
+                  >
+                    <Checkbox
+                      checked={checked}
+                      sx={{
+                        "&.Mui-checked": {
+                          color: "rgb(22,149,153)",
+                        },
+                      }}
+                    />
+                    <ListItemText
+                      primary={doc.NameMR}
+                      primaryTypographyProps={{
+                        fontSize: 14,
+                        fontWeight: checked ? "600" : "400",
+                      }}
+                    />
+                  </ListItem>
+                );
+              })}
+          </List>
+        </DialogContent>
+
+        {/* Footer */}
+        <DialogActions
+          sx={{
+            p: 2,
+            borderTop: "1px solid #eee",
+           }}
+        >
+          <Button
+            onClick={handleSaveModal}
+            size="small"
+            fullWidth
+            sx={{
+              p: 1,
+              fontWeight: 600,
+              color: "white",
+              borderRadius: 2,
+              textTransform: "none",
+              background:
+                "linear-gradient(to right, rgb(0,90,91), rgb(22,149,153))",
+              "&:hover": {
+                opacity: 0.9,
+              },
+            }}
+            variant="contained"
+          >
+            Save Selection
+          </Button>
+        </DialogActions>
+      </Dialog>
+
       <Grid
         container
         md={12}
@@ -1955,7 +2308,7 @@ const UploadDocument = () => {
               }}
             >
               <AddIcon />
-              Add Document
+              Upload Document
             </Button>
           </span>
         </Tooltip>

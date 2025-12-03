@@ -43,12 +43,7 @@ const GazettedMaster = () => {
   const canEdit = checkAccess(4, "IsEdit");
   const canDelete = checkAccess(4, "IsDelete");
 
-  const {
-    handleSubmit,
-    control,
-    setValue,
-    reset,
-  } = useForm({
+  const { handleSubmit, control, setValue, reset } = useForm({
     defaultValues: {
       Name: "",
       Status: 1,
@@ -274,8 +269,7 @@ const GazettedMaster = () => {
                   },
                 }}
                 onClick={() => handleUpdate(params.row)}
-                            disabled={!canEdit}
-
+                disabled={!canEdit}
               >
                 <EditNoteIcon />
               </IconButton>
@@ -290,8 +284,7 @@ const GazettedMaster = () => {
                 size="medium"
                 sx={{ color: "red" }}
                 onClick={() => handleDelete(params.row)}
-            disabled={!canDelete}
-
+                disabled={!canDelete}
               >
                 <DeleteForeverIcon />
               </Button>
@@ -301,19 +294,19 @@ const GazettedMaster = () => {
       ),
     },
     {
-  field: "srNo",
-  headerName: "SR NO",
-  width: 80,
-  sortable: false,
-  headerAlign: "center",
-  align: "center",
-  renderCell: (params) => {
-    const page = params.api.state.pagination.paginationModel.page;
-    const pageSize = params.api.state.pagination.paginationModel.pageSize;
-    const rowIndex = params.api.getSortedRowIds().indexOf(params.id);
-    return page * pageSize + (rowIndex + 1);
-  },
-},
+      field: "srNo",
+      headerName: "SR NO",
+      width: 80,
+      sortable: false,
+      headerAlign: "center",
+      align: "center",
+      renderCell: (params) => {
+        const page = params.api.state.pagination.paginationModel.page;
+        const pageSize = params.api.state.pagination.paginationModel.pageSize;
+        const rowIndex = params.api.getSortedRowIds().indexOf(params.id);
+        return page * pageSize + (rowIndex + 1);
+      },
+    },
 
     // {
     //   field: "srNo",
@@ -368,7 +361,7 @@ const GazettedMaster = () => {
       {loaderOpen && <Loader open={loaderOpen} />}
       <Modal
         open={on}
-        onClose={handleClose}
+        // onClose={handleClose}
         sx={{
           backdropFilter: "blur(5px)",
         }}
@@ -534,44 +527,43 @@ const GazettedMaster = () => {
       </Grid>
       <Grid container spacing={2} marginBottom={1} justifyContent="flex-end">
         <Grid textAlign={"end"} marginBottom={1}>
-            <Tooltip 
-            title={!canAdd ? "You don't have Add permission" : ""} 
+          <Tooltip
+            title={!canAdd ? "You don't have Add permission" : ""}
             placement="top"
           >
             <span>
-          <Button
-            onClick={handleOnSave}
-                                 disabled={!canAdd}
-
-            type="text"
-            size="medium"
-            sx={{
-              pr: 2,
-              mb: 0,
-              mt: 2,
-              color: "white",
-              background:
-                "linear-gradient(to right, rgb(0, 90, 91), rgb(22, 149, 153))",
-              borderRadius: "8px",
-              transition: "all 0.2s ease-in-out",
-              boxShadow: "0 4px 8px rgba(0, 90, 91, 0.3)",
-              "&:hover": {
-                transform: "translateY(2px)",
-                boxShadow: "0 2px 4px rgba(0, 90, 91, 0.2)",
-              },
-              "& .MuiButton-label": {
-                display: "flex",
-                alignItems: "center",
-              },
-              "& .MuiSvgIcon-root": {
-                marginRight: "10px",
-              },
-            }}
-          >
-            <AddIcon />
-            Add Gazetted
-          </Button>
-          </span>
+              <Button
+                onClick={handleOnSave}
+                disabled={!canAdd}
+                type="text"
+                size="medium"
+                sx={{
+                  pr: 2,
+                  mb: 0,
+                  mt: 2,
+                  color: "white",
+                  background:
+                    "linear-gradient(to right, rgb(0, 90, 91), rgb(22, 149, 153))",
+                  borderRadius: "8px",
+                  transition: "all 0.2s ease-in-out",
+                  boxShadow: "0 4px 8px rgba(0, 90, 91, 0.3)",
+                  "&:hover": {
+                    transform: "translateY(2px)",
+                    boxShadow: "0 2px 4px rgba(0, 90, 91, 0.2)",
+                  },
+                  "& .MuiButton-label": {
+                    display: "flex",
+                    alignItems: "center",
+                  },
+                  "& .MuiSvgIcon-root": {
+                    marginRight: "10px",
+                  },
+                }}
+              >
+                <AddIcon />
+                Add Gazetted
+              </Button>
+            </span>
           </Tooltip>
         </Grid>
       </Grid>
@@ -598,8 +590,8 @@ const GazettedMaster = () => {
           columns={columns}
           pagination
           paginationMode="server"
-          rowCount={totalRows} 
-           paginationModel={{ page: currentPage, pageSize: limit }}
+          rowCount={totalRows}
+          paginationModel={{ page: currentPage, pageSize: limit }}
           onPaginationModelChange={(newModel) => {
             setCurrentPage(newModel.page);
             setLimit(newModel.pageSize);

@@ -30,10 +30,10 @@ export default function LandAcquisition() {
   const [barMonths, setBarMonths] = useState([]);
   const [barCounts, setBarCounts] = useState([]);
   const [pieData, setPieData] = useState([]);
+  const [pieColorMode, setPieColorMode] = useState("normal");
 
-    const [chartfromDate, setchartFromDate] = useState(dayjs().startOf("month"));
-    const [charttoDate, setchartToDate] = useState(dayjs());
-  
+  const [chartfromDate, setchartFromDate] = useState(dayjs().startOf("month"));
+  const [charttoDate, setchartToDate] = useState(dayjs());
 
   const officerColumns = [
     {
@@ -86,6 +86,18 @@ export default function LandAcquisition() {
       if (response.data && response.data.values) {
         const v = response.data.values;
 
+        const docs = v.TotalDocsLandAcqui ?? 0;
+        const missing = v.TotalMissingDocsLandAcqui ?? 0;
+
+        if (
+          (docs === 0 || docs === null) &&
+          (missing === 0 || missing === null)
+        ) {
+          setPieData([{ id: 0, value: 1, label: "No Data" }]);
+          setPieColorMode("empty");
+          return;
+        }
+
         setCounts({
           TotalMissingDocsLandAcqui: v.TotalMissingDocsLandAcqui || 0,
           TotalDocsLandAcqui: v.TotalDocsLandAcqui || 0,
@@ -96,12 +108,13 @@ export default function LandAcquisition() {
         setPieData([
           { id: 0, value: v.TotalDocsLandAcqui || 0, label: "Docs" },
           { id: 1, value: v.TotalMissingDocsLandAcqui || 0, label: "Missing" },
-          // { id: 2, value: v.TotalWPMsgSuccess || 0, label: "Success" },
-          // { id: 3, value: v.TotalWPMsgFailed || 0, label: "Failed" },
         ]);
+        setPieColorMode("normal");
       }
     } catch (error) {
       console.error("API Error:", error);
+      setPieData([{ id: 0, value: 0, label: "" }]);
+      setPieColorMode("empty");
     }
   };
 
@@ -216,7 +229,7 @@ export default function LandAcquisition() {
       HandleOfficerList(fromDate, toDate);
       getYearlyBarChart(chartfromDate, charttoDate);
     }
-  }, [fromDate, toDate ,chartfromDate, charttoDate]);
+  }, [fromDate, toDate, chartfromDate, charttoDate]);
 
   // ----------------------------------
 
@@ -419,7 +432,12 @@ export default function LandAcquisition() {
                     },
                   ]}
                   height={296}
-                  colors={["#28A745", "#EF6C00"]}
+                  // colors={["#28A745", "#EF6C00"]}
+                  colors={
+                    pieColorMode === "empty"
+                      ? ["#d62e25ff"]
+                      : ["#28A745", "#EF6C00"]
+                  }
                 />
               </div>
             </Paper>
@@ -429,21 +447,50 @@ export default function LandAcquisition() {
 
           <Grid item xs={12} md={12}>
             <Paper elevation={6} sx={{ borderRadius: 3, py: 3 }}>
-              {/* <h3 style={{ marginLeft: 10, marginBottom: 10 }}>
-                Certificates Generated Per Month
-              </h3> */}
               <Grid
                 container
                 alignItems="center"
-                sx={{ mb: 2, position: "relative" }}
+                sx={{
+                  mb: 2,
+                  px: 1,
+                }}
               >
-                <Grid item xs={6} md={12} sx={{ textAlign: "center" }}>
-                  <Typography variant="h6" fontWeight={"bold"}>
+                <Grid
+                  item
+                  xs={12}
+                  md={10}
+                  sx={{
+                    display: "flex",
+                    justifyContent: {
+                      xs: "center",
+                      md: "center",
+                    },
+                    mb: { xs: 1, md: 0 },
+                  }}
+                >
+                  <Typography
+                    variant="h6"
+                    fontWeight={"bold"}
+                    sx={{
+                      mr: { md: "-150px" },
+                    }}
+                  >
                     Certificates Generated Per Month
                   </Typography>
                 </Grid>
 
-                <Grid item xs={6} md={12} sx={{ position: "absolute", right: 0 }}>
+                <Grid
+                  item
+                  xs={12}
+                  md={2}
+                  sx={{
+                    display: "flex",
+                    justifyContent: {
+                      xs: "center",
+                      md: "flex-end",
+                    },
+                  }}
+                >
                   <CustomMuiRangePicker
                     fromDate={chartfromDate}
                     toDate={charttoDate}

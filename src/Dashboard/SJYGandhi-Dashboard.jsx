@@ -253,19 +253,46 @@ export default function SJYGandhiDashboard() {
               <Grid
                 container
                 alignItems="center"
-                sx={{ mb: 2, position: "relative" }}
+                sx={{
+                  mb: 2,
+                  px: 1,
+                }}
               >
-                <Grid item xs={6} md={12} sx={{ textAlign: "center" }}>
-                  <Typography variant="h6" fontWeight={"bold"}>
+                <Grid
+                  item
+                  xs={12}
+                  md={10}
+                  sx={{
+                    display: "flex",
+                    justifyContent: {
+                      xs: "center",
+                      md: "center",
+                    },
+                    mb: { xs: 1, md: 0 },
+                  }}
+                >
+                  <Typography
+                    variant="h6"
+                    fontWeight={"bold"}
+                    sx={{
+                      mr: { md: "-150px" },
+                    }}
+                  >
                     Month-Wise Success vs Failure
                   </Typography>
                 </Grid>
 
                 <Grid
                   item
-                  xs={6}
-                  md={12}
-                  sx={{ position: "absolute", right: 0 }}
+                  xs={12}
+                  md={2}
+                  sx={{
+                    display: "flex",
+                    justifyContent: {
+                      xs: "center",
+                      md: "flex-end",
+                    },
+                  }}
                 >
                   <CustomMuiRangePicker
                     fromDate={chartfromDate}

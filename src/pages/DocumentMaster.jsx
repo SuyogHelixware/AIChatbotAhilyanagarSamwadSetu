@@ -3,6 +3,7 @@ import CloseIcon from "@mui/icons-material/Close";
 import DeleteForeverIcon from "@mui/icons-material/DeleteForever";
 import EditNoteIcon from "@mui/icons-material/EditNote";
 import {
+  Box,
   Button,
   Checkbox,
   FormControlLabel,
@@ -10,20 +11,29 @@ import {
   IconButton,
   Modal,
   Paper,
+  Table,
+  TableBody,
+  TableCell,
+  TableHead,
+  TableRow,
   TextField,
   Tooltip,
   Typography,
 } from "@mui/material";
-import Autocomplete from "@mui/material/Autocomplete";
 import { DataGrid, GridToolbar } from "@mui/x-data-grid";
 import axios from "axios";
 import dayjs from "dayjs";
 import * as React from "react";
-import { Controller, useForm } from "react-hook-form"; // Importing React Hook Form
+import { Controller, useForm } from "react-hook-form";
 import Swal from "sweetalert2";
+import CustomToolbar from "../components/CustomToolbar";
 import Loader from "../components/Loader";
 import { BASE_URL } from "../Constant";
 import { useThemeMode } from "../Dashboard/Theme";
+
+import { InputAdornment } from "@mui/material";
+import SearchIcon from "@mui/icons-material/Search";
+import ClearIcon from "@mui/icons-material/Clear";
 
 const DocumentMaster = () => {
   const [loaderOpen, setLoaderOpen] = React.useState(false);
@@ -32,7 +42,11 @@ const DocumentMaster = () => {
   const [SaveUpdateButton, setSaveUpdateButton] = React.useState("UPDATE");
   const [ClearUpdateButton, setClearUpdateButton] = React.useState("RESET");
   const [totalRows, setTotalRows] = React.useState("");
+  const [totalSubDocRows, setTotalSubDocRows] = React.useState("");
+
   const [currentPage, setCurrentPage] = React.useState(0);
+  const [CurrentsubDocPage, setCurrentsubDocPage] = React.useState(0);
+
   const [loading, setLoading] = React.useState(false);
   const [searchText, setSearchText] = React.useState("");
   const [docOptions, setDocOptions] = React.useState([]);
@@ -40,6 +54,7 @@ const DocumentMaster = () => {
 
   const originalDataRef = React.useRef(null);
   const firstLoad = React.useRef(true);
+  const selectedSubDocsRef = React.useRef([]);
 
   //  ===============
   const [page, setPage] = React.useState(0);
@@ -52,16 +67,11 @@ const DocumentMaster = () => {
   const canEdit = checkAccess(5, "IsEdit");
   const canDelete = checkAccess(5, "IsDelete");
 
-  const [CreateSubDocRows, setCreateSubDocRows] = React.useState([
-    {
-      id: Date.now(),
-      NameMR: "",
-      srNo: "",
-      isDisabled: false,
-    },
-  ]);
+  const [CreateSubDocRows, setCreateSubDocRows] = React.useState([]);
+  const [selectedSubDocsNames, setSelectedSubDocsNames] = React.useState([]);
 
-  // React Hook Form initialization
+  const [checkedIds, setCheckedIds] = React.useState(new Set());
+
   const {
     register,
     handleSubmit,
@@ -69,6 +79,7 @@ const DocumentMaster = () => {
     setValue,
     reset,
     watch,
+    getValues,
     formState: { errors },
   } = useForm({
     defaultValues: {
@@ -91,30 +102,55 @@ const DocumentMaster = () => {
         CreateSubDocRows: [],
       });
       setCreateSubDocRows([]);
+      setSelectedSubDocsNames([]);
+      // DocMasterListTemp(0, null);
     }
-    // if (ClearUpdateButton === "RESET") {
-    //   reset(originalDataRef.current);
 
-    // }
     if (ClearUpdateButton === "RESET") {
       const old = originalDataRef.current;
       if (!old) return;
 
-      // Restore form fields
       reset(old);
 
-      // Restore datagrid rows
       const oldRows = (old.SubDocs || []).map((s, index) => ({
         id: s.LineNum || index + 1,
         ...s,
       }));
 
       setCreateSubDocRows(oldRows);
+      // DocMasterListTemp(0, null);
     }
   };
 
-  const handleClose = () => setOn(false);
+  const handleClose = () => {
+    setOn(false);
 
+    setCreateSubDocRows((prevRows) =>
+      prevRows.map((row) => ({
+        ...row,
+        isChecked: false,
+      }))
+    );
+  };
+  const resetTableBeforeFetch = () => {
+    setRows([]); // clear table rows
+    setPage(0); // reset page counter
+    setHasMore(true); // enable infinite scroll again
+  };
+
+  // const handleOnSave = () => {
+  //   setSaveUpdateButton("SAVE");
+  //   setClearUpdateButton("CLEAR");
+  //   clearFormData();
+  //   setValue("NameEN", "");
+  //   setValue("NameMR", "");
+  //   setValue("Description", "");
+  //   setOn(true);
+  //   setSelectedSubDocsNames([]);
+  //   setValue("IsMainDoc", false);
+  //     resetTableBeforeFetch();
+  // resetTableAndFetch();
+  // };
   const handleOnSave = () => {
     setSaveUpdateButton("SAVE");
     setClearUpdateButton("CLEAR");
@@ -122,17 +158,11 @@ const DocumentMaster = () => {
     setValue("NameEN", "");
     setValue("NameMR", "");
     setValue("Description", "");
-
     setOn(true);
-
-    setCreateSubDocRows([
-      {
-        id: Date.now(),
-        NameMR: "",
-        srNo: "",
-        isDisabled: false,
-      },
-    ]);
+    setSelectedSubDocsNames([]);
+    setValue("IsMainDoc", false);
+    resetTableAndFetch();
+    setRows([]);
   };
 
   const validationAlert = (message) => {
@@ -157,6 +187,21 @@ const DocumentMaster = () => {
         validationAlert("Please fill in all required fields");
         return;
       }
+     
+      // const selectedSubDocsForPayload = selectedSubDocsNames
+      //   .filter((name) => name)
+      //   .map((name) => ({
+      //     LineNum: 0,
+      //     Id: 0,
+      //     Status: 1,
+      //     CreatedDate: dayjs().format("YYYY-MM-DD"),
+      //     CreatedBy: sessionStorage.getItem("userId"),
+      //     ModifiedDate: dayjs().format("YYYY-MM-DD"),
+      //     ModifiedBy: sessionStorage.getItem("userId"),
+      //     NameEN: "",
+      //     NameMR: name,
+      //     Description: "",
+      //   }));
 
       const payload = {
         Id: null || formData.Id,
@@ -164,17 +209,34 @@ const DocumentMaster = () => {
         CreatedBy: sessionStorage.getItem("userId"),
         ModifiedBy: sessionStorage.getItem("userId"),
         ModifiedDate: dayjs().format("YYYY-MM-DD"),
-
         NameEN: formData.NameEN,
         NameMR: formData.NameMR,
         Description: formData.Description || "",
         Status: formData.Status || "1",
         IsMainDoc: formData.IsMainDoc,
-              Status: formData.Status === false ? 0 : 1,
+        Status: formData.Status === false ? 0 : 1,
+
+        // SubDocs: selectedRows
+        //   .filter((row) => row.NameMR)
+        //   .map((row, index) => ({
+        //     LineNum: 0,
+        //     Id: 0,
+        //     Status: 1,
+        //     CreatedDate: dayjs().format("YYYY-MM-DD"),
+        //     CreatedBy: sessionStorage.getItem("userId"),
+        //     ModifiedDate: dayjs().format("YYYY-MM-DD"),
+        //     ModifiedBy: sessionStorage.getItem("userId"),
+        //     NameEN: "",
+        //     NameMR: row.NameMR,
+        //     Description: row.Description || "",
+        //   })),
 
 
-        SubDocs: CreateSubDocRows.filter((row) => row.NameMR).map(
-          (row, index) => ({
+        // SubDocs: formData.IsMainDoc ? selectedSubDocsForPayload : [], // Only include subdocs if it's a main doc
+
+         SubDocs: rows
+          .filter((row) => row.isChecked === true)
+          .map((row) => ({
             LineNum: 0,
             Id: 0,
             Status: 1,
@@ -182,11 +244,10 @@ const DocumentMaster = () => {
             CreatedBy: sessionStorage.getItem("userId"),
             ModifiedDate: dayjs().format("YYYY-MM-DD"),
             ModifiedBy: sessionStorage.getItem("userId"),
-            NameEN: "",
+            NameEN: row.NameEN,
             NameMR: row.NameMR,
-            Description: row.Description || "",
-          })
-        ),
+            Description: row.Description,
+          })),
       };
       let response;
 
@@ -259,59 +320,6 @@ const DocumentMaster = () => {
     }
   };
 
-  const CustomListBox = React.forwardRef(function CustomListBox(props, ref) {
-    const { children, ...other } = props;
-
-    const handleScroll = (event) => {
-      const list = event.currentTarget;
-      const bottom = list.scrollHeight - (list.scrollTop + list.clientHeight);
-
-      if (bottom < 30 && !loading && hasMore && !scrollLock) {
-        const nextPage = page + 1;
-        setPage(nextPage);
-        DocMasterListTemp(nextPage);
-      }
-    };
-
-    return (
-      <ul
-        {...other}
-        ref={ref}
-        style={{ maxHeight: 250, overflow: "auto" }}
-        onScroll={handleScroll}
-      >
-        {children}
-      </ul>
-    );
-  });
-
-  // const getAllDocumentList = async (page = 0, searchText = "") => {
-  //   try {
-  //     setLoading(true);
-
-  //     const params = {
-  //       Status: 1,
-  //       Page: page,
-  //        ...(limit ? { Limit: limit } : {}),
-  //       ...(searchText ? { SearchText: searchText } : {}),
-  //     };
-
-  //     const response = await axios.get(`${BASE_URL}DocsMaster`, { params });
-  //     if (response.data && response.data.values) {
-  //       setDocumentData(
-  //         response.data.values.map((item, index) => ({
-  //           ...item,
-  //           id: item.Id,
-  //         }))
-  //       );
-  //     }
-  //   } catch (error) {
-  //     console.error("Error fetching data:", error);
-  //   } finally {
-  //     setLoading(false);
-  //   }
-  // };
-
   const getAllDocumentList = async (page = 0, searchText = "") => {
     try {
       setLoading(true);
@@ -347,9 +355,10 @@ const DocumentMaster = () => {
     }
   };
 
-  React.useEffect(() => {
-    if (on) DocMasterListTemp(0);
-  }, [on]);
+  // React.useEffect(() => {
+  //   // Only load sub-doc options on modal open
+  //   if (on) DocMasterListTemp(0);
+  // }, [on]);
 
   React.useEffect(() => {
     if (firstLoad.current) {
@@ -357,14 +366,6 @@ const DocumentMaster = () => {
       firstLoad.current = false;
     }
   }, []);
- 
-// React.useEffect(() => {
-//   if (isMainDoc === true) {
-//     setCreateSubDocRows([]);  
-//   }
-// }, [isMainDoc]);
-
-  // =========================
 
   const handleDelete = async (rowData) => {
     Swal.fire({
@@ -482,16 +483,6 @@ const DocumentMaster = () => {
       },
     },
 
-    //   {
-    //   field: "srNo",
-    //   headerName: "SR NO",
-    //   width: 80,
-    //   sortable: false,
-    //   headerAlign: "center",
-    //   align: "center",
-    //   renderCell: (params) => params.row.id ?? "",
-    // },
-
     {
       field: "IsMainDoc",
       headerName: "MAIN DOCUMENT",
@@ -581,7 +572,7 @@ const DocumentMaster = () => {
         </Tooltip>
       ),
     },
-     {
+    {
       field: "Status",
       headerName: "Status",
       width: 80,
@@ -604,7 +595,7 @@ const DocumentMaster = () => {
     },
   ];
 
-   const buttonStyles = {
+  const buttonStyles = {
     border: "none",
     borderRadius: "4px",
     padding: "4px 8px",
@@ -614,8 +605,7 @@ const DocumentMaster = () => {
     width: 55,
   };
 
-
-    const activeButtonStyle = {
+  const activeButtonStyle = {
     ...buttonStyles,
     backgroundColor: "green",
   };
@@ -625,174 +615,85 @@ const DocumentMaster = () => {
     backgroundColor: "#dc3545",
   };
 
-
-  const [selectedDocs, setSelectedDocs] = React.useState([]);
-
-  // ===== Delete Row =====
-  const handleDeleteRow = (id) => {
-    const deletedDoc = CreateSubDocRows.find((r) => r.id === id)?.NameMR;
-    setCreateSubDocRows((prev) => prev.filter((r) => r.id !== id));
-    if (deletedDoc) {
-      setSelectedDocs((prev) => prev.filter((x) => x !== deletedDoc));
-    }
-  };
-
   const columnssubDoc = [
     {
       field: "srNo",
       headerName: "SR NO",
-      width: 60,
+      width: 80,
       sortable: false,
       headerAlign: "center",
       align: "center",
       renderCell: (params) => {
-        const index = CreateSubDocRows.findIndex((r) => r.id === params.row.id);
-        return index + 1;
+        const page = params.api.state.pagination.paginationModel.page;
+        const pageSize = params.api.state.pagination.paginationModel.pageSize;
+        const rowIndex = params.api.getSortedRowIds().indexOf(params.id);
+        return page * pageSize + (rowIndex + 1);
       },
     },
+
     {
-      field: "actions",
-      headerName: "Action",
-      width: 80,
+      field: "isChecked",
+      headerName: "Select",
+      width: 70,
+      minWidth: 60,
       align: "center",
       headerAlign: "center",
       renderCell: (params) => (
-        <Button
-          size="small"
-          sx={{ color: "red" }}
-          onClick={() => handleDeleteRow(params.row.id)}
-        >
-          <DeleteForeverIcon />
-        </Button>
+        <Checkbox
+          checked={params.row.isChecked}
+          onChange={() => toggleCheck(params.row)}
+        />
       ),
     },
 
-    // {
-    //   field: "NameMR",
-    //   headerName: "DOCUMENT NAME",
-    //   width: 250,
-    //   renderCell: (params) => {
-    //     const currentValue = params.row.NameMR;
-
-    //     const handleChange = (e) => {
-    //       const newValue = e.target.value;
-
-    //       // Update grid rows
-    //       setCreateSubDocRows((prev) =>
-    //         prev.map((r) =>
-    //           r.id === params.row.id ? { ...r, NameMR: newValue } : r
-    //         )
-    //       );
-
-    //       // Update selected documents list
-    //       setSelectedDocs((prev) => {
-    //         const withoutCurrent = prev.filter((x) => x !== currentValue);
-    //         return [...withoutCurrent, newValue];
-    //       });
-    //     };
-
-    //     // Filter dropdown (hide selected except current row value)
-    //     const filteredOptions = docOptions.filter(
-    //       (opt) => !selectedDocs.includes(opt.NameMR) || opt.NameMR === currentValue
-    //     );
-
-    //     return (
-    //       <Tooltip title={params.value || ""}>
-    //         <Select
-    //           value={params.value || ""}
-    //           onChange={handleChange}
-    //           fullWidth
-    //           variant="standard"
-    //           MenuProps={{
-    //             PaperProps: { style: { maxHeight: 200, maxWidth: 200 } },
-    //           }}
-    //           sx={{ minWidth: 250 }}
-    //         >
-    //           {filteredOptions.length > 0 ? (
-    //             filteredOptions.map((opt, i) => (
-    //               <MenuItem
-    //                 key={i}
-    //                 value={opt.NameMR}
-    //                 sx={{
-    //                   whiteSpace: "normal",
-    //                   wordWrap: "break-word",
-    //                   alignItems: "flex-start",
-    //                 }}
-    //               >
-    //                 {opt.NameMR}
-    //               </MenuItem>
-    //             ))
-    //           ) : (
-    //             <MenuItem disabled>No options available</MenuItem>
-    //           )}
-    //         </Select>
-    //       </Tooltip>
-    //     );
-    //   },
-    // }
-
-    // ========================
     {
       field: "NameMR",
       headerName: "DOCUMENT NAME",
-      width: 250,
-      renderCell: (params) => {
-        const currentValue = params.row.NameMR;
-
-        // Filter options to avoid duplicates
-        const filteredOptions = docOptions.filter(
-          (opt) =>
-            !selectedDocs.includes(opt.NameMR) || opt.NameMR === currentValue
-        );
-
-        const handleChange = (e, newValue) => {
-          if (!newValue) return;
-
-          // Update grid rows
-          setCreateSubDocRows((prev) =>
-            prev.map((r) =>
-              r.id === params.row.id ? { ...r, NameMR: newValue.NameMR } : r
-            )
-          );
-
-          // Update selected documents list
-          setSelectedDocs((prev) => {
-            const withoutCurrent = prev.filter((x) => x !== currentValue);
-            return [...withoutCurrent, newValue.NameMR];
-          });
-        };
-
-        return (
-          <Tooltip title={params.value || ""}>
-            <Autocomplete
-              disablePortal
-              ListboxComponent={CustomListBox} //  Use custom scroll logic
-              value={
-                docOptions.find((opt) => opt.NameMR === currentValue) || null
-              }
-              onChange={handleChange}
-              options={filteredOptions}
-              getOptionLabel={(option) => option.NameMR}
-              renderInput={(params) => (
-                <TextField
-                  {...params}
-                  variant="standard"
-                  placeholder="Select..."
-                />
-              )}
-              fullWidth
-              sx={{ minWidth: 250 }}
-            />
-          </Tooltip>
-        );
-      },
+      flex: 1,
+      minWidth: 60,
+      renderCell: (params) => (
+        <Tooltip title={params.value || ""}>
+          <span>{params.value}</span>
+        </Tooltip>
+      ),
     },
   ];
+
+  // const toggleCheck = (row) => {
+  //   setRows((prev) =>
+  //     prev.map((r) => (r.id === row.id ? { ...r, isChecked: !r.isChecked } : r))
+  //   );
+
+  //   setSelectedSubDocsNames((prev) => {
+  //     if (prev.includes(row.NameMR)) {
+  //       return prev.filter((name) => name !== row.NameMR);
+  //     } else {
+  //       return [...prev, row.NameMR];
+  //     }
+  //   });
+  // };
+
+  const toggleCheck = (row) => {
+    setRows((prev) =>
+      prev.map((r) => (r.Id === row.Id ? { ...r, isChecked: !r.isChecked } : r))
+    );
+
+    // Maintain persistent selected list
+    if (selectedSubDocsRef.current.includes(row.NameMR)) {
+      selectedSubDocsRef.current = selectedSubDocsRef.current.filter(
+        (x) => x !== row.NameMR
+      );
+    } else {
+      selectedSubDocsRef.current.push(row.NameMR);
+    }
+  };
 
   const handleUpdate = async (rowData) => {
     setSaveUpdateButton("UPDATE");
     setClearUpdateButton("RESET");
     setOn(true);
+    setCurrentsubDocPage(0);
+    setSearchText("");
 
     try {
       setLoading(true);
@@ -810,15 +711,38 @@ const DocumentMaster = () => {
         setValue("Status", Document.Status);
         setValue("IsMainDoc", Document.IsMainDoc);
         setValue("Status", Document.Status);
+        const existingNames = (Document.SubDocs || []).map((s) => s.NameMR);
 
+        selectedSubDocsRef.current = existingNames;
 
-        const subDocs = (Document.SubDocs || []).map((subDoc, index) => ({
-          id: subDoc.LineNum || index + 1,
-          ...subDoc,
+        // IMPORTANT: initialize the state that your toggle/save logic depends on
+        setSelectedSubDocsNames(existingNames);
+
+        // load rows (you already awaited this). After rows are loaded, mark isChecked on rows that are already selected
+        setRows([]);
+        setSubPage(0);
+        setSubHasMore(true);
+
+        //  Fetch page 0 fresh
+        // await fetchDocs(0, null);
+
+        // Now ensure createSubDocRows reflect pre-selected rows
+        // setCreateSubDocRows((prevRows) =>
+        //   prevRows.map((r) => ({
+        //     ...r,
+        //     isChecked: existingNames.includes(r.NameMR),
+        //   }))
+        // );
+        const newRows = await fetchDocs(0, null); // <-- fetchDocs should return the rows fetched
+
+        //  Now mark checkboxes
+        const updatedRows = newRows.map((r) => ({
+          ...r,
+          isChecked: existingNames.includes(r.NameMR),
         }));
-        setCreateSubDocRows(subDocs);
 
-        await DocMasterListTemp(Document.Id);
+        setCreateSubDocRows(updatedRows); // set checkbox state
+        setRows(updatedRows);
       }
     } catch (error) {
       console.error("Error fetching Document data:", error);
@@ -827,46 +751,121 @@ const DocumentMaster = () => {
     }
   };
 
-  const handleAddRow = () => {
-    setCreateSubDocRows((prevRows) => [
-      ...prevRows,
-      {
-        id: Date.now(),
-        NameMR: "",
-        Description: "",
-        isDisabled: false,
-      },
-    ]);
+  // const DocMasterListTemp = async (page = 0, searchText = "") => {
+  //   setLoading(true);
+  //   try {
+  //     const apiPage = page;
+
+  //     let apiUrl = `${BASE_URL}DocsMaster?Status=1&Page=${apiPage}&Limit=${limit}`;
+
+  //     if (searchText) {
+  //       apiUrl = `${BASE_URL}DocsMaster?Status=1&SearchText=${encodeURIComponent(
+  //         searchText
+  //       )}&Page=${apiPage}&Limit=${limit}`;
+  //     }
+  //     const response = await axios.get(apiUrl);
+  //     let newDocs = response.data.values || [];
+  //     newDocs = newDocs.map((item, index) => ({
+  //       ...item,
+  //       id: page * limit + index + 1,
+  //     }));
+  //     setDocOptions(newDocs);
+  //     const currentDocId = getValues("Id"); // main document Id
+  //     newDocs = newDocs.filter((d) => d.Id !== currentDocId);
+
+  //     markCheckedRows(newDocs);
+
+  //     if (response.data.count) {
+  //       setTotalSubDocRows(response.data.count);
+  //     } else {
+  //       setDocOptions([]);
+  //       setTotalSubDocRows(0);
+  //     }
+  //   } catch (err) {
+  //     console.error("Error fetching DocsMaster:", err);
+  //   } finally {
+  //     setLoading(false);
+  //     setTimeout(() => setScrollLock(false), 300);
+  //   }
+  // };
+
+  const markCheckedRows = (fullList) => {
+    const selected = selectedSubDocsRef.current || [];
+
+    const formatted = fullList.map((d, idx) => ({
+      id: d.Id || idx + 1,
+      NameMR: d.NameMR,
+      isChecked: selected.includes(d.NameMR),
+    }));
+
+    setCreateSubDocRows(formatted);
   };
 
-  const DocMasterListTemp = async (page = 0, excludeId = null) => {
-    if (scrollLock || !hasMore) return;
-    setScrollLock(true);
+  const scrollRef = React.useRef(null);
+
+  const [SubPage, setSubPage] = React.useState(0);
+  const [hasSubMore, setSubHasMore] = React.useState(true);
+  const [rows, setRows] = React.useState([]);
+  const [searchSubText, setSearchSubText] = React.useState("");
+
+  const fetchDocs = async (pageNo, search = searchSubText) => {
+    if (loading) return [];
+
     setLoading(true);
-
     try {
-      const { data } = await axios.get(`${BASE_URL}DocsMaster`, {
-        params: { Status: "1", page },
-      });
+      const apiUrl = `${BASE_URL}DocsMaster?Status=1&Limit=${limit}&Page=${pageNo}${
+        search ? `&SearchText=${encodeURIComponent(search)}` : ""
+      }`;
+      const response = await axios.get(apiUrl);
 
-      const newDocs = data?.values || [];
+      let newData = response.data.values || [];
+      const currentDocId = getValues("Id");
+      newData = newData.filter((d) => d.Id !== currentDocId);
 
-      if (excludeId) {
-        newDocs = newDocs.filter((doc) => Number(doc.Id) !== Number(excludeId));
+      if (newData.length === 0) {
+        setSubHasMore(false);
+        return [];
       }
 
-      if (newDocs.length === 0) {
-        setHasMore(false);
-        return;
-      }
+      newData = newData.map((item, idx) => ({
+        ...item,
+        id: pageNo * limit + idx + 1,
+        isChecked: selectedSubDocsRef.current.includes(item.NameMR),
+      }));
 
-      setDocOptions((prev) => (page === 0 ? newDocs : [...prev, ...newDocs]));
+      setRows((prev) => [...prev, ...newData]);
+      setSubPage(pageNo + 1);
+
+      markCheckedRows(newData);
+
+      return newData;
     } catch (err) {
-      console.error("Error fetching DocsMaster:", err);
+      console.error(err);
+      return [];
     } finally {
       setLoading(false);
-      setTimeout(() => setScrollLock(false), 300);
     }
+  };
+
+  const handleScroll = () => {
+    const el = scrollRef.current;
+    if (!el || loading || !hasSubMore) return;
+
+    const isBottom = el.scrollHeight - el.scrollTop <= el.clientHeight + 30;
+
+    if (isBottom) {
+      fetchDocs(SubPage);
+    }
+  };
+
+  const resetTableAndFetch = (text) => {
+    setRows([]);
+    setSubPage(0);
+    setSubHasMore(true);
+    // setLoading(false);
+    setSearchSubText(text);
+
+    setTimeout(() => fetchDocs(0, text), 0);
   };
 
   return (
@@ -874,7 +873,7 @@ const DocumentMaster = () => {
       {loaderOpen && <Loader open={loaderOpen} />}
       <Modal
         open={on}
-         sx={{
+        sx={{
           backdropFilter: "blur(5px)",
           backgroundColor: "rgba(0, 0, 0, 0.3)",
         }}
@@ -883,14 +882,14 @@ const DocumentMaster = () => {
           elevation={10}
           sx={{
             width: "100%",
-            maxWidth: 450,
+            maxWidth: 700,
             position: "absolute",
             top: "50%",
             left: "50%",
             transform: "translate(-50%, -50%)",
             justifyContent: "center",
             overflow: "auto",
-            maxHeight: "90vh",
+            maxHeight: "100vh",
           }}
         >
           <Grid
@@ -974,7 +973,6 @@ const DocumentMaster = () => {
                 />
               </Grid>
 
-              <Grid item xs={12}></Grid>
               <Grid item xs={8}>
                 <Controller
                   name="IsMainDoc"
@@ -986,88 +984,78 @@ const DocumentMaster = () => {
                         <Checkbox
                           {...field}
                           checked={field.value === true}
-                          onChange={(e) =>
-                            field.onChange(e.target.checked ? true : false)
-                          }
+                          onChange={(e) => {
+                            const isChecked = e.target.checked;
+                            field.onChange(isChecked);
+                            if (isChecked) {
+                              setRows((prev) =>
+                                prev.map((r) => ({ ...r, isChecked: false }))
+                              );
+                              selectedSubDocsRef.current = [];
+                            }
+                          }}
+                          sx={{
+                            "& .MuiSvgIcon-root": {
+                              fontSize: 24,
+                              fontWeight: "bold",
+                            },
+                            "&.Mui-checked .MuiSvgIcon-root": {
+                              fontWeight: "bold",
+                            },
+                          }}
                         />
                       }
-                      label="Is Main Document"
+                      label={
+                        <span style={{ fontWeight: "bold" }}>
+                          Is Main Document
+                        </span>
+                      }
                     />
                   )}
                 />
-              </Grid> 
-                  <Grid
-                              item
-                              xs={6}
-                              sm={4}
-                              md={4}
-                              display="flex"
-                              alignItems="center"
-                              justifyContent="flex-start"
-                            >
-                              <Controller
-                                name="Status"
-                                control={control}
-                                defaultValue={false}
-                                render={({ field }) => (
-                                  <FormControlLabel
-                                    sx={{ ml: 1 }}
-                                    control={
-                                      <Checkbox
-                                        {...field}
-                                        checked={field.value}
-                                        onChange={(e) => field.onChange(e.target.checked)}
-                                        size="medium"
-                                        color="primary"
-                                      />
-                                    }
-                                    label="Active"
-                                  />
-                                )}
-                              />
-                            </Grid>
+              </Grid>
+              <Grid
+                item
+                xs={6}
+                sm={4}
+                md={4}
+                display="flex"
+                alignItems="center"
+                justifyContent="flex-start"
+              >
+                <Controller
+                  name="Status"
+                  control={control}
+                  defaultValue={false}
+                  render={({ field }) => (
+                    <FormControlLabel
+                      sx={{ ml: 1 }}
+                      label={<span style={{ fontWeight: "bold" }}>Active</span>}
+                      control={
+                        <Checkbox
+                          {...field}
+                          checked={field.value}
+                          onChange={(e) => field.onChange(e.target.checked)}
+                          size="medium"
+                          color="primary"
+                          sx={{
+                            "& .MuiSvgIcon-root": {
+                              fontSize: 26,
+                              fontWeight: 700,
+                            },
+                          }}
+                        />
+                      }
+                    />
+                  )}
+                />
+              </Grid>
             </Grid>
 
             {/* ========================================================== */}
-            {isMainDoc && (
-              <>
-                <Grid
-                  item
-                  xs={12}
-                  display="flex"
-                  alignItems="center"
-                  justifyContent="space-between"
-                  sx={{ mt: 2 }}
-                >
-                  <Typography
-                    variant="subtitle1"
-                    fontWeight="bold"
-                    color="rgb(0, 90, 91)"
-                  >
-                    ADD SUB DOCUMENTS LIST
-                  </Typography>
-
-                  <Button
-                    variant="outlined"
-                    size="small"
-                    sx={{
-                      height: "36px",
-                      color: "rgb(0, 90, 91)",
-                      border: "1px solid rgb(0, 90, 91)",
-                      borderRadius: "8px",
-                      "&:hover": {
-                        backgroundColor: "rgba(0,90,91,0.1)",
-                      },
-                    }}
-                    onClick={handleAddRow}
-                  >
-                    Add Document Row
-                  </Button>
-                </Grid>
-
-                {/* DATAGRID SECTION */}
-
-                <div style={{ height: 300 }}>
+            {/* {isMainDoc && (
+              <> */}
+            {/* <div style={{ height: 500, width: 700 }}>
                   <DataGrid
                     className="datagrid-style"
                     rows={CreateSubDocRows}
@@ -1075,7 +1063,6 @@ const DocumentMaster = () => {
                     pageSize={5}
                     rowsPerPageOptions={[5]}
                     disableRowSelectionOnClick
-                    hideFooter
                     onRowClick={(params, event) => {
                       if (params.row.isDisabled) event.stopPropagation();
                     }}
@@ -1084,7 +1071,57 @@ const DocumentMaster = () => {
                       row.id ||
                       `${row.NameMR}-${row.NameEN}-${Math.random()}`
                     }
+                    columnBuffer={0}
+                    columnThreshold={0}
+                    pagination
+                    paginationMode="server"
+                    rowCount={totalSubDocRows}
+                    pageSizeOptions={[limit]}
+                    paginationModel={{
+                      page: CurrentsubDocPage,
+                      pageSize: limit,
+                    }}
+                    onPaginationModelChange={(newModel) => {
+                      setCurrentsubDocPage(newModel.page);
+                      setLimit(newModel.pageSize);
+                      DocMasterListTemp(newModel.page, searchText);
+                    }}
+                    loading={loading}
+                    slots={{
+                      toolbar: () => (
+                        <CustomToolbar
+                          quickFilterParser={(value) => value.split(" ")}
+                        />
+                      ),
+                    }}
+                    slotProps={{
+                      toolbar: {
+                        showQuickFilter: true,
+                        quickFilterProps: { debounceMs: 500 },
+                      },
+                    }}
+                    onFilterModelChange={(model) => {
+                      const quickFilterValue =
+                        model.quickFilterValues?.[0] || "";
+                      setSearchText(quickFilterValue);
+                      setCurrentsubDocPage(0);
+                      DocMasterListTemp(0, quickFilterValue);
+                    }}
                     sx={{
+                      overflowX: "hidden !important",
+                      "& .MuiDataGrid-main": {
+                        overflowX: "hidden !important",
+                      },
+                      "& .MuiDataGrid-virtualScroller": {
+                        overflowX: "hidden !important",
+                      },
+                      "& .MuiDataGrid-virtualScrollerRenderZone": {
+                        overflowX: "hidden !important",
+                      },
+                      "& .MuiDataGrid-row": {
+                        overflowX: "hidden !important",
+                      },
+
                       "& .MuiDataGrid-columnHeaders": {
                         backgroundColor: (theme) =>
                           theme.palette.custome?.datagridcolor || "#f5f5f5",
@@ -1094,12 +1131,278 @@ const DocumentMaster = () => {
                       },
                     }}
                   />
+                </div> */}
+            {/* <TextField
+                  label="Search Document"
+                  value={searchSubText}
+                  onChange={(e) => resetTableAndFetch(e.target.value)}
+                 /> */}
+            {/* <Box
+                  sx={{
+                    display: "flex",
+                    justifyContent: "flex-end",
+                    mb: 1,
+                  }}
+
+                   
+                >
+                  <TextField
+                    placeholder="Search Document..."
+                    value={searchSubText}
+                    onChange={(e) => resetTableAndFetch(e.target.value)}
+                    size="small"
+                    InputProps={{
+                      startAdornment: (
+                        <InputAdornment position="start">
+                          <SearchIcon sx={{ color: "#777" }} />
+                        </InputAdornment>
+                      ),
+                      endAdornment: searchSubText && (
+                        <InputAdornment position="end">
+                          <IconButton
+                            onClick={() => resetTableAndFetch("")}
+                            edge="end"
+                            size="small"
+                          >
+                            <ClearIcon />
+                          </IconButton>
+                        </InputAdornment>
+                      ),
+                      sx: {
+                        borderRadius: "8px",
+                        paddingRight: "4px",
+                      },
+                    }}
+                    sx={{
+                      width: "220px",
+                      "& .MuiOutlinedInput-root": {
+                        borderRadius: "12px",
+                      },
+                    }}
+                  />
+                </Box>
+
+                <div
+                  ref={scrollRef}
+                  style={{
+                    height: 500,
+                    width: 700,
+                    overflowY: "auto",
+                    border: "1px solid #ddd",
+                  }}
+                  onScroll={handleScroll}
+                >
+                  <Table stickyHeader>
+                    <TableHead>
+                      <TableRow>
+                        <TableCell
+                          sx={{
+                            fontWeight: "bold",
+                            fontSize: "13px",
+                          }}
+                        >
+                          SR NO
+                        </TableCell>
+                        <TableCell
+                          sx={{
+                            fontWeight: "bold",
+                            fontSize: "13px",
+                          }}
+                        >
+                          SELECT
+                        </TableCell>
+                        <TableCell
+                          sx={{
+                            fontWeight: "bold",
+                            fontSize: "13px",
+                            textAlign: "center",
+                            paddingRight: "100px",
+                          }}
+                        >
+                          DOCUMENT NAME
+                        </TableCell>
+                      </TableRow>
+                    </TableHead>
+
+                    <TableBody>
+                      {rows.map((row, i) => (
+                        <TableRow
+                          key={row.id}
+                          sx={{
+                            "& .MuiTableCell-root": {
+                              padding: "9px 15px",
+                            },
+                          }}
+                        >
+                          <TableCell>{i + 1}</TableCell>
+                          <TableCell>
+                            <Checkbox
+                              checked={row.isChecked || false}
+                              onChange={() => toggleCheck(row)}
+                            />
+                          </TableCell>
+                          <TableCell
+                            onClick={() => toggleCheck(row)}
+                            sx={{ cursor: "pointer" }}
+                          >
+                            <Tooltip title={row.NameMR || ""}>
+                              <span>{row.NameMR}</span>
+                            </Tooltip>
+                          </TableCell>
+                        </TableRow>
+                      ))}
+
+                      {loading && (
+                        <TableRow>
+                          <TableCell colSpan={3} align="center">
+                            Loading...
+                          </TableCell>
+                        </TableRow>
+                      )}
+                    </TableBody>
+                  </Table>
                 </div>
+              </>
+            )} */}
+            {isMainDoc && (
+              <>
+                {/* SEARCH BOX */}
+                <Box
+                  sx={{
+                    display: "flex",
+                    justifyContent: "flex-end",
+                    mb: 1,
+                    px: 1,
+                  }}
+                >
+                  <TextField
+                    placeholder="Search Document..."
+                    value={searchSubText}
+                    onChange={(e) => resetTableAndFetch(e.target.value)}
+                    size="small"
+                    InputProps={{
+                      startAdornment: (
+                        <InputAdornment position="start">
+                          <SearchIcon sx={{ color: "#777" }} />
+                        </InputAdornment>
+                      ),
+                      endAdornment: searchSubText && (
+                        <InputAdornment position="end">
+                          <IconButton
+                            onClick={() => resetTableAndFetch("")}
+                            edge="end"
+                            size="small"
+                          >
+                            <ClearIcon />
+                          </IconButton>
+                        </InputAdornment>
+                      ),
+                      sx: { borderRadius: "8px", paddingRight: "4px" },
+                    }}
+                    sx={{
+                      width: {
+                        xs: "100%", // mobile
+                        sm: "280px", // tablet
+                        md: "300px", // desktop
+                      },
+                      "& .MuiOutlinedInput-root": {
+                        borderRadius: "12px",
+                      },
+                    }}
+                  />
+                </Box>
+
+                {/* RESPONSIVE TABLE WRAPPER */}
+                <Box
+                  ref={scrollRef}
+                  onScroll={handleScroll}
+                  sx={{
+                    height: { xs: 250, sm: 350, md: 400 },
+                    width: "100%",
+                    overflowY: "auto",
+                    border: "1px solid #ddd",
+                    borderRadius: "8px",
+                    maxWidth: "100%",
+                  }}
+                >
+                  <Table stickyHeader>
+                    <TableHead>
+                      <TableRow>
+                        <TableCell
+                          sx={{
+                            fontWeight: "bold",
+                            fontSize: "13px",
+                            whiteSpace: "nowrap",
+                          }}
+                        >
+                          SR NO
+                        </TableCell>
+                        <TableCell
+                          sx={{
+                            fontWeight: "bold",
+                            fontSize: "13px",
+                            whiteSpace: "nowrap",
+                          }}
+                        >
+                          SELECT
+                        </TableCell>
+                        <TableCell
+                          sx={{
+                            fontWeight: "bold",
+                            fontSize: "13px",
+                            textAlign: "center",
+                            paddingRight: { xs: 0, md: "80px" },
+                            whiteSpace: "nowrap",
+                          }}
+                        >
+                          DOCUMENT NAME
+                        </TableCell>
+                      </TableRow>
+                    </TableHead>
+
+                    <TableBody>
+                      {rows.map((row, i) => (
+                        <TableRow
+                          key={row.id}
+                          sx={{
+                            "& .MuiTableCell-root": { padding: "9px 15px" },
+                          }}
+                        >
+                          <TableCell>{i + 1}</TableCell>
+
+                          <TableCell>
+                            <Checkbox
+                              checked={row.isChecked || false}
+                              onChange={() => toggleCheck(row)}
+                            />
+                          </TableCell>
+
+                          <TableCell
+                            onClick={() => toggleCheck(row)}
+                            sx={{ cursor: "pointer" }}
+                          >
+                            <Tooltip title={row.NameMR || ""}>
+                              <span>{row.NameMR}</span>
+                            </Tooltip>
+                          </TableCell>
+                        </TableRow>
+                      ))}
+
+                      {loading && (
+                        <TableRow>
+                          <TableCell colSpan={3} align="center">
+                            Loading...
+                          </TableCell>
+                        </TableRow>
+                      )}
+                    </TableBody>
+                  </Table>
+                </Box>
               </>
             )}
 
-            {/* ======================================== */}
-            <Grid item xs={12} sm={12}></Grid>
+            {/* =====================Footer=================== */}
+            {/* <Grid item xs={12} sm={12}></Grid>
             <Grid
               item
               xs={12}
@@ -1152,7 +1455,64 @@ const DocumentMaster = () => {
               >
                 {SaveUpdateButton}
               </Button>
+            </Grid> */}
+            <Grid
+              item
+              xs={12}
+              md={12}
+              display="flex"
+              justifyContent="space-between"
+              alignItems="center"
+              sx={{
+                position: "sticky",
+
+                borderTop: "1px solid #ddd",
+                zIndex: 20,
+                bottom: 2,
+                left: 5,
+                right: 0,
+              }}
+            >
+              <Button
+                size="small"
+                onClick={() => clearFormData()}
+                sx={{
+                  p: 1,
+                  width: 80,
+                  color: "rgb(0, 90, 91)",
+                  background: "transparent",
+                  border: "1px solid rgb(0, 90, 91)",
+                  borderRadius: "8px",
+                  transition: "all 0.2s ease-in-out",
+                  "&:hover": {
+                    background: "rgba(0, 90, 91, 0.1)",
+                    transform: "translateY(2px)",
+                  },
+                }}
+              >
+                {ClearUpdateButton}
+              </Button>
+              <Button
+                type="submit"
+                size="small"
+                sx={{
+                  marginTop: 1,
+                  p: 1,
+                  width: 80,
+                  color: "white",
+                  background:
+                    "linear-gradient(to right, rgb(0, 90, 91), rgb(22, 149, 153))",
+                  boxShadow: 5,
+                  "&:hover": {
+                    transform: "translateY(2px)",
+                    boxShadow: "0 2px 4px rgba(0, 90, 91, 0.2)",
+                  },
+                }}
+              >
+                {SaveUpdateButton}
+              </Button>
             </Grid>
+
             {/* </form> */}
             <Grid />
           </Grid>
@@ -1256,10 +1616,8 @@ const DocumentMaster = () => {
           pageSizeOptions={[limit]}
           paginationModel={{ page: currentPage, pageSize: limit }}
           onPaginationModelChange={(newModel) => {
-            // update state and immediately fetch the correct page
             setCurrentPage(newModel.page);
             setLimit(newModel.pageSize);
-            // fetch new page with current searchText (use the state value)
             getAllDocumentList(newModel.page, searchText);
           }}
           loading={loading}
