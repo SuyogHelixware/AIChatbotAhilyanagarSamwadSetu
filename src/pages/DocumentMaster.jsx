@@ -34,6 +34,9 @@ import Swal from "sweetalert2";
 import Loader from "../components/Loader";
 import { BASE_URL } from "../Constant";
 import { useThemeMode } from "../Dashboard/Theme";
+import { useTheme } from "@mui/styles";
+import DeleteOutlineOutlinedIcon from "@mui/icons-material/DeleteOutlineOutlined";
+import EditOutlinedIcon from "@mui/icons-material/EditOutlined";
 
 const DocumentMaster = () => {
   const [loaderOpen, setLoaderOpen] = React.useState(false);
@@ -61,6 +64,7 @@ const DocumentMaster = () => {
   const [rows, setRows] = React.useState([]);
   const [searchSubText, setSearchSubText] = React.useState("");
   const [OpenSubDocModal, setOpenSubDocModal] = React.useState(false);
+  const theme = useTheme();
 
   const canAdd = checkAccess(5, "IsAdd");
   const canEdit = checkAccess(5, "IsEdit");
@@ -410,8 +414,8 @@ const DocumentMaster = () => {
       headerAlign: "center",
       align: "center",
       sortable: false,
-      minWidth: 90,
-      maxWidth: 110,
+      minWidth: 100,
+      maxWidth: 120,
       flex: 0.3,
       renderCell: (params) => (
         <strong>
@@ -423,7 +427,7 @@ const DocumentMaster = () => {
               <IconButton
                 color="primary"
                 sx={{
-                  color: "rgb(0, 90, 91)",
+                  color: "#2196F3",
                   "&:hover": {
                     backgroundColor: "rgba(0, 90, 91, 0.1)",
                   },
@@ -431,7 +435,7 @@ const DocumentMaster = () => {
                 onClick={() => handleUpdate(params.row)}
                 disabled={!canEdit}
               >
-                <EditNoteIcon />
+                <EditOutlinedIcon />
               </IconButton>
             </span>
           </Tooltip>
@@ -447,7 +451,7 @@ const DocumentMaster = () => {
                 onClick={() => handleDelete(params.row)}
                 disabled={!canDelete}
               >
-                <DeleteForeverIcon />
+                <DeleteOutlineOutlinedIcon />
               </Button>
             </span>
           </Tooltip>
@@ -863,7 +867,7 @@ const DocumentMaster = () => {
         }}
       >
         <Paper
-          elevation={10}
+          elevation={2}
           sx={{
             width: "100%",
             maxWidth: 700,
@@ -956,84 +960,6 @@ const DocumentMaster = () => {
                   )}
                 />
               </Grid>
-
-              {/* <Grid item xs={8}>
-                <Controller
-                  name="IsMainDoc"
-                  control={control}
-                  defaultValue={true}
-                  render={({ field }) => (
-                    <FormControlLabel
-                      control={
-                        <Checkbox
-                          {...field}
-                          checked={field.value === true}
-                          onChange={(e) => {
-                            const isChecked = e.target.checked;
-                            field.onChange(isChecked);
-                            if (isChecked) {
-                              setRows((prev) =>
-                                prev.map((r) => ({ ...r, isChecked: false }))
-                              );
-                              selectedSubDocsRef.current = [];
-                            }
-                          }}
-                          sx={{
-                            "& .MuiSvgIcon-root": {
-                              fontSize: 24,
-                              fontWeight: "bold",
-                            },
-                            "&.Mui-checked .MuiSvgIcon-root": {
-                              fontWeight: "bold",
-                            },
-                          }}
-                        />
-                      }
-                      label={
-                        <span style={{ fontWeight: "bold" }}>
-                          Is Main Document
-                        </span>
-                      }
-                    />
-                  )}
-                />
-              </Grid> */}
-              {/* <Grid
-                item
-                xs={6}
-                sm={4}
-                md={4}
-                display="flex"
-                alignItems="center"
-                justifyContent="flex-start"
-              >
-                <Controller
-                  name="Status"
-                  control={control}
-                  defaultValue={false}
-                  render={({ field }) => (
-                    <FormControlLabel
-                      sx={{ ml: 1 }}
-                      label={<span style={{ fontWeight: "bold" }}>Active</span>}
-                      control={
-                        <Checkbox
-                          {...field}
-                          checked={field.value}
-                          onChange={(e) => field.onChange(e.target.checked)}
-                          size="medium"
-                          color="primary"
-                          sx={{
-                            "& .MuiSvgIcon-root": {
-                              fontSize: 26,
-                              fontWeight: 700,
-                            },
-                          }}
-                        />
-                      }
-                    />
-                  )}
-                />
-              </Grid> */}
             </Grid>
 
             {/* ========================================================== */}
@@ -1246,9 +1172,9 @@ const DocumentMaster = () => {
                 sx={{
                   p: 1,
                   width: 80,
-                  color: "rgb(0, 90, 91)",
                   background: "transparent",
-                  border: "1px solid rgb(0, 90, 91)",
+                  color: "#2196F3",
+                  border: "1px solid #2196F3",
                   borderRadius: "8px",
                   transition: "all 0.2s ease-in-out",
                   "&:hover": {
@@ -1267,12 +1193,11 @@ const DocumentMaster = () => {
                   p: 1,
                   width: 80,
                   color: "white",
-                  background:
-                    "linear-gradient(to right, rgb(0, 90, 91), rgb(22, 149, 153))",
+                  backgroundColor: theme.palette.Button.background,
                   boxShadow: 5,
                   "&:hover": {
                     transform: "translateY(2px)",
-                    boxShadow: "0 2px 4px rgba(0, 90, 91, 0.2)",
+                    backgroundColor: theme.palette.Button.background,
                   },
                 }}
               >
@@ -1354,7 +1279,7 @@ const DocumentMaster = () => {
               alignItems="center"
             >
               <Typography fontWeight="bold" textAlign={"center"}>
-                ADD SUB-DOCUMENT
+                ADD SUB DOCUMENT
               </Typography>
               <IconButton onClick={HandleOnSubDocModalClose}>
                 <CloseIcon />
@@ -1439,12 +1364,12 @@ const DocumentMaster = () => {
               <Button
                 size="small"
                 onClick={() => clearFormData()}
-                sx={{
+                  sx={{
                   p: 1,
                   width: 80,
-                  color: "rgb(0, 90, 91)",
+                  color: "#2196F3",
                   background: "transparent",
-                  border: "1px solid rgb(0, 90, 91)",
+                  border: "1px solid #2196F3",
                   borderRadius: "8px",
                   transition: "all 0.2s ease-in-out",
                   "&:hover": {
@@ -1463,12 +1388,11 @@ const DocumentMaster = () => {
                   p: 1,
                   width: 80,
                   color: "white",
-                  background:
-                    "linear-gradient(to right, rgb(0, 90, 91), rgb(22, 149, 153))",
+                                backgroundColor: theme.palette.Button.background,
                   boxShadow: 5,
                   "&:hover": {
                     transform: "translateY(2px)",
-                    boxShadow: "0 2px 4px rgba(0, 90, 91, 0.2)",
+                    backgroundColor: theme.palette.Button.background,
                   },
                 }}
               >
@@ -1482,7 +1406,7 @@ const DocumentMaster = () => {
       </Modal>
 
       {/* =================== */}
-      <Grid container spacing={2} marginBottom={1} justifyContent="flex-end">
+      <Grid container spacing={2} marginBottom={3} justifyContent="flex-end">
         <Tooltip
           title={!canAdd ? "You don't have Add permission" : ""}
           placement="top"
@@ -1498,14 +1422,15 @@ const DocumentMaster = () => {
                 mb: 0,
                 mt: 2,
                 color: "white",
-                background:
-                  "linear-gradient(to right, rgb(0, 90, 91), rgb(22, 149, 153))",
+                backgroundColor: theme.palette.Button.background,
+
                 borderRadius: "8px",
                 transition: "all 0.2s ease-in-out",
-                boxShadow: "0 4px 8px rgba(0, 90, 91, 0.3)",
+                boxShadow: "0 2px 4px Solid red",
                 "&:hover": {
                   transform: "translateY(2px)",
-                  boxShadow: "0 2px 4px rgba(0, 90, 91, 0.2)",
+                  backgroundColor: theme.palette.Button.background,
+                  // backgroundColor: (theme) => theme.palette.custome.datagridcolor
                 },
                 "& .MuiButton-label": {
                   display: "flex",
@@ -1522,68 +1447,84 @@ const DocumentMaster = () => {
           </span>
         </Tooltip>
       </Grid>
-      <Grid
-        container
-        item
-        lg={12}
-        component={Paper}
-        sx={{ height: "66.5vh", width: "100%" }}
-      >
-        <DataGrid
-          className="datagrid-style"
-          sx={{
-            height: "100%",
-            minHeight: "500px",
-            "& .MuiDataGrid-columnHeaders": {
-              backgroundColor: (theme) => theme.palette.custome.datagridcolor,
-            },
-            "& .MuiDataGrid-row:hover": {
-              boxShadow: "0px 4px 20px rgba(0, 0, 0.2, 0.2)",
-            },
-          }}
-          rows={DocumentData}
-          columns={columns}
-          pagination
-          paginationMode="server"
-          rowCount={totalRows}
-          pageSizeOptions={[limit]}
-          paginationModel={{ page: currentPage, pageSize: limit }}
-          onPaginationModelChange={(newModel) => {
-            setCurrentPage(newModel.page);
-            setLimit(newModel.pageSize);
-            getAllDocumentList(newModel.page, searchText);
-          }}
-          loading={loading}
-          initialState={{
-            pagination: { paginationModel: { pageSize: 8 } },
-            filter: {
-              filterModel: {
-                items: [],
-                quickFilterValues: [],
-              },
-            },
-          }}
-          disableColumnFilter
-          disableRowSelectionOnClick
-          disableColumnSelector
-          disableDensitySelector
-          slots={{ toolbar: GridToolbar }}
-          slotProps={{
-            toolbar: {
-              showQuickFilter: true,
 
-              quickFilterProps: { debounceMs: 500 },
-            },
-          }}
-          onFilterModelChange={(model) => {
-            const quickFilterValue = model.quickFilterValues?.[0] || "";
-            setSearchText(quickFilterValue);
-            setCurrentPage(0);
-            getAllDocumentList(0, quickFilterValue);
-          }}
-          getRowId={(row) => row.Id}
-        />
-      </Grid>
+      <Paper
+        sx={{
+          marginTop: 1,
+          display: "flex",
+          flexDirection: "column",
+          alignItems: "center",
+        }}
+      >
+        <Box sx={{ height: "66vh", width: "100%" }}>
+          <DataGrid
+            className="datagrid-style"
+            sx={{
+              height: "100%",
+              minHeight: "400px",
+              "& .MuiDataGrid-columnHeaders": {
+                backgroundColor: (theme) => theme.palette.custome.datagridcolor,
+              },
+              "& .MuiDataGrid-row:hover": {
+                boxShadow: "0px 2px 10px rgba(0, 0, 0.2, 0.2)",
+              },
+              "& .MuiDataGrid-virtualScroller": {
+                scrollbarWidth: "thin",
+              },
+              "& .MuiDataGrid-virtualScroller::-webkit-scrollbar": {
+                width: "6px",
+                height: "6px",
+              },
+              "& .MuiDataGrid-virtualScroller::-webkit-scrollbar-thumb": {
+                backgroundColor: "#9e9e9e",
+                borderRadius: "10px",
+              },
+            }}
+            rows={DocumentData}
+            columns={columns}
+            pagination
+            paginationMode="server"
+            rowCount={totalRows}
+            pageSizeOptions={[limit]}
+            paginationModel={{ page: currentPage, pageSize: limit }}
+            onPaginationModelChange={(newModel) => {
+              setCurrentPage(newModel.page);
+              setLimit(newModel.pageSize);
+              getAllDocumentList(newModel.page, searchText);
+            }}
+            loading={loading}
+            initialState={{
+              pagination: { paginationModel: { pageSize: 8 } },
+              filter: {
+                filterModel: {
+                  items: [],
+                  quickFilterValues: [],
+                },
+              },
+            }}
+            disableColumnFilter
+            disableRowSelectionOnClick
+            disableColumnSelector
+            disableDensitySelector
+            slots={{ toolbar: GridToolbar }}
+            slotProps={{
+              toolbar: {
+                showQuickFilter: true,
+
+                quickFilterProps: { debounceMs: 500 },
+              },
+            }}
+            onFilterModelChange={(model) => {
+              const quickFilterValue = model.quickFilterValues?.[0] || "";
+              setSearchText(quickFilterValue);
+              setCurrentPage(0);
+              getAllDocumentList(0, quickFilterValue);
+            }}
+            getRowId={(row) => row.Id}
+          />
+          {/* </Grid> */}
+        </Box>
+      </Paper>
     </>
   );
 };

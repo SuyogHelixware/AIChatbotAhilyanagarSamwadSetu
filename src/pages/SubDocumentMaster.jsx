@@ -33,6 +33,9 @@ import Swal from "sweetalert2";
 import Loader from "../components/Loader";
 import { BASE_URL } from "../Constant";
 import { useThemeMode } from "../Dashboard/Theme";
+import { useTheme } from "@mui/styles";
+import DeleteOutlineOutlinedIcon from "@mui/icons-material/DeleteOutlineOutlined";
+import EditOutlinedIcon from "@mui/icons-material/EditOutlined";
 
 const SubDocumentMaster = () => {
   const [loaderOpen, setLoaderOpen] = React.useState(false);
@@ -48,16 +51,19 @@ const SubDocumentMaster = () => {
   const originalDataRef = React.useRef(null);
   const firstLoad = React.useRef(true);
   const selectedSubDocsRef = React.useRef([]);
-  const { checkAccess } = useThemeMode();
-  const canAdd = checkAccess(5, "IsAdd");
-  const canEdit = checkAccess(5, "IsEdit");
-  const canDelete = checkAccess(5, "IsDelete");
-  const [selectedSubDocsNames, setSelectedSubDocsNames] = React.useState([]);
   const scrollRef = React.useRef(null);
   const [SubPage, setSubPage] = React.useState(0);
   const [hasSubMore, setSubHasMore] = React.useState(true);
   const [rows, setRows] = React.useState([]);
   const [searchSubText, setSearchSubText] = React.useState("");
+    const theme = useTheme();
+
+  const { checkAccess } = useThemeMode();
+  const canAdd = checkAccess(5, "IsAdd");
+  const canEdit = checkAccess(5, "IsEdit");
+  const canDelete = checkAccess(5, "IsDelete");
+   
+  
 
   const {
     handleSubmit,
@@ -87,8 +93,7 @@ const SubDocumentMaster = () => {
         IsMainDoc: false,
         CreateSubDocRows: [],
       });
-      setSelectedSubDocsNames([]);
-    }
+     }
 
     if (ClearUpdateButton === "RESET") {
       const old = originalDataRef.current;
@@ -109,8 +114,7 @@ const SubDocumentMaster = () => {
     setValue("NameMR", "");
     setValue("Description", "");
     setOn(true);
-    setSelectedSubDocsNames([]);
-    setValue("IsMainDoc", false);
+     setValue("IsMainDoc", false);
     resetTableAndFetch();
     setRows([]);
   };
@@ -375,7 +379,7 @@ const SubDocumentMaster = () => {
               <IconButton
                 color="primary"
                 sx={{
-                  color: "rgb(0, 90, 91)",
+                  color: "#2196F3",
                   "&:hover": {
                     backgroundColor: "rgba(0, 90, 91, 0.1)",
                   },
@@ -383,7 +387,7 @@ const SubDocumentMaster = () => {
                 onClick={() => handleUpdate(params.row)}
                 disabled={!canEdit}
               >
-                <EditNoteIcon />
+                <EditOutlinedIcon />
               </IconButton>
             </span>
           </Tooltip>
@@ -399,7 +403,7 @@ const SubDocumentMaster = () => {
                 onClick={() => handleDelete(params.row)}
                 disabled={!canDelete}
               >
-                <DeleteForeverIcon />
+                <DeleteOutlineOutlinedIcon />
               </Button>
             </span>
           </Tooltip>
@@ -565,8 +569,7 @@ const SubDocumentMaster = () => {
         setValue("Status", Document.Status);
         const existingNames = (Document.SubDocs || []).map((s) => s.NameMR);
         selectedSubDocsRef.current = existingNames;
-        setSelectedSubDocsNames(existingNames);
-        setRows([]);
+         setRows([]);
         setSubPage(0);
         setSubHasMore(true);
 
@@ -982,12 +985,12 @@ const SubDocumentMaster = () => {
               <Button
                 size="small"
                 onClick={() => clearFormData()}
-                sx={{
+               sx={{
                   p: 1,
                   width: 80,
-                  color: "rgb(0, 90, 91)",
                   background: "transparent",
-                  border: "1px solid rgb(0, 90, 91)",
+                  color: "#2196F3",
+                  border: "1px solid #2196F3",
                   borderRadius: "8px",
                   transition: "all 0.2s ease-in-out",
                   "&:hover": {
@@ -1001,19 +1004,18 @@ const SubDocumentMaster = () => {
               <Button
                 type="submit"
                 size="small"
-                sx={{
-                  marginTop: 1,
-                  p: 1,
-                  width: 80,
-                  color: "white",
-                  background:
-                    "linear-gradient(to right, rgb(0, 90, 91), rgb(22, 149, 153))",
-                  boxShadow: 5,
-                  "&:hover": {
-                    transform: "translateY(2px)",
-                    boxShadow: "0 2px 4px rgba(0, 90, 91, 0.2)",
-                  },
-                }}
+                  sx={{
+                                  marginTop: 1,
+                                  p: 1,
+                                  width: 80,
+                                  color: "white",
+                                  backgroundColor: theme.palette.Button.background,
+                                  boxShadow: 5,
+                                  "&:hover": {
+                                    transform: "translateY(2px)",
+                                    backgroundColor: theme.palette.Button.background,
+                                  },
+                                }}
               >
                 {SaveUpdateButton}
               </Button>
@@ -1065,28 +1067,30 @@ const SubDocumentMaster = () => {
                 disabled={!canAdd}
                 type="text"
                 size="medium"
-                sx={{
-                  pr: 2,
-                  mb: 0,
-                  mt: 2,
-                  color: "white",
-                  background:
-                    "linear-gradient(to right, rgb(0, 90, 91), rgb(22, 149, 153))",
-                  borderRadius: "8px",
-                  transition: "all 0.2s ease-in-out",
-                  boxShadow: "0 4px 8px rgba(0, 90, 91, 0.3)",
-                  "&:hover": {
-                    transform: "translateY(2px)",
-                    boxShadow: "0 2px 4px rgba(0, 90, 91, 0.2)",
-                  },
-                  "& .MuiButton-label": {
-                    display: "flex",
-                    alignItems: "center",
-                  },
-                  "& .MuiSvgIcon-root": {
-                    marginRight: "10px",
-                  },
-                }}
+              sx={{
+               
+                               pr: 2,
+                               mb: 0,
+                               mt: 2,
+                               color: "white",
+                               backgroundColor: theme.palette.Button.background,
+               
+                               borderRadius: "8px",
+                               transition: "all 0.2s ease-in-out",
+                               boxShadow: "0 2px 4px Solid red",
+                               "&:hover": {
+                                 transform: "translateY(2px)",
+                                 backgroundColor: theme.palette.Button.background,
+                                 // backgroundColor: (theme) => theme.palette.custome.datagridcolor
+                               },
+                               "& .MuiButton-label": {
+                                 display: "flex",
+                                 alignItems: "center",
+                               },
+                               "& .MuiSvgIcon-root": {
+                                 marginRight: "10px",
+                               },
+                             }}
               >
                 <AddIcon />
                 Add Sub Document
@@ -1113,6 +1117,17 @@ const SubDocumentMaster = () => {
             "& .MuiDataGrid-row:hover": {
               boxShadow: "0px 4px 20px rgba(0, 0, 0.2, 0.2)",
             },
+             "& .MuiDataGrid-virtualScroller": {
+                scrollbarWidth: "thin",
+              },
+              "& .MuiDataGrid-virtualScroller::-webkit-scrollbar": {
+                width: "6px",
+                height: "6px",
+              },
+              "& .MuiDataGrid-virtualScroller::-webkit-scrollbar-thumb": {
+                backgroundColor: "#9e9e9e",
+                borderRadius: "10px",
+              },
           }}
           rows={DocumentData}
           columns={columns}

@@ -37,6 +37,8 @@ import Loader from "../components/Loader";
 import { useTheme } from "@mui/material/styles";
 import InputTextFieldNewUserMail from "../components/Component";
 import { useThemeMode } from "../Dashboard/Theme";
+import DeleteOutlineOutlinedIcon from "@mui/icons-material/DeleteOutlineOutlined";
+import EditOutlinedIcon from "@mui/icons-material/EditOutlined";
 
 export default function ManageUsers() {
   const { control, handleSubmit, getValues, reset } = useForm();
@@ -520,13 +522,10 @@ export default function ManageUsers() {
                 onClick={() => handleUpdate(params.row)}
                 disabled={!canEdit}
                 sx={{
-                  color: "rgb(0, 90, 91)", // Apply color to the icon
-                  "&:hover": {
-                    backgroundColor: "rgba(0, 90, 91, 0.1)", // Optional hover effect
-                  },
+                  color: "#2196F3",
                 }}
               >
-                <EditNoteIcon />
+                <EditOutlinedIcon />
               </IconButton>
             </span>
           </Tooltip>
@@ -539,14 +538,14 @@ export default function ManageUsers() {
                 sx={{
                   "& .MuiButtonBase-root,": {
                     padding: 0,
-                    marginLeft: 3,
+                    marginLeft: 1,
                   },
                   color: "red",
                 }}
                 onClick={() => deluser(params.row.Id)}
                 disabled={!canDelete}
               >
-                <DeleteForeverIcon />
+                <DeleteOutlineOutlinedIcon />
               </IconButton>
             </span>
           </Tooltip>
@@ -558,7 +557,7 @@ export default function ManageUsers() {
       headerName: "SR.No",
       headerAlign: "center",
       align: "center",
-      width: 90,
+      width: 80,
       sortable: true,
     },
     {
@@ -590,7 +589,7 @@ export default function ManageUsers() {
     {
       field: "DOB",
       headerName: "DOB",
-      width: 150,
+      width: 130,
       sortable: false,
       valueFormatter: (params) => {
         const value = params.value;
@@ -603,7 +602,7 @@ export default function ManageUsers() {
     {
       field: "Phone",
       headerName: "Phone",
-      width: 150,
+      width: 130,
       sortable: false,
       headerAlign: "center",
       align: "center",
@@ -613,14 +612,6 @@ export default function ManageUsers() {
       },
     },
 
-    // {
-    //   field: "Email",
-    //   headerName: "Email",
-    //   width: 200,
-    //   sortable: false,
-    //   headerAlign: "center",
-    //   align: "center",
-    // },
     {
       field: "Email",
       headerName: "Email",
@@ -637,7 +628,7 @@ export default function ManageUsers() {
     {
       field: "UserType",
       headerName: "User Type",
-      width: 200,
+      width: 150,
       sortable: false,
       headerAlign: "center",
       align: "center",
@@ -654,7 +645,7 @@ export default function ManageUsers() {
     {
       field: "Status",
       headerName: "Status",
-      width: 80,
+      // width: 80,
       headerAlign: "center",
       align: "center",
       sortable: false,
@@ -672,25 +663,6 @@ export default function ManageUsers() {
         );
       },
     },
-
-    // {
-    //   field: "Avatar",
-    //   headerName: "Image",
-    //   width: 100,
-    //   sortable: false,
-    //   renderCell: (params) => (
-    //     <img
-    //       src={avatar}
-    //       alt="avatar"
-    //       style={{
-    //         height: "30px",
-    //         width: "30px",
-    //         borderRadius: "50%",
-    //         objectFit: "cover",
-    //       }}
-    //     />
-    //   ),
-    // },
   ];
 
   const buttonStyles = {
@@ -759,53 +731,41 @@ export default function ManageUsers() {
   return (
     <>
       {loaderOpen && <Loader open={loaderOpen} />}
+
       <Modal
         open={on}
         sx={{
           backdropFilter: "blur(5px)",
-          backgroundColor: "rgba(0, 0, 0, 0.3)",
+          backgroundColor: "rgba(0,0,0,0.35)",
           display: "flex",
           justifyContent: "center",
           alignItems: "center",
         }}
       >
         <Paper
-          elevation={10}
-          // sx={{
-          //   width: "90%",
-          //   maxWidth: 650,
-          //   height: 600,
-          //   position: "absolute",
-          //   top: "50%",
-          //   left: "50%",
-          //   transform: "translate(-50%, -50%)",
-          //   padding: 3,
-          //   justifyContent: "center",
-          //   textAlign: "center",
-          //   overflowY: { xs: "scroll", md: "auto" },
-          //   "&::-webkit-scrollbar": {
-          //     display: "none",
-          //   },
-          //   msOverflowStyle: "none",
-          //   scrollbarWidth: "none",
-          // }}
-
+          elevation={12}
           sx={{
-            width: { xs: "95%", sm: "90%", md: 650 },
-            maxHeight: { xs: "90vh", md: "85vh" },
+            width: { xs: "93%", sm: "85%", md: 620 },
+            maxHeight: "88vh",
             overflowY: "auto",
+            p: 4,
+            borderRadius: 4,
             position: "relative",
-            p: 3,
-            borderRadius: 2,
 
-            // Hide scrollbar
-            "&::-webkit-scrollbar": { display: "none" },
-            scrollbarWidth: "none",
+            /* smooth modern thin scrollbar */
+            "&::-webkit-scrollbar": { width: "6px" },
+            "&::-webkit-scrollbar-thumb": {
+              background: "#bbb",
+              borderRadius: "8px",
+            },
+            "&::-webkit-scrollbar-thumb:hover": {
+              background: "#888",
+            },
           }}
         >
           <Grid
             container
-            rowSpacing={2.2}
+            rowSpacing={3}
             columnSpacing={2}
             component={"form"}
             onSubmit={handleSubmit(OnSubmit)}
@@ -815,39 +775,25 @@ export default function ManageUsers() {
               item
               md={12}
               justifyContent="center"
-              alignItems="flex-end"
-              style={{ position: "relative" }}
+              alignItems="center"
+              sx={{ mb: 1, mt: 1 }}
             >
               <Badge
                 overlap="circular"
                 anchorOrigin={{ vertical: "bottom", horizontal: "right" }}
                 onClick={handleUploadProfile}
-                style={{ position: "relative", cursor: "pointer" }}
               >
                 <img
                   src={Image || avatar}
                   alt="Upload"
-                  height={70}
-                  width={70}
+                  height={80}
+                  width={80}
                   style={{
-                    display: "block",
                     borderRadius: "50%",
-                    // cursor: "pointer",
+                    border: "2px solid #2196F3",
+                    boxShadow: "0 0 4px rgba(33,150,243,0.5)",
                   }}
                 />
-
-                {/* <CameraAltOutlinedIcon
-                  style={{
-                    position: "absolute",
-                    bottom: 0,
-                    right: 35,
-                    transform: "translate(50%, 50%)",
-                    backgroundColor:
-                      theme.palette.mode === "light" ? "white" : "",
-                    borderRadius: "70%",
-                    padding: "1px",
-                  }}
-                /> */}
               </Badge>
             </Grid>
             <IconButton
@@ -918,7 +864,6 @@ export default function ManageUsers() {
                     type={showPassword ? "text" : "Password"}
                     showPassword={showPassword}
                     onClick={handleClickShowPassword}
-                    // onMouseDown={handleMouseDownPassword}
                   />
                 )}
               />
@@ -1342,9 +1287,9 @@ export default function ManageUsers() {
                 sx={{
                   p: 1,
                   width: 80,
-                  color: "rgb(0, 90, 91)",
+                  color: "#2196F3",
                   background: "transparent",
-                  border: "1px solid rgb(0, 90, 91)",
+                  border: "1px solid #2196F3",
                   borderRadius: "8px",
                   transition: "all 0.2s ease-in-out",
                   "&:hover": {
@@ -1357,21 +1302,18 @@ export default function ManageUsers() {
               </Button>
 
               {/* Save/Update Button (Right) */}
+             
               <Button
                 type="submit"
                 size="small"
-                 sx={{
+                sx={{
                   p: 1,
                   width: 80,
                   color: "white",
-                  background:
-                    "linear-gradient(to right, rgb(0, 90, 91), rgb(22, 149, 153))",
-                  boxShadow: 5,
-                  borderRadius: "8px",
-                  transition: "all 0.2s ease-in-out",
+                  backgroundColor: theme.palette.Button.background,
                   "&:hover": {
                     transform: "translateY(2px)",
-                    boxShadow: "0 2px 4px rgba(0, 90, 91, 0.2)",
+                    backgroundColor: theme.palette.Button.background,
                   },
                 }}
               >
@@ -1381,78 +1323,6 @@ export default function ManageUsers() {
           </Grid>
         </Paper>
       </Modal>
-
-      {/* <Modal open={open} onClose={handleProfileClose}>
-        <Paper
-          elevation={10}
-          sx={{
-            width: "90%",
-            maxWidth: 400,
-            height: 250,
-            // bgcolor: "#E6E6FA",
-            position: "absolute",
-            top: "50%",
-            left: "50%",
-            transform: "translate(-50%, -50%)",
-            padding: 4,
-            justifyContent: "center",
-            textAlign: "center",
-            overflowY: { xs: "scroll", md: "auto" },
-            "&::-webkit-scrollbar": {
-              display: "none",
-            },
-            msOverflowStyle: "none",
-            scrollbarWidth: "none",
-          }}
-        >
-          <IconButton
-            sx={{
-              position: "absolute",
-              top: 8,
-              right: 8,
-            }}
-            onClick={handleProfileClose}
-          >
-            <CloseIcon />
-          </IconButton>
-          <Grid container spacing={2}>
-            <Grid item xs={12} sx={{ textAlign: "center" }}>
-              <AccountCircleOutlinedIcon
-                sx={{ width: 70, height: 70, margin: "auto", color: "#5C5CFF" }}
-              />
-            </Grid>
-            <Grid item xs={12} sx={{ textAlign: "center", mt: 0 }}>
-              <input
-                accept="image/*"
-                style={{ display: "none" }}
-                id="contained-button-file"
-                type="file"
-                // onChange={handleImageUploadAndClose}
-              />
-              <label htmlFor="contained-button-file">
-                <Button
-                  variant="contained"
-                  component="span"
-                  startIcon={<PhotoLibraryIcon />}
-                >
-                  Add new Profile Picture
-                </Button>
-              </label>
-            </Grid>
-            <Grid item xs={12} sx={{ textAlign: "center" }}>
-              <Button
-                variant="contained"
-                color="error"
-                startIcon={<DeleteIcon />}
-                // onClick={handleProfile}
-                disabled={!Image}
-              >
-                Remove Current Profile
-              </Button>
-            </Grid>
-          </Grid>
-        </Paper>
-      </Modal> */}
 
       <Grid
         container
@@ -1471,7 +1341,7 @@ export default function ManageUsers() {
           justifyContent: "space-between",
           mb: 2,
         }}
-        elevation="4"
+        elevation="1"
       >
         <Typography
           className="slide-in-text"
@@ -1479,7 +1349,6 @@ export default function ManageUsers() {
           textAlign="center"
           textTransform="uppercase"
           fontWeight="bold"
-          // color={"#5C5CFF"}
           padding={1}
           noWrap
         >
@@ -1498,16 +1367,18 @@ export default function ManageUsers() {
               type="text"
               size="medium"
               sx={{
+                backgroundColor: theme.palette.Button.background,
+
                 pr: 2,
                 color: "white",
-                background:
-                  "linear-gradient(to right, rgb(0, 90, 91), rgb(22, 149, 153))",
+
                 borderRadius: "8px",
                 transition: "all 0.2s ease-in-out",
-                boxShadow: "0 4px 8px rgba(0, 90, 91, 0.3)",
+                boxShadow: "0 2px 4px solid black",
                 "&:hover": {
                   transform: "translateY(2px)",
-                  boxShadow: "0 2px 4px rgba(0, 90, 91, 0.2)",
+                  boxShadow: "0 2px 4px solid black",
+                  backgroundColor: theme.palette.Button.background,
                 },
                 "& .MuiButton-label": {
                   display: "flex",
@@ -1532,63 +1403,9 @@ export default function ManageUsers() {
           alignItems: "center",
           bgcolor: "#",
         }}
-        elevation={7}
+        elevation={1}
       >
         <Box sx={{ height: "75vh", width: "100%" }}>
-          {/* <DataGrid
-            className="datagrid-style"
-            rowHeight={70}
-            getRowId={(row) => row.Id}
-            rows={userData.map((data, id) => ({ ...data, id: id + 1 }))}
-            columns={columns}
-            hideFooterSelectedRowCount
-            pagination
-            paginationMode="server"
-            rowCount={totalRows}
-            pageSizeOptions={[limit]}
-            paginationModel={{ page: currentPage, pageSize: limit }}
-            onPaginationModelChange={(newModel) => {
-               setCurrentPage(newModel.page);
-              getUserData(newModel.page, searchText);
-            }}
-            loading={loading}
-            initialState={{
-              pagination: { paginationModel: { pageSize: 8 } },
-
-              filter: {
-                filterModel: {
-                  items: [],
-
-                  quickFilterValues: [], // Default empty
-                },
-              },
-            }}
-            disableColumnFilter
-            disableColumnSelector
-            disableDensitySelector
-            slots={{ toolbar: GridToolbar }} // Enables search & export
-            slotProps={{
-              toolbar: {
-                showQuickFilter: true,
-
-                quickFilterProps: { debounceMs: 500 },
-              },
-            }}
-            onFilterModelChange={(model) => {
-              const quickFilterValue = model.quickFilterValues?.[0] || "";
-              setSearchText(quickFilterValue);
-              setCurrentPage(0);
-              getUserData(0, quickFilterValue);
-            }}
-            sx={{
-              "& .MuiDataGrid-columnHeaders": {
-                backgroundColor: (theme) => theme.palette.custome.datagridcolor,
-              },
-              "& .MuiDataGrid-row:hover": {
-                boxShadow: "0px 4px 20px rgba(0, 0, 0.2, 0.2)",
-              },
-            }}
-          /> */}
           <DataGrid
             className="datagrid-style"
             rowHeight={70}
@@ -1598,7 +1415,6 @@ export default function ManageUsers() {
             pagination
             paginationMode="server"
             rowCount={totalRows}
-            // pageSizeOptions={[10, 20, 50]}
             paginationModel={{ page: currentPage, pageSize: limit }}
             onPaginationModelChange={(newModel) => {
               setCurrentPage(newModel.page);
@@ -1627,6 +1443,18 @@ export default function ManageUsers() {
               },
               "& .MuiDataGrid-row:hover": {
                 boxShadow: "0px 4px 20px rgba(0, 0, 0.2, 0.2)",
+              },
+
+              "& .MuiDataGrid-virtualScroller": {
+                scrollbarWidth: "thin", // Firefox
+              },
+              "& .MuiDataGrid-virtualScroller::-webkit-scrollbar": {
+                width: "6px", // Chrome, Edge
+                height: "6px",
+              },
+              "& .MuiDataGrid-virtualScroller::-webkit-scrollbar-thumb": {
+                backgroundColor: "#9e9e9e",
+                borderRadius: "10px",
               },
             }}
           />

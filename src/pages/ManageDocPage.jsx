@@ -1,5 +1,5 @@
 import React, { useState } from "react";
-import { Tabs, Tab, Box, Typography, Paper, Grid } from "@mui/material";
+import { Tabs, Tab, Box, Typography, Paper, Grid, Button } from "@mui/material";
 import DocumentMaster from "./DocumentMaster";
 import SubDocumentMaster from "./SubDocumentMaster";
 
@@ -7,7 +7,7 @@ export default function ManageDocPage() {
   const [activeTab, setActiveTab] = useState(0);
 
   return (
-    <Box p={2}>
+    <Box >
       <Grid
         container
         md={12}
@@ -21,9 +21,9 @@ export default function ManageDocPage() {
           flexDirection: "row",
           alignItems: "center",
           justifyContent: "space-between",
-          mb: 2,
+          mb: 4,
         }}
-        elevation={4}
+        elevation={1}
       >
         <Typography
           className="slide-in-text"
@@ -38,8 +38,8 @@ export default function ManageDocPage() {
         </Typography>
       </Grid>
 
-      <Paper elevation={3} sx={{ borderRadius: 2 }}>
-        <Tabs
+      <Paper elevation={1} sx={{ borderRadius: 3 }}>
+        {/* <Tabs
           value={activeTab}
           onChange={(e, v) => setActiveTab(v)}
           textColor="primary"
@@ -51,10 +51,85 @@ export default function ManageDocPage() {
         >
           <Tab label="Main Document" sx={{ fontWeight: "bold" }} />
           <Tab label="Sub Document" sx={{ fontWeight: "bold" }} />
+          
+        </Tabs> */}
+
+ <Tabs
+          value={activeTab}
+          onChange={(e, v) => setActiveTab(v)}
+          variant="scrollable"
+          scrollButtons={false}
+          sx={{
+            px: 2,
+            minHeight: 50,
+
+            "& .MuiTabs-flexContainer": {
+              gap: 1.5,
+            },
+
+            // Indicator becomes a glowing underline
+            "& .MuiTabs-indicator": {
+              height: 4,
+              borderRadius: 2,
+            },
+          }}
+        >
+          <Tab
+            label="Main Document"
+            sx={{
+              textTransform: "none",
+              fontWeight: 600,
+              fontSize: "0.9rem",
+              borderRadius: 2,
+              px: 3,
+
+              // Default State
+              opacity: 0.7,
+              transition: "all 0.25s ease",
+
+              // Hover
+              "&:hover": {
+                background: "rgba(0,0,0,0.04)",
+                opacity: 1,
+              },
+
+              // Selected
+              "&.Mui-selected": {
+                background: "rgba(25,118,210,0.1)",
+                color: "primary.main",
+                opacity: 1,
+                boxShadow: "0px 2px 6px rgba(0,0,0,0.12)",
+              },
+            }}
+          />
+
+          <Tab
+            label="Sub Document"
+            sx={{
+              textTransform: "none",
+              fontWeight: 600,
+              fontSize: "0.9rem",
+              borderRadius: 2,
+              px: 3,
+              opacity: 0.7,
+              transition: "all 0.25s ease",
+              "&:hover": {
+                background: "rgba(0,0,0,0.04)",
+                opacity: 1,
+              },
+              "&.Mui-selected": {
+                background: "rgba(25,118,210,0.1)",
+                color: "primary.main",
+                opacity: 1,
+                boxShadow: "0px 2px 6px rgba(0,0,0,0.12)",
+              },
+            }}
+          />
         </Tabs>
 
         {activeTab === 0 && <DocumentMaster />}
         {activeTab === 1 && <SubDocumentMaster />}
+
       </Paper>
     </Box>
   );

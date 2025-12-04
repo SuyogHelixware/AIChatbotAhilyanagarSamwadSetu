@@ -22,6 +22,7 @@ import ChecklistIcon from "@mui/icons-material/Checklist";
 import CorporateFareIcon from "@mui/icons-material/CorporateFare";
 import DriveFolderUploadIcon from "@mui/icons-material/DriveFolderUpload";
 import MarkChatReadIcon from "@mui/icons-material/MarkChatRead";
+import profile from "../assets/avtar.png";
 
 import {
   Avatar,
@@ -62,7 +63,14 @@ import SpeedDialAction from "@mui/material/SpeedDialAction";
 import { keyframes } from "@mui/system";
 import { useState } from "react";
 import LoginPageLoader from "../pages/LoginPageLoader";
-const drawerWidth = 250;
+import PersonOutlineIcon from "@mui/icons-material/PersonOutline";
+import ManageAccountsOutlinedIcon from "@mui/icons-material/ManageAccountsOutlined";
+import DescriptionOutlinedIcon from "@mui/icons-material/DescriptionOutlined";
+import MarkChatReadOutlinedIcon from "@mui/icons-material/MarkChatReadOutlined";
+import LocalPrintshopOutlinedIcon from "@mui/icons-material/LocalPrintshopOutlined";
+import HomeOutlinedIcon from "@mui/icons-material/HomeOutlined";
+
+const drawerWidth = 220;
 const openedMixin = (theme) => ({
   width: drawerWidth,
   transition: theme.transitions.create("width", {
@@ -97,7 +105,8 @@ const AppBar = styled(MuiAppBar, {
   shouldForwardProp: (prop) => prop !== "open",
 })(({ theme, open }) => ({
   zIndex: theme.zIndex.drawer + 1,
-  background: "linear-gradient(to right, rgb(0, 90, 91), rgb(22, 149, 153))",
+  // background: "linear-gradient(to right, rgb(0, 90, 91), rgb(22, 149, 153))",
+
   transition: theme.transitions.create(["width", "margin"], {
     easing: theme.transitions.easing.sharp,
     duration: theme.transitions.duration.leavingScreen,
@@ -218,13 +227,14 @@ export default function Dashboard() {
     // },
     {
       label: "Dashboards",
-      icon: <DashboardIcon />,
+      icon: <HomeOutlinedIcon />,
       menuId: 1,
       children: [
         {
           label: "Admin",
           icon: <DehazeIcon />,
           path: "home",
+
           menuId: 1,
         },
         {
@@ -242,14 +252,14 @@ export default function Dashboard() {
       ],
     },
     {
-      label: "User",
-      icon: <GroupIcon />,
+      label: "User Creation",
+      icon: <PersonOutlineIcon />,
       path: "manage-user",
       menuId: 3,
     },
     {
       label: "Role Creation",
-      icon: <ManageAccountsIcon />,
+      icon: <ManageAccountsOutlinedIcon />,
       path: "RoleCreation",
       menuId: 12,
     },
@@ -283,9 +293,9 @@ export default function Dashboard() {
     //   path: "EmailSetup",
     //   menuId: 2,
     // },
- {
+    {
       label: "Documents Master",
-      icon: <DescriptionIcon />,
+      icon: <DescriptionOutlinedIcon />,
       path: "ManageDocPage",
       menuId: 5,
     },
@@ -309,7 +319,7 @@ export default function Dashboard() {
     },
     {
       label: "Sanjay Gandhi",
-      icon: <MarkChatReadIcon />,
+      icon: <MarkChatReadOutlinedIcon />,
       path: "SanjayGandhi",
       menuId: 10,
     },
@@ -331,20 +341,21 @@ export default function Dashboard() {
     //   path: "SJYGandhiReport",
     //   menuId: 9,
     // },
+
     {
       label: "Reports",
-      icon: <PrintIcon />,
+      icon: <LocalPrintshopOutlinedIcon />,
       menuId: 5,
       children: [
         {
           label: "LandAcquistion",
-          icon: <PrintIcon />,
+          icon: <LocalPrintshopOutlinedIcon />,
           path: "LandAcquistionReport",
           menuId: 15,
         },
         {
           label: "Sanjay Gandhi",
-          icon: <PrintIcon />,
+          icon: <LocalPrintshopOutlinedIcon />,
           path: "SJYGandhiReport",
           menuId: 16,
         },
@@ -573,7 +584,7 @@ export default function Dashboard() {
         >
           <CssBaseline />
           <Modal open={on} onClose={handleClose}>
-            <Paper elevation={10} sx={{ ...style, width: 300 }}>
+            <Paper elevation={7} sx={{ ...style, width: 300 }}>
               <center>
                 <Grid
                   container
@@ -586,7 +597,7 @@ export default function Dashboard() {
                 >
                   <Avatar
                     alt="Avatar"
-                    // src={`${Bunny_Image_URL}/Users/${userData._id}/${userData.Avatar}`}
+                    src={profile}
                     sx={{
                       width: 80,
                       height: 80,
@@ -603,9 +614,11 @@ export default function Dashboard() {
                     height={100}
                     width={"100%"}
                     style={{
-                      backgroundColor: "#5C5CFF",
-                      background:
-                        "linear-gradient(to right, rgb(0, 90, 91), rgb(22, 149, 153))",
+                      background: "#2196F3",
+                      //      background: (theme) =>
+                      // theme.palette.customAppbar.appbarcolor || "#2196F3",
+
+                      borderRadius: "3px",
                     }}
                   />
                   <Paper
@@ -651,16 +664,19 @@ export default function Dashboard() {
                           sessionStorage.clear();
                         }}
                         sx={{
-                          boxShadow: 9,
-                          borderRadius: 10,
-                          backgroundColor: "#70b2d9",
-
-                          background:
-                            "linear-gradient(to right, rgb(0, 90, 91), rgb(22, 149, 153))",
+                          boxShadow: 4,
+                          borderRadius: 2,
+                          background: "#2196F3",
 
                           color: "white",
-                          fontSize: 10,
+                          fontSize: 11,
                           fontWeight: "bold",
+
+                          "&:hover": {
+                            background: "#2196F3",
+                            color: "white",
+                            boxShadow: 2,
+                          },
                         }}
                       >
                         Log Out
@@ -678,8 +694,6 @@ export default function Dashboard() {
                 width: "100vw",
                 backgroundColor: (theme) =>
                   theme.palette.customAppbar?.appbarcolor || "defaultColor",
-                boxShadow: "0px 5px 7px rgba(0, 0, 0, 0.1)",
-                elevation: 8,
                 display: "flex",
               }}
             >
@@ -702,7 +716,7 @@ export default function Dashboard() {
                 textAlign="center"
                 width="100%"
                 className="flash-animation"
-                sx={{ elevation: 6, color: "white" }}
+                sx={{ color: "white", letterSpacing: "2px" }}
               >
                 Ahilyanagar Samwad Setu
               </Typography>
@@ -716,19 +730,16 @@ export default function Dashboard() {
                   color="inherit"
                 >
                   <Avatar
-                  // src={
-                  //   `${Bunny_Image_URL}/Users/${userData._id}/${userData.Avatar}`
-                  //   || (
-                  //     <AccountCircle />
-                  //   )
-                  // }
+                    src={profile}
+                    alt="User Logo"
+                    sx={{ width: 40, height: 41 }}
                   />
                 </IconButton>
               </Tooltip>
             </Toolbar>
           </AppBar>
 
-          <Drawer variant="permanent" open={open} PaperProps={{ elevation: 7 }}>
+          <Drawer variant="permanent" open={open} PaperProps={{ elevation: 2 }}>
             <div
               style={{
                 display: "flex",
@@ -806,10 +817,26 @@ export default function Dashboard() {
                             onClick={() => setOpenCollapse(null)}
                           >
                             <ListItemButton
-                              sx={{ pl: 2 }}
+                              // sx={{ pl: 2 }}
                               selected={
                                 location.pathname === `/dashboard/${sub.path}`
                               }
+                              sx={{
+                                pl: 1,
+                                m: 1.5,
+                                borderRadius: "8px",
+                                "&.Mui-selected": {
+                                  backgroundColor: "#e0e0e0", // grey bg
+                                  // backgroundColor: "#EEF2F5",
+
+                                  // backgroundColor: (theme) => theme.palette.custome.datagridcolor,
+
+                                  color: "#1976d2", // blue text
+                                },
+                                "&.Mui-selected:hover": {
+                                  backgroundColor: "#d5d5d5",
+                                },
+                              }}
                             >
                               <ListItemIcon
                                 sx={{ minWidth: "36px", marginRight: "9px" }}
@@ -836,12 +863,22 @@ export default function Dashboard() {
                       color: "inherit",
                       display: "block",
                     }}
-                    // optional: close any open collapse when clicking a normal menu
                     onClick={() => setOpenCollapse(null)}
                   >
                     <ListItemButton
                       selected={location.pathname === `/dashboard/${menu.path}`}
-                      sx={{ pl: 1.5 }}
+                      sx={{
+                        m: 1,
+                        pl: 1,
+                        borderRadius: "8px",
+                        "&.Mui-selected": {
+                          backgroundColor: "#e0e0e0", // grey bg
+                          color: "#1976d2", // blue text
+                        },
+                        "&.Mui-selected:hover": {
+                          backgroundColor: "#EEF2F5",
+                        },
+                      }}
                     >
                       <ListItemIcon
                         sx={{ minWidth: "35px", marginRight: "9px" }}
@@ -860,6 +897,7 @@ export default function Dashboard() {
             sx={{
               flexGrow: 1,
               p: 3,
+
               ...(open && { width: `calc(100% - ${drawerWidth}px)` }),
 
               ...(!open && {
@@ -879,26 +917,23 @@ export default function Dashboard() {
                 transform: "translateZ(4px)",
                 flexGrow: 1,
                 zIndex: 99,
-                background:
-                  "linear-gradient(to right, rgb(0, 90, 91), rgb(22, 149, 153))",
+                background: "#2196F3",
               }}
             >
               <SpeedDial
                 ariaLabel="SpeedDial"
                 sx={{
                   position: "absolute",
-                  bottom: 16,
+                  bottom: 25,
                   right: 16,
                 }}
                 icon={<RotatingIcon />}
                 FabProps={{
                   sx: {
-                    background:
-                      "linear-gradient(to right, rgb(0, 90, 91), rgb(22, 149, 153))",
+                    background: "#2196F3",
                     color: "white",
                     "&:hover": {
-                      background:
-                        "linear-gradient(to right, rgb(0, 80, 81), rgb(20, 130, 135))",
+                      background: "#2196F3",
                     },
                   },
                 }}
@@ -909,12 +944,10 @@ export default function Dashboard() {
                     icon={action.icon}
                     tooltipTitle={action.name}
                     sx={{
-                      background:
-                        "linear-gradient(to right, rgb(0, 90, 91), rgb(22, 149, 153))",
+                      background: "#2196F3",
                       color: "white",
                       "&:hover": {
-                        background:
-                          "linear-gradient(to right, rgb(0, 80, 81), rgb(20, 130, 135))",
+                        background: "#bac7d3ff",
                       },
                     }}
                   />

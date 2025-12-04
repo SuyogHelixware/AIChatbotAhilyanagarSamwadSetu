@@ -5,6 +5,7 @@ import DeleteIcon from "@mui/icons-material/Delete";
 import DeleteForeverIcon from "@mui/icons-material/DeleteForever";
 import EditNoteIcon from "@mui/icons-material/EditNote";
 import {
+  Box,
   Button,
   Checkbox,
   Dialog,
@@ -33,6 +34,9 @@ import CollapsibleMenuGrid from "../components/MenuWithOneCollapse";
 import { BASE_URL } from "../Constant";
 import { useThemeMode } from "../Dashboard/Theme";
 import SearchIcon from "@mui/icons-material/Search";
+import { useTheme } from "@mui/styles";
+import DeleteOutlineOutlinedIcon from "@mui/icons-material/DeleteOutlineOutlined";
+import EditOutlinedIcon from "@mui/icons-material/EditOutlined";
 
 const RoleCreation = () => {
   const [loaderOpen, setLoaderOpen] = React.useState(false);
@@ -59,11 +63,10 @@ const RoleCreation = () => {
   const canDelete = checkAccess(12, "IsDelete");
   const handleCloseMenu = () => setOpenMenu(false);
   const [MenuList, setMenuList] = React.useState([]);
+  const theme = useTheme();
 
   const [expandedRowIds, setExpandedRowIds] = React.useState([]);
   const [menuSearch, setMenuSearch] = React.useState("");
-
-  const [disabledMenuIds, setDisabledMenuIds] = React.useState([]);
 
   const initial = {
     RoleName: "",
@@ -275,12 +278,15 @@ const RoleCreation = () => {
                 color="primary"
                 onClick={() => handleUpdate(params.row)}
                 disabled={!canEdit}
+                // sx={{
+                //   color: "rgb(0, 90, 91)",
+                //   "&:hover": { backgroundColor: "rgba(0, 90, 91, 0.1)" },
+                // }}
                 sx={{
-                  color: "rgb(0, 90, 91)",
-                  "&:hover": { backgroundColor: "rgba(0, 90, 91, 0.1)" },
+                  color: "#2196F3",
                 }}
               >
-                <EditNoteIcon />
+                <EditOutlinedIcon />
               </IconButton>
             </span>
           </Tooltip>
@@ -291,28 +297,25 @@ const RoleCreation = () => {
           >
             <span>
               <IconButton
+                sx={{
+                  "& .MuiButtonBase-root,": {
+                    padding: 0,
+                    marginLeft: 1,
+                  },
+                  color: "red",
+                }}
                 size="medium"
-                sx={{ color: "red" }}
+                // sx={{ color: "red" }}
                 onClick={() => handleDelete(params.row)}
                 disabled={!canDelete}
               >
-                <DeleteForeverIcon />
+                <DeleteOutlineOutlinedIcon />
               </IconButton>
             </span>
           </Tooltip>
         </strong>
       ),
     },
-    // {
-    //   field: "srNo",
-    //   headerName: "SR NO",
-    //   width: 80,
-    //   sortable: false,
-    //   headerAlign: "center",
-    //   align: "center",
-    //   renderCell: (params) =>
-    //     params.api.getSortedRowIds().indexOf(params.id) + 1,
-    // },
     {
       field: "srNo",
       headerName: "SR NO",
@@ -426,13 +429,6 @@ const RoleCreation = () => {
     }
   };
 
-  // React.useEffect(() => {
-  //   if (firstLoad.current) {
-  //     getAllRoleList();
-  //     firstLoad.current = false;
-  //   }
-  // }, []);
-
   React.useEffect(() => {
     getAllRoleList(currentPage, searchText, limit);
   }, [currentPage, limit, searchText]);
@@ -523,74 +519,6 @@ const RoleCreation = () => {
     });
   };
 
-  // const handleUpdate = async (rowData) => {
-  //   setSaveUpdateButton("UPDATE");
-  //   setClearUpdateButton("RESET");
-  //   setOn(true);
-
-  //   try {
-  //     setLoading(true);
-
-  //     const userData = sessionStorage.getItem("userData");
-  //     let userType = null;
-  //     let userId = null;
-
-  //     if (userData) {
-  //       try {
-  //         const parsedData = JSON.parse(userData);
-  //         userType = parsedData.UserType;
-  //         userId = parsedData.UserId;
-  //       } catch (e) {
-  //         console.error("Error parsing userData:", e);
-  //       }
-  //     }
-
-  //     const apiUrl = `${BASE_URL}Role/${rowData.Id}`;
-  //     const response = await axios.get(apiUrl);
-  //     if (response.data && response.data.values) {
-  //       const olddata = response.data.values;
-
-  //       originalDataRef.current = olddata;
-  //       const formattedLines = Array.isArray(olddata.oLines)
-  //         ? olddata.oLines.map((line, index) => ({
-  //             ...line,
-  //             id: line.MenuId || `${olddata.Id}-${index}-${Date.now()}`,
-
-  //             Name: `${line.ParentMenu || ""} - ${line.MenuName || ""}`.trim(),
-
-  //             SubMenuId: line.SubMenuId ?? null,
-
-  //             oSubMenusSpeAccess: Array.isArray(line.oSpecialAccess)
-  //               ? line.oSpecialAccess.map((sa, saIndex) => ({
-  //                   ...sa,
-  //                   id: sa.MenuId,
-  //                   LineNum: sa.MenuId,
-  //                   parentId: line.MenuId,
-  //                   Name: sa.MenuName,
-  //                   isChild: true,
-  //                 }))
-  //               : [],
-  //           }))
-  //         : [];
-
-  //       reset({
-  //         Id: olddata.Id,
-  //         RoleName: olddata.RoleName,
-  //         Remarks: olddata.Remarks,
-  //         Status: olddata.Status,
-  //         oLines: formattedLines,
-  //       });
-
-  //       setRoleTableData(formattedLines);
-
-  //
-  //   } catch (error) {
-  //     console.error("Error in handleUpdate:", error);
-  //   } finally {
-  //     setLoading(false);
-  //   }
-  // };
-
   const handleUpdate = async (rowData) => {
     setSaveUpdateButton("UPDATE");
     setClearUpdateButton("RESET");
@@ -640,46 +568,12 @@ const RoleCreation = () => {
         disabledIds.push(line.LineNum); // Disable to avoid re-select
       });
       setRoleTableData(formattedLines);
-
-      // setInitialSelectedIds(selectedIds);
-      // setDisabledMenuIds(disabledIds);
     } catch (err) {
       console.error("Error in handleUpdate:", err);
     } finally {
       setLoading(false);
     }
   };
-
-  // const handleSelectedMenus = () => {
-  //   if (!Array.isArray(selectedIds) || selectedIds.length === 0) return;
-
-  //   const existingIds = new Set(RoleTableData.map(x => x.SubMenuId));
-
-  //   const newRows = [];
-
-  //   MenuList.forEach(menu => {
-  //     menu.oSubMenus?.forEach(sub => {
-  //       if (selectedIds.includes(sub.LineNum) && !existingIds.has(sub.LineNum)) {
-  //         newRows.push({
-  //           id: `${sub.LineNum}_${Date.now()}`,
-  //           ParentMenuId: menu.Id,
-  //           ParentMenu: menu.Name,
-  //           SubMenuId: sub.LineNum,
-  //           MenuName: sub.Name,
-  //           IsRead: true,
-  //           IsAdd: true,
-  //           IsEdit: true,
-  //           IsDelete: true,
-  //           oSubMenusSpeAccess: [],
-  //         });
-  //       }
-  //     });
-  //   });
-
-  //   setRoleTableData(prev => [...prev, ...newRows]);
-  //   setDisabledMenuIds(prev => [...prev, ...newRows.map(x => x.SubMenuId)]);
-  //   setOpenMenu(false);
-  // };
 
   const handleSelectedMenus = () => {
     if (!Array.isArray(selectedIds) || selectedIds.length === 0) return;
@@ -903,46 +797,7 @@ const RoleCreation = () => {
       });
     }
   };
-  // const handleSelectedMenus = () => {
-  //   if (!Array.isArray(selectedIds) || selectedIds.length === 0) return;
-  //   const existingSubMenus = new Set(
-  //     (RoleTableData || []).map((r) => Number(r.SubMenuId))
-  //   );
-  //   const selectedData = [];
-  //   MenuList.forEach((menu) => {
-  //     (menu.oSubMenus || []).forEach((sub) => {
-  //       if (
-  //         selectedIds.includes(sub.id) &&
-  //         !existingSubMenus.has(sub.LineNum)
-  //       ) {
-  //         const filteredAccess = (sub.oSubMenusSpeAccess || []).filter((acc) =>
-  //           selectedIds.includes(`${sub.id}_${acc.LineNum}`)
-  //         );
-  //         selectedData.push({
-  //           id: `${sub.id}_${Date.now()}`,
-  //           ParentMenuId: menu.Id,
-  //           ParentMenuName: menu.Name,
-  //           SubMenuId: sub.LineNum,
-  //           SubMenuName: sub.Name,
-  //           IsRead: true,
-  //           IsAdd: true,
-  //           IsEdit: true,
-  //           IsDelete: true,
-  //           oSubMenusSpeAccess: filteredAccess.map((acc) => ({
-  //             ...acc,
-  //             isChild: true,
-  //           })),
-  //         });
-  //       }
-  //     });
-  //   });
-  //   setReorder((prev) => {
-  //     if (prev.some((x) => x.LineNum === item.LineNum)) return prev;
-  //     return [...prev, item];
-  //   });
-  //   setRoleTableData((prev) => [...prev, ...selectedData]);
-  //   setOpenMenu(false);
-  // };
+
   const handleMenusList = async (params = {}) => {
     setLoading(true);
     try {
@@ -1147,8 +1002,7 @@ const RoleCreation = () => {
               p: 1,
               width: 80,
               color: "white",
-              background:
-                "linear-gradient(to right, rgb(0, 90, 91), rgb(22, 149, 153))",
+              backgroundColor: theme.palette.Button.background,
             }}
           >
             Save
@@ -1171,7 +1025,7 @@ const RoleCreation = () => {
           elevation={10}
           sx={{
             width: "100%",
-            maxWidth: 1400,
+            maxWidth: 1300,
             maxHeight: "90vh",
             overflowY: "auto",
             borderRadius: 2,
@@ -1201,14 +1055,24 @@ const RoleCreation = () => {
               </IconButton>
             </Grid>
 
-            <Grid
+            {/* <Grid
               container
               spacing={2}
               alignItems="center"
               justifyContent="flex-start"
               sx={{ mb: 1, pl: 4 }}
+            > */}
+            {/* Role Name */}
+            <Grid
+              container
+              spacing={2}
+              alignItems="center"
+              sx={{
+                p: 2,
+                borderRadius: 2,
+                mt: 1,
+              }}
             >
-              {/* Role Name */}
               <Grid item xs={12} sm={6} md={3}>
                 <Controller
                   name="RoleName"
@@ -1261,7 +1125,7 @@ const RoleCreation = () => {
               </Grid>
 
               {/* Active Checkbox */}
-              <Grid
+              {/* <Grid
                 item
                 xs={12}
                 sm={4}
@@ -1269,6 +1133,14 @@ const RoleCreation = () => {
                 display="flex"
                 alignItems="center"
                 justifyContent="flex-start"
+              > */}
+              <Grid
+                item
+                xs={12}
+                sm={4}
+                md={2}
+                display="flex"
+                alignItems="center"
               >
                 <Controller
                   name="Status"
@@ -1302,7 +1174,7 @@ const RoleCreation = () => {
                 justifyContent="flex-end"
                 alignItems="center"
               >
-                <Button
+                {/* <Button
                   variant="contained"
                   size="small"
                   onClick={handleOpenMenu}
@@ -1311,11 +1183,26 @@ const RoleCreation = () => {
                     maxWidth: 160,
                     height: 38,
                     color: "white",
-                    background:
-                      "linear-gradient(to right, rgb(0, 90, 91), rgb(22, 149, 153))",
+                    backgroundColor: theme.palette.Button.background,
                     fontSize: "0.75rem",
                     textTransform: "none",
                     borderRadius: 1,
+                  }}
+                > */}
+                <Button
+                  variant="contained"
+                  size="small"
+                  onClick={handleOpenMenu}
+                  sx={{
+                    width: "100%",
+                    maxWidth: 170,
+                    height: 38,
+                    color: "white",
+                    backgroundColor: theme.palette.Button.background,
+                    borderRadius: 1.5,
+                    fontSize: "0.75rem",
+                    boxShadow: "0px 3px 8px rgba(0, 0, 0, 0.15)",
+                    textTransform: "none",
                   }}
                 >
                   SEARCH ACTIVITY
@@ -1350,6 +1237,17 @@ const RoleCreation = () => {
                       borderBottom: "1px solid #ddd",
                     },
                   },
+                  "& .MuiDataGrid-virtualScroller": {
+                    scrollbarWidth: "thin", // Firefox
+                  },
+                  "& .MuiDataGrid-virtualScroller::-webkit-scrollbar": {
+                    width: "6px", // Chrome, Edge
+                    height: "6px",
+                  },
+                  "& .MuiDataGrid-virtualScroller::-webkit-scrollbar-thumb": {
+                    backgroundColor: "#9e9e9e",
+                    borderRadius: "10px",
+                  },
                 }}
               />
 
@@ -1374,8 +1272,8 @@ const RoleCreation = () => {
                 sx={{
                   p: 1,
                   width: 80,
-                  color: "rgb(0, 90, 91)",
-                  border: "1px solid rgb(0, 90, 91)",
+                  color: "#2196F3",
+                  border: "1px solid #2196F3",
                   borderRadius: "8px",
                 }}
               >
@@ -1388,8 +1286,11 @@ const RoleCreation = () => {
                   p: 1,
                   width: 80,
                   color: "white",
-                  background:
-                    "linear-gradient(to right, rgb(0, 90, 91), rgb(22, 149, 153))",
+                  backgroundColor: theme.palette.Button.background,
+                  "&:hover": {
+                    transform: "translateY(2px)",
+                    backgroundColor: theme.palette.Button.background,
+                  },
                 }}
               >
                 {SaveUpdateButton}
@@ -1415,7 +1316,7 @@ const RoleCreation = () => {
           justifyContent: "space-between",
           mb: 2,
         }}
-        elevation={4}
+        elevation={1}
       >
         <Typography
           className="slide-in-text"
@@ -1443,14 +1344,13 @@ const RoleCreation = () => {
               sx={{
                 pr: 2,
                 color: "white",
-                background:
-                  "linear-gradient(to right, rgb(0, 90, 91), rgb(22, 149, 153))",
+                backgroundColor: theme.palette.Button.background,
                 borderRadius: "8px",
                 transition: "all 0.2s ease-in-out",
-                boxShadow: "0 4px 8px rgba(0, 90, 91, 0.3)",
+                boxShadow: "0 2px 4px Solid black",
                 "&:hover": {
                   transform: "translateY(2px)",
-                  boxShadow: "0 2px 4px rgba(0, 90, 91, 0.2)",
+                  backgroundColor: theme.palette.Button.background,
                 },
                 "& .MuiButton-label": {
                   display: "flex",
@@ -1467,79 +1367,103 @@ const RoleCreation = () => {
           </span>
         </Tooltip>
       </Grid>
-      <Grid
+      {/* <Grid
         container
         item
         lg={12}
         component={Paper}
-        elevation={3}
+        elevation={2}
         sx={{
           width: "100%",
           p: 1,
           height: {
-            xs: "70vh", // mobile
-            sm: "72vh", // tablets
-            md: "74vh", // desktops
-            lg: "76vh", // large screens
+            xs: "70vh", 
+            sm: "72vh", 
+            md: "74vh", 
+            lg: "76vh", 
           },
         }}
 
-       >
-        <DataGrid
-          className="datagrid-style"
-          sx={{
-            height: "100%",
-            minHeight: "400px",
-            "& .MuiDataGrid-columnHeaders": {
-              backgroundColor: (theme) => theme.palette.custome.datagridcolor,
-            },
-            "& .MuiDataGrid-row:hover": {
-              boxShadow: "0px 4px 20px rgba(0, 0, 0.2, 0.2)",
-            },
-          }}
-          getRowId={(row) => row.Id}
-          rows={GetRolelist}
-          columns={Maincolumns}
-          pagination
-          paginationMode="server"
-          hideFooterSelectedRowCount
-          rowCount={totalRows}
-          pageSizeOptions={[limit]}
-          paginationModel={{ page: currentPage, pageSize: limit }}
-          onPaginationModelChange={(newModel) => {
-            setCurrentPage(newModel.page);
-          }}
-          loading={loading}
-          initialState={{
-            pagination: { paginationModel: { pageSize: 8 } },
-            filter: {
-              filterModel: {
-                items: [],
-                quickFilterValues: [],
+       > */}
+      <Paper
+        sx={{
+          marginTop: 1,
+          display: "flex",
+          flexDirection: "column",
+          alignItems: "center",
+          bgcolor: "#",
+        }}
+        elevation={2}
+      >
+        <Box sx={{ height: "75vh", width: "100%" }}>
+          <DataGrid
+            className="datagrid-style"
+            sx={{
+              height: "100%",
+              minHeight: "400px",
+              "& .MuiDataGrid-columnHeaders": {
+                backgroundColor: (theme) => theme.palette.custome.datagridcolor,
               },
-            },
-          }}
-          disableColumnFilter
-          disableColumnSelector
-          disableDensitySelector
-          slots={{ toolbar: GridToolbar }}
-          slotProps={{
-            toolbar: {
-              showQuickFilter: true,
-              quickFilterProps: {
-                debounceMs: 500,
-                quickFilterParser: (value) => [value],
+              "& .MuiDataGrid-row:hover": {
+                boxShadow: "0px 4px 20px rgba(0, 0, 0.2, 0.2)",
               },
-            },
-          }}
-          onFilterModelChange={(model) => {
-            const quickFilterValue = model.quickFilterValues?.[0] || "";
-            setSearchText(quickFilterValue);
-            setCurrentPage(0);
-            getAllRoleList(0, quickFilterValue, limit);
-          }}
-        />
-      </Grid>
+              "& .MuiDataGrid-virtualScroller": {
+                scrollbarWidth: "thin",
+              },
+              "& .MuiDataGrid-virtualScroller::-webkit-scrollbar": {
+                width: "6px",
+                height: "6px",
+              },
+              "& .MuiDataGrid-virtualScroller::-webkit-scrollbar-thumb": {
+                backgroundColor: "#9e9e9e",
+                borderRadius: "10px",
+              },
+            }}
+            getRowId={(row) => row.Id}
+            rows={GetRolelist}
+            columns={Maincolumns}
+            pagination
+            paginationMode="server"
+            hideFooterSelectedRowCount
+            rowCount={totalRows}
+            pageSizeOptions={[limit]}
+            paginationModel={{ page: currentPage, pageSize: limit }}
+            onPaginationModelChange={(newModel) => {
+              setCurrentPage(newModel.page);
+            }}
+            loading={loading}
+            initialState={{
+              pagination: { paginationModel: { pageSize: 8 } },
+              filter: {
+                filterModel: {
+                  items: [],
+                  quickFilterValues: [],
+                },
+              },
+            }}
+            disableColumnFilter
+            disableColumnSelector
+            disableDensitySelector
+            slots={{ toolbar: GridToolbar }}
+            slotProps={{
+              toolbar: {
+                showQuickFilter: true,
+                quickFilterProps: {
+                  debounceMs: 500,
+                  quickFilterParser: (value) => [value],
+                },
+              },
+            }}
+            onFilterModelChange={(model) => {
+              const quickFilterValue = model.quickFilterValues?.[0] || "";
+              setSearchText(quickFilterValue);
+              setCurrentPage(0);
+              getAllRoleList(0, quickFilterValue, limit);
+            }}
+          />
+          {/* </Grid> */}
+        </Box>
+      </Paper>
     </>
   );
 };
