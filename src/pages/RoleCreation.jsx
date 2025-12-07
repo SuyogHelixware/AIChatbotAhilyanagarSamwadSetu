@@ -37,6 +37,11 @@ import SearchIcon from "@mui/icons-material/Search";
 import { useTheme } from "@mui/styles";
 import DeleteOutlineOutlinedIcon from "@mui/icons-material/DeleteOutlineOutlined";
 import EditOutlinedIcon from "@mui/icons-material/EditOutlined";
+import ConfirmNumberIcon from "@mui/icons-material/Numbers";
+import BadgeIcon from "@mui/icons-material/Badge";
+import CommentIcon from "@mui/icons-material/Comment";
+import InfoIcon from "@mui/icons-material/Info"; // Status
+import CheckCircleIcon from "@mui/icons-material/CheckCircle";
 
 const RoleCreation = () => {
   const [loaderOpen, setLoaderOpen] = React.useState(false);
@@ -136,7 +141,7 @@ const RoleCreation = () => {
                 handleRemove(params.row);
               }}
             >
-              <DeleteIcon fontSize="small" />
+              <DeleteOutlineOutlinedIcon fontSize="medium" />
             </IconButton>
           </div>
         );
@@ -265,8 +270,21 @@ const RoleCreation = () => {
     {
       field: "actions",
       headerName: "Action",
-      width: 150,
+      width: 100,
       sortable: false,
+
+      renderHeader: () => (
+        <div
+          style={{
+            display: "flex",
+            alignItems: "center",
+            justifyContent: "center",
+            fontWeight: "bold",
+          }}
+        >
+          Action
+        </div>
+      ),
       renderCell: (params) => (
         <strong>
           <Tooltip
@@ -278,10 +296,6 @@ const RoleCreation = () => {
                 color="primary"
                 onClick={() => handleUpdate(params.row)}
                 disabled={!canEdit}
-                // sx={{
-                //   color: "rgb(0, 90, 91)",
-                //   "&:hover": { backgroundColor: "rgba(0, 90, 91, 0.1)" },
-                // }}
                 sx={{
                   color: "#2196F3",
                 }}
@@ -316,45 +330,142 @@ const RoleCreation = () => {
         </strong>
       ),
     },
+    // {
+    //   field: "srNo",
+    //   headerName: "SR NO",
+    //   width: 80,
+    //   sortable: false,
+    //   headerAlign: "center",
+    //   align: "center",
+    //   renderCell: (params) => {
+    //     const page = params.api.state.pagination.paginationModel.page;
+    //     const pageSize = params.api.state.pagination.paginationModel.pageSize;
+    //     const rowIndex = params.api.getSortedRowIds().indexOf(params.id);
+    //     return page * pageSize + (rowIndex + 1);
+    //   },
+    // },
     {
       field: "srNo",
       headerName: "SR NO",
-      width: 80,
+      width: 90,
       sortable: false,
       headerAlign: "center",
       align: "center",
+
       renderCell: (params) => {
         const page = params.api.state.pagination.paginationModel.page;
         const pageSize = params.api.state.pagination.paginationModel.pageSize;
         const rowIndex = params.api.getSortedRowIds().indexOf(params.id);
         return page * pageSize + (rowIndex + 1);
       },
+
+      renderHeader: () => (
+        <div
+          style={{
+            display: "flex",
+            alignItems: "center",
+            justifyContent: "center",
+            gap: "6px",
+            fontWeight: "bold",
+          }}
+        >
+          <ConfirmNumberIcon style={{ fontSize: 18, color: "#555" }} />
+          SR NO
+        </div>
+      ),
     },
 
+    // {
+    //   field: "RoleName",
+    //   headerName: " ROLE NAME",
+    //   minWidth: 100,
+    //   flex: 1,
+    //   sortable: false,
+    // },
     {
       field: "RoleName",
-      headerName: " ROLE NAME",
+      headerName: "ROLE NAME",
       minWidth: 100,
       flex: 1,
       sortable: false,
+
+       renderHeader: () => (
+        <div
+          style={{
+            display: "flex",
+            alignItems: "center",
+            justifyContent: "center",
+            gap: "6px",
+            fontWeight: "bold",
+          }}
+        >
+          <BadgeIcon style={{ fontSize: 18, color: "#555" }} />
+          ROLE NAME
+        </div>
+      ),
     },
+    // {
+    //   field: "Remarks",
+    //   headerName: "REMARK",
+    //   minWidth: 100,
+    //   flex: 1,
+    //   sortable: false,
+    // },
     {
       field: "Remarks",
       headerName: "REMARK",
       minWidth: 100,
       flex: 1,
       sortable: false,
+
+      // 🔹 Add icon in header (UI only)
+      renderHeader: () => (
+        <div
+          style={{
+            display: "flex",
+            alignItems: "center",
+            justifyContent: "center",
+            gap: "6px",
+            fontWeight: "bold",
+          }}
+        >
+          <CommentIcon style={{ fontSize: 18, color: "#555" }} />
+          REMARK
+        </div>
+      ),
     },
 
+    // {
+    //   field: "Status",
+    //   headerName: "Status",
+    //   width: 80,
+    //   headerAlign: "center",
+    //   align: "center",
+    //   sortable: false,
+    //   valueGetter: (params) =>
+    //     params.row.Status === 1 ? "Active" : "Inactive",
+    //   renderCell: (params) => {
+    //     const isActive = params.row.Status === 1;
+    //     return (
+    //       <button
+    //         style={isActive ? activeButtonStyle : inactiveButtonStyle}
+    //         disabled
+    //       >
+    //         {isActive ? "Active" : "InActive"}
+    //       </button>
+    //     );
+    //   },
+    // },
     {
       field: "Status",
       headerName: "Status",
-      width: 80,
       headerAlign: "center",
       align: "center",
       sortable: false,
+
       valueGetter: (params) =>
         params.row.Status === 1 ? "Active" : "Inactive",
+
       renderCell: (params) => {
         const isActive = params.row.Status === 1;
         return (
@@ -366,6 +477,26 @@ const RoleCreation = () => {
           </button>
         );
       },
+
+      renderHeader: () => (
+        <div
+          style={{
+            display: "flex",
+            alignItems: "center",
+            justifyContent: "center",
+            gap: "6px",
+            fontWeight: 550,
+          }}
+        >
+          <CheckCircleIcon
+            style={{
+              fontSize: 18,
+              color: "#555",
+            }}
+          />
+          Status
+        </div>
+      ),
     },
   ];
   const buttonStyles = {
@@ -1054,14 +1185,7 @@ const RoleCreation = () => {
                 <CloseIcon />
               </IconButton>
             </Grid>
-
-            {/* <Grid
-              container
-              spacing={2}
-              alignItems="center"
-              justifyContent="flex-start"
-              sx={{ mb: 1, pl: 4 }}
-            > */}
+ 
             {/* Role Name */}
             <Grid
               container
@@ -1092,9 +1216,8 @@ const RoleCreation = () => {
                       <TextField
                         {...field}
                         label="ENTER ROLE NAME"
-                        size="small"
-                        fullWidth
-                        inputProps={{ maxLength: 100 }}
+                        size="medium"
+                         inputProps={{ maxLength: 100 }}
                         error={!!error}
                         helperText={error?.message}
                       />
@@ -1123,17 +1246,7 @@ const RoleCreation = () => {
                   )}
                 />
               </Grid>
-
-              {/* Active Checkbox */}
-              {/* <Grid
-                item
-                xs={12}
-                sm={4}
-                md={2}
-                display="flex"
-                alignItems="center"
-                justifyContent="flex-start"
-              > */}
+ 
               <Grid
                 item
                 xs={12}
@@ -1174,21 +1287,7 @@ const RoleCreation = () => {
                 justifyContent="flex-end"
                 alignItems="center"
               >
-                {/* <Button
-                  variant="contained"
-                  size="small"
-                  onClick={handleOpenMenu}
-                  sx={{
-                    width: "100%",
-                    maxWidth: 160,
-                    height: 38,
-                    color: "white",
-                    backgroundColor: theme.palette.Button.background,
-                    fontSize: "0.75rem",
-                    textTransform: "none",
-                    borderRadius: 1,
-                  }}
-                > */}
+               
                 <Button
                   variant="contained"
                   size="small"
@@ -1201,7 +1300,7 @@ const RoleCreation = () => {
                     backgroundColor: theme.palette.Button.background,
                     borderRadius: 1.5,
                     fontSize: "0.75rem",
-                    boxShadow: "0px 3px 8px rgba(0, 0, 0, 0.15)",
+                    boxShadow: "0px 2px 2px rgba(0, 0, 0, 0.15)",
                     textTransform: "none",
                   }}
                 >
@@ -1213,7 +1312,7 @@ const RoleCreation = () => {
             <Grid item xs={12} style={{ height: 400, paddingBottom: 40 }}>
               {/* ==================================================================== */}
 
-              {/* 🔹 Collapse below rows (for oSubMenusSpeAccess) */}
+              {/*  Collapse below rows (for oSubMenusSpeAccess) */}
               <DataGrid
                 className="datagrid-style"
                 rows={displayRows}
@@ -1393,7 +1492,7 @@ const RoleCreation = () => {
           alignItems: "center",
           bgcolor: "#",
         }}
-        elevation={2}
+        elevation={1}
       >
         <Box sx={{ height: "75vh", width: "100%" }}>
           <DataGrid
@@ -1461,7 +1560,6 @@ const RoleCreation = () => {
               getAllRoleList(0, quickFilterValue, limit);
             }}
           />
-          {/* </Grid> */}
         </Box>
       </Paper>
     </>

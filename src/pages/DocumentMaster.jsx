@@ -2,11 +2,12 @@ import AddIcon from "@mui/icons-material/Add";
 import AddCircleOutlineIcon from "@mui/icons-material/AddCircleOutline";
 import ClearIcon from "@mui/icons-material/Clear";
 import CloseIcon from "@mui/icons-material/Close";
-import DeleteForeverIcon from "@mui/icons-material/DeleteForever";
-import EditNoteIcon from "@mui/icons-material/EditNote";
 import SearchIcon from "@mui/icons-material/Search";
-import React, { useEffect, useState } from "react";
-
+import React, { useRef, useState } from "react";
+import DeleteOutlineOutlinedIcon from "@mui/icons-material/DeleteOutlineOutlined";
+import EditOutlinedIcon from "@mui/icons-material/EditOutlined";
+ import ArticleIcon from '@mui/icons-material/Article';
+import ArticleOutlinedIcon from '@mui/icons-material/ArticleOutlined';
 import {
   Box,
   Button,
@@ -26,6 +27,7 @@ import {
   Tooltip,
   Typography,
 } from "@mui/material";
+import { useTheme } from "@mui/styles";
 import { DataGrid, GridToolbar } from "@mui/x-data-grid";
 import axios from "axios";
 import dayjs from "dayjs";
@@ -34,9 +36,6 @@ import Swal from "sweetalert2";
 import Loader from "../components/Loader";
 import { BASE_URL } from "../Constant";
 import { useThemeMode } from "../Dashboard/Theme";
-import { useTheme } from "@mui/styles";
-import DeleteOutlineOutlinedIcon from "@mui/icons-material/DeleteOutlineOutlined";
-import EditOutlinedIcon from "@mui/icons-material/EditOutlined";
 
 const DocumentMaster = () => {
   const [loaderOpen, setLoaderOpen] = React.useState(false);
@@ -65,6 +64,8 @@ const DocumentMaster = () => {
   const [searchSubText, setSearchSubText] = React.useState("");
   const [OpenSubDocModal, setOpenSubDocModal] = React.useState(false);
   const theme = useTheme();
+  const [isSearchResetting, setIsSearchResetting] = useState(false);
+
 
   const canAdd = checkAccess(5, "IsAdd");
   const canEdit = checkAccess(5, "IsEdit");
@@ -522,7 +523,7 @@ const DocumentMaster = () => {
     },
     {
       field: "NameMR",
-      headerName: "DOCUMENT NAME MARATHI",
+      headerName: "DOCUMENT NAME (MARATHI )",
       minWidth: 250,
       flex: 1.2,
       headerAlign: "center",
@@ -704,41 +705,96 @@ const DocumentMaster = () => {
     }
   };
 
+  // const HandleSubDocsTableList = async (pageNo, search = searchSubText) => {
+  //   if (loading) return [];
+  //   setLoading(true);
+  //   try {
+  //     const apiUrl = `${BASE_URL}DocsMaster?Status=1&Limit=${limit}&Page=${pageNo}${
+  //       search ? `&SearchText=${encodeURIComponent(search)}` : ""
+  //     }`;
+  //     const response = await axios.get(apiUrl);
+
+  //     let newData = response.data.values || [];
+  //     const currentDocId = getValues("Id");
+  //     newData = newData.filter((d) => d.Id !== currentDocId);
+
+  //     if (newData.length === 0) {
+  //       setSubHasMore(false);
+  //       return [];
+  //     }
+
+  //     newData = newData.map((item, idx) => ({
+  //       ...item,
+  //       id: pageNo * limit + idx + 1,
+  //       isChecked: selectedSubDocsRef.current.includes(item.NameMR),
+  //     }));
+
+  //     setRows((prev) => [...prev, ...newData]);
+  //     setSubPage(pageNo + 1);
+
+  //     return newData;
+  //   } catch (err) {
+  //     console.error(err);
+  //     return [];
+  //   } finally {
+  //     setLoading(false);
+  //   }
+  // };
+
+  let cancelToken;
+
   const HandleSubDocsTableList = async (pageNo, search = searchSubText) => {
-    if (loading) return [];
-    setLoading(true);
-    try {
-      const apiUrl = `${BASE_URL}DocsMaster?Status=1&Limit=${limit}&Page=${pageNo}${
-        search ? `&SearchText=${encodeURIComponent(search)}` : ""
-      }`;
-      const response = await axios.get(apiUrl);
+      if (isSearchResetting) return [];
 
-      let newData = response.data.values || [];
-      const currentDocId = getValues("Id");
-      newData = newData.filter((d) => d.Id !== currentDocId);
+  if (loading) return [];
+  
 
-      if (newData.length === 0) {
-        setSubHasMore(false);
-        return [];
-      }
+  if (cancelToken) cancelToken.cancel();  
+  cancelToken = axios.CancelToken.source();
 
-      newData = newData.map((item, idx) => ({
-        ...item,
-        id: pageNo * limit + idx + 1,
-        isChecked: selectedSubDocsRef.current.includes(item.NameMR),
-      }));
+  setLoading(true);
 
-      setRows((prev) => [...prev, ...newData]);
-      setSubPage(pageNo + 1);
+  try {
+    const apiUrl = `${BASE_URL}DocsMaster?Status=1&Limit=${limit}&Page=${pageNo}${
+      search ? `&SearchText=${encodeURIComponent(search)}` : ""
+    }`;
 
-      return newData;
-    } catch (err) {
-      console.error(err);
+    const response = await axios.get(apiUrl, {
+      cancelToken: cancelToken.token,
+    });
+
+    let newData = response.data.values || [];
+    const currentDocId = getValues("Id");
+    newData = newData.filter((d) => d.Id !== currentDocId);
+
+    if (newData.length === 0) {
+      setSubHasMore(false);
       return [];
-    } finally {
-      setLoading(false);
     }
-  };
+
+    newData = newData.map((item, idx) => ({
+      ...item,
+      id: pageNo * limit + idx + 1,
+      isChecked: selectedSubDocsRef.current.includes(item.NameMR),
+    }));
+
+    setRows((prev) => [...prev, ...newData]);
+    setSubPage(pageNo + 1);
+
+    return newData;
+  } catch (err) {
+    if (axios.isCancel(err)) {
+      console.log("Cancelled old request");
+      return [];
+    }
+    console.error(err);
+    return [];
+  } finally {
+    setLoading(false);
+  }
+};
+
+
 
   const handleScroll = () => {
     const el = scrollRef.current;
@@ -751,14 +807,37 @@ const DocumentMaster = () => {
     }
   };
 
-  const resetTableAndFetch = (text) => {
-    setRows([]);
-    setSubPage(0);
-    setSubHasMore(true);
-    setSearchSubText(text);
+  // const resetTableAndFetch = (text) => {
+  //   setRows([]);
+  //   setSubPage(0);
+  //   setSubHasMore(true);
+  //   setSearchSubText(text);
 
-    setTimeout(() => HandleSubDocsTableList(0, text), 0);
-  };
+  //   setTimeout(() => HandleSubDocsTableList(0, text), 0);
+  // };
+  const searchTimeoutRef = useRef(null);
+
+const resetTableAndFetch = (text) => {
+    setIsSearchResetting(true);  
+
+  setRows([]);
+  setSubPage(0);
+  setSubHasMore(true);
+  setSearchSubText(text);
+
+  if (searchTimeoutRef.current) 
+    clearTimeout(searchTimeoutRef.current);
+ 
+  //   setTimeout(() => {
+  //   HandleSubDocsTableList(0, text)
+  //     .finally(() => setIsSearchResetting(false)); 
+  // }, 50);
+  
+     HandleSubDocsTableList(0, text)
+      .finally(() => setIsSearchResetting(false)); 
+ };
+
+
 
   const handleSubmit01 = async (SubformData) => {
     try {
@@ -867,7 +946,7 @@ const DocumentMaster = () => {
         }}
       >
         <Paper
-          elevation={2}
+          elevation={1}
           sx={{
             width: "100%",
             maxWidth: 700,
@@ -1006,10 +1085,9 @@ const DocumentMaster = () => {
               {/* Add Button */}
               <Tooltip title="Add Sub Document" arrow>
                 <IconButton onClick={() => HandleOPenSubDocModal()}>
-                  <AddCircleOutlineIcon sx={{ fontSize: 32, color: "#555" }} />
+                  <ArticleOutlinedIcon sx={{ fontSize: 35, color: "#555" }} />
                 </IconButton>
               </Tooltip>
-
               {/* Search Box */}
               <TextField
                 placeholder="Search Document..."
@@ -1037,9 +1115,9 @@ const DocumentMaster = () => {
                 }}
                 sx={{
                   width: {
-                    xs: "100%",
-                    sm: "250px",
-                    md: "280px",
+                    xs: "90%",
+                    sm: "220px",
+                    md: "250px",
                   },
                   "& .MuiOutlinedInput-root": {
                     borderRadius: "12px",
@@ -1114,7 +1192,7 @@ const DocumentMaster = () => {
                     >
                       <TableCell>{i + 1}</TableCell>
                       <TableCell>
-                        <EditNoteIcon
+                        <EditOutlinedIcon
                           sx={{ cursor: "pointer", color: "#1976d2" }}
                           onClick={() => handleUpdateSubDoc(row)}
                         />
@@ -1441,6 +1519,7 @@ const DocumentMaster = () => {
                 },
               }}
             >
+              
               <AddIcon />
               Add Document
             </Button>

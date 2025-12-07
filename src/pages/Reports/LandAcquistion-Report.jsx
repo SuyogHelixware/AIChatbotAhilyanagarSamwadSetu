@@ -12,13 +12,12 @@ import { BASE_URL } from "../../Constant";
 export default function LandAcquistionReport() {
   const [fromDate, setFromDate] = useState(dayjs().startOf("month"));
   const [toDate, setToDate] = useState(dayjs());
-   const [DocMissingCount, setDocMissingCount] = React.useState(0);
+  const [DocMissingCount, setDocMissingCount] = React.useState(0);
   const [DocReadyCount, setDocReadyCount] = React.useState(0);
   const [docMissingRows, setDocMissingRows] = React.useState([]);
   const [docReadyRows, setDocReadyRows] = React.useState([]);
   const fetchReport = async (selectedFrom, selectedTo) => {
     try {
-
       const params = {
         FromDate: dayjs(fromDate).format("YYYY-MM-DD"),
         ToDate: dayjs(toDate).format("YYYY-MM-DD"),
@@ -64,7 +63,6 @@ export default function LandAcquistionReport() {
       setDocMissingRows([]);
       setDocReadyRows([]);
     } finally {
-
     }
   };
   useEffect(() => {
@@ -172,7 +170,7 @@ export default function LandAcquistionReport() {
           justifyContent: "space-between",
           mb: 2,
         }}
-        elevation={4}
+        elevation={1}
       >
         <Typography
           className="slide-in-text"
@@ -186,23 +184,21 @@ export default function LandAcquistionReport() {
           Land Acquisition Report
         </Typography>
       </Grid>
-<Grid container justifyContent="flex-end" item xs={12} sm={12}>
-         
-          <Paper
-    elevation={0}
-    sx={{
-      p: 1.3,
-      borderRadius: 2.5,
-       border: "1px solid #e0e0e0",
-      boxShadow: "0 1px 3px rgba(0,0,0,0.08)",
-      transition: "all 0.2s ease",
-      "&:hover": {
-        borderColor: "#0288d1",
-        boxShadow: "0 4px 10px rgba(0,0,0,0.12)",
-        transform: "translateY(-2px)",
-      },
-    }}
-  >
+      <Grid container justifyContent="flex-end" item xs={12} sm={12}>
+        <Paper
+           sx={{
+            p: 1.3,
+            borderRadius: 2.5,
+            border: "1px solid #e0e0e0",
+            boxShadow: "0 1px 1px rgba(0,0,0,0.08)",
+            transition: "all 0.2s ease",
+            "&:hover": {
+              borderColor: "#0288d1",
+              boxShadow: "0 4px 10px rgba(0,0,0,0.12)",
+              transform: "translateY(-2px)",
+            },
+          }}
+        >
           <CustomMuiRangePicker
             fromDate={fromDate}
             toDate={toDate}
@@ -210,105 +206,105 @@ export default function LandAcquistionReport() {
             setToDate={setToDate}
             onApply={fetchReport}
           />
-            </Paper>
-        </Grid>
-       
-<Grid container spacing={2} sx={{ mt: 3 }} >
+        </Paper>
+      </Grid>
 
-      {/* <Grid item xs={6} sm={6} md={6} lg={6} sx={{ mt: 3 }}> */}
+      <Grid container spacing={2} sx={{ mt: 3 }}>
         <Grid item xs={12} sm={12} md={12} lg={6}>
-
-        <Paper elevation={7} sx={{ borderRadius: 3, p: 2 }}>
-          <h3
-            style={{
-              display: "flex",
-              alignItems: "center",
-              gap: "10px",
-              justifyContent: "center",
-            }}
-          >
-             Uploaded Document
-            <Chip
-              label={DocReadyCount}
-              size="small"
-              color="success"
-              sx={{ fontWeight: "bold" }}
-            />
-          </h3>
-
-          <div style={{ height: 300, width: "100%", marginTop: 4 }}>
-            <DataGrid
-              className="datagrid-style"
-              sx={{
-                height: "100%",
-                minHeight: "250px",
-                "& .MuiDataGrid-columnHeaders": {
-                  backgroundColor: (theme) =>
-                    theme.palette.custome.datagridcolor,
-                },
-                "& .MuiDataGrid-row:hover": {
-                  boxShadow: "0px 4px 20px rgba(0,0,0,.2)",
-                },
+          <Paper elevation={1} sx={{ borderRadius: 3, p: 2 }}>
+            <h3
+              style={{
+                display: "flex",
+                alignItems: "center",
+                gap: "10px",
+                justifyContent: "center",
               }}
-              rows={docReadyRows}
-              columns={officerColumns}
-              pageSize={5}
-              disableSelectionOnClick
-              hideFooter={true}
-              slots={{
-                toolbar: CustomToolbar,
-              }}
-            />
-          </div>
-        </Paper>
-      </Grid>
+            >
+              Uploaded Document
+              <Chip
+                label={DocReadyCount}
+                size="small"
+                sx={{
+                  fontWeight: "bold",
+                  color: "white",
+                  backgroundColor: "#2196F3",
+                }}
+              />
+            </h3>
 
-      {/* DataGrid */}
-  <Grid item xs={12} sm={12} md={12} lg={6}>
-        <Paper elevation={7} sx={{ borderRadius: 3, p: 2 }}>
-          <h3
-            style={{
-              display: "flex",
-              alignItems: "center",
-              gap: "10px",
-              justifyContent: "center",
-            }}
-          >
-            Missing Uploaded Document
-            <Chip
-              label={DocMissingCount}
-              size="small"
-              color="error"
-              sx={{ fontWeight: "bold" }}
-            />
-          </h3>
+            <div style={{ height: 400, width: "100%", marginTop: 4 }}>
+              <DataGrid
+                className="datagrid-style"
+                sx={{
+                  height: "100%",
+                  minHeight: "250px",
+                  "& .MuiDataGrid-columnHeaders": {
+                    backgroundColor: (theme) =>
+                      theme.palette.custome.datagridcolor,
+                  },
+                  "& .MuiDataGrid-row:hover": {
+                    boxShadow: "0px 4px 20px rgba(0,0,0,.2)",
+                  },
+                }}
+                rows={docReadyRows}
+                columns={officerColumns}
+                pageSize={5}
+                disableSelectionOnClick
+                hideFooter={true}
+                slots={{
+                  toolbar: CustomToolbar,
+                }}
+              />
+            </div>
+          </Paper>
+        </Grid>
 
-          <div style={{ height: 300, width: "100%", marginTop: 5 }}>
-            <DataGrid
-              className="datagrid-style"
-              sx={{
-                height: "100%",
-                minHeight: "250px",
-                "& .MuiDataGrid-columnHeaders": {
-                  backgroundColor: (theme) =>
-                    theme.palette.custome.datagridcolor,
-                },
-                "& .MuiDataGrid-row:hover": {
-                  boxShadow: "0px 4px 20px rgba(0,0,0,.2)",
-                },
+        {/* DataGrid */}
+        <Grid item xs={12} sm={12} md={12} lg={6}>
+          <Paper elevation={1} sx={{ borderRadius: 3, p: 2 }}>
+            <h3
+              style={{
+                display: "flex",
+                alignItems: "center",
+                gap: "10px",
+                justifyContent: "center",
               }}
-              rows={docMissingRows}
-              columns={officerColumns}
-              pageSize={5}
-              disableSelectionOnClick
-              hideFooter={true}
-              slots={{
-                toolbar: CustomToolbar,
-              }}
-            />
-          </div>
-        </Paper>
-      </Grid>
+            >
+              Missing Uploaded Document
+              <Chip
+                label={DocMissingCount}
+                size="small"
+                color="error"
+                sx={{ fontWeight: "bold" }}
+              />
+            </h3>
+
+            <div style={{ height: 400, width: "100%", marginTop: 5 }}>
+              <DataGrid
+                className="datagrid-style"
+                sx={{
+                  height: "100%",
+                  minHeight: "250px",
+                  "& .MuiDataGrid-columnHeaders": {
+                    backgroundColor: (theme) =>
+                      theme.palette.custome.datagridcolor,
+                  },
+                  "& .MuiDataGrid-row:hover": {
+                    boxShadow: "0px 4px 20px rgba(0,0,0,.2)",
+                  },
+                }}
+                rows={docMissingRows}
+                columns={officerColumns}
+                pageSize={5}
+                disableSelectionOnClick
+                hideFooter={true}
+                slots={{
+                  toolbar: CustomToolbar,
+                }}
+              />
+            </div>
+          </Paper>
+        </Grid>
       </Grid>
     </>
   );

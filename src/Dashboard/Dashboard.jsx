@@ -471,10 +471,10 @@ export default function Dashboard() {
     {
       icon: (
         <IconButton onClick={toggleFullscreen}>
-          {fullscreen ? <FullscreenIcon /> : <FullscreenExitIcon />}
+          {fullscreen ? <FullscreenIcon  sx={{ color: "white" }}  /> : <FullscreenExitIcon  sx={{ color: "white" }} />}
         </IconButton>
       ),
-      name: "Screen",
+      name: "Screen Size",
     },
   ];
 
@@ -721,6 +721,45 @@ export default function Dashboard() {
                 Ahilyanagar Samwad Setu
               </Typography>
 
+              <SpeedDial
+                ariaLabel="SpeedDial"
+                direction="left"
+                sx={{
+                  position: "absolute",
+                  bottom: 8,
+                  right: 90,
+                  "& .MuiFab-root": {
+                    boxShadow: "none !important",
+                    backgroundColor: "transparent !important",
+                  },
+                }}
+                icon={<RotatingIcon />}
+                FabProps={{
+                  sx: {
+                    background: "#2196F3",
+                    color: "white",
+                    "&:hover": {
+                      background: "#2196F3",
+                    },
+                  },
+                }}
+              >
+                {actions.map((action) => (
+                  <SpeedDialAction
+                    key={action.name}
+                    icon={action.icon}
+                    tooltipTitle={action.name}
+                    sx={{
+                      background: "#2196F3",
+                      color: "white",
+                      "&:hover": {
+                        background: "#bac7d3ff",
+                      },
+                    }}
+                  />
+                ))}
+              </SpeedDial>
+
               <Tooltip title={userData.Username}>
                 <IconButton
                   size="small"
@@ -909,7 +948,8 @@ export default function Dashboard() {
             }}
           >
             <DrawerHeader />
-            <Grid
+
+            {/* <Grid
               style={{
                 position: "fixed",
                 bottom: "55px",
@@ -953,7 +993,7 @@ export default function Dashboard() {
                   />
                 ))}
               </SpeedDial>
-            </Grid>
+            </Grid> */}
             <Outlet />
           </Box>
         </Box>

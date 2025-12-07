@@ -56,14 +56,13 @@ const SubDocumentMaster = () => {
   const [hasSubMore, setSubHasMore] = React.useState(true);
   const [rows, setRows] = React.useState([]);
   const [searchSubText, setSearchSubText] = React.useState("");
-    const theme = useTheme();
+  const theme = useTheme();
+  const [isSearchResetting, setIsSearchResetting] = React.useState(false);
 
   const { checkAccess } = useThemeMode();
   const canAdd = checkAccess(5, "IsAdd");
   const canEdit = checkAccess(5, "IsEdit");
   const canDelete = checkAccess(5, "IsDelete");
-   
-  
 
   const {
     handleSubmit,
@@ -93,7 +92,7 @@ const SubDocumentMaster = () => {
         IsMainDoc: false,
         CreateSubDocRows: [],
       });
-     }
+    }
 
     if (ClearUpdateButton === "RESET") {
       const old = originalDataRef.current;
@@ -114,7 +113,7 @@ const SubDocumentMaster = () => {
     setValue("NameMR", "");
     setValue("Description", "");
     setOn(true);
-     setValue("IsMainDoc", false);
+    setValue("IsMainDoc", false);
     resetTableAndFetch();
     setRows([]);
   };
@@ -456,7 +455,7 @@ const SubDocumentMaster = () => {
     },
     {
       field: "NameMR",
-      headerName: "DOCUMENT NAME MARATHI",
+      headerName: "DOCUMENT NAME (MARATHI)",
       minWidth: 250,
       flex: 1.2,
       headerAlign: "center",
@@ -569,7 +568,7 @@ const SubDocumentMaster = () => {
         setValue("Status", Document.Status);
         const existingNames = (Document.SubDocs || []).map((s) => s.NameMR);
         selectedSubDocsRef.current = existingNames;
-         setRows([]);
+        setRows([]);
         setSubPage(0);
         setSubHasMore(true);
 
@@ -588,7 +587,11 @@ const SubDocumentMaster = () => {
     }
   };
 
+  let cancelToken;
+
   const HandleSubDocs = async (pageNo, search = searchSubText) => {
+    if (isSearchResetting) return [];
+
     if (loading) return [];
     setLoading(true);
     try {
@@ -636,12 +639,18 @@ const SubDocumentMaster = () => {
   };
 
   const resetTableAndFetch = (text) => {
+    setIsSearchResetting(true);
+
     setRows([]);
     setSubPage(0);
     setSubHasMore(true);
     setSearchSubText(text);
 
-    setTimeout(() => HandleSubDocs(0, text), 0);
+    //      setTimeout(() => {
+    //   HandleSubDocs(0, text)
+    //     .finally(() => setIsSearchResetting(false));
+    // }, 150);
+    HandleSubDocs(0, text).finally(() => setIsSearchResetting(false));
   };
 
   return (
@@ -866,9 +875,9 @@ const SubDocumentMaster = () => {
                     }}
                     sx={{
                       width: {
-                        xs: "100%",
-                        sm: "280px",
-                        md: "300px",
+                        xs: "80%",
+                        sm: "250px",
+                        md: "280px",
                       },
                       "& .MuiOutlinedInput-root": {
                         borderRadius: "12px",
@@ -985,7 +994,7 @@ const SubDocumentMaster = () => {
               <Button
                 size="small"
                 onClick={() => clearFormData()}
-               sx={{
+                sx={{
                   p: 1,
                   width: 80,
                   background: "transparent",
@@ -1004,18 +1013,18 @@ const SubDocumentMaster = () => {
               <Button
                 type="submit"
                 size="small"
-                  sx={{
-                                  marginTop: 1,
-                                  p: 1,
-                                  width: 80,
-                                  color: "white",
-                                  backgroundColor: theme.palette.Button.background,
-                                  boxShadow: 5,
-                                  "&:hover": {
-                                    transform: "translateY(2px)",
-                                    backgroundColor: theme.palette.Button.background,
-                                  },
-                                }}
+                sx={{
+                  marginTop: 1,
+                  p: 1,
+                  width: 80,
+                  color: "white",
+                  backgroundColor: theme.palette.Button.background,
+                  boxShadow: 5,
+                  "&:hover": {
+                    transform: "translateY(2px)",
+                    backgroundColor: theme.palette.Button.background,
+                  },
+                }}
               >
                 {SaveUpdateButton}
               </Button>
@@ -1067,30 +1076,29 @@ const SubDocumentMaster = () => {
                 disabled={!canAdd}
                 type="text"
                 size="medium"
-              sx={{
-               
-                               pr: 2,
-                               mb: 0,
-                               mt: 2,
-                               color: "white",
-                               backgroundColor: theme.palette.Button.background,
-               
-                               borderRadius: "8px",
-                               transition: "all 0.2s ease-in-out",
-                               boxShadow: "0 2px 4px Solid red",
-                               "&:hover": {
-                                 transform: "translateY(2px)",
-                                 backgroundColor: theme.palette.Button.background,
-                                 // backgroundColor: (theme) => theme.palette.custome.datagridcolor
-                               },
-                               "& .MuiButton-label": {
-                                 display: "flex",
-                                 alignItems: "center",
-                               },
-                               "& .MuiSvgIcon-root": {
-                                 marginRight: "10px",
-                               },
-                             }}
+                sx={{
+                  pr: 2,
+                  mb: 0,
+                  mt: 2,
+                  color: "white",
+                  backgroundColor: theme.palette.Button.background,
+
+                  borderRadius: "8px",
+                  transition: "all 0.2s ease-in-out",
+                  boxShadow: "0 2px 4px Solid red",
+                  "&:hover": {
+                    transform: "translateY(2px)",
+                    backgroundColor: theme.palette.Button.background,
+                    // backgroundColor: (theme) => theme.palette.custome.datagridcolor
+                  },
+                  "& .MuiButton-label": {
+                    display: "flex",
+                    alignItems: "center",
+                  },
+                  "& .MuiSvgIcon-root": {
+                    marginRight: "10px",
+                  },
+                }}
               >
                 <AddIcon />
                 Add Sub Document
@@ -1117,17 +1125,17 @@ const SubDocumentMaster = () => {
             "& .MuiDataGrid-row:hover": {
               boxShadow: "0px 4px 20px rgba(0, 0, 0.2, 0.2)",
             },
-             "& .MuiDataGrid-virtualScroller": {
-                scrollbarWidth: "thin",
-              },
-              "& .MuiDataGrid-virtualScroller::-webkit-scrollbar": {
-                width: "6px",
-                height: "6px",
-              },
-              "& .MuiDataGrid-virtualScroller::-webkit-scrollbar-thumb": {
-                backgroundColor: "#9e9e9e",
-                borderRadius: "10px",
-              },
+            "& .MuiDataGrid-virtualScroller": {
+              scrollbarWidth: "thin",
+            },
+            "& .MuiDataGrid-virtualScroller::-webkit-scrollbar": {
+              width: "6px",
+              height: "6px",
+            },
+            "& .MuiDataGrid-virtualScroller::-webkit-scrollbar-thumb": {
+              backgroundColor: "#9e9e9e",
+              borderRadius: "10px",
+            },
           }}
           rows={DocumentData}
           columns={columns}

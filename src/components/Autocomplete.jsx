@@ -53,56 +53,31 @@ export default function LazyAutocomplete({
   page,
   setPage,
   hasMore,
-    onChangeValue,   
-
+  onChangeValue,
 }) {
   const selectedObj = list.find((x) => x[displayField] === value) || null;
- 
-//   const handleChange = (_, newValue) => {
-//   if (!newValue) return;
 
-//   const updatedValue = newValue[displayField];
+  const handleChange = (_, newValue, reason) => {
+    // When click on  clear
+    if (reason === "clear") {
+      api.updateRows([{ id, [field]: "" }]);
+      setRows((p) => p.map((r) => (r.id === id ? { ...r, [field]: "" } : r)));
 
-//   // INTERNAL grid update
-//   api.updateRows([{ id, [field]: updatedValue }]);
-//   setRows((p) =>
-//     p.map((r) =>
-//       r.id === id ? { ...r, [field]: updatedValue } : r
-//     )
-//   );
+      if (onChangeValue) onChangeValue(null);
+      return;
+    }
 
-//   // EXTERNAL callback (for parent)
-//   if (typeof onChangeValue === "function") {
-//     onChangeValue(newValue);
-//   }
-// };
+    if (!newValue) return;
 
-const handleChange = (_, newValue, reason) => {
+    const updatedValue = newValue[displayField];
 
-  // When click on  clear
-  if (reason === "clear") {
-    api.updateRows([{ id, [field]: "" }]);
+    api.updateRows([{ id, [field]: updatedValue }]);
     setRows((p) =>
-      p.map((r) => (r.id === id ? { ...r, [field]: "" } : r))
+      p.map((r) => (r.id === id ? { ...r, [field]: updatedValue } : r))
     );
 
-    if (onChangeValue) onChangeValue(null);
-    return;
-  }
-
-  if (!newValue) return;
-
-  const updatedValue = newValue[displayField];
-
-  api.updateRows([{ id, [field]: updatedValue }]);
-  setRows((p) =>
-    p.map((r) =>
-      r.id === id ? { ...r, [field]: updatedValue } : r
-    )
-  );
-
-  if (onChangeValue) onChangeValue(newValue);
-};
+    if (onChangeValue) onChangeValue(newValue);
+  };
 
   return (
     <Tooltip title={value || ""} arrow placement="top">
@@ -123,43 +98,55 @@ const handleChange = (_, newValue, reason) => {
         )}
         value={selectedObj}
         onChange={handleChange}
-        /* Prevent Blank On Close */
-        // onClose={() => {
-        //   if (value) api.updateRows([{ id, [field]: value }]);
-        // }}
         onClose={(_, reason) => {
-  if (reason === "clear") return;  
-}}
-
+          if (reason === "clear") return;
+        }}
         options={list}
         getOptionLabel={(o) => o[displayField] || ""}
+        // renderInput={(params) => (
+        //   <TextField
+        //     {...params}
+        //     variant="filled"
+        //     placeholder={`Select ${field}...`}
+        //     onChange={(e) => onSearch(e.target.value)}
+        //   />
+        // )}
         renderInput={(params) => (
           <TextField
             {...params}
-            variant="standard"
-            placeholder={`Select ${field}...`}
+            size="small"
+            variant="outlined"
+            label={field.replace(/([A-Z])/g, " $1")}
             onChange={(e) => onSearch(e.target.value)}
           />
         )}
-        sx={{ width }}
+        // sx={{ width }}
+        sx={{
+  width,
+  '& .MuiInputBase-root': {
+    height: 38,
+    paddingRight: "30px",
+    borderRadius: "6px",
+  }
+}}
+
         loading={loading}
         PopperProps={{
-           placement: "auto",  
+          placement: "auto",
 
           modifiers: [
             {
               name: "flip",
-              enabled: true,  
+              enabled: true,
             },
             {
               name: "preventOverflow",
               options: {
-                boundary: "viewport",  
+                boundary: "viewport",
               },
             },
           ],
         }}
-        
         renderOption={(props, option) => (
           <li
             {...props}
@@ -173,7 +160,6 @@ const handleChange = (_, newValue, reason) => {
             {option[displayField]}
           </li>
         )}
-        
         PaperProps={{
           style: {
             width: width + 250,

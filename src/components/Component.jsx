@@ -97,13 +97,13 @@ export default class InputTextField extends React.Component {
           type={this.props.type}
           value={this.props.value}
           size="small"
-          sx={{ maxWidth: 250 }}
+          sx={{ maxWidth: 240 }}
           inputProps={{
             // maxLength: 16,
 
-            ...(this.props.inputProps || {}), // allow parent to override/extend
+            ...(this.props.inputProps || {}),  
           }}
-          error={this.props.error} // Add this line
+          error={this.props.error}  
           helperText={this.props.helperText}
         />
       </>
@@ -286,7 +286,7 @@ export class InputPasswordField extends React.Component {
         type={this.props.type}
         value={this.props.value}
         size="small"
-        sx={{ maxWidth: 240 }}
+        sx={{ maxWidth: 225 }}
         inputProps={{
           maxLength: 16,
 

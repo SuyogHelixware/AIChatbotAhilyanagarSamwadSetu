@@ -1,30 +1,26 @@
 import AddIcon from "@mui/icons-material/Add";
-import DeleteForeverIcon from "@mui/icons-material/DeleteForever";
-import EditNoteIcon from "@mui/icons-material/EditNote";
 import CloseIcon from "@mui/icons-material/Close";
-import { GridToolbar } from "@mui/x-data-grid";
 import {
   Button,
-  Checkbox,
-  FormControlLabel,
   Grid,
   IconButton,
-  MenuItem,
   Modal,
   Paper,
-  Select,
   TextField,
   Tooltip,
-  Typography,
+  Typography
 } from "@mui/material";
-import { DataGrid } from "@mui/x-data-grid";
+import { DataGrid, GridToolbar } from "@mui/x-data-grid";
 import axios from "axios";
 import * as React from "react";
 import Swal from "sweetalert2";
 
 // import { CheckboxInputs, InputDescriptionField } from "../components/Component";
-import { Controller, useForm } from "react-hook-form"; // Importing React Hook Form
+import DeleteOutlineOutlinedIcon from "@mui/icons-material/DeleteOutlineOutlined";
+import EditOutlinedIcon from "@mui/icons-material/EditOutlined";
+import { useTheme } from "@mui/styles";
 import dayjs from "dayjs";
+import { Controller, useForm } from "react-hook-form"; // Importing React Hook Form
 import Loader from "../../components/Loader";
 import { BASE_URL } from "../../Constant";
 import { useThemeMode } from "../../Dashboard/Theme";
@@ -41,12 +37,11 @@ const Rehabilitation = () => {
   const [searchText, setSearchText] = React.useState("");
   const limit = 20;
   const originalDataRef = React.useRef(null);
-
   const firstLoad = React.useRef(true);
 
   const [CreateSubDocRows, setCreateSubDocRows] = React.useState([]);
-  const [selectionModel, setSelectionModel] = React.useState([]);
   const [selectedRows, setSelectedRows] = React.useState([]);
+  const theme = useTheme();
 
   const { checkAccess } = useThemeMode();
 
@@ -378,7 +373,7 @@ const Rehabilitation = () => {
                 color="primary"
                 disabled={!canEdit}
                 sx={{
-                  color: canEdit ? "rgb(0, 90, 91)" : "grey",
+                  color: canEdit ? "#2196F3" : "grey",
                   "&:hover": {
                     backgroundColor: canEdit
                       ? "rgba(0, 90, 91, 0.1)"
@@ -387,7 +382,7 @@ const Rehabilitation = () => {
                 }}
                 onClick={() => handleUpdate(params.row)}
               >
-                <EditNoteIcon />
+                <EditOutlinedIcon />
               </IconButton>
             </span>
           </Tooltip>
@@ -403,7 +398,7 @@ const Rehabilitation = () => {
                 sx={{ color: canDelete ? "red" : "grey" }}
                 onClick={() => handleDelete(params.row)}
               >
-                <DeleteForeverIcon />
+                <DeleteOutlineOutlinedIcon />
               </Button>
             </span>
           </Tooltip>
@@ -722,8 +717,8 @@ const Rehabilitation = () => {
                 size="small"
                 sx={{
                   height: "36px",
-                  color: "rgb(0, 90, 91)",
-                  border: "1px solid rgb(0, 90, 91)",
+                  color: "#2196F3",
+                  border: "1px solid #2196F3",
                   borderRadius: "8px",
                   "&:hover": {
                     backgroundColor: "rgba(0,90,91,0.1)",
@@ -786,13 +781,13 @@ const Rehabilitation = () => {
                 sx={{
                   p: 1,
                   width: 80,
-                  color: "rgb(0, 90, 91)",
+                  color: "#2196F3",
                   background: "transparent",
-                  border: "1px solid rgb(0, 90, 91)",
+                  border: "1px solid #2196F3",
                   borderRadius: "8px",
                   transition: "all 0.2s ease-in-out",
                   "&:hover": {
-                    background: "rgba(0, 90, 91, 0.1)",
+                    background: "#2196F3",
                     transform: "translateY(2px)",
                   },
                 }}
@@ -807,12 +802,12 @@ const Rehabilitation = () => {
                   p: 1,
                   width: 80,
                   color: "white",
-                  background:
-                    "linear-gradient(to right, rgb(0, 90, 91), rgb(22, 149, 153))",
+                  backgroundColor: theme.palette.Button.background,
+
                   boxShadow: 5,
                   "&:hover": {
                     transform: "translateY(2px)",
-                    boxShadow: "0 2px 4px rgba(0, 90, 91, 0.2)",
+                    backgroundColor: theme.palette.Button.background,
                   },
                 }}
               >
@@ -839,7 +834,7 @@ const Rehabilitation = () => {
           justifyContent: "space-between",
           mb: 2,
         }}
-        elevation={4}
+        elevation={1}
       >
         <Typography
           className="slide-in-text"
@@ -870,18 +865,15 @@ const Rehabilitation = () => {
                   mb: 0,
                   mt: 2,
                   color: "white",
-                  background:
-                    "linear-gradient(to right, rgb(0, 90, 91), rgb(22, 149, 153))",
+                  backgroundColor: theme.palette.Button.background,
                   borderRadius: "8px",
                   transition: "all 0.2s ease-in-out",
-                  boxShadow: "0 4px 8px rgba(0, 90, 91, 0.3)",
+                  backgroundColor: theme.palette.Button.background,
                   "&:hover": {
                     //  boxShadow: "0 2px 4px rgba(0, 90, 91, 0.2)",
 
                     transform: canAdd ? "translateY(2px)" : "none",
-                    boxShadow: canAdd
-                      ? "0 2px 4px rgba(0, 90, 91, 0.2)"
-                      : "0 4px 8px rgba(0,0,0,0.1)",
+                    backgroundColor: theme.palette.Button.background,
                   },
                   "& .MuiButton-label": {
                     display: "flex",

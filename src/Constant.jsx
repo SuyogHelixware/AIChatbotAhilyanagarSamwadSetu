@@ -2,7 +2,7 @@
 
 // =============================================
 // local IP
-export const BASE_URL = "http://hwaceri5:8077/api/";
+// export const BASE_URL = "http://hwaceri5:8077/api/";
 
 // VPS Server URI below
 // export const BASE_URL = "http://srv957718.hstgr.cloud:8072/api/";
@@ -19,4 +19,4 @@ export const BASE_URL = "http://hwaceri5:8077/api/";
 
 // =============================================================
 
- 
+ export const BASE_URL = process.env.REACT_APP_BASE_URL;

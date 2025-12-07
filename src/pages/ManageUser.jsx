@@ -39,6 +39,13 @@ import InputTextFieldNewUserMail from "../components/Component";
 import { useThemeMode } from "../Dashboard/Theme";
 import DeleteOutlineOutlinedIcon from "@mui/icons-material/DeleteOutlineOutlined";
 import EditOutlinedIcon from "@mui/icons-material/EditOutlined";
+import PhoneAndroidIcon from "@mui/icons-material/PhoneAndroid";
+import CalendarMonthIcon from "@mui/icons-material/CalendarMonth";
+import EmailIcon from "@mui/icons-material/Email";
+import PersonIcon from "@mui/icons-material/Person";
+import CheckCircleIcon from "@mui/icons-material/CheckCircle";
+import AccountCircleIcon from "@mui/icons-material/AccountCircle";
+import ConfirmNumberIcon from "@mui/icons-material/Numbers";
 
 export default function ManageUsers() {
   const { control, handleSubmit, getValues, reset } = useForm();
@@ -58,7 +65,7 @@ export default function ManageUsers() {
   const [ClearUpdateButton, setClearUpdateButton] = React.useState("RESET");
   const originalDataRef = React.useRef(null);
   const [gazeteList, setgazeteList] = React.useState();
-  const [RoleList, setRoleList] = React.useState();
+  const [RoleList, setRoleList] = React.useState([]);
 
   const theme = useTheme();
   const firstLoad = React.useRef(true);
@@ -69,6 +76,16 @@ export default function ManageUsers() {
   const canDelete = checkAccess(3, "IsDelete");
 
   const handleClickShowPassword = () => setShowPassword(!showPassword);
+
+  const [rolePage, setRolePage] = useState(0);
+  const [hasMoreRole, setHasMoreRole] = useState(true);
+  const [searchRole, setSearchRole] = React.useState("");
+
+  const [gazOfficerList, setGazOfficerList] = React.useState([]);
+  const [gazOfficerPage, setGazOfficerPage] = React.useState(0);
+  const [gazOfficerSearch, setGazOfficerSearch] = React.useState("");
+  const [gazOfficerLoading, setGazOfficerLoading] = React.useState(false);
+  const [gazOfficerHasMore, setGazOfficerHasMore] = React.useState(true);
 
   // const handleImageUpload = (event) => {
   //   const file = event.target.files[0];
@@ -175,6 +192,12 @@ export default function ManageUsers() {
     setClearUpdateButton("CLEAR");
     clearFormData();
     setOn(true);
+
+    setRolePage(0);
+    setRoleList([]);
+    setHasMoreRole(true);
+    fetchRoleList({ page: 0 });
+    handleFetchGazOfficers({ page: 0 });
   };
 
   const deluser = async (id) => {
@@ -499,8 +522,7 @@ export default function ManageUsers() {
 
   useEffect(() => {
     getUserData(currentPage, searchText);
-    handleonGazettedList();
-    handleonRoleList();
+    // handleFetchGazOfficers();
   }, [currentPage, limit, searchText]);
 
   const columns = [
@@ -509,8 +531,22 @@ export default function ManageUsers() {
       headerName: "Action",
       headerAlign: "center",
       align: "center",
+
       width: 100,
       sortable: false,
+
+      renderHeader: () => (
+        <div
+          style={{
+            display: "flex",
+            alignItems: "center",
+            justifyContent: "center",
+            fontWeight: "bold",
+          }}
+        >
+          Action
+        </div>
+      ),
       renderCell: (params) => (
         <>
           <Tooltip
@@ -552,14 +588,51 @@ export default function ManageUsers() {
         </>
       ),
     },
+    // {
+    //   field: "id",
+    //   headerName: "SR.No",
+    //   headerAlign: "center",
+    //   align: "center",
+    //   width: 80,
+    //   sortable: true,
+    // },
     {
       field: "id",
       headerName: "SR.No",
-      headerAlign: "center",
-      align: "center",
       width: 80,
       sortable: true,
+      headerAlign: "center",
+      align: "center",
+
+      // 🔹 UI enhancement only
+      renderHeader: () => (
+        <div
+          style={{
+            display: "flex",
+            alignItems: "center",
+            justifyContent: "center",
+            gap: "4px",
+            fontWeight: "bold",
+          }}
+        >
+          <ConfirmNumberIcon
+            style={{
+              fontSize: 18,
+              color: "#555",
+            }}
+          />
+          SR.No
+        </div>
+      ),
     },
+    // {
+    //   field: "FirstName",
+    //   headerName: "First Name",
+    //   width: 160,
+    //   sortable: false,
+    //   headerAlign: "center",
+    //   align: "center",
+    // },
     {
       field: "FirstName",
       headerName: "First Name",
@@ -567,8 +640,32 @@ export default function ManageUsers() {
       sortable: false,
       headerAlign: "center",
       align: "center",
+
+      renderHeader: () => (
+        <div
+          style={{
+            display: "flex",
+            alignItems: "center",
+            justifyContent: "center",
+            gap: "6px",
+            fontWeight: "bold",
+          }}
+        >
+          First Name
+        </div>
+      ),
     },
 
+    // {
+    //   field: "LastName",
+    //   headerName: "Last Name",
+    //   width: 160,
+    //   sortable: false,
+    //   headerAlign: "center",
+    //   align: "center",
+    //       gap: "6px",
+    //     fontWeight: 600,
+    // },
     {
       field: "LastName",
       headerName: "Last Name",
@@ -576,7 +673,30 @@ export default function ManageUsers() {
       sortable: false,
       headerAlign: "center",
       align: "center",
+
+      renderHeader: () => (
+        <div
+          style={{
+            display: "flex",
+            alignItems: "center",
+            justifyContent: "center",
+            gap: "6px",
+            fontWeight: "bold",
+          }}
+        >
+          Last Name
+        </div>
+      ),
     },
+
+    // {
+    //   field: "Username",
+    //   headerName: "Username",
+    //   width: 160,
+    //   sortable: false,
+    //   headerAlign: "center",
+    //   align: "center",
+    // },
     {
       field: "Username",
       headerName: "Username",
@@ -584,12 +704,44 @@ export default function ManageUsers() {
       sortable: false,
       headerAlign: "center",
       align: "center",
+
+      renderHeader: () => (
+        <div
+          style={{
+            display: "flex",
+            alignItems: "center",
+            justifyContent: "center",
+            gap: "6px",
+            fontWeight: "bold",
+          }}
+        >
+          <AccountCircleIcon
+            style={{
+              fontSize: 18,
+              color: "#555",
+            }}
+          />
+          Username
+        </div>
+      ),
     },
+    // {
+    //   field: "DOB",
+    //   headerName: "DOB",
+    //   width: 130,
+    //   sortable: false,
+    //   valueFormatter: (params) => {
+    //     const value = params.value;
+    //     return value ? dayjs(value).format("YYYY-MM-DD") : "NA";
+    //   },
+    //   headerAlign: "center",
+    //   align: "center",
+    // },
 
     {
       field: "DOB",
       headerName: "DOB",
-      width: 130,
+      width: 140,
       sortable: false,
       valueFormatter: (params) => {
         const value = params.value;
@@ -597,21 +749,84 @@ export default function ManageUsers() {
       },
       headerAlign: "center",
       align: "center",
-    },
 
+      renderHeader: () => (
+        <div
+          style={{
+            display: "flex",
+            alignItems: "center",
+            justifyContent: "center",
+            gap: "6px",
+            fontWeight: "bold",
+          }}
+        >
+          <CalendarMonthIcon
+            style={{
+              fontSize: 18,
+              color: "#555",
+            }}
+          />
+          DOB
+        </div>
+      ),
+    },
+    // {
+    //   field: "Phone",
+    //   headerName: "Phone",
+    //   width: 130,
+    //   sortable: false,
+    //   headerAlign: "center",
+    //   align: "center",
+    //   valueFormatter: (params) => {
+    //     if (!params.value) return "NA";
+    //     return `+91 ${params.value}`;
+    //   },
+    // },
     {
       field: "Phone",
       headerName: "Phone",
-      width: 130,
+      width: 135,
       sortable: false,
       headerAlign: "center",
       align: "center",
+
       valueFormatter: (params) => {
         if (!params.value) return "NA";
         return `+91 ${params.value}`;
       },
-    },
 
+      renderHeader: () => (
+        <div
+          style={{
+            display: "flex",
+            alignItems: "center",
+            justifyContent: "center",
+            gap: "6px",
+            fontWeight: "bold",
+          }}
+        >
+          <PhoneAndroidIcon
+            style={{
+              fontSize: 18,
+              color: "#555",
+            }}
+          />
+          Phone
+        </div>
+      ),
+    },
+    // {
+    //   field: "Email",
+    //   headerName: "Email",
+    //   width: 200,
+    //   sortable: false,
+    //   headerAlign: "center",
+    //   align: "center",
+    //   valueFormatter: (params) => {
+    //     const value = params.value?.trim();
+    //     return value ? value : "NA";
+    //   },
+    // },
     {
       field: "Email",
       headerName: "Email",
@@ -619,12 +834,48 @@ export default function ManageUsers() {
       sortable: false,
       headerAlign: "center",
       align: "center",
+
       valueFormatter: (params) => {
         const value = params.value?.trim();
         return value ? value : "NA";
       },
-    },
 
+      renderHeader: () => (
+        <div
+          style={{
+            display: "flex",
+            alignItems: "center",
+            justifyContent: "center",
+            gap: "6px",
+            fontWeight: "bold",
+          }}
+        >
+          <EmailIcon
+            style={{
+              fontSize: 18,
+              color: "#555",
+            }}
+          />
+          Email
+        </div>
+      ),
+    },
+    // {
+    //   field: "UserType",
+    //   headerName: "User Type",
+    //   width: 150,
+    //   sortable: false,
+    //   headerAlign: "center",
+    //   align: "center",
+    //   renderCell: (params) => {
+    //     // Map U to 'User' and A to 'Admin'
+    //     const userTypeMap = {
+    //       U: "User",
+    //       A: "Admin",
+    //     };
+    //     return userTypeMap[params.value] || params.value;
+    //   },
+    // },
     {
       field: "UserType",
       headerName: "User Type",
@@ -632,25 +883,67 @@ export default function ManageUsers() {
       sortable: false,
       headerAlign: "center",
       align: "center",
+
       renderCell: (params) => {
-        // Map U to 'User' and A to 'Admin'
         const userTypeMap = {
           U: "User",
           A: "Admin",
         };
         return userTypeMap[params.value] || params.value;
       },
+
+      renderHeader: () => (
+        <div
+          style={{
+            display: "flex",
+            alignItems: "center",
+            justifyContent: "center",
+            gap: "6px",
+            fontWeight: "bold",
+          }}
+        >
+          <PersonIcon
+            style={{
+              fontSize: 18,
+              color: "#555",
+            }}
+          />
+          User Type
+        </div>
+      ),
     },
 
+    // {
+    //   field: "Status",
+    //   headerName: "Status",
+    //   // width: 80,
+    //   headerAlign: "center",
+    //   align: "center",
+    //   sortable: false,
+    //   valueGetter: (params) =>
+    //     params.row.Status === 1 ? "Active" : "Inactive",
+    //   renderCell: (params) => {
+    //     const isActive = params.row.Status === 1;
+    //     return (
+    //       <button
+    //         style={isActive ? activeButtonStyle : inactiveButtonStyle}
+    //         disabled
+    //       >
+    //         {isActive ? "Active" : "InActive"}
+    //       </button>
+    //     );
+    //   },
+    // },
     {
       field: "Status",
       headerName: "Status",
-      // width: 80,
       headerAlign: "center",
       align: "center",
       sortable: false,
+
       valueGetter: (params) =>
         params.row.Status === 1 ? "Active" : "Inactive",
+
       renderCell: (params) => {
         const isActive = params.row.Status === 1;
         return (
@@ -662,6 +955,26 @@ export default function ManageUsers() {
           </button>
         );
       },
+
+      renderHeader: () => (
+        <div
+          style={{
+            display: "flex",
+            alignItems: "center",
+            justifyContent: "center",
+            gap: "6px",
+            fontWeight: "bold",
+          }}
+        >
+          <CheckCircleIcon
+            style={{
+              fontSize: 18,
+              color: "#555",
+            }}
+          />
+          Status
+        </div>
+      ),
     },
   ];
 
@@ -685,46 +998,144 @@ export default function ManageUsers() {
     backgroundColor: "#dc3545",
   };
 
-  const handleonGazettedList = async (params = {}) => {
-    setLoading(true);
-    try {
-      // Default parameters
-      const queryParams = { Status: "1", ...params };
+  // const handleonGazettedList = async (params = {}) => {
+  //   setLoading(true);
+  //   try {
+  //     // Default parameters
+  //     const queryParams = { Status: "1", ...params };
 
-      // Fetch data
+  //     // Fetch data
+  //     const { data } = await axios.get(`${BASE_URL}GazOfficers`, {
+  //       params: queryParams,
+  //     });
+
+  //     if (data.values) {
+  //       setgazeteList(data.values);
+  //     }
+  //   } catch (error) {
+  //     console.error("Error fetching data:", error);
+  //   } finally {
+  //     setLoading(false);
+  //   }
+  // };
+  const handleFetchGazOfficers = async ({ page = 0, SearchText = "" }) => {
+    if (gazOfficerLoading) return;
+    setGazOfficerLoading(true);
+
+    try {
       const { data } = await axios.get(`${BASE_URL}GazOfficers`, {
-        params: queryParams,
+        params: { page, SearchText, Status: "1" },
       });
 
-      if (data.values) {
-        setgazeteList(data.values);
+      const fetched = data.values || [];
+
+      if (page === 0) {
+        setGazOfficerList(fetched);
+      } else {
+        setGazOfficerList((prev) => [...prev, ...fetched]);
       }
+
+      setGazOfficerHasMore(fetched.length >= 20);
     } catch (error) {
-      console.error("Error fetching data:", error);
+      console.error("Error Fetching Gaz Officers", error);
+    } finally {
+      setGazOfficerLoading(false);
+    }
+  };
+
+  const handleGazOfficerScroll = (event) => {
+    const listboxNode = event.currentTarget;
+
+    const isBottom =
+      listboxNode.scrollTop + listboxNode.clientHeight >=
+      listboxNode.scrollHeight - 1;
+
+    if (isBottom && !gazOfficerLoading && gazOfficerHasMore) {
+      const nextPage = gazOfficerPage + 1;
+      setGazOfficerPage(nextPage);
+      handleFetchGazOfficers({
+        page: nextPage,
+        SearchText: gazOfficerSearch,
+      });
+    }
+  };
+  const handleGazOfficerSearch = (value) => {
+    setGazOfficerSearch(value);
+    setGazOfficerPage(0);
+
+    // reset old list
+    setGazOfficerList([]);
+
+    // 250ms delay to avoid API spam
+    setTimeout(() => {
+      handleFetchGazOfficers({ page: 0, SearchText: value });
+    }, 250);
+  };
+
+  // const handleonRoleList = async ({ page = 0, SearchText = "" }) => {
+  //   setLoading(true);
+  //   try {
+  //     const { data } = await axios.get(`${BASE_URL}Role`, {
+  //       params: params,
+  //     });
+
+  //     if (data.values) {
+  //       const updated = data.values.map((item) => ({
+  //         ...item,
+  //         isDisabled: item.Status === 0,
+  //       }));
+
+  //       setRoleList(updated);
+  //     }
+  //   } catch (error) {
+  //     console.error("Error fetching data:", error);
+  //   } finally {
+  //     setLoading(false);
+  //   }
+  //   if (loading) return; // prevent duplicate calls
+  //   setLoading(true);
+  // };
+  const fetchRoleList = async ({ page = 0, search = "" }) => {
+    if (loading) return;
+    setLoading(true);
+
+    try {
+      const { data } = await axios.get(`${BASE_URL}Role`, {
+        params: { page, SearchText: search },
+      });
+
+      const fetchedData =
+        data.values?.map((item) => ({
+          ...item,
+          isDisabled: item.Status === 0,
+        })) || [];
+
+      if (page === 0) {
+        setRoleList(fetchedData); // reset for first page or new search
+      } else {
+        setRoleList((prev) => [...prev, ...fetchedData]); // append next pages
+      }
+
+      // Stop loading further if less than page size
+      setHasMoreRole(fetchedData.length >= 20);
+    } catch (error) {
+      console.error("Error fetching roles:", error);
     } finally {
       setLoading(false);
     }
   };
 
-  const handleonRoleList = async (params = {}) => {
-    setLoading(true);
-    try {
-      const { data } = await axios.get(`${BASE_URL}Role`, {
-        params: params,
-      });
+  const handleRoleScroll = (event) => {
+    const listboxNode = event.currentTarget;
 
-      if (data.values) {
-        const updated = data.values.map((item) => ({
-          ...item,
-          isDisabled: item.Status === 0,
-        }));
+    const isBottom =
+      listboxNode.scrollTop + listboxNode.clientHeight >=
+      listboxNode.scrollHeight - 1;
 
-        setRoleList(updated);
-      }
-    } catch (error) {
-      console.error("Error fetching data:", error);
-    } finally {
-      setLoading(false);
+    if (isBottom && !loading && hasMoreRole) {
+      const nextPage = rolePage + 1;
+      setRolePage(nextPage);
+      fetchRoleList({ page: nextPage, search: searchRole });
     }
   };
 
@@ -767,16 +1178,16 @@ export default function ManageUsers() {
             container
             rowSpacing={3}
             columnSpacing={2}
+            spacing={2}
             component={"form"}
             onSubmit={handleSubmit(OnSubmit)}
           >
             <Grid
-              container
               item
-              md={12}
+              xs={12}
+              display="flex"
               justifyContent="center"
               alignItems="center"
-              sx={{ mb: 1, mt: 1 }}
             >
               <Badge
                 overlap="circular"
@@ -876,7 +1287,6 @@ export default function ManageUsers() {
               <Controller
                 name="DOB"
                 control={control}
-                // defaultValue={dayjs()}
                 render={({ field }) => (
                   <DatePickerField
                     {...field}
@@ -887,28 +1297,12 @@ export default function ManageUsers() {
                 )}
               />
             </Grid>
-            {/* <Grid item md={6} sm={6} xs={12}>
-              <Controller
-                name="Phone"
-                control={control}
-                defaultValue=""
-                render={({ field }) => (
-                  <InputTextField
-                    {...field}
-                    label="Phone No"
-                    id="Phone"
-                    type="number"
-                  />
-                )}
-              />
-            </Grid> */}
 
             <Grid item md={6} sm={6} xs={12}>
               <Controller
                 name="Phone"
                 control={control}
                 rules={{
-                  // required: "Mobile number is required",
                   pattern: {
                     value: /^[0-9]{10}$/,
                     message: "Enter a valid 10-digit mobile number",
@@ -918,8 +1312,8 @@ export default function ManageUsers() {
                   <TextField
                     {...field}
                     label="PHONE NO"
-                    // fullWidth
                     size="small"
+                    sx={{ width: "85%" }}
                     error={!!fieldState.error}
                     helperText={fieldState.error?.message}
                     inputProps={{
@@ -944,21 +1338,6 @@ export default function ManageUsers() {
             </Grid>
 
             <Grid item md={6} sm={6} xs={12}>
-              {/* <Controller
-                name="Email"
-                control={control}
-                defaultValue=""
-                render={({ field }) => (
-                  <InputTextFieldNewUserMail
-                    {...field}
-                    label="EMAIL ID "
-                    id="Email"
-                    type="email"
-                    required
-                    className="custom-required-field"
-                  />
-                )}
-              /> */}
               <Controller
                 name="Email"
                 control={control}
@@ -985,7 +1364,7 @@ export default function ManageUsers() {
                   <TextField
                     select
                     label="USER TYPE "
-                    sx={{ width: "90%" }}
+                    sx={{ width: "86%" }}
                     fullWidth
                     size="small"
                     {...field}
@@ -1000,7 +1379,7 @@ export default function ManageUsers() {
             {/* ==================== */}
 
             <Grid item md={6} sm={6} xs={12}>
-              <Controller
+              {/* <Controller
                 name="Role"
                 control={control}
                 defaultValue=""
@@ -1017,7 +1396,7 @@ export default function ManageUsers() {
                         label="ROLE"
                         size="small"
                         fullWidth
-                        sx={{ width: "78%" }}
+                        sx={{ width: "83%" }}
                         {...field}
                         InputLabelProps={{
                           shrink: Boolean(field.value),
@@ -1054,85 +1433,86 @@ export default function ManageUsers() {
                     </Tooltip>
                   );
                 }}
-              />
-            </Grid>
-            {/* <Grid item md={6} sm={6} xs={12}>
-              <Controller
-                name="Role"
-                control={control}
-                defaultValue={""}
-                render={({ field }) => {
-                  const val =
-                    typeof field.value === "string" ? field.value : "";
-                  const selectedValue = val !== "" ? val : "No Role";
+              /> */}
 
-                  return (
-                    <Tooltip title={selectedValue} arrow placement="bottom">
-                      <Autocomplete
-                        size="small"
- 
-                        fullWidth
-                        sx={{
-                          maxWidth: 350 ,
-                          width: "78%",
-                          height: 35,
-                          display: "flex",
-                          alignItems: "center",
-                        }}
-                        value={RoleList.find((r) => r.RoleName === val) || null}
-                        onChange={(_, newValue) => {
-                          field.onChange(newValue?.RoleName || "");
-                        }}
-                        options={RoleList}
-                        getOptionLabel={(option) => option?.RoleName || ""}
-                        isOptionEqualToValue={(option, value) =>
-                          option.RoleName === value.RoleName
-                        }
-                        //  Add List Height
-                        ListboxProps={{
-                          style: {
-                            maxHeight: 200, // <-- Change height here
-                            overflowY: "auto",
-                          },
-                        }}
-                        disabled={RoleList.length === 0}
-                        // sx={{ width: "78%" }}
-                        renderOption={(props, option) => (
-                          <li
-                            {...props}
-                            style={{
-                              height: 35,
-                              display: "flex",
-                              alignItems: "center",
-                              opacity: option.isDisabled ? 0.5 : 1,
-                              pointerEvents: option.isDisabled
-                                ? "none"
-                                : "auto",
+              <Grid item md={6} sm={6} xs={12}>
+                <Grid item md={6} sm={6} xs={12}>
+                  {/* <Grid item md={6} sm={6} xs={12}> */}
+                  <Controller
+                    name="Role"
+                    control={control}
+                    defaultValue="No Role"
+                    render={({ field }) => {
+                      // Add default “No Role” option
+                      const listWithDefault = [
+                        { RoleName: "No Role" },
+                        ...RoleList,
+                      ];
+
+                      const selectedObj = listWithDefault.find(
+                        (item) => item.RoleName === field.value
+                      );
+
+                      const selectedValue = selectedObj?.RoleName || "";
+
+                      return (
+                        <Tooltip title={selectedValue} arrow placement="top">
+                          <Autocomplete
+                            options={listWithDefault}
+                            getOptionLabel={(option) => option?.RoleName || ""}
+                            value={selectedObj || null}
+                            loading={loading}
+                            filterOptions={(x) => x}
+                            clearOnEscape
+                            freeSolo={false}
+                            onInputChange={(event, value, reason) => {
+                              if (value === "No Role") return;
+
+                              if (reason === "input" || reason === "clear") {
+                                setSearchRole(value || "");
+                                setRolePage(0);
+                                setRoleList([]);
+                                setHasMoreRole(true);
+                                fetchRoleList({ page: 0, search: value || "" });
+                              }
                             }}
-                          >
-                            {option.RoleName}
-                          </li>
-                        )}
-                        renderInput={(params) => (
-                          <TextField
-                            {...params}
-                            label="ROLE"
-                            size="small"
-                            InputLabelProps={{
-                              shrink: val !== "",
+                            // ⭐ FIXED: If selected default → store NULL
+                            onChange={(_, newValue) => {
+                              if (
+                                !newValue ||
+                                newValue.RoleName === "No Role"
+                              ) {
+                                field.onChange(null); // ⬅️ push null value
+                              } else {
+                                field.onChange(newValue.RoleName);
+                              }
                             }}
+                            ListboxProps={{
+                              onScroll: handleRoleScroll,
+                              style: { maxHeight: 170 },
+                            }}
+                            renderInput={(params) => (
+                              <TextField
+                                {...params}
+                                label="ROLE"
+                                size="small"
+                                sx={{ width: "330%" }}
+                                InputLabelProps={{ shrink: true }}
+                              />
+                            )}
                           />
-                        )}
-                      />
-                    </Tooltip>
-                  );
-                }}
-              />
-            </Grid> */}
+                        </Tooltip>
+                      );
+                    }}
+                  />
+                </Grid>
+                {/* </Grid> */}
+              </Grid>
+            </Grid>
 
             {/* =========================== */}
 
-            <Grid item md={6} sm={6} xs={12}>
+            {/* <Grid item md={6} sm={6} xs={12}>
               <Controller
                 name="GazOfficer"
                 control={control}
@@ -1148,7 +1528,7 @@ export default function ManageUsers() {
                       <TextField
                         select
                         label="Gaz Officer"
-                        sx={{ width: "90%" }}
+                        sx={{ width: "87%" }}
                         size="small"
                         {...field}
                         InputLabelProps={{
@@ -1185,71 +1565,70 @@ export default function ManageUsers() {
                   );
                 }}
               />
-            </Grid>
-            {/* <Grid item md={6} sm={6} xs={12}>
+            </Grid> */}
+            <Grid item md={6} sm={6} xs={12}>
               <Controller
                 name="GazOfficer"
                 control={control}
-                defaultValue=""
+                defaultValue={null} // default now null
                 render={({ field }) => {
-                  const val =
-                    typeof field.value === "string" ? field.value : "";
-                  const selectedValue = val !== "" ? val : "No Officer";
+                  // Default option added at top
+                  const listWithDefault = [
+                    { Name: "No Officer" },
+                    ...gazOfficerList,
+                  ];
+
+                  const selectedObj =
+                    listWithDefault.find((x) => x.Name === field.value) || null;
+
+                  const selectedValue = selectedObj?.Name || "";
 
                   return (
-                    <Tooltip title={selectedValue} arrow placement="bottom">
+                    <Tooltip title={selectedValue} arrow placement="top">
                       <Autocomplete
-                        fullWidth
-                        size="small"
-                        sx={{ width: "80%" }}
-                        value={gazeteList.find((o) => o.Name === val) || null}
-                        onChange={(_, newValue) =>
-                          field.onChange(newValue?.Name || "")
-                        }
-                        options={gazeteList}
+                        options={listWithDefault}
                         getOptionLabel={(option) => option?.Name || ""}
-                        isOptionEqualToValue={(option, value) =>
-                          option.Name === value.Name
-                        }
-                         ListboxProps={{
-                          style: {
-                            maxHeight: 200,  
-                            overflowY: "auto",
-                          },
+                        value={selectedObj}
+                        loading={gazOfficerLoading}
+                        onInputChange={(e, value, reason) => {
+                          if (value === "No Officer") return;
+
+                          if (reason === "input" || reason === "clear") {
+                            handleGazOfficerSearch(value || "");
+                          }
+                        }}
+                        // ⭐ FIXED: If default selected → push null
+                        onChange={(e, newValue) => {
+                          if (!newValue || newValue.Name === "No Officer") {
+                            field.onChange(null); // store null
+                          } else {
+                            field.onChange(newValue.Name);
+                          }
+                        }}
+                        ListboxProps={{
+                          onScroll: handleGazOfficerScroll,
+                          style: { maxHeight: 250, overflow: "auto" },
                         }}
                         renderInput={(params) => (
                           <TextField
                             {...params}
                             label="Gaz Officer"
-                            InputLabelProps={{
-                              shrink: val !== "",
-                            }}
+                            size="small"
+                            sx={{ width: "87%" }} // unchanged width
                           />
-                        )}
-                        renderOption={(props, option) => (
-                          <li
-                            {...props}
-                            style={{
-                              height: 50,
-                              display: "flex",
-                              alignItems: "center",
-                            }}
-                          >
-                            {option.Name}
-                          </li>
                         )}
                       />
                     </Tooltip>
                   );
                 }}
               />
-            </Grid> */}
+            </Grid>
 
             <Grid item md={6} sm={3} xs={12} textAlign={"center"}>
               <Controller
                 name="Status"
                 control={control}
-                defaultValue={1} // Default to checked (1)
+                defaultValue={1}
                 render={({ field }) => (
                   <FormControlLabel
                     control={
@@ -1277,13 +1656,13 @@ export default function ManageUsers() {
               bottom={0}
               sx={{
                 padding: "10px",
-                zIndex: 1000, // Keep it above other elements
+                zIndex: 1000,
               }}
             >
               {/* Cancel Button (Left) */}
               <Button
                 size="small"
-                onClick={() => clearFormData()} // Cancel button functionality
+                onClick={() => clearFormData()}
                 sx={{
                   p: 1,
                   width: 80,
@@ -1302,7 +1681,7 @@ export default function ManageUsers() {
               </Button>
 
               {/* Save/Update Button (Right) */}
-             
+
               <Button
                 type="submit"
                 size="small"

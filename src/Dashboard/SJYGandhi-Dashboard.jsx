@@ -2,27 +2,21 @@ import CheckCircleOutlineIcon from "@mui/icons-material/CheckCircleOutline";
 import ErrorOutlineIcon from "@mui/icons-material/ErrorOutline";
 import MessageIcon from "@mui/icons-material/Message";
 import SpeakerNotesOffIcon from "@mui/icons-material/SpeakerNotesOff";
+import { Typography } from "@mui/material";
 import Box from "@mui/material/Box";
 import Grid from "@mui/material/Grid";
 import Paper from "@mui/material/Paper";
-import { BarChart, LineChart } from "@mui/x-charts";
+import { BarChart } from "@mui/x-charts";
 import axios from "axios";
 import dayjs from "dayjs";
 import { useEffect, useState } from "react";
 import CountUp from "react-countup";
-import { useForm } from "react-hook-form";
 import CustomMuiRangePicker from "../components/DateRangePickerField";
 import { BASE_URL } from "../Constant";
-import { TextField, Typography } from "@mui/material";
-import { DatePicker } from "@mui/x-date-pickers";
 
 export default function SJYGandhiDashboard() {
-  const today = dayjs();
-  const firstDayOfMonth = dayjs().startOf("month");
-
   const [fromDate, setFromDate] = useState(dayjs().startOf("month"));
   const [toDate, setToDate] = useState(dayjs());
-
   const [chartfromDate, setchartFromDate] = useState(dayjs().startOf("month"));
   const [charttoDate, setchartToDate] = useState(dayjs());
 
@@ -178,7 +172,7 @@ export default function SJYGandhiDashboard() {
           {/* CARD 1 */}
           <Grid item xs={12} sm={6} md={3}>
             <Paper sx={cardStyle} elevation={5}>
-              <IconBox color="#28A745">
+              <IconBox color="#2196F3">
                 <MessageIcon sx={{ fontSize: 35, color: "white" }} />
               </IconBox>
               <TextBox>
@@ -214,7 +208,7 @@ export default function SJYGandhiDashboard() {
           {/* 3 */}
           <Grid item xs={12} sm={6} md={3}>
             <Paper sx={cardStyle} elevation={5}>
-              <IconBox color="#28A745">
+              <IconBox color="#2196F3">
                 <CheckCircleOutlineIcon sx={{ fontSize: 38, color: "white" }} />
               </IconBox>
               <TextBox>
@@ -294,13 +288,28 @@ export default function SJYGandhiDashboard() {
                     },
                   }}
                 >
-                  <CustomMuiRangePicker
-                    fromDate={chartfromDate}
-                    toDate={charttoDate}
-                    setFromDate={setchartFromDate}
-                    setToDate={setchartToDate}
-                    inputPlaceholder="Pick date range"
-                  />
+                  <Paper
+                    sx={{
+                      p: 1.3,
+                      borderRadius: 2.5,
+                      border: "1px solid #e0e0e0",
+                      boxShadow: "0 1px 1px rgba(0,0,0,0.08)",
+                      transition: "all 0.2s ease",
+                      "&:hover": {
+                        borderColor: "#0288d1",
+                        boxShadow: "0 4px 10px rgba(0,0,0,0.12)",
+                        transform: "translateY(-2px)",
+                      },
+                    }}
+                  >
+                    <CustomMuiRangePicker
+                      fromDate={chartfromDate}
+                      toDate={charttoDate}
+                      setFromDate={setchartFromDate}
+                      setToDate={setchartToDate}
+                      inputPlaceholder="Pick date range"
+                    />
+                  </Paper>
                 </Grid>
               </Grid>
               {ChartData &&

@@ -12,6 +12,7 @@ import PersonIcon from "@mui/icons-material/Person";
 import CryptoJS from "crypto-js";
 import { useThemeMode } from "./Theme";
 import { DASHBOARDMENU_PATHS, MENU_PATHS } from "../Routes/ProtectedRoute";
+import Map from "../assets/Loginimg.jpg";
 
 const Signin = () => {
   const [userId, setUserId] = useState("");
@@ -188,10 +189,16 @@ const Signin = () => {
           justifyContent: "center",
           alignItems: "center",
           height: "100vh",
-          background: "linear-gradient(to right, #004d40, #26a69a)",
+          // background: "linear-gradient(to right, #e09d50ff, #26a69a)",
+          background: "#EAF3FF",
           fontFamily: "Arial, sans-serif",
           px: 2,
-        }}
+          backgroundImage: `url(${Map})`,
+          backgroundSize: "cover", 
+          backgroundPosition: "center",
+          backgroundRepeat: "no-repeat",
+          fontFamily: "Arial, sans-serif",
+         }}
       >
         <Box
           sx={{
@@ -236,7 +243,7 @@ const Signin = () => {
                   style={{
                     position: "absolute",
                     top: "50%",
-                    right: "2px",
+                    right: "7px",
                     // left: "15px",
                     transform: "translateY(-50%)",
                     fontSize: "25px",
@@ -268,7 +275,7 @@ const Signin = () => {
                   sx={{
                     position: "absolute",
                     top: "50%",
-                    right: "2px",
+                    right: "7px",
                     // left: "1px",
                     transform: "translateY(-50%)",
                     color: "#888",
@@ -303,7 +310,7 @@ const Signin = () => {
                 onClick={() => navigate("/forgot-password")}
                 style={{
                   cursor: "pointer",
-                  color: "#00796b",
+                  color: "#2196F3",
                   textAlign: "center",
                   marginTop: "10px",
                 }}
@@ -316,7 +323,7 @@ const Signin = () => {
                 tabIndex={3}
                 style={{
                   width: "100%",
-                  background: "#00796b",
+                  background: "#347db9ff",
                   color: "white",
                   border: "none",
                   padding: "12px",
@@ -334,7 +341,7 @@ const Signin = () => {
           <Box
             sx={{
               flex: 1,
-              background: "linear-gradient(to right, #004d40, #00796b)",
+              background: "#347db9ff",
               color: "white",
               display: "flex",
               flexDirection: "column",

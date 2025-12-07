@@ -43,7 +43,7 @@ export default function Home() {
                   // color:"white",
                 },
               }}
-              elevation={7}
+              elevation={1}
             >
               Total Registered Users
               <h2>
@@ -65,7 +65,7 @@ export default function Home() {
                   // color:"white",
                 },
               }}
-              elevation={7}
+              elevation={1}
             >
               Total Gazetted Officers
               <h2>
@@ -87,7 +87,7 @@ export default function Home() {
                   // color:"white",
                 },
               }}
-              elevation={7}
+              elevation={1}
             >
                Total Uploaded Document
               <h2>
@@ -104,12 +104,10 @@ export default function Home() {
                 borderRadius: 3,
                 height: 130,
                 transition: "background-color 0.3s ease",
-                "&:hover": {
-                  // backgroundColor: "#A4C1FF",
-                  // color:"white",
-                },
+              
+                
               }}
-              elevation={7}
+              elevation={1}
             >
              Total Services
               <h2>
@@ -119,7 +117,7 @@ export default function Home() {
           </Grid>
 
           <Grid item xs={12} md={6}>
-            <Paper elevation={7} sx={{ borderRadius: 3, py: 3 }}>
+            <Paper elevation={1} sx={{ borderRadius: 3, py: 3 }}>
               <BarChart
                 series={[
                   { data: [35, 44, 30, 45, 30] },
@@ -130,12 +128,12 @@ export default function Home() {
                 ]}
                 margin={{ top: 10, bottom: 30, left: 40, right: 10 }}
                 height={280}
-                colors={["#005A5B", "#9CD8C4"]}
+                colors={["#2196F3", "#9CD8C4"]}
               />
             </Paper>
           </Grid>
           <Grid item xs={12} md={6}>
-            <Paper elevation={7} sx={{ borderRadius: 3, py: 3 }}>
+            <Paper elevation={1} sx={{ borderRadius: 3, py: 3 }}>
               <LineChart
                 xAxis={[{ data: [1, 2, 3, 4, 5, 6, 7, 8, 9, 10] }]}
                 series={[
@@ -150,24 +148,24 @@ export default function Home() {
           </Grid>
 
           <Grid item xs={12} md={6}>
-            <Paper elevation={7} sx={{ borderRadius: 3, py: 3 }}>
+            <Paper elevation={1} sx={{ borderRadius: 3, py: 3 }}>
               <PieChart
                 series={[
                   {
                     data: [
-                      { id: 0, value: 10, label: "series A" },
-                      { id: 1, value: 15, label: "series B" },
-                      { id: 2, value: 20, label: "series C" },
+                      { id: 0, value: 6, label: "Total Department" },
+                      { id: 1, value: 15, label: "Total Officers" },
+                      { id: 2, value: 20, label: "Total Register Users" },
                     ],
                   },
                 ]}
                 height={280}
-                colors={["#005A5B", "#338687 ", "#9CD8C4"]}
+                colors={["#2196F3", "#3b97b3ff ", "#9CD8C4"]}
               />
             </Paper>
           </Grid>
           <Grid item xs={12} md={6}>
-            <Paper elevation={7} sx={{ borderRadius: 3, py: 3 }}>
+            <Paper elevation={1} sx={{ borderRadius: 3, py: 3 }}>
               <BarChart
                 series={[
                   { data: pData, label: "pv", id: "pvId" },
@@ -175,7 +173,7 @@ export default function Home() {
                 ]}
                 xAxis={[{ data: xLabels, scaleType: "band" }]}
                 height={280}
-                colors={["#9CD8C4", "#005A5B"]}
+                colors={["#9CD8C4", "#2196F3"]}
               />
             </Paper>
           </Grid>

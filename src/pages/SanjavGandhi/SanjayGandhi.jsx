@@ -15,17 +15,13 @@ const SanjayGandhi = () => {
   const [currentPage, setCurrentPage] = React.useState(0);
   const [loading, setLoading] = React.useState(false);
   const [searchText, setSearchText] = React.useState("");
-  // const limit = 20;
-  // const originalDataRef = React.useRef(null);
-  // const firstLoad = React.useRef(true);
+
   const [totalRows, setTotalRows] = React.useState(0);
   const [limit, setLimit] = React.useState(20);
 
   const { checkAccess } = useThemeMode();
 
   const canAdd = checkAccess(10, "IsAdd");
-
- 
 
   const columns = [
     {
@@ -100,8 +96,7 @@ const SanjayGandhi = () => {
       return;
     }
     setLoaderOpen(true);
-          setLoading(true);
-
+    setLoading(true);
 
     try {
       // 🔹 Step 1: Show confirmation alert before uploading
@@ -132,7 +127,6 @@ const SanjayGandhi = () => {
         return;
       }
       setLoaderOpen(true);
- 
 
       //  Proceed with actual upload if confirmed
       const formData = new FormData();
@@ -192,8 +186,7 @@ const SanjayGandhi = () => {
       );
     } finally {
       setLoaderOpen(false);
-            setLoading(false);
-
+      setLoading(false);
     }
   };
 
@@ -216,7 +209,7 @@ const SanjayGandhi = () => {
           justifyContent: "space-between",
           mb: 2,
         }}
-        elevation={4}
+        elevation={1}
       >
         <Typography
           className="slide-in-text"
@@ -231,7 +224,7 @@ const SanjayGandhi = () => {
         </Typography>
       </Grid>
 
-      <Grid container spacing={2} justifyContent="flex-start" marginBottom={1}>
+      <Grid container spacing={2} justifyContent="flex-end" >
         {/* Success Upload */}
 
         <Grid item>
@@ -250,12 +243,10 @@ const SanjayGandhi = () => {
           <Tooltip
             title={
               !canAdd ? (
-                // Tooltip when user does not have permission
                 <Typography sx={{ fontSize: 13, p: 0.5 }}>
                   You don’t have permission to upload files.
                 </Typography>
               ) : (
-                // 🔸 Tooltip when allowed
                 <Box
                   sx={{
                     bgcolor: "#1e293b",
@@ -324,17 +315,28 @@ const SanjayGandhi = () => {
                   mt: 2,
                   color: "white",
                   fontWeight: "bold",
+                  // background: !canAdd
+                  //   ? "linear-gradient(to right, #0b7a3e, #16a34a)"
+                  //   : "linear-gradient(to right, #0b7a3e, #16a34a)",
                   background: !canAdd
-                    ? "linear-gradient(to right, #0b7a3e, #16a34a)" 
-                    : "linear-gradient(to right, #0b7a3e, #16a34a)",
+                    ? "#bcd7f9" // Disabled color (light blue-grey)
+                    : "linear-gradient(to right, #2196F3, #1e88e5)",
                   borderRadius: "8px",
                   transition: "all 0.2s ease-in-out",
-                  boxShadow: "0 4px 8px rgba(0, 90, 91, 0.3)",
+                  // boxShadow: "0 4px 8px rgba(0, 90, 91, 0.3)",
+                  boxShadow: !canAdd
+                    ? "0 2px 4px rgba(0,0,0,0.1)"
+                    : "0 4px 8px rgba(33, 150, 243, 0.3)",
+
                   "&:hover": {
+                    background: canAdd
+                      ? "linear-gradient(to right, #1e88e5, #1976d2)" // Darken on hover
+                      : "#bcd7f9", // Stay same if disabled
+
                     transform: canAdd ? "translateY(2px)" : "none",
                     boxShadow: canAdd
-                      ? "0 2px 4px rgba(0, 90, 91, 0.2)"
-                      : "0 4px 8px rgba(0,0,0,0.1)",
+                      ? "0 2px 4px rgba(33,150,243,0.2)"
+                      : "0 2px 4px rgba(0,0,0,0.1)",
                   },
                 }}
               >
@@ -361,7 +363,7 @@ const SanjayGandhi = () => {
           <Tooltip
             title={
               !canAdd ? (
-                 <Typography sx={{ fontSize: 13, p: 0.5 }}>
+                <Typography sx={{ fontSize: 13, p: 0.5 }}>
                   You don’t have permission to upload files.
                 </Typography>
               ) : (
@@ -422,44 +424,65 @@ const SanjayGandhi = () => {
             placement="right-end"
           >
             <span>
-            <Button
-              onClick={() => failFileRef.current.click()}
-              disabled={!canAdd}
-              type="text"
-              size="medium"
-              sx={{
-                pr: 2,
-                mb: 0,
-                mt: 2,
-                color: "white",
-                fontWeight: "bold",
-                background: "linear-gradient(to right, #a12b2bff, #ee4949ff)", 
-                borderRadius: "8px",
-                transition: "all 0.2s ease-in-out",
-                boxShadow: "0 4px 8px rgba(161, 43, 43, 0.3)",
-                "&:hover": {
-                     transform: canAdd ? "translateY(2px)" : "none",
-                  boxShadow: canAdd
+              <Button
+                onClick={() => failFileRef.current.click()}
+                disabled={!canAdd}
+                type="text"
+                size="medium"
+                sx={{
+                  pr: 2,
+                  mb: 0,
+                  mt: 2,
+                  color: "white",
+                  fontWeight: "bold",
+                  // background: "linear-gradient(to right, #a12b2bff, #ee4949ff)",
+                  background: !canAdd
+                    ? "#f0b4b4" // Light red for disabled
+                    : "linear-gradient(to right, #4f93e0ff, #6bc2f5ff)",
+                  borderRadius: "8px",
+                  transition: "all 0.2s ease-in-out",
+                  // boxShadow: "0 4px 8px rgba(161, 43, 43, 0.3)",
+                  boxShadow: !canAdd
+                    ? "0 2px 4px rgba(0,0,0,0.1)"
+                    : "0 4px 8px rgba(199, 89, 89, 0.3)",
+                  "&:hover": {
+                    background: canAdd
+                      ? "linear-gradient(to right, #8b2525, #d63f3f)" // Slightly darker hover
+                      : "#f0b4b4",
+
+                    transform: canAdd ? "translateY(2px)" : "none",
+                    boxShadow: canAdd
                       ? "0 2px 4px rgba(161, 43, 43, 0.2)"
-                      : "0 4px 8px rgba(0,0,0,0.1)",
-                },
-              }}
-            >
-              <AddIcon />
-              UPLOAD FAILURE FILE
-            </Button>
+                      : "0 2px 4px rgba(0,0,0,0.1)",
+                  },
+                }}
+              >
+                <AddIcon />
+                UPLOAD FAILURE FILE
+              </Button>
             </span>
           </Tooltip>
         </Grid>
       </Grid>
 
-      <Grid
+      {/* <Grid
         container
         item
         lg={12}
         component={Paper}
         sx={{ height: "74vh", width: "100%" }}
-      >
+      > */}
+       <Paper
+              sx={{
+                marginTop: 1,
+                display: "flex",
+                flexDirection: "column",
+                alignItems: "center",
+                bgcolor: "#",
+              }}
+              elevation={1}
+            >
+              <Box sx={{ height: "74vh", width: "100%" }}>
         <DataGrid
           className="datagrid-style"
           sx={{
@@ -471,13 +494,24 @@ const SanjayGandhi = () => {
             "& .MuiDataGrid-row:hover": {
               boxShadow: "0px 4px 20px rgba(0, 0, 0.2, 0.2)",
             },
+              "& .MuiDataGrid-virtualScroller": {
+                scrollbarWidth: "thin",
+              },
+              "& .MuiDataGrid-virtualScroller::-webkit-scrollbar": {
+                width: "6px",
+                height: "6px",
+              },
+              "& .MuiDataGrid-virtualScroller::-webkit-scrollbar-thumb": {
+                backgroundColor: "#9e9e9e",
+                borderRadius: "10px",
+              },
           }}
           rows={DocumentList}
           columns={columns}
           getRowId={(row) => row.Id || `${row.Name}-${row.MobileNumber}`}
           pagination
           paginationMode="server"
-          rowCount={totalRows} 
+          rowCount={totalRows}
           // pageSizeOptions={[20, 50, 100]}
           paginationModel={{ page: currentPage, pageSize: limit }}
           onPaginationModelChange={(newModel) => {
@@ -499,11 +533,12 @@ const SanjayGandhi = () => {
           onFilterModelChange={(model) => {
             const quickFilterValue = model.quickFilterValues?.[0] || "";
             setSearchText(quickFilterValue);
-            setCurrentPage(0);  
+            setCurrentPage(0);
           }}
         />
-      </Grid>
-    </>
+    </Box>
+      </Paper>
+          </>
   );
 };
 export default SanjayGandhi;

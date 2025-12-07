@@ -15,13 +15,12 @@ import { DataGrid } from "@mui/x-data-grid";
 import axios from "axios";
 import dayjs from "dayjs";
 import React, { useEffect, useState } from "react";
-import { useForm } from "react-hook-form";
 import CustomToolbar from "../components/CustomToolbar";
 import { BASE_URL } from "../Constant";
 // import DateRangePickerField from "../components/DateRangePickerField";
 
-import CustomMuiRangePicker from "../components/DateRangePickerField";
 import { Typography } from "@mui/material";
+import CustomMuiRangePicker from "../components/DateRangePickerField";
 
 export default function LandAcquisition() {
   const [officerRows, setOfficerRows] = React.useState([]);
@@ -51,8 +50,6 @@ export default function LandAcquisition() {
       headerAlign: "center",
     },
   ];
-  const today = dayjs();
-  const firstDayOfMonth = dayjs().startOf("month");
 
   const [counts, setCounts] = useState({
     TotalMissingDocsLandAcqui: 0,
@@ -277,14 +274,14 @@ export default function LandAcquisition() {
         >
           <Grid item xs={12} sm={4}>
             <Paper
-              elevation={4}
+              elevation={1}
               sx={{
                 p: 1.5,
                 borderRadius: 2,
-                boxShadow: "0 4px 10px rgba(0, 90, 91, 0.15)",
+                boxShadow: "0 4px 2px rgba(0, 90, 91, 0.15)",
                 transition: "all 0.2s ease",
                 "&:hover": {
-                  boxShadow: "0 6px 16px rgba(0, 90, 91, 0.25)",
+                  boxShadow: "0 6px 2px rgba(0, 90, 91, 0.25)",
                   transform: "translateY(-2px)",
                 },
               }}
@@ -308,8 +305,8 @@ export default function LandAcquisition() {
 
         <Grid container spacing={3}>
           <Grid item xs={12} sm={6} md={3}>
-            <Paper sx={cardStyle} elevation={5}>
-              <IconBox color="#28A745">
+            <Paper sx={cardStyle} elevation={1}>
+              <IconBox color="#2196F3">
                 <ChecklistIcon sx={{ fontSize: 35, color: "white" }} />
               </IconBox>
               <TextBox>
@@ -327,7 +324,7 @@ export default function LandAcquisition() {
 
           {/* CARD 2 */}
           <Grid item xs={12} sm={6} md={3}>
-            <Paper sx={cardStyle} elevation={5}>
+            <Paper sx={cardStyle} elevation={1}>
               <IconBox color="#e27857ff">
                 <RuleIcon sx={{ fontSize: 35, color: "white" }} />
               </IconBox>
@@ -345,8 +342,8 @@ export default function LandAcquisition() {
           </Grid>
 
           <Grid item xs={12} sm={6} md={3}>
-            <Paper sx={cardStyle} elevation={5}>
-              <IconBox color="#28A745">
+            <Paper sx={cardStyle} elevation={1}>
+              <IconBox color="#2196F3">
                 <CheckCircleOutlineIcon sx={{ fontSize: 35, color: "white" }} />
               </IconBox>
               <TextBox>
@@ -363,7 +360,7 @@ export default function LandAcquisition() {
           </Grid>
 
           <Grid item xs={12} sm={6} md={3}>
-            <Paper sx={cardStyle} elevation={5}>
+            <Paper sx={cardStyle} elevation={1}>
               <IconBox color="#e27857ff">
                 <ErrorOutlineIcon sx={{ fontSize: 35, color: "white" }} />
               </IconBox>
@@ -381,7 +378,7 @@ export default function LandAcquisition() {
           </Grid>
           {/* CERTIFICATE   TABLE */}
           <Grid item xs={12} md={6}>
-            <Paper elevation={7} sx={{ borderRadius: 3, p: 2 }}>
+            <Paper elevation={1} sx={{ borderRadius: 3, p: 2 }}>
               <h3>Officer-wise Certificates Proceed</h3>
               <div style={{ height: 300, width: "100%", marginTop: 10 }}>
                 <DataGrid
@@ -414,12 +411,12 @@ export default function LandAcquisition() {
           </Grid>
 
           <Grid item xs={12} md={6}>
-            <Paper elevation={7} sx={{ borderRadius: 3, py: 3 }}>
+            <Paper elevation={1} sx={{ borderRadius: 3, py: 3 }}>
               <h3 style={{ marginLeft: 15, marginBottom: 10 }}>
                 Total Documents
               </h3>
               <div style={{ height: 296, width: "100%", marginTop: 5 }}>
-                <PieChart
+                {/* <PieChart
                   series={[
                     {
                       data: pieData ?? [],
@@ -432,10 +429,28 @@ export default function LandAcquisition() {
                     },
                   ]}
                   height={296}
-                  // colors={["#28A745", "#EF6C00"]}
+                   colors={
+                    pieColorMode === "empty"
+                      ? ["#e27857ff"]
+                      : ["#28A745", "#EF6C00"]
+                  }
+                /> */}
+                <PieChart
+                  series={[
+                    {
+                      data: pieData,
+                      innerRadius: 30,
+                      outerRadius: 100,
+                      paddingAngle: 2,
+                      cornerRadius: 2,
+                      arcLabel: (item) => `${item.value} ${item.label}`,
+                      arcLabelMinAngle: 5,
+                    },
+                  ]}
+                  height={296}
                   colors={
                     pieColorMode === "empty"
-                      ? ["#d62e25ff"]
+                      ? ["#e27857ff"]
                       : ["#28A745", "#EF6C00"]
                   }
                 />
@@ -446,7 +461,7 @@ export default function LandAcquisition() {
           {/* OFFICER-WISE BAR Graph CERTIFICATES PROCESSED */}
 
           <Grid item xs={12} md={12}>
-            <Paper elevation={6} sx={{ borderRadius: 3, py: 3 }}>
+            <Paper elevation={1} sx={{ borderRadius: 3, py: 3 }}>
               <Grid
                 container
                 alignItems="center"
@@ -491,13 +506,28 @@ export default function LandAcquisition() {
                     },
                   }}
                 >
-                  <CustomMuiRangePicker
-                    fromDate={chartfromDate}
-                    toDate={charttoDate}
-                    setFromDate={setchartFromDate}
-                    setToDate={setchartToDate}
-                    inputPlaceholder="Pick date range"
-                  />
+                  <Paper
+                    sx={{
+                      p: 1.3,
+                      borderRadius: 2.5,
+                      border: "1px solid #e0e0e0",
+                      boxShadow: "0 1px 1px rgba(0,0,0,0.08)",
+                      transition: "all 0.2s ease",
+                      "&:hover": {
+                        borderColor: "#0288d1",
+                        boxShadow: "0 4px 10px rgba(0,0,0,0.12)",
+                        transform: "translateY(-2px)",
+                      },
+                    }}
+                  >
+                    <CustomMuiRangePicker
+                      fromDate={chartfromDate}
+                      toDate={charttoDate}
+                      setFromDate={setchartFromDate}
+                      setToDate={setchartToDate}
+                      inputPlaceholder="Pick date range"
+                    />
+                  </Paper>
                 </Grid>
               </Grid>
 
@@ -520,10 +550,9 @@ export default function LandAcquisition() {
                   },
                 ]}
                 height={295}
-                // 🔽 ADD THESE
-                barCategoryGap={0.4} // 0.4 (40%) gap → bars thinner
-                barGap={0.3} // spacing between multiple bars (keep low)
-                grid={{ horizontal: true }} // (Optional: adds grid lines for clarity)
+                barCategoryGap={0.4}
+                barGap={0.3}
+                grid={{ horizontal: true }}
               />
             </Paper>
           </Grid>

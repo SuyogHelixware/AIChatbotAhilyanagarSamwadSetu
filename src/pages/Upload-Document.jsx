@@ -6,7 +6,6 @@ import DeleteForeverIcon from "@mui/icons-material/DeleteForever";
 import EditNoteIcon from "@mui/icons-material/EditNote";
 import RemoveRedEyeIcon from "@mui/icons-material/RemoveRedEye";
 import {
-  Autocomplete,
   Box,
   Button,
   Checkbox,
@@ -14,20 +13,15 @@ import {
   Dialog,
   DialogActions,
   DialogContent,
-  DialogTitle,
-  Divider,
   FormControlLabel,
   Grid,
   IconButton,
   InputAdornment,
-  InputBase,
   List,
   ListItem,
   ListItemText,
-  MenuItem,
   Modal,
   Paper,
-  Select,
   TextField,
   Tooltip,
   Typography,
@@ -38,19 +32,21 @@ import dayjs from "dayjs";
 import * as React from "react";
 import { Controller, useForm } from "react-hook-form";
 import Swal from "sweetalert2";
+import LazyAutocomplete from "../components/Autocomplete";
 import InputTextField, {
-  DatePickerField,
   DatePickerFieldUploadDocModel,
   InputDescriptionField,
 } from "../components/Component";
 import Loader from "../components/Loader";
 import { BASE_URL } from "../Constant";
 import { useThemeMode } from "../Dashboard/Theme";
-import LazyAutocomplete from "../components/Autocomplete";
-
-import ListIcon from "@mui/icons-material/List";
 import ClearIcon from "@mui/icons-material/Clear";
+import ListIcon from "@mui/icons-material/List";
 import SearchIcon from "@mui/icons-material/Search";
+
+import DeleteOutlineOutlinedIcon from "@mui/icons-material/DeleteOutlineOutlined";
+import EditOutlinedIcon from "@mui/icons-material/EditOutlined";
+import { useTheme } from "@mui/styles";
 
 const UploadDocument = () => {
   const [loaderOpen, setLoaderOpen] = React.useState(false);
@@ -73,6 +69,7 @@ const UploadDocument = () => {
   const firstLoad = React.useRef(true);
   const handleClose = () => setOn(false);
   const { userSession } = useThemeMode();
+  const theme = useTheme();
 
   const [subDocMap, setSubDocMap] = React.useState({});
   const [isMobileDisabled, setIsMobileDisabled] = React.useState(false);
@@ -91,7 +88,6 @@ const UploadDocument = () => {
   // -----------------------------------------
   const [dPage, setDPage] = React.useState(0);
   const [hasMoreDocs, setHasMoreDocs] = React.useState(true);
-  const [scrollLockDocs, setScrollLockDocs] = React.useState(false);
   const [dLoading, setDLoading] = React.useState(false);
   const [docSearch, setDocSearch] = React.useState("");
 
@@ -174,7 +170,6 @@ const UploadDocument = () => {
         r.id === currentRowId ? { ...r, MissingDocs: tempSelection } : r
       )
     );
-    console.log("dff", tempSelection);
 
     setModalOpen(false);
   };
@@ -194,25 +189,43 @@ const UploadDocument = () => {
     {
       field: "action",
       headerName: "Action",
-      width: 140,
+      width: 150,
       sortable: false,
       headerAlign: "center",
       align: "center",
       renderCell: (params) => {
         const isDisabled = params.row.isDisabled;
+        const hasFile = Boolean(params.row.FileExt || params.row.File);
 
         return (
           <div style={{ display: "flex", alignItems: "center", gap: 8 }}>
-            <Tooltip title="Open File">
-              <IconButton
-                size="small"
-                onClick={(e) => {
-                  e.stopPropagation();
-                  handleViewFile(params.row);
-                }}
-              >
-                <RemoveRedEyeIcon fontSize="small" />
-              </IconButton>
+            {/* {hasFile && (
+              <Tooltip title="Open File">
+                <IconButton
+                  size="small"
+                  onClick={(e) => {
+                    e.stopPropagation();
+                    handleViewFile(params.row);
+                  }}
+                >
+                  <RemoveRedEyeIcon fontSize="small" />
+                </IconButton>
+              </Tooltip>
+            )} */}
+            {/* EYE BUTTON ALWAYS VISIBLE — DISABLED IF NO FILE */}
+            <Tooltip title={hasFile ? "Open File" : "No file Uploaded"}>
+              <span>
+                <IconButton
+                  size="small"
+                  disabled={!hasFile}
+                  onClick={(e) => {
+                    e.stopPropagation();
+                    if (hasFile) handleViewFile(params.row);
+                  }}
+                >
+                  <RemoveRedEyeIcon fontSize="small" />
+                </IconButton>
+              </span>
             </Tooltip>
 
             <Tooltip title={isDisabled ? "No permission to remove" : "Remove"}>
@@ -226,7 +239,7 @@ const UploadDocument = () => {
                     if (!isDisabled) handleRemove(params.row);
                   }}
                 >
-                  <DeleteIcon fontSize="small" />
+                  <DeleteOutlineOutlinedIcon fontSize="medium" />
                 </IconButton>
               </span>
             </Tooltip>
@@ -423,12 +436,29 @@ const UploadDocument = () => {
           }
 
           return (
+            // <Tooltip title={stored || ""} arrow placement="top">
+            //   <TextField
+            //     value={stored}
+            //     disabled
+            //     variant="outlined"
+            //     sx={{ width: 280 }}
+            //   />
+            // </Tooltip>
             <Tooltip title={stored || ""} arrow placement="top">
               <TextField
                 value={stored}
                 disabled
-                variant="standard"
-                sx={{ width: 280 }}
+                variant="outlined"
+                size="small"
+                fullWidth
+                InputProps={{
+                  sx: {
+                    height: 38,
+                    paddingRight: "10px",
+                    borderRadius: "6px",
+                    fontSize: "14px",
+                  },
+                }}
               />
             </Tooltip>
           );
@@ -505,26 +535,26 @@ const UploadDocument = () => {
       renderCell: (params) => {
         const { id, api, row } = params;
 
-        const handleSelectDocType = (selected) => {
-          const selectedValue = selected?.NameMR || "";
+        // const handleSelectDocType = (selected) => {
+        //   const selectedValue = selected?.NameMR || "";
 
-          setRows((prev) =>
-            prev.map((r) => {
-              if (r.id === id) {
-                if (r.isNew) {
-                  return {
-                    ...r,
-                    DocType: selectedValue,
-                    FileName: selectedValue,
-                    MissingDocs: [],
-                  };
-                }
-                return { ...r, DocType: selectedValue };
-              }
-              return r;
-            })
-          );
-        };
+        //   setRows((prev) =>
+        //     prev.map((r) => {
+        //       if (r.id === id) {
+        //         if (r.isNew) {
+        //           return {
+        //             ...r,
+        //             DocType: selectedValue,
+        //             FileName: selectedValue,
+        //             MissingDocs: [],
+        //           };
+        //         }
+        //         return { ...r, DocType: selectedValue };
+        //       }
+        //       return r;
+        //     })
+        //   );
+        // };
 
         return (
           <LazyAutocomplete
@@ -550,13 +580,6 @@ const UploadDocument = () => {
             setPage={setDPage}
             hasMore={hasMoreDocs}
             PopperProps={{ placement: "top-start" }}
-            // onChangeValue={(selected) => {
-            //   handleSelectDocType(selected);
-
-            //   setRows((prev) =>
-            //     prev.map((r) => (r.id === id ? { ...r, MissingDocs: [] } : r))
-            //   );
-            // }}
             onChangeValue={(selected) => {
               const selectedValue = selected?.NameMR || "";
 
@@ -580,129 +603,7 @@ const UploadDocument = () => {
       },
     },
 
-    // {
-    //   field: "MissingDocs",
-    //   headerName: "MISSING DOCUMENT",
-    //   flex: 1,
-    //   renderCell: (params) => {
-    //     const { id, field, value, api, row } = params;
-    //     // const isDisabled = row.isDisabled;
-    //     const isDisabled = row.isDisabled || !row.DocType;
-
-    //     const selectedValues = Array.isArray(value) ? value : [];
-    //     const availableSubDocs = subDocMap[id] || [];
-
-    //     // LOCAL search state ONLY for this dropdown (no UI in DataGrid)
-
-    //     const handleChange = (event) => {
-    //       const newValues = event.target.value;
-    //       setRows((prev) =>
-    //         prev.map((r) => (r.id === id ? { ...r, [field]: newValues } : r))
-    //       );
-    //       api.updateRows([{ id, [field]: newValues }]);
-    //     };
-
-    //     const filteredDocs = availableSubDocs.filter((o) =>
-    //       o.NameMR.toLowerCase().includes(searchText.toLowerCase())
-    //     );
-
-    //     return (
-    //       <Tooltip
-    //         title={selectedValues.join(", ") || ""}
-    //         arrow
-    //         placement="top"
-    //       >
-    //         <Select
-    //           multiple
-    //           value={selectedValues}
-    //           onChange={handleChange}
-    //           fullWidth
-    //           disabled={isDisabled}
-    //           variant="standard"
-    //           renderValue={(selected) => selected.join(", ")}
-    //           // MenuProps={{
-    //           //   disablePortal: false,
-
-    //           // }}
-    //           MenuProps={{
-    //              PaperProps: {
-    //               style: {
-    //                 maxHeight: 260,
-    //                 width: 250,
-    //                 overflowY: "auto",
-    //               },
-    //             },
-    //             PopoverClasses: { root: "missing-popover" },
-    //             anchorOrigin: {
-    //               vertical: "bottom",
-    //               horizontal: "left",
-    //             },
-    //             transformOrigin: {
-    //               vertical: "top",
-    //               horizontal: "left",
-    //             },
-    //             modifiers: [
-    //     {
-    //       name: "flip",
-    //       enabled: true,
-    //       options: {
-    //         fallbackPlacements: ["top", "bottom-start", "top-start"],
-    //       },
-    //     },
-    //     {
-    //       name: "preventOverflow",
-    //       enabled: true,
-    //     },
-    //   ],
-    //           }}
-    //           sx={{
-    //             minWidth: 250,
-    //             paddingLeft: 3.5,
-    //           }}
-    //         >
-    //           {/* SEARCH BOX INSIDE MENU */}
-    //           <MenuItem disableRipple disableTouchRipple>
-    //             <InputBase
-    //               autoFocus
-    //               placeholder="Search..."
-    //               value={searchText}
-    //               onChange={(e) => setSearchText(e.target.value)}
-    //               sx={{
-    //                 width: "100%",
-    //                 borderBottom: "1px solid #ddd",
-    //                 pb: 0.5,
-    //                 fontSize: 14,
-    //               }}
-    //             />
-    //           </MenuItem>
-
-    //           {/* FILTERED OPTIONS */}
-    //           {filteredDocs.length > 0 ? (
-    //             filteredDocs.map((option) => (
-    //               <MenuItem
-    //                 key={option.value}
-    //                 value={option.NameMR}
-    //                 sx={{
-    //                   whiteSpace: "normal",
-    //                   wordWrap: "break-word",
-    //                   alignItems: "flex-start",
-    //                 }}
-    //               >
-    //                 <Checkbox
-    //                   checked={selectedValues.indexOf(option.NameMR) > -1}
-    //                   size="small"
-    //                 />
-    //                 <ListItemText primary={option.NameMR} />
-    //               </MenuItem>
-    //             ))
-    //           ) : (
-    //             <MenuItem disabled>No document found</MenuItem>
-    //           )}
-    //         </Select>
-    //       </Tooltip>
-    //     );
-    //   },
-    // },
+   
     // ---------------
 
     {
@@ -711,10 +612,29 @@ const UploadDocument = () => {
       flex: 1,
       renderCell: (params) => {
         const { row } = params;
-        const isDisabled = row.isDisabled || !row.DocType;
+        // const isDisabled = row.isDisabled || !row.DocType;
+        // const docs = row.MissingDocs || [];
+
+        // const tooltipMessage = isDisabled
+        //   ? "Please select document type first"
+        //   : docs.length > 0
+        //   ? docs.join(", ")
+        //   : "Add Missing Document";
+        // NEW CONDITION: If file already uploaded → disable  
+        
+         const hasFile =
+          (row.name && row.name.toString() !== "false") ||
+          (row.type && row.type.toString().trim() !== "") 
+
+        const baseDisabled = row.isDisabled || !row.DocType;
+
+        const isDisabled = baseDisabled || hasFile;
+
         const docs = row.MissingDocs || [];
 
-        const tooltipMessage = isDisabled
+        const tooltipMessage = hasFile
+          ? "File already uploaded — missing document cannot be edited"
+          : baseDisabled
           ? "Please select document type first"
           : docs.length > 0
           ? docs.join(", ")
@@ -728,29 +648,40 @@ const UploadDocument = () => {
                 alignItems: "center",
                 gap: 1,
                 width: "100%",
+
+                border: "1px solid #bdbdbd",
+                borderRadius: "6px",
+                padding: "3px 6px",
+                minHeight: "42px",
               }}
             >
               {/* Modal open button */}
-              <IconButton
+              {/* <IconButton
                 size="small"
                 onClick={() => handleOpenModal(row)}
                 disabled={isDisabled}
                 sx={{ flexShrink: 0 }}
               >
                 <ListIcon fontSize="small" />
-              </IconButton>
-
+              </IconButton> */}
+              <IconButton
+                size="small"
+                onClick={() => !isDisabled && handleOpenModal(row)}
+                disabled={isDisabled}
+                sx={{ flexShrink: 0 }}
+              ></IconButton>
               {/* CHIPS + TOOLTIP */}
-              {/* <Tooltip title={docs.join(", ") || ""} placement="top" arrow> */}
               <Box
                 onClick={() => !isDisabled && handleOpenModal(row)}
                 sx={{
                   display: "flex",
                   flexWrap: "wrap",
                   gap: 0.5,
-                  maxHeight: 48,
+                  maxHeight: 50,
                   overflow: "hidden",
                   flex: 1,
+                  cursor: "pointer",
+                  // pointerEvents: isDisabled ? "none" : "auto",
                 }}
               >
                 {docs.length > 0 ? (
@@ -760,7 +691,7 @@ const UploadDocument = () => {
                       label={d}
                       size="small"
                       sx={{
-                        maxWidth: 120,
+                        maxWidth: 175,
                         textOverflow: "ellipsis",
                         overflow: "hidden",
                       }}
@@ -802,15 +733,10 @@ const UploadDocument = () => {
                 onClick={() => handleUpdate(params.row)}
                 disabled={!canEdit}
                 sx={{
-                  color: canEdit ? "rgb(0, 90, 91)" : "grey",
-                  "&:hover": {
-                    backgroundColor: canEdit
-                      ? "rgba(0, 90, 91, 0.1)"
-                      : "transparent",
-                  },
+                  color: "#2196F3",
                 }}
               >
-                <EditNoteIcon />
+                <EditOutlinedIcon />
               </IconButton>
             </span>
           </Tooltip>
@@ -826,7 +752,7 @@ const UploadDocument = () => {
                 onClick={() => handleDelete(params.row)}
                 disabled={!canDelete}
               >
-                <DeleteForeverIcon />
+                <DeleteOutlineOutlinedIcon />
               </IconButton>
             </span>
           </Tooltip>
@@ -1253,8 +1179,7 @@ const UploadDocument = () => {
         type: ext,
         SrcPath: "",
         File: file,
-        FileExt: ext,
-        // keep file name including extension or strip as you prefer
+        // FileExt: ext,
         // FileName: file.name,
         IssuedBy: "",
         DocType: "",
@@ -1271,6 +1196,8 @@ const UploadDocument = () => {
     });
 
     setRows((prev) => [...prev, ...newRows]);
+    console.log("258", newRows);
+    
 
     if (fileInputRef.current) fileInputRef.current.value = "";
   };
@@ -1682,7 +1609,7 @@ const UploadDocument = () => {
           sx={{
             width: "95%",
             maxWidth: 1400,
-            maxHeight: "90vh",
+            maxHeight: "85vh",
             overflowY: "auto",
             position: "absolute",
             top: "50%",
@@ -1691,11 +1618,10 @@ const UploadDocument = () => {
             borderRadius: 2,
           }}
         >
-          <Box sx={{ p: 3 }}>
+          <Box sx={{ p: 4 }}>
             <Grid
               container
               spacing={3}
-              // padding={3}
               component="form"
               onSubmit={handleSubmit(onSubmit)}
             >
@@ -1711,7 +1637,6 @@ const UploadDocument = () => {
                 </IconButton>
               </Grid>
 
-              {/* <Grid item xs={6} md={4}> */}
               <Grid item xs={12} sm={6} md={4}>
                 <Controller
                   name="Name"
@@ -1743,7 +1668,6 @@ const UploadDocument = () => {
                   )}
                 />
               </Grid>
-              {/* <Grid item xs={6} md={4}> */}
               <Grid item xs={12} sm={6} md={4}>
                 <Controller
                   name="MobileNo"
@@ -1759,7 +1683,6 @@ const UploadDocument = () => {
                     <TextField
                       {...field}
                       label=" ENTER MOBILE NO"
-                      // fullWidth
                       disabled={isMobileDisabled}
                       size="small"
                       error={!!fieldState.error}
@@ -1784,7 +1707,6 @@ const UploadDocument = () => {
                   )}
                 />{" "}
               </Grid>
-              {/* <Grid item xs={6} md={4}> */}
               <Grid item xs={12} sm={6} md={4}>
                 <Controller
                   name="Email"
@@ -1801,7 +1723,6 @@ const UploadDocument = () => {
                   )}
                 />
               </Grid>
-              {/* <Grid item xs={6} md={4}> */}
               <Grid item xs={12} sm={6} md={4}>
                 <Controller
                   name="Address"
@@ -1821,12 +1742,6 @@ const UploadDocument = () => {
                 />
               </Grid>
 
-              {/* <Grid
-              item
-              xs={6}
-              md={4}
-              sx={{ display: "flex", justifyContent: "flex-center" }}
-            > */}
               <Grid item xs={12} sm={6} md={4}>
                 <Button
                   variant="contained"
@@ -1836,9 +1751,13 @@ const UploadDocument = () => {
                     width: 130,
                     height: 40,
                     color: "white",
-                    background:
-                      "linear-gradient(to right, rgb(0, 90, 91), rgb(22, 149, 153))",
+                    backgroundColor: theme.palette.Button.background,
+                    boxShadow: "0 2px 4px Solid black",
                     fontSize: "0.79rem",
+                    "&:hover": {
+                      transform: "translateY(2px)",
+                      backgroundColor: theme.palette.Button.background,
+                    },
                   }}
                   onClick={isAddMissing ? handleAddRow : undefined}
                 >
@@ -1864,7 +1783,6 @@ const UploadDocument = () => {
               </Grid>
 
               {/* Checkbox Field */}
-              {/* <Grid item xs={6} md={4}> */}
               <Grid item xs={12} sm={6} md={4}>
                 <FormControlLabel
                   control={
@@ -1872,15 +1790,14 @@ const UploadDocument = () => {
                       checked={isAddMissing}
                       onChange={(e) => setIsAddMissing(e.target.checked)}
                       size="medium"
-                      sx={{ color: "rgb(0, 90, 91)" }}
+                      sx={{ color: "#2196F3" }}
                     />
                   }
                   label="Add Missing Document"
                 />
               </Grid>
 
-              {/* <Grid item xs={12} style={{ height: 550, paddingBottom: 40 }}> */}
-              <Grid item xs={12} sx={{ height: 530, mt: 2 }}>
+              <Grid item xs={12} sx={{ height: 384 }}>
                 <DataGrid
                   rows={updatedRows}
                   // rows={[...updatedRows].sort((a, b) => b.id - a.id)}
@@ -1915,7 +1832,7 @@ const UploadDocument = () => {
                 />
               </Grid>
               {/* Footer */}
-              <Grid
+              {/* <Grid
                 item
                 xs={12}
                 sx={{
@@ -1933,8 +1850,8 @@ const UploadDocument = () => {
                   sx={{
                     p: 1,
                     width: 80,
-                    color: "rgb(0, 90, 91)",
-                    border: "1px solid rgb(0, 90, 91)",
+                    color: "#2196F3",
+                    border: "1px solid #2196F3",
                     borderRadius: "8px",
                   }}
                 >
@@ -1947,8 +1864,53 @@ const UploadDocument = () => {
                     p: 1,
                     width: 80,
                     color: "white",
-                    background:
-                      "linear-gradient(to right, rgb(0, 90, 91), rgb(22, 149, 153))",
+                    backgroundColor: theme.palette.Button.background,
+                    "&:hover": {
+                      transform: "translateY(2px)",
+                      backgroundColor: theme.palette.Button.background,
+                    },
+                  }}
+                >
+                  {SaveUpdateButton}
+                </Button>
+              </Grid> */}
+              <Grid
+                item
+                xs={12}
+                sx={{
+                  display: "flex",
+                  justifyContent: "space-between",
+                  mt: 2,
+                  pb: 0, // bottom padding removed
+                  pt: 0, // top padding removed
+                }}
+              >
+                <Button
+                  size="small"
+                  onClick={clearFormData}
+                  sx={{
+                    p: 1,
+                    width: 80,
+                    color: "#2196F3",
+                    border: "1px solid #2196F3",
+                    borderRadius: "8px",
+                  }}
+                >
+                  {ClearUpdateButton}
+                </Button>
+
+                <Button
+                  type="submit"
+                  size="small"
+                  sx={{
+                    p: 1,
+                    width: 80,
+                    color: "white",
+                    backgroundColor: theme.palette.Button.background,
+                    "&:hover": {
+                      transform: "translateY(2px)",
+                      backgroundColor: theme.palette.Button.background,
+                    },
                   }}
                 >
                   {SaveUpdateButton}
@@ -1958,7 +1920,6 @@ const UploadDocument = () => {
           </Box>
         </Paper>
       </Modal>
-
       {/* <Dialog
         open={modalOpen}
         onClose={() => setModalOpen(false)}
@@ -2075,7 +2036,6 @@ const UploadDocument = () => {
       </Dialog> */}
       <Dialog
         open={modalOpen}
-        onClose={() => setModalOpen(false)}
         fullWidth
         PaperProps={{
           sx: {
@@ -2138,7 +2098,7 @@ const UploadDocument = () => {
               mt: 2,
               "& .MuiOutlinedInput-root": {
                 borderRadius: 2,
-               },
+              },
             }}
             onChange={(e) => setSearchText(e.target.value)}
             InputProps={{
@@ -2199,7 +2159,7 @@ const UploadDocument = () => {
                       checked={checked}
                       sx={{
                         "&.Mui-checked": {
-                          color: "rgb(22,149,153)",
+                          color: "#2196F3",
                         },
                       }}
                     />
@@ -2221,7 +2181,7 @@ const UploadDocument = () => {
           sx={{
             p: 2,
             borderTop: "1px solid #eee",
-           }}
+          }}
         >
           <Button
             onClick={handleSaveModal}
@@ -2233,19 +2193,17 @@ const UploadDocument = () => {
               color: "white",
               borderRadius: 2,
               textTransform: "none",
-              background:
-                "linear-gradient(to right, rgb(0,90,91), rgb(22,149,153))",
+              backgroundColor: theme.palette.Button.background,
               "&:hover": {
                 opacity: 0.9,
               },
             }}
             variant="contained"
           >
-            Save Selection
+            SAVE SELECTED
           </Button>
         </DialogActions>
       </Dialog>
-
       <Grid
         container
         md={12}
@@ -2261,7 +2219,7 @@ const UploadDocument = () => {
           justifyContent: "space-between",
           mb: 2,
         }}
-        elevation={4}
+        elevation={1}
       >
         <Typography
           className="slide-in-text"
@@ -2289,14 +2247,13 @@ const UploadDocument = () => {
               sx={{
                 pr: 2,
                 color: "white",
-                background:
-                  "linear-gradient(to right, rgb(0, 90, 91), rgb(22, 149, 153))",
+                backgroundColor: theme.palette.Button.background,
                 borderRadius: "8px",
                 transition: "all 0.2s ease-in-out",
-                boxShadow: "0 4px 8px rgba(0, 90, 91, 0.3)",
+                boxShadow: "0 2px 4px Solid black",
                 "&:hover": {
                   transform: "translateY(2px)",
-                  boxShadow: "0 2px 4px rgba(0, 90, 91, 0.2)",
+                  backgroundColor: theme.palette.Button.background,
                 },
                 "& .MuiButton-label": {
                   display: "flex",
@@ -2313,53 +2270,78 @@ const UploadDocument = () => {
           </span>
         </Tooltip>
       </Grid>
-      <Grid
+      {/* <Grid
         container
         item
         lg={12}
         component={Paper}
         sx={{ height: "76vh", width: "100%" }}
+      > */}
+      <Paper
+        sx={{
+          marginTop: 1,
+          display: "flex",
+          flexDirection: "column",
+          alignItems: "center",
+          bgcolor: "#",
+        }}
+        elevation={1}
       >
-        <DataGrid
-          className="datagrid-style"
-          sx={{
-            height: "100%",
-            minHeight: "400px",
-            "& .MuiDataGrid-columnHeaders": {
-              backgroundColor: (theme) => theme.palette.custome.datagridcolor,
-            },
-            "& .MuiDataGrid-row:hover": {
-              boxShadow: "0px 4px 20px rgba(0, 0, 0.2, 0.2)",
-            },
-          }}
-          rows={Documentlist}
-          columns={Maincolumns}
-          pagination
-          paginationMode="server"
-          rowCount={totalRows}
-          pageSizeOptions={[limit]}
-          paginationModel={{ page: currentPage, pageSize: limit }}
-          onPaginationModelChange={(newModel) => setCurrentPage(newModel.page)}
-          loading={loading}
-          hideFooterSelectedRowCount
-          disableColumnFilter
-          disableColumnSelector
-          disableDensitySelector
-          slots={{ toolbar: GridToolbar }}
-          slotProps={{
-            toolbar: {
-              showQuickFilter: true,
-              quickFilterProps: { debounceMs: 500 },
-            },
-          }}
-          onFilterModelChange={(model) => {
-            const quickFilterValue = model.quickFilterValues?.[0] || "";
-            setSearchText(quickFilterValue);
-            setCurrentPage(0);
-          }}
-          getRowId={(row) => row.Id}
-        />
-      </Grid>
+        <Box sx={{ height: "75vh", width: "100%" }}>
+          <DataGrid
+            className="datagrid-style"
+            sx={{
+              height: "100%",
+              minHeight: "400px",
+              "& .MuiDataGrid-columnHeaders": {
+                backgroundColor: (theme) => theme.palette.custome.datagridcolor,
+              },
+              "& .MuiDataGrid-row:hover": {
+                boxShadow: "0px 4px 20px rgba(0, 0, 0.2, 0.2)",
+              },
+              "& .MuiDataGrid-virtualScroller": {
+                scrollbarWidth: "thin",
+              },
+              "& .MuiDataGrid-virtualScroller::-webkit-scrollbar": {
+                width: "6px",
+                height: "6px",
+              },
+              "& .MuiDataGrid-virtualScroller::-webkit-scrollbar-thumb": {
+                backgroundColor: "#9e9e9e",
+                borderRadius: "10px",
+              },
+            }}
+            rows={Documentlist}
+            columns={Maincolumns}
+            pagination
+            paginationMode="server"
+            rowCount={totalRows}
+            pageSizeOptions={[limit]}
+            paginationModel={{ page: currentPage, pageSize: limit }}
+            onPaginationModelChange={(newModel) =>
+              setCurrentPage(newModel.page)
+            }
+            loading={loading}
+            hideFooterSelectedRowCount
+            disableColumnFilter
+            disableColumnSelector
+            disableDensitySelector
+            slots={{ toolbar: GridToolbar }}
+            slotProps={{
+              toolbar: {
+                showQuickFilter: true,
+                quickFilterProps: { debounceMs: 500 },
+              },
+            }}
+            onFilterModelChange={(model) => {
+              const quickFilterValue = model.quickFilterValues?.[0] || "";
+              setSearchText(quickFilterValue);
+              setCurrentPage(0);
+            }}
+            getRowId={(row) => row.Id}
+          />
+        </Box>
+      </Paper>
     </>
   );
 };

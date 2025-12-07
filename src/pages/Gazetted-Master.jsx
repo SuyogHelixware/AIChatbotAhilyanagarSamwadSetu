@@ -3,6 +3,7 @@ import CloseIcon from "@mui/icons-material/Close";
 import DeleteForeverIcon from "@mui/icons-material/DeleteForever";
 import EditNoteIcon from "@mui/icons-material/EditNote";
 import {
+  Box,
   Button,
   Grid,
   IconButton,
@@ -21,6 +22,9 @@ import { BASE_URL } from "../Constant";
 import Loader from "../components/Loader";
 import dayjs from "dayjs";
 import { useThemeMode } from "../Dashboard/Theme";
+import { useTheme } from "@mui/styles";
+import DeleteOutlineOutlinedIcon from "@mui/icons-material/DeleteOutlineOutlined";
+import EditOutlinedIcon from "@mui/icons-material/EditOutlined";
 
 const GazettedMaster = () => {
   const [loaderOpen, setLoaderOpen] = React.useState(false);
@@ -36,9 +40,8 @@ const GazettedMaster = () => {
   const firstLoad = React.useRef(true);
   const [totalRows, setTotalRows] = React.useState(0);
   const [limit, setLimit] = React.useState(20);
-
+  const theme = useTheme();
   const { checkAccess } = useThemeMode();
-
   const canAdd = checkAccess(4, "IsAdd");
   const canEdit = checkAccess(4, "IsEdit");
   const canDelete = checkAccess(4, "IsDelete");
@@ -263,15 +266,12 @@ const GazettedMaster = () => {
               <IconButton
                 color="primary"
                 sx={{
-                  color: "rgb(0, 90, 91)",
-                  "&:hover": {
-                    backgroundColor: "rgba(0, 90, 91, 0.1)",
-                  },
+                  color: "#2196F3",
                 }}
                 onClick={() => handleUpdate(params.row)}
                 disabled={!canEdit}
               >
-                <EditNoteIcon />
+                <EditOutlinedIcon />
               </IconButton>
             </span>
           </Tooltip>
@@ -286,7 +286,7 @@ const GazettedMaster = () => {
                 onClick={() => handleDelete(params.row)}
                 disabled={!canDelete}
               >
-                <DeleteForeverIcon />
+                <DeleteOutlineOutlinedIcon />
               </Button>
             </span>
           </Tooltip>
@@ -458,15 +458,9 @@ const GazettedMaster = () => {
                 sx={{
                   p: 1,
                   width: 80,
-                  color: "rgb(0, 90, 91)",
-                  background: "transparent",
-                  border: "1px solid rgb(0, 90, 91)",
+                  color: "#2196F3",
+                  border: "1px solid #2196F3",
                   borderRadius: "8px",
-                  transition: "all 0.2s ease-in-out",
-                  "&:hover": {
-                    background: "rgba(0, 90, 91, 0.1)",
-                    transform: "translateY(2px)",
-                  },
                 }}
               >
                 {ClearUpdateButton}
@@ -475,16 +469,13 @@ const GazettedMaster = () => {
                 type="submit"
                 size="small"
                 sx={{
-                  marginTop: 1,
                   p: 1,
                   width: 80,
                   color: "white",
-                  background:
-                    "linear-gradient(to right, rgb(0, 90, 91), rgb(22, 149, 153))",
-                  boxShadow: 5,
+                  backgroundColor: theme.palette.Button.background,
                   "&:hover": {
                     transform: "translateY(2px)",
-                    boxShadow: "0 2px 4px rgba(0, 90, 91, 0.2)",
+                    backgroundColor: theme.palette.Button.background,
                   },
                 }}
               >
@@ -510,7 +501,7 @@ const GazettedMaster = () => {
           justifyContent: "space-between",
           mb: 2,
         }}
-        elevation={4}
+        elevation={1}
       >
         <Typography
           className="slide-in-text"
@@ -518,11 +509,10 @@ const GazettedMaster = () => {
           textAlign="center"
           textTransform="uppercase"
           fontWeight="bold"
-          // color={"#5C5CFF"}
           padding={1}
           noWrap
         >
-          Manage Gazetted Master
+          Manage Gazetted Officers
         </Typography>
       </Grid>
       <Grid container spacing={2} marginBottom={1} justifyContent="flex-end">
@@ -542,14 +532,13 @@ const GazettedMaster = () => {
                   mb: 0,
                   mt: 2,
                   color: "white",
-                  background:
-                    "linear-gradient(to right, rgb(0, 90, 91), rgb(22, 149, 153))",
+                  backgroundColor: theme.palette.Button.background,
                   borderRadius: "8px",
                   transition: "all 0.2s ease-in-out",
-                  boxShadow: "0 4px 8px rgba(0, 90, 91, 0.3)",
+                  boxShadow: "0 2px 4px Solid black",
                   "&:hover": {
                     transform: "translateY(2px)",
-                    boxShadow: "0 2px 4px rgba(0, 90, 91, 0.2)",
+                    backgroundColor: theme.palette.Button.background,
                   },
                   "& .MuiButton-label": {
                     display: "flex",
@@ -567,55 +556,78 @@ const GazettedMaster = () => {
           </Tooltip>
         </Grid>
       </Grid>
-      <Grid
+      {/* <Grid
         container
         item
         lg={12}
         component={Paper}
         sx={{ height: "75vh", width: "100%" }}
+      > */}
+      <Paper
+        sx={{
+          marginTop: 1,
+          display: "flex",
+          flexDirection: "column",
+          alignItems: "center",
+          bgcolor: "#",
+        }}
+        elevation={1}
       >
-        <DataGrid
-          className="datagrid-style"
-          sx={{
-            height: "100%",
-            minHeight: "500px",
-            "& .MuiDataGrid-columnHeaders": {
-              backgroundColor: (theme) => theme.palette.custome.datagridcolor,
-            },
-            "& .MuiDataGrid-row:hover": {
-              boxShadow: "0px 4px 20px rgba(0, 0, 0.2, 0.2)",
-            },
-          }}
-          rows={OfficersList}
-          columns={columns}
-          pagination
-          paginationMode="server"
-          rowCount={totalRows}
-          paginationModel={{ page: currentPage, pageSize: limit }}
-          onPaginationModelChange={(newModel) => {
-            setCurrentPage(newModel.page);
-            setLimit(newModel.pageSize);
-          }}
-          loading={loading}
-          disableColumnFilter
-          hideFooterSelectedRowCount
-          disableColumnSelector
-          disableDensitySelector
-          slots={{ toolbar: GridToolbar }}
-          slotProps={{
-            toolbar: {
-              showQuickFilter: true,
-              quickFilterProps: { debounceMs: 500 },
-            },
-          }}
-          onFilterModelChange={(model) => {
-            const quickFilterValue = model.quickFilterValues?.[0] || "";
-            setSearchText(quickFilterValue);
-            setCurrentPage(0); // reset page on search
-          }}
-          getRowId={(row) => row.Id}
-        />
-      </Grid>
+        <Box sx={{ height: "75vh", width: "100%" }}>
+          <DataGrid
+            className="datagrid-style"
+            sx={{
+              height: "100%",
+              minHeight: "500px",
+              "& .MuiDataGrid-columnHeaders": {
+                backgroundColor: (theme) => theme.palette.custome.datagridcolor,
+              },
+              "& .MuiDataGrid-row:hover": {
+                boxShadow: "0px 4px 20px rgba(0, 0, 0.2, 0.2)",
+              },
+              "& .MuiDataGrid-virtualScroller": {
+                scrollbarWidth: "thin",
+              },
+              "& .MuiDataGrid-virtualScroller::-webkit-scrollbar": {
+                width: "6px",
+                height: "6px",
+              },
+              "& .MuiDataGrid-virtualScroller::-webkit-scrollbar-thumb": {
+                backgroundColor: "#9e9e9e",
+                borderRadius: "10px",
+              },
+            }}
+            rows={OfficersList}
+            columns={columns}
+            pagination
+            paginationMode="server"
+            rowCount={totalRows}
+            paginationModel={{ page: currentPage, pageSize: limit }}
+            onPaginationModelChange={(newModel) => {
+              setCurrentPage(newModel.page);
+              setLimit(newModel.pageSize);
+            }}
+            loading={loading}
+            disableColumnFilter
+            hideFooterSelectedRowCount
+            disableColumnSelector
+            disableDensitySelector
+            slots={{ toolbar: GridToolbar }}
+            slotProps={{
+              toolbar: {
+                showQuickFilter: true,
+                quickFilterProps: { debounceMs: 500 },
+              },
+            }}
+            onFilterModelChange={(model) => {
+              const quickFilterValue = model.quickFilterValues?.[0] || "";
+              setSearchText(quickFilterValue);
+              setCurrentPage(0);
+            }}
+            getRowId={(row) => row.Id}
+          />
+        </Box>
+      </Paper>
     </>
   );
 };
