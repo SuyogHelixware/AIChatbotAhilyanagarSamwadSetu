@@ -70,7 +70,7 @@ export default function ManageDocPage() {
             // Indicator becomes a glowing underline
             "& .MuiTabs-indicator": {
               height: 4,
-              borderRadius: 2,
+              borderRadius: 1,
             },
           }}
         >
@@ -80,7 +80,7 @@ export default function ManageDocPage() {
               textTransform: "none",
               fontWeight: 600,
               fontSize: "0.9rem",
-              borderRadius: 2,
+              borderRadius: 1,
               px: 3,
 
               // Default State
@@ -98,7 +98,7 @@ export default function ManageDocPage() {
                 background: "rgba(25,118,210,0.1)",
                 color: "primary.main",
                 opacity: 1,
-                boxShadow: "0px 2px 6px rgba(0,0,0,0.12)",
+                boxShadow: "0px 1px 3px rgba(0,0,0,0.12)",
               },
             }}
           />
@@ -121,7 +121,7 @@ export default function ManageDocPage() {
                 background: "rgba(25,118,210,0.1)",
                 color: "primary.main",
                 opacity: 1,
-                boxShadow: "0px 2px 6px rgba(0,0,0,0.12)",
+                boxShadow: "0px 1px 3px rgba(0,0,0,0.12)",
               },
             }}
           />

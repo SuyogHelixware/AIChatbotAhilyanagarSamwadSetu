@@ -6,12 +6,17 @@ import SearchIcon from "@mui/icons-material/Search";
 import React, { useRef, useState } from "react";
 import DeleteOutlineOutlinedIcon from "@mui/icons-material/DeleteOutlineOutlined";
 import EditOutlinedIcon from "@mui/icons-material/EditOutlined";
- import ArticleIcon from '@mui/icons-material/Article';
-import ArticleOutlinedIcon from '@mui/icons-material/ArticleOutlined';
+import ArticleIcon from "@mui/icons-material/Article";
+import ArticleOutlinedIcon from "@mui/icons-material/ArticleOutlined";
 import {
   Box,
   Button,
   Checkbox,
+  Dialog,
+  DialogActions,
+  DialogContent,
+  DialogTitle,
+  Divider,
   FormControlLabel,
   Grid,
   IconButton,
@@ -65,7 +70,6 @@ const DocumentMaster = () => {
   const [OpenSubDocModal, setOpenSubDocModal] = React.useState(false);
   const theme = useTheme();
   const [isSearchResetting, setIsSearchResetting] = useState(false);
-
 
   const canAdd = checkAccess(5, "IsAdd");
   const canEdit = checkAccess(5, "IsEdit");
@@ -744,57 +748,54 @@ const DocumentMaster = () => {
   let cancelToken;
 
   const HandleSubDocsTableList = async (pageNo, search = searchSubText) => {
-      if (isSearchResetting) return [];
+    if (isSearchResetting) return [];
 
-  if (loading) return [];
-  
+    if (loading) return [];
 
-  if (cancelToken) cancelToken.cancel();  
-  cancelToken = axios.CancelToken.source();
+    if (cancelToken) cancelToken.cancel();
+    cancelToken = axios.CancelToken.source();
 
-  setLoading(true);
+    setLoading(true);
 
-  try {
-    const apiUrl = `${BASE_URL}DocsMaster?Status=1&Limit=${limit}&Page=${pageNo}${
-      search ? `&SearchText=${encodeURIComponent(search)}` : ""
-    }`;
+    try {
+      const apiUrl = `${BASE_URL}DocsMaster?Status=1&Limit=${limit}&Page=${pageNo}${
+        search ? `&SearchText=${encodeURIComponent(search)}` : ""
+      }`;
 
-    const response = await axios.get(apiUrl, {
-      cancelToken: cancelToken.token,
-    });
+      const response = await axios.get(apiUrl, {
+        cancelToken: cancelToken.token,
+      });
 
-    let newData = response.data.values || [];
-    const currentDocId = getValues("Id");
-    newData = newData.filter((d) => d.Id !== currentDocId);
+      let newData = response.data.values || [];
+      const currentDocId = getValues("Id");
+      newData = newData.filter((d) => d.Id !== currentDocId);
 
-    if (newData.length === 0) {
-      setSubHasMore(false);
+      if (newData.length === 0) {
+        setSubHasMore(false);
+        return [];
+      }
+
+      newData = newData.map((item, idx) => ({
+        ...item,
+        id: pageNo * limit + idx + 1,
+        isChecked: selectedSubDocsRef.current.includes(item.NameMR),
+      }));
+
+      setRows((prev) => [...prev, ...newData]);
+      setSubPage(pageNo + 1);
+
+      return newData;
+    } catch (err) {
+      if (axios.isCancel(err)) {
+        console.log("Cancelled old request");
+        return [];
+      }
+      console.error(err);
       return [];
+    } finally {
+      setLoading(false);
     }
-
-    newData = newData.map((item, idx) => ({
-      ...item,
-      id: pageNo * limit + idx + 1,
-      isChecked: selectedSubDocsRef.current.includes(item.NameMR),
-    }));
-
-    setRows((prev) => [...prev, ...newData]);
-    setSubPage(pageNo + 1);
-
-    return newData;
-  } catch (err) {
-    if (axios.isCancel(err)) {
-      console.log("Cancelled old request");
-      return [];
-    }
-    console.error(err);
-    return [];
-  } finally {
-    setLoading(false);
-  }
-};
-
-
+  };
 
   const handleScroll = () => {
     const el = scrollRef.current;
@@ -817,27 +818,23 @@ const DocumentMaster = () => {
   // };
   const searchTimeoutRef = useRef(null);
 
-const resetTableAndFetch = (text) => {
-    setIsSearchResetting(true);  
+  const resetTableAndFetch = (text) => {
+    setIsSearchResetting(true);
 
-  setRows([]);
-  setSubPage(0);
-  setSubHasMore(true);
-  setSearchSubText(text);
+    setRows([]);
+    setSubPage(0);
+    setSubHasMore(true);
+    setSearchSubText(text);
 
-  if (searchTimeoutRef.current) 
-    clearTimeout(searchTimeoutRef.current);
- 
-  //   setTimeout(() => {
-  //   HandleSubDocsTableList(0, text)
-  //     .finally(() => setIsSearchResetting(false)); 
-  // }, 50);
-  
-     HandleSubDocsTableList(0, text)
-      .finally(() => setIsSearchResetting(false)); 
- };
+    if (searchTimeoutRef.current) clearTimeout(searchTimeoutRef.current);
 
+    //   setTimeout(() => {
+    //   HandleSubDocsTableList(0, text)
+    //     .finally(() => setIsSearchResetting(false));
+    // }, 50);
 
+    HandleSubDocsTableList(0, text).finally(() => setIsSearchResetting(false));
+  };
 
   const handleSubmit01 = async (SubformData) => {
     try {
@@ -938,50 +935,59 @@ const resetTableAndFetch = (text) => {
   return (
     <>
       {loaderOpen && <Loader open={loaderOpen} />}
-      <Modal
+      <Dialog
         open={on}
+        maxWidth="lg"
+        fullWidth
+        PaperProps={{
+          sx: {
+            maxWidth: 780,
+            overflow: "hidden",
+          },
+        }}
         sx={{
-          backdropFilter: "blur(5px)",
-          backgroundColor: "rgba(0, 0, 0, 0.3)",
+          "& .MuiDialog-container": {
+            backdropFilter: "blur(5px)",
+            backgroundColor: "rgba(0, 0, 0, 0.3)",
+          },
         }}
       >
-        <Paper
-          elevation={1}
+        <DialogTitle
           sx={{
-            width: "100%",
-            maxWidth: 700,
-            position: "absolute",
-            top: "50%",
-            left: "50%",
-            transform: "translate(-50%, -50%)",
-            justifyContent: "center",
-            overflow: "auto",
-            maxHeight: "100vh",
+            display: "flex",
+            justifyContent: "space-between",
+            alignItems: "center",
+            pb: 1,
+          }}
+        >
+          DOCUMENT MASTER
+          <IconButton onClick={handleClose}>
+            <CloseIcon sx={{ fontSize: 30 }} />
+          </IconButton>
+        </DialogTitle>
+        <Divider
+          sx={{
+            borderBottomWidth: 0.6,
+            backgroundColor: "#ccc",
+            boxShadow: "0px 1px 2px rgba(0,0,0,0.2)",
+          }}
+        />
+        <DialogContent
+          dividers={false}
+          sx={{
+            maxHeight: "70vh",
+            overflowY: "auto",
+            "&::-webkit-scrollbar": { display: "none" },
+            scrollbarWidth: "none",
           }}
         >
           <Grid
             container
             component="form"
-            spacing={3}
-            padding={3}
             flexDirection="column"
             onSubmit={handleSubmit(handleSubmitForm)}
           >
             {/* HEADER */}
-            <Grid
-              item
-              xs={12}
-              display="flex"
-              justifyContent="space-between"
-              alignItems="center"
-            >
-              <Typography fontWeight="bold" textAlign={"center"}>
-                DOCUMENT NAME
-              </Typography>
-              <IconButton onClick={handleClose}>
-                <CloseIcon />
-              </IconButton>
-            </Grid>
 
             {/* FORM FIELDS */}
             <Grid container item xs={12} spacing={2}>
@@ -1040,18 +1046,12 @@ const resetTableAndFetch = (text) => {
                 />
               </Grid>
             </Grid>
-
-            {/* ========================================================== */}
-
             <Box
               sx={{
                 display: "flex",
                 flexWrap: "wrap",
                 justifyContent: "space-between",
                 alignItems: "center",
-                gap: 2,
-                mb: 2,
-                mt: 2,
               }}
             >
               {/* Active Checkbox */}
@@ -1125,15 +1125,13 @@ const resetTableAndFetch = (text) => {
                 }}
               />
             </Box>
-
             <Box
               ref={scrollRef}
               onScroll={handleScroll}
               sx={{
-                height: { xs: 250, sm: 350, md: 400 },
+                height: { xs: 210, sm: 310, md: 370 },
                 width: "100%",
                 overflowY: "auto",
-                border: "1px solid #ddd",
                 borderRadius: "8px",
                 maxWidth: "100%",
               }}
@@ -1146,6 +1144,7 @@ const resetTableAndFetch = (text) => {
                         fontWeight: "bold",
                         fontSize: "13px",
                         whiteSpace: "nowrap",
+                        padding: "2px 3px",
                       }}
                     >
                       SR NO
@@ -1155,6 +1154,7 @@ const resetTableAndFetch = (text) => {
                         fontWeight: "bold",
                         fontSize: "13px",
                         whiteSpace: "nowrap",
+                        padding: "3px 4px",
                       }}
                     >
                       ACTION
@@ -1164,6 +1164,7 @@ const resetTableAndFetch = (text) => {
                         fontWeight: "bold",
                         fontSize: "13px",
                         whiteSpace: "nowrap",
+                        width: "40px",
                       }}
                     >
                       SELECT
@@ -1173,7 +1174,7 @@ const resetTableAndFetch = (text) => {
                         fontWeight: "bold",
                         fontSize: "13px",
                         textAlign: "center",
-                        paddingRight: { xs: 0, md: "80px" },
+                        paddingRight: { xs: 0, md: "90px" },
                         whiteSpace: "nowrap",
                       }}
                     >
@@ -1226,100 +1227,70 @@ const resetTableAndFetch = (text) => {
                 </TableBody>
               </Table>
             </Box>
-
-            {/* =====================Footer=================== */}
-            <Grid
-              item
-              xs={12}
-              md={12}
-              display="flex"
-              justifyContent="space-between"
-              alignItems="center"
-              sx={{
-                position: "sticky",
-                borderTop: "1px solid #ddd",
-                zIndex: 20,
-                bottom: 2,
-                left: 5,
-                right: 0,
-              }}
-            >
-              <Button
-                size="small"
-                onClick={() => clearFormData()}
-                sx={{
-                  p: 1,
-                  width: 80,
-                  background: "transparent",
-                  color: "#2196F3",
-                  border: "1px solid #2196F3",
-                  borderRadius: "8px",
-                  transition: "all 0.2s ease-in-out",
-                  "&:hover": {
-                    background: "rgba(0, 90, 91, 0.1)",
-                    transform: "translateY(2px)",
-                  },
-                }}
-              >
-                {ClearUpdateButton}
-              </Button>
-              <Button
-                type="submit"
-                size="small"
-                sx={{
-                  marginTop: 1,
-                  p: 1,
-                  width: 80,
-                  color: "white",
-                  backgroundColor: theme.palette.Button.background,
-                  boxShadow: 5,
-                  "&:hover": {
-                    transform: "translateY(2px)",
-                    backgroundColor: theme.palette.Button.background,
-                  },
-                }}
-              >
-                {SaveUpdateButton}
-              </Button>
-            </Grid>
-
-            {/* </form> */}
-            <Grid />
           </Grid>
-        </Paper>
-      </Modal>
-      {/* <Grid
-        container
-        md={12}
-        lg={12}
-        component={Paper}
-        textAlign={"center"}
-        sx={{
-          width: "100%",
-          px: 5,
-          display: "flex",
-          flexDirection: "row",
-          alignItems: "center",
-          justifyContent: "space-between",
-          mb: 2,
-        }}
-        elevation={4}
-      >
-        <Typography
-          className="slide-in-text"
-          width={"100%"}
-          textAlign="center"
-          textTransform="uppercase"
-          fontWeight="bold"
-          padding={1}
-          noWrap
+        </DialogContent>
+        <Divider
+          sx={{
+            borderBottomWidth: 0.6,
+            backgroundColor: "#ccc",
+            mx: -3,
+            boxShadow: "0px 1px 2px rgba(0,0,0,0.2)",
+          }}
+        />
+        {/* =====================Footer=================== */}
+
+        <DialogActions
+          sx={{
+            display: "flex",
+            justifyContent: "space-between",
+            px: 3,
+            pb: 2,
+          }}
         >
-          Manage Documents
-        </Typography>
-      </Grid> */}
+          <Button
+            size="small"
+            onClick={() => clearFormData()}
+            sx={{
+              p: 1,
+              width: 80,
+              background: "transparent",
+              color: "#2196F3",
+              border: "1px solid #2196F3",
+              borderRadius: "8px",
+              transition: "all 0.2s ease-in-out",
+              "&:hover": {
+                background: "rgba(0, 90, 91, 0.1)",
+                transform: "translateY(2px)",
+              },
+            }}
+          >
+            {ClearUpdateButton}
+          </Button>
+          <Button
+            type="submit"
+            size="small"
+            onClick={handleSubmit(handleSubmitForm)}
+            sx={{
+              marginTop: 1,
+              p: 1,
+              width: 80,
+              color: "white",
+              backgroundColor: theme.palette.Button.background,
+              boxShadow: 5,
+              "&:hover": {
+                transform: "translateY(2px)",
+                backgroundColor: theme.palette.Button.background,
+              },
+            }}
+          >
+            {SaveUpdateButton}
+          </Button>
+        </DialogActions>
+      </Dialog>
+
       {/* ========Sub Doc Modal=============== */}
 
-      <Modal
+      {/* <Modal
         open={OpenSubDocModal}
         sx={{
           backdropFilter: "blur(2px)",
@@ -1339,149 +1310,169 @@ const resetTableAndFetch = (text) => {
             overflow: "auto",
             maxHeight: "80vh",
           }}
+        > */}
+      <Dialog
+        open={OpenSubDocModal}
+         fullWidth
+        maxWidth="sm"
+        PaperProps={{
+          sx: {
+            maxWidth: 500,
+            maxHeight: "80vh",
+            overflow: "hidden",
+            borderRadius: 2,
+          },
+        }}
+        BackdropProps={{
+          sx: {
+            backdropFilter: "blur(2px)",
+            backgroundColor: "rgba(0, 0, 0, 0.3)",
+          },
+        }}
+      >
+     
+        <DialogTitle
+          sx={{
+            display: "flex",
+            justifyContent: "space-between",
+            alignItems: "center",
+            pb: 1,
+          }}
         >
-          <Grid
-            container
-            component="form"
-            spacing={3}
-            padding={3}
-            flexDirection="column"
-            onSubmit={handleSubmitSubModal(handleSubmit01)}
+          SUB DOCUMENT
+          <IconButton onClick={HandleOnSubDocModalClose}>
+            <CloseIcon sx={{ fontSize: 30 }} />
+          </IconButton>
+        </DialogTitle>
+
+        <Divider
+          sx={{
+            borderBottomWidth: 0.6,
+            backgroundColor: "#ccc",
+            boxShadow: "0px 1px 2px rgba(0,0,0,0.2)",
+          }}
+        />
+        <form onSubmit={handleSubmitSubModal(handleSubmit01)}>
+          <DialogContent  >
+             
+            <Grid container spacing={3} flexDirection="column">
+              {/* FORM FIELDS */}
+              <Grid container item xs={12} spacing={2}>
+                <Grid item xs={12} sm={6} lg={6}>
+                  <Controller
+                    name="SubNameEN"
+                    control={SubControl}
+                    rules={{ required: "This field is required" }}
+                    render={({ field, fieldState }) => (
+                      <TextField
+                        {...field}
+                        fullWidth
+                        label="DOCUMENT NAME (ENGLISH)"
+                        size="small"
+                        InputLabelProps={{ shrink: true }}
+                        error={!!fieldState.error}
+                        helperText={fieldState.error?.message}
+                      />
+                    )}
+                  />
+                </Grid>
+
+                <Grid item xs={12} sm={6} lg={6}>
+                  <Controller
+                    name="SubNameMR"
+                    control={SubControl}
+                    rules={{ required: "This field is required" }}
+                    render={({ field, fieldState }) => (
+                      <TextField
+                        {...field}
+                        fullWidth
+                        label="DOCUMENT NAME (MARATHI)"
+                        size="small"
+                        InputLabelProps={{ shrink: true }}
+                        error={!!fieldState.error}
+                        helperText={fieldState.error?.message}
+                      />
+                    )}
+                  />
+                </Grid>
+
+                <Grid item xs={12}>
+                  <Controller
+                    name="SubDescription"
+                    control={SubControl}
+                    render={({ field }) => (
+                      <TextField
+                        {...field}
+                        fullWidth
+                        multiline
+                        minRows={2}
+                        label="DESCRIPTION"
+                        size="small"
+                      />
+                    )}
+                  />
+                </Grid>
+              </Grid>
+            </Grid>
+          </DialogContent>
+
+          <Divider
+            sx={{
+              borderBottomWidth: 0.6,
+              backgroundColor: "#ccc",
+              // mx: -3,
+              boxShadow: "0px 1px 2px rgba(0,0,0,0.2)",
+            }}
+          />
+          {/* =====================Footer=================== */}
+
+          <DialogActions
+            sx={{
+              display: "flex",
+              justifyContent: "space-between",
+              px: 3,
+              pb: 2,
+            }}
           >
-            {/* HEADER */}
-            <Grid
-              item
-              xs={12}
-              display="flex"
-              justifyContent="space-between"
-              alignItems="center"
-            >
-              <Typography fontWeight="bold" textAlign={"center"}>
-                ADD SUB DOCUMENT
-              </Typography>
-              <IconButton onClick={HandleOnSubDocModalClose}>
-                <CloseIcon />
-              </IconButton>
-            </Grid>
-
-            {/* FORM FIELDS */}
-            <Grid container item xs={12} spacing={2}>
-              <Grid item xs={12} sm={6} lg={6}>
-                <Controller
-                  name="SubNameEN"
-                  control={SubControl}
-                  rules={{ required: "This field is required" }}
-                  render={({ field, fieldState }) => (
-                    <TextField
-                      {...field}
-                      fullWidth
-                      label="DOCUMENT NAME (ENGLISH)"
-                      size="small"
-                      InputLabelProps={{ shrink: true }}
-                      error={!!fieldState.error}
-                      helperText={fieldState.error?.message}
-                    />
-                  )}
-                />
-              </Grid>
-
-              <Grid item xs={12} sm={6} lg={6}>
-                <Controller
-                  name="SubNameMR"
-                  control={SubControl}
-                  rules={{ required: "This field is required" }}
-                  render={({ field, fieldState }) => (
-                    <TextField
-                      {...field}
-                      fullWidth
-                      label="DOCUMENT NAME (MARATHI)"
-                      size="small"
-                      InputLabelProps={{ shrink: true }}
-                      error={!!fieldState.error}
-                      helperText={fieldState.error?.message}
-                    />
-                  )}
-                />
-              </Grid>
-
-              <Grid item xs={12}>
-                <Controller
-                  name="SubDescription"
-                  control={SubControl}
-                  render={({ field }) => (
-                    <TextField
-                      {...field}
-                      fullWidth
-                      multiline
-                      minRows={2}
-                      label="DESCRIPTION"
-                      size="small"
-                    />
-                  )}
-                />
-              </Grid>
-            </Grid>
-
-            {/* =====================Footer=================== */}
-            <Grid
-              item
-              xs={12}
-              md={12}
-              display="flex"
-              justifyContent="space-between"
-              alignItems="center"
+            <Button
+              size="small"
+              onClick={() => clearFormData()}
               sx={{
-                position: "sticky",
-                borderTop: "1px solid #ddd",
-                zIndex: 20,
-                bottom: 2,
-                left: 5,
-                right: 0,
+                p: 1,
+                width: 80,
+                color: "#2196F3",
+                background: "transparent",
+                border: "1px solid #2196F3",
+                borderRadius: "8px",
+                transition: "all 0.2s ease-in-out",
+                "&:hover": {
+                  background: "rgba(0, 90, 91, 0.1)",
+                  transform: "translateY(2px)",
+                },
               }}
             >
-              <Button
-                size="small"
-                onClick={() => clearFormData()}
-                  sx={{
-                  p: 1,
-                  width: 80,
-                  color: "#2196F3",
-                  background: "transparent",
-                  border: "1px solid #2196F3",
-                  borderRadius: "8px",
-                  transition: "all 0.2s ease-in-out",
-                  "&:hover": {
-                    background: "rgba(0, 90, 91, 0.1)",
-                    transform: "translateY(2px)",
-                  },
-                }}
-              >
-                {ClearSubDocUpdateButton}
-              </Button>
-              <Button
-                type="submit"
-                size="small"
-                sx={{
-                  marginTop: 1,
-                  p: 1,
-                  width: 80,
-                  color: "white",
-                                backgroundColor: theme.palette.Button.background,
-                  boxShadow: 5,
-                  "&:hover": {
-                    transform: "translateY(2px)",
-                    backgroundColor: theme.palette.Button.background,
-                  },
-                }}
-              >
-                {SaveSubDocUpdateButton}
-              </Button>
-            </Grid>
-
-            <Grid />
-          </Grid>
-        </Paper>
-      </Modal>
+              {ClearSubDocUpdateButton}
+            </Button>
+            <Button
+              type="submit"
+              size="small"
+              sx={{
+                p: 1,
+                width: 80,
+                color: "white",
+                backgroundColor: theme.palette.Button.background,
+                boxShadow: 5,
+                "&:hover": {
+                  transform: "translateY(2px)",
+                  backgroundColor: theme.palette.Button.background,
+                },
+              }}
+            >
+              {SaveSubDocUpdateButton}
+            </Button>
+          </DialogActions>
+        </form>
+      </Dialog>
 
       {/* =================== */}
       <Grid container spacing={2} marginBottom={3} justifyContent="flex-end">
@@ -1519,7 +1510,6 @@ const resetTableAndFetch = (text) => {
                 },
               }}
             >
-              
               <AddIcon />
               Add Document
             </Button>

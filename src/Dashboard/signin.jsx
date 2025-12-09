@@ -12,7 +12,7 @@ import PersonIcon from "@mui/icons-material/Person";
 import CryptoJS from "crypto-js";
 import { useThemeMode } from "./Theme";
 import { DASHBOARDMENU_PATHS, MENU_PATHS } from "../Routes/ProtectedRoute";
-import Map from "../assets/Loginimg.jpg";
+import LoginBack from "../assets/Loginimg.jpg";
 
 const Signin = () => {
   const [userId, setUserId] = useState("");
@@ -193,7 +193,7 @@ const Signin = () => {
           background: "#EAF3FF",
           fontFamily: "Arial, sans-serif",
           px: 2,
-          backgroundImage: `url(${Map})`,
+          backgroundImage: `url(${LoginBack})`,
           backgroundSize: "cover", 
           backgroundPosition: "center",
           backgroundRepeat: "no-repeat",

@@ -5,6 +5,11 @@ import EditNoteIcon from "@mui/icons-material/EditNote";
 import {
   Box,
   Button,
+  Dialog,
+  DialogActions,
+  DialogContent,
+  DialogTitle,
+  Divider,
   Grid,
   IconButton,
   Modal,
@@ -252,7 +257,9 @@ const GazettedMaster = () => {
     {
       field: "actions",
       headerName: "Action",
-      width: 150,
+      minWidth: 80,
+      maxWidth: 100,
+      flex: 0.3,
       headerAlign: "center",
       align: "center",
       sortable: false,
@@ -280,14 +287,20 @@ const GazettedMaster = () => {
             placement="top"
           >
             <span>
-              <Button
+              <IconButton
                 size="medium"
-                sx={{ color: "red" }}
+                sx={{
+                  "& .MuiButtonBase-root,": {
+                    padding: 0,
+                    marginLeft: 1,
+                  },
+                  color: "red",
+                }}
                 onClick={() => handleDelete(params.row)}
                 disabled={!canDelete}
               >
                 <DeleteOutlineOutlinedIcon />
-              </Button>
+              </IconButton>
             </span>
           </Tooltip>
         </strong>
@@ -296,7 +309,9 @@ const GazettedMaster = () => {
     {
       field: "srNo",
       headerName: "SR NO",
-      width: 80,
+      minWidth: 60,
+      maxWidth: 70,
+      flex: 0.2,
       sortable: false,
       headerAlign: "center",
       align: "center",
@@ -308,20 +323,12 @@ const GazettedMaster = () => {
       },
     },
 
-    // {
-    //   field: "srNo",
-    //   headerName: "SR NO",
-    //   width: 60,
-    //   sortable: false,
-    //   headerAlign: "center",
-    //   align: "center",
-    //   renderCell: (params) =>
-    //     params.api.getSortedRowIds().indexOf(params.id) + 1,
-    // },
     {
       field: "Name",
       headerName: "Name",
-      width: 600,
+      minWidth: 200,
+      maxWidth: 700,
+      flex: 1.0,
       sortable: false,
       renderCell: (params) => (
         <Tooltip title={params.value || ""} arrow>
@@ -359,54 +366,54 @@ const GazettedMaster = () => {
   return (
     <>
       {loaderOpen && <Loader open={loaderOpen} />}
-      <Modal
+
+      <Dialog
         open={on}
-        // onClose={handleClose}
-        sx={{
-          backdropFilter: "blur(5px)",
+        fullWidth
+        maxWidth="md"
+        PaperProps={{
+          sx: {
+            width: "70%",
+            maxWidth: 350,
+            overflow: "auto",
+            maxHeight: "100vh",
+          },
         }}
       >
-        <Paper
-          elevation={10}
+        <DialogTitle
           sx={{
-            width: "90%",
-            maxWidth: 400,
-            position: "absolute",
-            top: "50%",
-            left: "50%",
-            transform: "translate(-50%, -50%)",
-            justifyContent: "center",
-            overflow: "auto",
-            maxHeight: "90vh",
+            display: "flex",
+            justifyContent: "space-between",
+            alignItems: "center",
+            pb: 1,
           }}
         >
-          <Grid
-            container
-            item
-            xs={12}
-            spacing={4}
-            display={"flex"}
-            flexDirection={"column"}
-            padding={3}
-            justifyContent={"center"}
-            marginBottom={"14px"}
-            onSubmit={handleSubmit(handleSubmitForm)}
-            component={"form"}
-          >
-            <Grid
-              item
-              xs={12}
-              sx={{ display: "flex", justifyContent: "space-between" }}
-            >
-              <Typography fontWeight="bold" textAlign={"center"}>
-                ADD GAZETTED
-              </Typography>
-              <IconButton onClick={handleClose}>
-                <CloseIcon />
-              </IconButton>
-            </Grid>
+          ADD GAZETTED
+          <IconButton onClick={handleClose}>
+            <CloseIcon sx={{ fontSize: 30 }} />
+          </IconButton>
+        </DialogTitle>
 
-            <Grid item xs={12}>
+        <Divider
+          sx={{
+            borderBottomWidth: 0.6,
+            backgroundColor: "#ccc",
+            boxShadow: "0px 1px 2px rgba(0,0,0,0.2)",
+          }}
+        />
+
+        <form onSubmit={handleSubmit(handleSubmitForm)}>
+          <DialogContent
+            dividers={false}
+            sx={{
+              maxHeight: "70vh",
+              overflowY: "auto",
+              "&::-webkit-scrollbar": { display: "none" },
+              scrollbarWidth: "none",
+              pt: 4,
+            }}
+          >
+            <Grid item xs={7}>
               <Controller
                 name="Name"
                 control={control}
@@ -434,58 +441,58 @@ const GazettedMaster = () => {
                 )}
               />
             </Grid>
+          </DialogContent>
 
-            <Grid item xs={12} sm={4} textAlign={"center"}></Grid>
+          <Divider
+            sx={{
+              borderBottomWidth: 0.6,
+              backgroundColor: "#ccc",
+              boxShadow: "0px 1px 2px rgba(0,0,0,0.2)",
+            }}
+          />
+          {/* =====================Footer=================== */}
 
-            <Grid
-              item
-              xs={12}
-              md={12}
-              display="flex"
-              justifyContent="space-between"
-              alignItems="center"
+          <DialogActions
+            sx={{
+              display: "flex",
+              justifyContent: "space-between",
+              px: 3,
+              pb: 2,
+            }}
+          >
+            <Button
+              size="small"
+              onClick={() => clearFormData()}
               sx={{
-                position: "absolute",
-                bottom: 10,
-                left: 10,
-                right: 10,
-                mt: "10px",
+                p: 1,
+                width: 80,
+                color: "#2196F3",
+                border: "1px solid #2196F3",
+                borderRadius: "8px",
               }}
             >
-              <Button
-                size="small"
-                onClick={() => clearFormData()}
-                sx={{
-                  p: 1,
-                  width: 80,
-                  color: "#2196F3",
-                  border: "1px solid #2196F3",
-                  borderRadius: "8px",
-                }}
-              >
-                {ClearUpdateButton}
-              </Button>
-              <Button
-                type="submit"
-                size="small"
-                sx={{
-                  p: 1,
-                  width: 80,
-                  color: "white",
+              {ClearUpdateButton}
+            </Button>
+            <Button
+              type="submit"
+              size="small"
+              sx={{
+                p: 1,
+                width: 80,
+                color: "white",
+                backgroundColor: theme.palette.Button.background,
+                "&:hover": {
+                  transform: "translateY(2px)",
                   backgroundColor: theme.palette.Button.background,
-                  "&:hover": {
-                    transform: "translateY(2px)",
-                    backgroundColor: theme.palette.Button.background,
-                  },
-                }}
-              >
-                {SaveUpdateButton}
-              </Button>
-            </Grid>
-            <Grid />
-          </Grid>
-        </Paper>
-      </Modal>
+                },
+              }}
+            >
+              {SaveUpdateButton}
+            </Button>
+          </DialogActions>
+        </form>
+      </Dialog>
+
       <Grid
         container
         md={12}
@@ -576,27 +583,6 @@ const GazettedMaster = () => {
         <Box sx={{ height: "75vh", width: "100%" }}>
           <DataGrid
             className="datagrid-style"
-            sx={{
-              height: "100%",
-              minHeight: "500px",
-              "& .MuiDataGrid-columnHeaders": {
-                backgroundColor: (theme) => theme.palette.custome.datagridcolor,
-              },
-              "& .MuiDataGrid-row:hover": {
-                boxShadow: "0px 4px 20px rgba(0, 0, 0.2, 0.2)",
-              },
-              "& .MuiDataGrid-virtualScroller": {
-                scrollbarWidth: "thin",
-              },
-              "& .MuiDataGrid-virtualScroller::-webkit-scrollbar": {
-                width: "6px",
-                height: "6px",
-              },
-              "& .MuiDataGrid-virtualScroller::-webkit-scrollbar-thumb": {
-                backgroundColor: "#9e9e9e",
-                borderRadius: "10px",
-              },
-            }}
             rows={OfficersList}
             columns={columns}
             pagination
@@ -625,6 +611,27 @@ const GazettedMaster = () => {
               setCurrentPage(0);
             }}
             getRowId={(row) => row.Id}
+            sx={{
+              height: "100%",
+              minHeight: "500px",
+              "& .MuiDataGrid-columnHeaders": {
+                backgroundColor: (theme) => theme.palette.custome.datagridcolor,
+              },
+              "& .MuiDataGrid-row:hover": {
+                boxShadow: "0px 4px 20px rgba(0, 0, 0.2, 0.2)",
+              },
+              "& .MuiDataGrid-virtualScroller": {
+                scrollbarWidth: "thin",
+              },
+              "& .MuiDataGrid-virtualScroller::-webkit-scrollbar": {
+                width: "6px",
+                height: "6px",
+              },
+              "& .MuiDataGrid-virtualScroller::-webkit-scrollbar-thumb": {
+                backgroundColor: "#9e9e9e",
+                borderRadius: "10px",
+              },
+            }}
           />
         </Box>
       </Paper>

@@ -1,7 +1,7 @@
 import DateRangeIcon from "@mui/icons-material/DateRange";
 import FormatListNumberedIcon from "@mui/icons-material/FormatListNumbered";
 import PhoneIcon from "@mui/icons-material/Phone";
-import { Chip, Grid, Paper, Typography } from "@mui/material";
+import { Chip, Divider, Grid, Paper, Typography } from "@mui/material";
 import { DataGrid } from "@mui/x-data-grid";
 import axios from "axios";
 import dayjs from "dayjs";
@@ -9,6 +9,7 @@ import React, { useEffect, useState } from "react";
 import CustomToolbar from "../../components/CustomToolbar";
 import CustomMuiRangePicker from "../../components/DateRangePickerField";
 import { BASE_URL } from "../../Constant";
+import TagIcon from "@mui/icons-material/Tag";
 export default function LandAcquistionReport() {
   const [fromDate, setFromDate] = useState(dayjs().startOf("month"));
   const [toDate, setToDate] = useState(dayjs());
@@ -72,19 +73,43 @@ export default function LandAcquistionReport() {
   }, [fromDate, toDate]);
 
   const officerColumns = [
+    //     {
+    //       field: "srNo",
+    //       headerName: "SR NO",
+    //  minWidth: 60,
+    //       maxWidth: 70,
+    //       flex: 0.2,
+    //             sortable: false,
+    //       headerAlign: "center",
+    //       align: "center",
+    //       renderCell: (params) =>
+    //         params.api.getSortedRowIds().indexOf(params.id) + 1,
+    //     },
     {
       field: "srNo",
       headerName: "SR NO",
-      width: 80,
+      minWidth: 60,
+      maxWidth: 70,
+      flex: 0.2,
       sortable: false,
       headerAlign: "center",
       align: "center",
+
+      renderHeader: () => (
+        <span style={{ display: "flex", alignItems: "center", gap: 4 }}>
+          <TagIcon fontSize="small" />
+          SR NO
+        </span>
+      ),
+
       renderCell: (params) =>
         params.api.getSortedRowIds().indexOf(params.id) + 1,
     },
     {
       field: "SentDate",
       headerName: "SEND DATE",
+      minWidth: 120,
+      maxWidth: 180,
       flex: 1,
       headerAlign: "center",
       align: "center",
@@ -186,7 +211,7 @@ export default function LandAcquistionReport() {
       </Grid>
       <Grid container justifyContent="flex-end" item xs={12} sm={12}>
         <Paper
-           sx={{
+          sx={{
             p: 1.3,
             borderRadius: 2.5,
             border: "1px solid #e0e0e0",
@@ -231,6 +256,16 @@ export default function LandAcquistionReport() {
                 }}
               />
             </h3>
+            <Grid item xs={12}>
+              <Divider
+                sx={{
+                  borderBottomWidth: "0.6px",
+                  backgroundColor: "#ccc",
+                  boxShadow: "0px 1px 2px rgba(0,0,0,0.2)",
+                  mx: -2,
+                }}
+              />
+            </Grid>
 
             <div style={{ height: 400, width: "100%", marginTop: 4 }}>
               <DataGrid
@@ -278,7 +313,16 @@ export default function LandAcquistionReport() {
                 sx={{ fontWeight: "bold" }}
               />
             </h3>
-
+            <Grid item xs={12}>
+              <Divider
+                sx={{
+                  borderBottomWidth: "0.6px",
+                  backgroundColor: "#ccc",
+                  boxShadow: "0px 1px 2px rgba(0,0,0,0.2)",
+                  mx: -2,
+                }}
+              />
+            </Grid>
             <div style={{ height: 400, width: "100%", marginTop: 5 }}>
               <DataGrid
                 className="datagrid-style"

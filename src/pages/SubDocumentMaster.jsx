@@ -9,6 +9,11 @@ import {
   Button,
   Checkbox,
   Chip,
+  Dialog,
+  DialogActions,
+  DialogContent,
+  DialogTitle,
+  Divider,
   FormControlLabel,
   Grid,
   IconButton,
@@ -656,51 +661,60 @@ const SubDocumentMaster = () => {
   return (
     <>
       {loaderOpen && <Loader open={loaderOpen} />}
-      <Modal
+
+      <Dialog
         open={on}
+        maxWidth="lg"
+        fullWidth
+        PaperProps={{
+          sx: {
+            maxWidth: 780,
+            overflow: "hidden",
+          },
+        }}
         sx={{
-          backdropFilter: "blur(5px)",
-          backgroundColor: "rgba(0, 0, 0, 0.3)",
+          "& .MuiDialog-container": {
+            backdropFilter: "blur(5px)",
+            backgroundColor: "rgba(0, 0, 0, 0.3)",
+          },
         }}
       >
-        <Paper
-          elevation={10}
+        <DialogTitle
           sx={{
-            width: "100%",
-            maxWidth: 700,
-            position: "absolute",
-            top: "50%",
-            left: "50%",
-            transform: "translate(-50%, -50%)",
-            justifyContent: "center",
-            overflow: "auto",
-            maxHeight: "100vh",
+            display: "flex",
+            justifyContent: "space-between",
+            alignItems: "center",
+            pb: 1,
+          }}
+        >
+          SUB DOCUMENT MASTER
+          <IconButton onClick={handleClose}>
+            <CloseIcon sx={{ fontSize: 30 }} />
+          </IconButton>
+        </DialogTitle>
+        <Divider
+          sx={{
+            borderBottomWidth: 0.6,
+            backgroundColor: "#ccc",
+            boxShadow: "0px 1px 2px rgba(0,0,0,0.2)",
+          }}
+        />
+        <DialogContent
+          dividers={false}
+          sx={{
+            maxHeight: "70vh",
+            overflowY: "auto",
+            "&::-webkit-scrollbar": { display: "none" },
+            scrollbarWidth: "none",
           }}
         >
           <Grid
             container
             component="form"
             spacing={3}
-            padding={3}
             flexDirection="column"
             onSubmit={handleSubmit(handleSubmitForm)}
           >
-            {/* HEADER */}
-            <Grid
-              item
-              xs={12}
-              display="flex"
-              justifyContent="space-between"
-              alignItems="center"
-            >
-              <Typography fontWeight="bold" textAlign={"center"}>
-                DOCUMENT NAME
-              </Typography>
-              <IconButton onClick={handleClose}>
-                <CloseIcon />
-              </IconButton>
-            </Grid>
-
             {/* FORM FIELDS */}
             <Grid container item xs={12} spacing={2}>
               <Grid item xs={12} sm={6} lg={6}>
@@ -781,7 +795,7 @@ const SubDocumentMaster = () => {
                           }}
                           sx={{
                             "& .MuiSvgIcon-root": {
-                              fontSize: 24,
+                              fontSize: 22,
                               fontWeight: "bold",
                             },
                             "&.Mui-checked .MuiSvgIcon-root": {
@@ -836,7 +850,6 @@ const SubDocumentMaster = () => {
                 />
               </Grid>
             </Grid>
-
             {/* ========================================================== */}
             {isMainDoc && (
               <>
@@ -845,8 +858,8 @@ const SubDocumentMaster = () => {
                   sx={{
                     display: "flex",
                     justifyContent: "flex-end",
-                    mb: 1,
-                    px: 1,
+                    // mb: 1,
+                    // px: 1,
                   }}
                 >
                   <TextField
@@ -890,10 +903,10 @@ const SubDocumentMaster = () => {
                   ref={scrollRef}
                   onScroll={handleScroll}
                   sx={{
-                    height: { xs: 250, sm: 350, md: 400 },
+                    height: { xs: 200, sm: 300, md: 300 },
                     width: "100%",
                     overflowY: "auto",
-                    border: "1px solid #ddd",
+                    // border: "1px solid #ddd",
                     borderRadius: "8px",
                     maxWidth: "100%",
                   }}
@@ -906,6 +919,7 @@ const SubDocumentMaster = () => {
                             fontWeight: "bold",
                             fontSize: "13px",
                             whiteSpace: "nowrap",
+                            padding: "10px 12px",
                           }}
                         >
                           SR NO
@@ -915,6 +929,7 @@ const SubDocumentMaster = () => {
                             fontWeight: "bold",
                             fontSize: "13px",
                             whiteSpace: "nowrap",
+                            width: "40px",
                           }}
                         >
                           SELECT
@@ -924,8 +939,9 @@ const SubDocumentMaster = () => {
                             fontWeight: "bold",
                             fontSize: "13px",
                             textAlign: "center",
-                            paddingRight: { xs: 0, md: "80px" },
+                            paddingRight: { xs: 0, md: "90px" },
                             whiteSpace: "nowrap",
+                            // width: "40px",
                           }}
                         >
                           DOCUMENT NAME
@@ -973,68 +989,66 @@ const SubDocumentMaster = () => {
                 </Box>
               </>
             )}
-
-            {/* =====================Footer=================== */}
-            <Grid
-              item
-              xs={12}
-              md={12}
-              display="flex"
-              justifyContent="space-between"
-              alignItems="center"
-              sx={{
-                position: "sticky",
-                borderTop: "1px solid #ddd",
-                zIndex: 20,
-                bottom: 2,
-                left: 5,
-                right: 0,
-              }}
-            >
-              <Button
-                size="small"
-                onClick={() => clearFormData()}
-                sx={{
-                  p: 1,
-                  width: 80,
-                  background: "transparent",
-                  color: "#2196F3",
-                  border: "1px solid #2196F3",
-                  borderRadius: "8px",
-                  transition: "all 0.2s ease-in-out",
-                  "&:hover": {
-                    background: "rgba(0, 90, 91, 0.1)",
-                    transform: "translateY(2px)",
-                  },
-                }}
-              >
-                {ClearUpdateButton}
-              </Button>
-              <Button
-                type="submit"
-                size="small"
-                sx={{
-                  marginTop: 1,
-                  p: 1,
-                  width: 80,
-                  color: "white",
-                  backgroundColor: theme.palette.Button.background,
-                  boxShadow: 5,
-                  "&:hover": {
-                    transform: "translateY(2px)",
-                    backgroundColor: theme.palette.Button.background,
-                  },
-                }}
-              >
-                {SaveUpdateButton}
-              </Button>
-            </Grid>
-
-            {/* </form> */}
-            <Grid />
           </Grid>
-        </Paper>
-      </Modal>
+        </DialogContent>
+
+        <Divider
+          sx={{
+            borderBottomWidth: 0.6,
+            backgroundColor: "#ccc",
+             boxShadow: "0px 1px 2px rgba(0,0,0,0.2)",
+          }}
+        />
+        {/* =====================Footer=================== */}
+
+        <DialogActions
+          sx={{
+            display: "flex",
+            justifyContent: "space-between",
+            px: 3,
+            pb: 2,
+          }}
+        >
+          <Button
+            size="small"
+            onClick={() => clearFormData()}
+            sx={{
+              p: 1,
+              width: 80,
+              background: "transparent",
+              color: "#2196F3",
+              border: "1px solid #2196F3",
+              borderRadius: "8px",
+              transition: "all 0.2s ease-in-out",
+              "&:hover": {
+                background: "rgba(0, 90, 91, 0.1)",
+                transform: "translateY(2px)",
+              },
+            }}
+          >
+            {ClearUpdateButton}
+          </Button>
+          <Button
+            type="submit"
+            size="small"
+            onClick={handleSubmit(handleSubmitForm)}
+            sx={{
+              p: 1,
+              width: 80,
+              color: "white",
+              backgroundColor: theme.palette.Button.background,
+              boxShadow: 5,
+              "&:hover": {
+                transform: "translateY(2px)",
+                backgroundColor: theme.palette.Button.background,
+              },
+            }}
+          >
+            {SaveUpdateButton}
+          </Button>
+        </DialogActions>
+      </Dialog>
+      
       {/* <Grid
         container
         md={12}

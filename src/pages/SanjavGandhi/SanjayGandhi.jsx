@@ -27,8 +27,10 @@ const SanjayGandhi = () => {
     {
       field: "srNo",
       headerName: "SR NO",
-      width: 60,
-      sortable: false,
+  minWidth: 60,
+      maxWidth: 70,
+      flex: 0.2,
+            sortable: false,
       headerAlign: "center",
       align: "center",
       renderCell: (params) =>

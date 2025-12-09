@@ -2,13 +2,14 @@ import AddIcon from "@mui/icons-material/Add";
 import CloseIcon from "@mui/icons-material/Close";
 import {
   Button,
+  Divider,
   Grid,
   IconButton,
   Modal,
   Paper,
   TextField,
   Tooltip,
-  Typography
+  Typography,
 } from "@mui/material";
 import { DataGrid, GridToolbar } from "@mui/x-data-grid";
 import axios from "axios";
@@ -58,7 +59,6 @@ const Rehabilitation = () => {
 
   // React Hook Form initialization
   const {
-    register,
     handleSubmit,
     control,
     setValue,
@@ -358,7 +358,9 @@ const Rehabilitation = () => {
     {
       field: "actions",
       headerName: "Action",
-      width: 150,
+      minWidth: 150,
+      maxWidth: 120,
+      flex: 0.3,
       headerAlign: "center",
       align: "center",
       sortable: false,
@@ -409,7 +411,9 @@ const Rehabilitation = () => {
     {
       field: "srNo",
       headerName: "SR NO",
-      width: 80,
+      minWidth: 60,
+      maxWidth: 70,
+      flex: 0.2,
       sortable: false,
       headerAlign: "center",
       align: "center",
@@ -597,7 +601,7 @@ const Rehabilitation = () => {
           elevation={10}
           sx={{
             width: "100%",
-            maxWidth: 500,
+            maxWidth: 550,
             position: "absolute",
             top: "50%",
             left: "50%",
@@ -611,7 +615,7 @@ const Rehabilitation = () => {
             container
             component="form"
             spacing={3}
-            padding={3}
+            padding={2}
             flexDirection="column"
             onSubmit={handleSubmit(handleSubmitForm)}
           >
@@ -620,17 +624,39 @@ const Rehabilitation = () => {
               item
               xs={12}
               display="flex"
-              justifyContent="space-between"
-              alignItems="center"
+              // justifyContent="space-between"
+              // alignItems="center"
+              sx={{
+                display: "flex",
+                justifyContent: "space-between",
+                alignItems: "flex-start",
+                pt: 0,
+                pb: 0,
+              }}
             >
               <Typography fontWeight="bold" textAlign={"center"}>
                 REHABILITATION
               </Typography>
-              <IconButton onClick={handleClose}>
-                <CloseIcon />
+              <IconButton
+                onClick={handleClose}
+                sx={{
+                  p: 0,
+                  mt: 0,
+                }}
+              >
+                <CloseIcon sx={{ fontSize: 30 }} />
               </IconButton>
             </Grid>
-
+            <Grid item xs={12}>
+              <Divider
+                sx={{
+                  borderBottomWidth: "0.6px",
+                  backgroundColor: "#ccc",
+                  boxShadow: "0px 1px 2px rgba(0,0,0,0.2)",
+                  mx: -2,
+                }}
+              />
+            </Grid>
             {/* FORM FIELDS */}
             <Grid container item xs={12} spacing={2}>
               <Grid item xs={12} sm={6} lg={6}>
@@ -738,8 +764,8 @@ const Rehabilitation = () => {
                 className="datagrid-style"
                 rows={DammyData}
                 columns={columnssubDoc}
-                pageSize={5}
-                rowsPerPageOptions={[5]}
+                pageSize={7}
+                rowsPerPageOptions={[7]}
                 onRowSelectionModelChange={(newSelection) =>
                   setSelectedRows(newSelection)
                 }
@@ -760,6 +786,16 @@ const Rehabilitation = () => {
 
             {/* ======================================== */}
             <Grid item xs={12} sm={12}></Grid>
+            <Grid item xs={12}>
+              <Divider
+                sx={{
+                  borderBottomWidth: "0.6px",
+                  backgroundColor: "#ccc",
+                  boxShadow: "0px 1px 2px rgba(0,0,0,0.2)",
+                  mx: -2,
+                }}
+              />
+            </Grid>
             <Grid
               item
               xs={12}
@@ -768,11 +804,12 @@ const Rehabilitation = () => {
               justifyContent="space-between"
               alignItems="center"
               sx={{
-                position: "absolute",
-                bottom: 10,
-                left: 10,
-                right: 10,
-                mt: "10px",
+                position: "sticky",
+                bottom: 1,
+                left: 5,
+                right: 0,
+                py: 0,
+                minHeight: "10px",
               }}
             >
               <Button

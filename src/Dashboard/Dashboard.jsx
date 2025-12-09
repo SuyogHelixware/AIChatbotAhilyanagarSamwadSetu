@@ -471,7 +471,11 @@ export default function Dashboard() {
     {
       icon: (
         <IconButton onClick={toggleFullscreen}>
-          {fullscreen ? <FullscreenIcon  sx={{ color: "white" }}  /> : <FullscreenExitIcon  sx={{ color: "white" }} />}
+          {fullscreen ? (
+            <FullscreenIcon sx={{ color: "white" }} />
+          ) : (
+            <FullscreenExitIcon sx={{ color: "white" }} />
+          )}
         </IconButton>
       ),
       name: "Screen Size",
@@ -692,10 +696,21 @@ export default function Dashboard() {
             <Toolbar
               sx={{
                 width: "100vw",
+
                 backgroundColor: (theme) =>
                   theme.palette.customAppbar?.appbarcolor || "defaultColor",
                 display: "flex",
               }}
+              //               sx={{
+              //   minHeight: 48, // default is 64 (desktop)
+              //   '@media (min-width:600px)': {
+              //     minHeight: 48, // for larger screens also
+              //   },
+              //   width: "100vw",
+              //   backgroundColor: (theme) =>
+              //     theme.palette.customAppbar?.appbarcolor || "defaultColor",
+              //   display: "flex",
+              // }}
             >
               <IconButton
                 color="inherit"
@@ -716,7 +731,7 @@ export default function Dashboard() {
                 textAlign="center"
                 width="100%"
                 className="flash-animation"
-                sx={{ color: "white", letterSpacing: "2px" }}
+                sx={{ color: "white", letterSpacing: "1.2px" }}
               >
                 Ahilyanagar Samwad Setu
               </Typography>

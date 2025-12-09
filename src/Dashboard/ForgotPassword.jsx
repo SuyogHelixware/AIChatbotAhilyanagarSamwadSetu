@@ -7,7 +7,7 @@ import { useNavigate } from "react-router-dom";
 import { BASE_URL } from "../Constant";
 import Loader from "../components/Loader";
 import MailIcon from '@mui/icons-material/Mail';
-
+import LoginBack from "../assets/Loginimg.jpg"
 const ForgotPassword = () => {
   const [email, setEmail] = useState("");
   const [otp, setOtp] = useState(["", "", "", "", "", ""]);
@@ -142,15 +142,22 @@ const ForgotPassword = () => {
     {loading && <Loader open={loading} />}
 
     <Box
-      sx={{
-        display: "flex",
-        justifyContent: "center",
-        alignItems: "center",
-        height: "100vh",
-        background: "linear-gradient(to right, #004d40, #26a69a)",
-        fontFamily: "Arial, sans-serif",
-        px: 2,
-      }}
+      
+       sx={{
+                display: "flex",
+                justifyContent: "center",
+                alignItems: "center",
+                height: "100vh",
+                // background: "linear-gradient(to right, #004d40, #26a69a)",
+                background: "#EAF3FF",
+                fontFamily: "Arial, sans-serif",
+                px: 2,
+                backgroundImage: `url(${LoginBack})`,
+                backgroundSize: "cover", 
+                backgroundPosition: "center",
+                backgroundRepeat: "no-repeat",
+                fontFamily: "Arial, sans-serif",
+               }}
     >
       <Box
         sx={{
@@ -211,7 +218,7 @@ const ForgotPassword = () => {
                   onClick={handleRecover}
                   style={{
                     width: "100%",
-                    background: "#00796b",
+                    background: "#2196F3",
                     color: "white",
                     border: "none",
                     padding: "12px",
@@ -253,7 +260,9 @@ const ForgotPassword = () => {
                 onClick={handleVerifyOtp}
                 style={{
                   width: "100%",
-                  background: "#00796b",
+                  // background: "#00796b",
+                  background: "#2196F3",
+
                   color: "white",
                   border: "none",
                   padding: "12px",
@@ -273,7 +282,7 @@ const ForgotPassword = () => {
               style={{
                 background: "none",
                 border: "none",
-                color: "#00796b",
+                color: "#2196F3",
                 cursor: "pointer",
                 textDecoration: "underline",
               }}
@@ -286,7 +295,8 @@ const ForgotPassword = () => {
         <Box
           sx={{
             flex: 1,
-            background: "linear-gradient(to right, #004d40, #00796b)",
+            // background: "linear-gradient(to right, #004d40, #00796b)",
+            background:"#347db9ff",
             color: "white",
             display: "flex",
             flexDirection: "column",

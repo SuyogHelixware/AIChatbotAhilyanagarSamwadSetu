@@ -13,6 +13,8 @@ import {
   Dialog,
   DialogActions,
   DialogContent,
+  DialogTitle,
+  Divider,
   FormControlLabel,
   Grid,
   IconButton,
@@ -178,7 +180,9 @@ const UploadDocument = () => {
     {
       field: "srNo",
       headerName: "SR NO",
-      width: 55,
+      minWidth: 53,
+      maxWidth: 60,
+      flex: 0.2,
       sortable: false,
       headerAlign: "center",
       align: "center",
@@ -189,7 +193,8 @@ const UploadDocument = () => {
     {
       field: "action",
       headerName: "Action",
-      width: 150,
+      minWidth: 120,
+      flex: 0.3,
       sortable: false,
       headerAlign: "center",
       align: "center",
@@ -603,7 +608,6 @@ const UploadDocument = () => {
       },
     },
 
-   
     // ---------------
 
     {
@@ -620,11 +624,11 @@ const UploadDocument = () => {
         //   : docs.length > 0
         //   ? docs.join(", ")
         //   : "Add Missing Document";
-        // NEW CONDITION: If file already uploaded → disable  
-        
-         const hasFile =
+        // NEW CONDITION: If file already uploaded → disable
+
+        const hasFile =
           (row.name && row.name.toString() !== "false") ||
-          (row.type && row.type.toString().trim() !== "") 
+          (row.type && row.type.toString().trim() !== "");
 
         const baseDisabled = row.isDisabled || !row.DocType;
 
@@ -719,7 +723,9 @@ const UploadDocument = () => {
     {
       field: "actions",
       headerName: "Action",
-      width: 150,
+      minWidth: 80,
+      maxWidth: 100,
+      flex: 0.3,
       sortable: false,
       renderCell: (params) => (
         <strong>
@@ -748,7 +754,14 @@ const UploadDocument = () => {
             <span>
               <IconButton
                 size="medium"
-                sx={{ color: canDelete ? "red" : "grey" }}
+                sx={{
+                  "& .MuiButtonBase-root,": {
+                    padding: 0,
+                    marginLeft: 1,
+                  },
+                  color: canDelete ? "red" : "grey",
+                }}
+                // sx={{ color: canDelete ? "red" : "grey" }}
                 onClick={() => handleDelete(params.row)}
                 disabled={!canDelete}
               >
@@ -764,7 +777,9 @@ const UploadDocument = () => {
     {
       field: "srNo",
       headerName: "SR NO",
-      width: 80,
+      minWidth: 60,
+      maxWidth: 70,
+      flex: 0.2,
       sortable: false,
       headerAlign: "center",
       align: "center",
@@ -1197,7 +1212,6 @@ const UploadDocument = () => {
 
     setRows((prev) => [...prev, ...newRows]);
     console.log("258", newRows);
-    
 
     if (fileInputRef.current) fileInputRef.current.value = "";
   };
@@ -1596,7 +1610,7 @@ const UploadDocument = () => {
   return (
     <>
       {loaderOpen && <Loader open={loaderOpen} />}
-      <Modal
+      {/* <Modal
         open={on}
         sx={{
           backdropFilter: "blur(5px)",
@@ -1609,34 +1623,121 @@ const UploadDocument = () => {
           sx={{
             width: "95%",
             maxWidth: 1400,
-            maxHeight: "85vh",
+            maxHeight: "90vh",
             overflowY: "auto",
-            position: "absolute",
+            // position: "absolute",
+              position: "relative",
+
             top: "50%",
             left: "50%",
             transform: "translate(-50%, -50%)",
-            borderRadius: 2,
+            borderRadius: 3,
+          }}
+        > */}
+      <Dialog
+        open={on}
+        fullWidth
+        maxWidth={false}
+        PaperProps={{
+          sx: {
+            width: "95%",
+            maxWidth: 1400,
+            maxHeight: "90vh",
+            overflow: "hidden",
+            borderRadius: 3,
+          },
+        }}
+        sx={{
+          "& .MuiDialog-container": {
+            backdropFilter: "blur(5px)",
+            backgroundColor: "rgba(0, 0, 0, 0.3)",
+          },
+        }}
+      >
+        <DialogTitle
+          sx={{
+            display: "flex",
+            justifyContent: "space-between",
+            alignItems: "center",
+            pb: 1,
           }}
         >
-          <Box sx={{ p: 4 }}>
-            <Grid
-              container
-              spacing={3}
-              component="form"
-              onSubmit={handleSubmit(onSubmit)}
-            >
-              {/* Header */}
-              <Grid
-                item
-                xs={12}
-                sx={{ display: "flex", justifyContent: "space-between" }}
-              >
-                <Typography fontWeight="bold"> UPLOAD DOCUMENT</Typography>
-                <IconButton onClick={handleClose}>
-                  <CloseIcon />
-                </IconButton>
-              </Grid>
+          UPLOAD DOCUMENT
+          <IconButton onClick={handleClose}>
+            <CloseIcon sx={{ fontSize: 30 }} />
+          </IconButton>
+        </DialogTitle>
+        <Divider
+          sx={{
+            borderBottomWidth: 0.6,
+            backgroundColor: "#ccc",
+            boxShadow: "0px 1px 2px rgba(0,0,0,0.2)",
+          }}
+        />
+        {/* <DialogContent
+          dividers={false}
+          sx={{
+            maxHeight: "70vh",
+            overflowY: "auto",
+            "&::-webkit-scrollbar": { display: "none" },
+            scrollbarWidth: "none",
+          }}
+        >  */}
 
+        {/* <Box sx={{ p: 3 }}> */}
+        {/* <Grid
+            container
+            spacing={3}
+            component="form"
+            onSubmit={handleSubmit(onSubmit)}
+          > */}
+        {/* Header */}
+        {/* <Grid
+              item
+              xs={12}
+              sx={{
+                display: "flex",
+                justifyContent: "space-between",
+                alignItems: "flex-start",
+                pt: 0,
+                pb: 0,
+              }}
+            >
+              <Typography fontWeight="bold" sx={{ mt: 1 }}>
+                {" "}
+                UPLOAD DOCUMENT
+              </Typography>
+              <IconButton
+                onClick={handleClose}
+                sx={{
+                  p: 0,
+                  mt: 0,
+                }}
+              >
+                <CloseIcon sx={{ fontSize: 30 }} />
+              </IconButton>
+            </Grid>
+            <Grid item xs={12}>
+              <Divider
+                sx={{
+                  borderBottomWidth: "0.6px",
+                  backgroundColor: "#ccc",
+                  boxShadow: "0px 1px 2px rgba(0,0,0,0.2)",
+                  mx: -3,
+                }}
+              />
+            </Grid> */}
+        <form onSubmit={handleSubmit(onSubmit)}>
+          <DialogContent
+            sx={{
+              overflowY: "auto",
+              maxHeight: "calc(90vh - 150px)",
+              p: 3,
+              "&::-webkit-scrollbar": { display: "none" },
+              scrollbarWidth: "none",
+            }}
+          >
+            <Grid container spacing={3}>
               <Grid item xs={12} sm={6} md={4}>
                 <Controller
                   name="Name"
@@ -1741,7 +1842,6 @@ const UploadDocument = () => {
                   )}
                 />
               </Grid>
-
               <Grid item xs={12} sm={6} md={4}>
                 <Button
                   variant="contained"
@@ -1781,8 +1881,6 @@ const UploadDocument = () => {
                   )}
                 </Button>
               </Grid>
-
-              {/* Checkbox Field */}
               <Grid item xs={12} sm={6} md={4}>
                 <FormControlLabel
                   control={
@@ -1796,8 +1894,7 @@ const UploadDocument = () => {
                   label="Add Missing Document"
                 />
               </Grid>
-
-              <Grid item xs={12} sx={{ height: 384 }}>
+              <Grid item xs={12} sx={{ height: 387 }}>
                 <DataGrid
                   rows={updatedRows}
                   // rows={[...updatedRows].sort((a, b) => b.id - a.id)}
@@ -1831,209 +1928,61 @@ const UploadDocument = () => {
                   }}
                 />
               </Grid>
-              {/* Footer */}
-              {/* <Grid
-                item
-                xs={12}
-                sx={{
-                  display: "flex",
-                  justifyContent: "space-between",
-                  position: "absolute",
-                  bottom: 10,
-                  left: 10,
-                  right: 10,
-                }}
-              >
-                <Button
-                  size="small"
-                  onClick={clearFormData}
-                  sx={{
-                    p: 1,
-                    width: 80,
-                    color: "#2196F3",
-                    border: "1px solid #2196F3",
-                    borderRadius: "8px",
-                  }}
-                >
-                  {ClearUpdateButton}
-                </Button>
-                <Button
-                  type="submit"
-                  size="small"
-                  sx={{
-                    p: 1,
-                    width: 80,
-                    color: "white",
-                    backgroundColor: theme.palette.Button.background,
-                    "&:hover": {
-                      transform: "translateY(2px)",
-                      backgroundColor: theme.palette.Button.background,
-                    },
-                  }}
-                >
-                  {SaveUpdateButton}
-                </Button>
-              </Grid> */}
-              <Grid
-                item
-                xs={12}
-                sx={{
-                  display: "flex",
-                  justifyContent: "space-between",
-                  mt: 2,
-                  pb: 0, // bottom padding removed
-                  pt: 0, // top padding removed
-                }}
-              >
-                <Button
-                  size="small"
-                  onClick={clearFormData}
-                  sx={{
-                    p: 1,
-                    width: 80,
-                    color: "#2196F3",
-                    border: "1px solid #2196F3",
-                    borderRadius: "8px",
-                  }}
-                >
-                  {ClearUpdateButton}
-                </Button>
-
-                <Button
-                  type="submit"
-                  size="small"
-                  sx={{
-                    p: 1,
-                    width: 80,
-                    color: "white",
-                    backgroundColor: theme.palette.Button.background,
-                    "&:hover": {
-                      transform: "translateY(2px)",
-                      backgroundColor: theme.palette.Button.background,
-                    },
-                  }}
-                >
-                  {SaveUpdateButton}
-                </Button>
-              </Grid>
             </Grid>
-          </Box>
-        </Paper>
-      </Modal>
-      {/* <Dialog
-        open={modalOpen}
-        onClose={() => setModalOpen(false)}
-        fullWidth
-        PaperProps={{
-          sx: {
-            height: 600,
-            minHeight: 500,
-            width: 500,
-            maxHeight: 650,
-            mt: 5,
-            position: "relative",
-            overflowY: "auto",
-            borderRadius: 2,
-            px: 2,
-          },
-        }}
-      >
-        <DialogTitle>
-          <Grid
-            item
-            xs={12}
+          </DialogContent>
+          {/* Footer */}
+          <Divider
             sx={{
-              display: "flex",
-              justifyContent: "center",
-              alignItems: "center",
-              position: "relative",
-            }}
-          >
-            <Typography
-              fontWeight="bold"
-              sx={{
-                position: "absolute",
-                left: "50%",
-                transform: "translateX(-50%)",
-              }}
-            >
-              Select Missing Documents
-            </Typography>
-
-            <IconButton
-              onClick={() => setModalOpen(false)}
-              sx={{ marginLeft: "auto" }}
-            >
-              <CloseIcon />
-            </IconButton>
-          </Grid>
-
-          <hr />
-
-          <TextField
-            placeholder="Search..."
-            fullWidth
-            size="small"
-            value={searchText}
-            onChange={(e) => setSearchText(e.target.value)}
-            InputProps={{
-              endAdornment: searchText && (
-                <InputAdornment position="end">
-                  <IconButton
-                    size="small"
-                    onClick={() => setSearchText("")}
-                    edge="end"
-                  >
-                    <ClearIcon fontSize="small" />
-                  </IconButton>
-                </InputAdornment>
-              ),
+              borderBottomWidth: 0.6,
+              backgroundColor: "#ccc",
+              mx: -3,
+              boxShadow: "0px 1px 2px rgba(0,0,0,0.2)",
             }}
           />
-        </DialogTitle>
-        <DialogContent>
-          <List>
-            {(subDocMap[currentRowId] || [])
-              .filter((d) =>
-                d.NameMR.toLowerCase().includes(searchText.toLowerCase())
-              )
-              .map((doc) => (
-                <ListItem
-                  key={doc.value}
-                  button
-                  onClick={() => {
-                    if (tempSelection.includes(doc.NameMR)) {
-                      setTempSelection(
-                        tempSelection.filter((d) => d !== doc.NameMR)
-                      );
-                    } else {
-                      setTempSelection([...tempSelection, doc.NameMR]);
-                    }
-                  }}
-                >
-                  <Checkbox checked={tempSelection.includes(doc.NameMR)} />
-                  <ListItemText primary={doc.NameMR} />
-                </ListItem>
-              ))}
-          </List>
-        </DialogContent>
-        <DialogActions>
-          <Button
-            onClick={handleSaveModal}
-            size="small"
+
+          <DialogActions
             sx={{
-              p: 1,
-              width: 80,
-              color: "white",
-              background:
-                "linear-gradient(to right, rgb(0, 90, 91), rgb(22, 149, 153))",
+              display: "flex",
+              justifyContent: "space-between",
+              px: 3,
+              pb: 2,
             }}
-            variant="contained"
           >
-            Save
-          </Button>
-        </DialogActions>
-      </Dialog> */}
+            <Button
+              size="small"
+              onClick={clearFormData}
+              sx={{
+                p: 1,
+                width: 80,
+                color: "#2196F3",
+                border: "1px solid #2196F3",
+                borderRadius: "8px",
+              }}
+            >
+              {ClearUpdateButton}
+            </Button>
+
+            <Button
+              type="submit"
+              size="small"
+              sx={{
+                p: 1,
+                width: 80,
+                color: "white",
+                backgroundColor: theme.palette.Button.background,
+                "&:hover": {
+                  transform: "translateY(2px)",
+                  backgroundColor: theme.palette.Button.background,
+                },
+              }}
+            >
+              {SaveUpdateButton}
+            </Button>
+          </DialogActions>
+        </form>
+      </Dialog>
+
+      {/* --------------============================= */}
       <Dialog
         open={modalOpen}
         fullWidth
@@ -2082,10 +2031,20 @@ const UploadDocument = () => {
             <IconButton
               onClick={() => setModalOpen(false)}
               sx={{ ml: "auto" }}
-              size="small"
+              size="medium"
             >
               <CloseIcon />
             </IconButton>
+          </Grid>
+          <Grid item xs={12}>
+            <Divider
+              sx={{
+                borderBottomWidth: "0.6px", // thin line
+                backgroundColor: "#ccc",
+                boxShadow: "0px 1px 2px rgba(0,0,0,0.2)",
+                mx: -3,
+              }}
+            />{" "}
           </Grid>
 
           {/* Search Box */}
@@ -2175,7 +2134,16 @@ const UploadDocument = () => {
               })}
           </List>
         </DialogContent>
-
+        <Grid item xs={12}>
+          <Divider
+            sx={{
+              borderBottomWidth: "0.6px", // thin line
+              backgroundColor: "#ccc",
+              boxShadow: "0px 1px 2px rgba(0,0,0,0.2)",
+              mx: -3,
+            }}
+          />{" "}
+        </Grid>
         {/* Footer */}
         <DialogActions
           sx={{

@@ -48,21 +48,17 @@
 //   );
 // }
 
-import {
-  Chip,
-  Grid,
-  Paper,
-  Typography
-} from "@mui/material";
+import { Chip, Divider, Grid, Paper, Typography } from "@mui/material";
 import { DataGrid } from "@mui/x-data-grid";
 import axios from "axios";
 import dayjs from "dayjs";
 import React, { useEffect, useState } from "react";
- import { BASE_URL } from "../../Constant";
+import { BASE_URL } from "../../Constant";
 import DateRangeIcon from "@mui/icons-material/DateRange";
 import FormatListNumberedIcon from "@mui/icons-material/FormatListNumbered";
 import PhoneIcon from "@mui/icons-material/Phone";
 import CustomToolbar from "../../components/CustomToolbar";
+import TagIcon from "@mui/icons-material/Tag";
 import CustomMuiRangePicker from "../../components/DateRangePickerField";
 export default function LandAcquistionReport() {
   const [DocMissingCount, setDocMissingCount] = React.useState(0);
@@ -83,7 +79,6 @@ export default function LandAcquistionReport() {
 
   const fetchReport = async () => {
     try {
-
       const params = {
         FromDate: dayjs(fromDate).format("YYYY-MM-DD"),
         ToDate: dayjs(toDate).format("YYYY-MM-DD"),
@@ -128,34 +123,53 @@ export default function LandAcquistionReport() {
       setSJYFailed([]);
       setSJYSuccess([]);
     } finally {
-
     }
   };
   // useEffect(() => {
   //   fetchReport();
   // }, []);
   useEffect(() => {
-  if (fromDate && toDate) {
-    fetchReport();
-  }
-}, [fromDate, toDate]);
-
-
+    if (fromDate && toDate) {
+      fetchReport();
+    }
+  }, [fromDate, toDate]);
 
   const officerColumns = [
+    // {
+    //   field: "srNo",
+    //   headerName: "SR NO",
+    //   width: 80,
+    //   sortable: false,
+    //   headerAlign: "center",
+    //   align: "center",
+    //   renderCell: (params) =>
+    //     params.api.getSortedRowIds().indexOf(params.id) + 1,
+    // },
     {
       field: "srNo",
       headerName: "SR NO",
-      width: 80,
+      minWidth: 60,
+      maxWidth: 70,
+      flex: 0.2,
       sortable: false,
       headerAlign: "center",
       align: "center",
+
+      renderHeader: () => (
+        <span style={{ display: "flex", alignItems: "center", gap: 4 }}>
+          <TagIcon fontSize="small" />
+          SR NO
+        </span>
+      ),
+
       renderCell: (params) =>
         params.api.getSortedRowIds().indexOf(params.id) + 1,
     },
     {
       field: "SentDate",
       headerName: "SEND DATE",
+      minWidth: 120,
+      maxWidth: 170,
       flex: 1,
       headerAlign: "center",
       align: "center",
@@ -198,7 +212,9 @@ export default function LandAcquistionReport() {
     {
       field: "MsgCnt",
       headerName: "COUNT",
-      flex: 0.7,
+      minWidth: 100,
+      maxWidth: 120,
+      flex: 0.8,
       align: "center",
       headerAlign: "center",
 
@@ -215,8 +231,8 @@ export default function LandAcquistionReport() {
             display: "inline-block",
             padding: "3px 10px",
             borderRadius: "6px",
-             fontWeight: 600,
-           }}
+            fontWeight: 600,
+          }}
         >
           {params.value}
         </span>
@@ -255,124 +271,144 @@ export default function LandAcquistionReport() {
           Sanjay Gandhi Report
         </Typography>
       </Grid>
-<Grid container justifyContent="flex-end" item xs={12} sm={12}>
-          <Paper
-               sx={{
-                p: 1.3,
-                borderRadius: 2.5,
-                 border: "1px solid #e0e0e0",
-                boxShadow: "0 1px 1px rgba(0,0,0,0.08)",
-                transition: "all 0.2s ease",
-                "&:hover": {
-                  borderColor: "#0288d1",
-                  boxShadow: "0 4px 10px rgba(0,0,0,0.12)",
-                  transform: "translateY(-2px)",
-                },
-              }}
-            >
-                <CustomMuiRangePicker
+      <Grid container justifyContent="flex-end" item xs={12} sm={12}>
+        <Paper
+          sx={{
+            p: 1.3,
+            borderRadius: 2.5,
+            border: "1px solid #e0e0e0",
+            boxShadow: "0 1px 1px rgba(0,0,0,0.08)",
+            transition: "all 0.2s ease",
+            "&:hover": {
+              borderColor: "#0288d1",
+              boxShadow: "0 4px 10px rgba(0,0,0,0.12)",
+              transform: "translateY(-2px)",
+            },
+          }}
+        >
+          <CustomMuiRangePicker
             fromDate={fromDate}
             toDate={toDate}
             setFromDate={setFromDate}
             setToDate={setToDate}
-            onApply={fetchReport}  
+            onApply={fetchReport}
           />
+        </Paper>
+      </Grid>
+      <Grid container spacing={2} sx={{ mt: 3 }}>
+        <Grid item xs={12} sm={12} md={12} lg={6}>
+          <Paper elevation={1} sx={{ borderRadius: 3, p: 2 }}>
+            <h3
+              style={{
+                display: "flex",
+                alignItems: "center",
+                gap: "10px",
+                justifyContent: "center",
+              }}
+            >
+              Beneficiary Sucess List
+              <Chip
+                label={DocReadyCount}
+                size="small"
+                color="success"
+                sx={{
+                  fontWeight: "bold",
+                  color: "white",
+                  backgroundColor: "#2196F3",
+                }}
+              />
+            </h3>
+            <Grid item xs={12}>
+              <Divider
+                sx={{
+                  borderBottomWidth: "0.6px",
+                  backgroundColor: "#ccc",
+                  boxShadow: "0px 1px 2px rgba(0,0,0,0.2)",
+                  mx: -2,
+                }}
+              />
+            </Grid>
+            <div style={{ height: 400, width: "100%", marginTop: 4 }}>
+              <DataGrid
+                className="datagrid-style"
+                sx={{
+                  height: "100%",
+                  minHeight: "250px",
+                  "& .MuiDataGrid-columnHeaders": {
+                    backgroundColor: (theme) =>
+                      theme.palette.custome.datagridcolor,
+                  },
+                  "& .MuiDataGrid-row:hover": {
+                    boxShadow: "0px 4px 20px rgba(0,0,0,.2)",
+                  },
+                }}
+                rows={SJYSuccess}
+                columns={officerColumns}
+                pageSize={5}
+                disableSelectionOnClick
+                hideFooter={true}
+                slots={{
+                  toolbar: CustomToolbar,
+                }}
+              />
+            </div>
           </Paper>
         </Grid>
-        <Grid container spacing={2} sx={{ mt: 3 }} >
 
-  <Grid item xs={12} sm={12} md={12} lg={6}>
-        <Paper elevation={1} sx={{ borderRadius: 3, p: 2 }}>
-          <h3
-            style={{
-              display: "flex",
-              alignItems: "center",
-              gap: "10px",
-              justifyContent: "center",
-            }}
-          >
-           Beneficiary Sucess List
-            <Chip
-              label={DocReadyCount}
-              size="small"
-              color="success"
-              sx={{ fontWeight: "bold" , color:"white" , backgroundColor:"#2196F3" }}
-            />
-          </h3>
-
-          <div style={{ height: 400, width: "100%", marginTop: 4 }}>
-            <DataGrid
-              className="datagrid-style"
-              sx={{
-                height: "100%",
-                minHeight: "250px",
-                "& .MuiDataGrid-columnHeaders": {
-                  backgroundColor: (theme) =>
-                    theme.palette.custome.datagridcolor,
-                },
-                "& .MuiDataGrid-row:hover": {
-                  boxShadow: "0px 4px 20px rgba(0,0,0,.2)",
-                },
+        <Grid item xs={12} sm={12} md={12} lg={6}>
+          <Paper elevation={1} sx={{ borderRadius: 3, p: 2 }}>
+            <h3
+              style={{
+                display: "flex",
+                alignItems: "center",
+                gap: "10px",
+                justifyContent: "center",
               }}
-              rows={SJYSuccess}
-              columns={officerColumns}
-              pageSize={5}
-              disableSelectionOnClick
-              hideFooter={true}
-              slots={{
-                toolbar: CustomToolbar,
-              }}
-            />
-          </div>
-        </Paper>
-      </Grid>
-
-
-  <Grid item xs={12} sm={12} md={12} lg={6}>
-        <Paper elevation={1} sx={{ borderRadius: 3, p: 2 }}>
-          <h3
-            style={{
-              display: "flex",
-              alignItems: "center",
-              gap: "10px",
-              justifyContent: "center",
-            }}
-          >
-            Beneficiary Failure Reason List
-            <Chip
-              label={DocMissingCount}
-              size="small"
-              color="error" 
-              sx={{ fontWeight: "bold" }}
-            />
-          </h3>
-
-          <div style={{ height: 400, width: "100%", marginTop: 5 }}>
-            <DataGrid
-              className="datagrid-style"
-              sx={{
-                height: "100%",
-                minHeight: "200px",
-                "& .MuiDataGrid-columnHeaders": {
-                  backgroundColor: (theme) =>
-                    theme.palette.custome.datagridcolor,
-                },
-                "& .MuiDataGrid-row:hover": {
-                  boxShadow: "0px 4px 20px rgba(0,0,0,.2)",
-                },
-              }}
-              rows={SJYFailed}
-              columns={officerColumns}
-              pageSize={5}
-              disableSelectionOnClick
-              hideFooter={true}
-              slots={{
-                toolbar: CustomToolbar,
-              }}
-            />
-          </div>
-        </Paper>
-      </Grid>
+            >
+              Beneficiary Failure Reason List
+              <Chip
+                label={DocMissingCount}
+                size="small"
+                color="error"
+                sx={{ fontWeight: "bold" }}
+              />
+            </h3>
+            <Grid item xs={12}>
+              <Divider
+                sx={{
+                  borderBottomWidth: "0.6px",
+                  backgroundColor: "#ccc",
+                  boxShadow: "0px 1px 2px rgba(0,0,0,0.2)",
+                  mx: -2,
+                }}
+              />
+            </Grid>
+            <div style={{ height: 400, width: "100%", marginTop: 5 }}>
+              <DataGrid
+                className="datagrid-style"
+                sx={{
+                  height: "100%",
+                  minHeight: "200px",
+                  "& .MuiDataGrid-columnHeaders": {
+                    backgroundColor: (theme) =>
+                      theme.palette.custome.datagridcolor,
+                  },
+                  "& .MuiDataGrid-row:hover": {
+                    boxShadow: "0px 4px 20px rgba(0,0,0,.2)",
+                  },
+                }}
+                rows={SJYFailed}
+                columns={officerColumns}
+                pageSize={5}
+                disableSelectionOnClick
+                hideFooter={true}
+                slots={{
+                  toolbar: CustomToolbar,
+                }}
+              />
+            </div>
+          </Paper>
+        </Grid>
       </Grid>
     </>
   );

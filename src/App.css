@@ -135,8 +135,10 @@
 }
 
 .flash-animation {
-  text-shadow: 3px 3px 3px rgb(8, 8, 24);
-  animation: flash 4s ;
+  text-shadow: 1px 1px 1px rgb(8, 8, 24);
+  animation: flash 3s ;
+    font-family: "Poppins", "Segoe UI", Tahoma, Geneva, Verdana, sans-serif;
+  font-weight: 600;
   
 }
 
