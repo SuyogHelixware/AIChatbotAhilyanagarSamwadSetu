@@ -9,7 +9,7 @@
 
 
 // hostiger URl
-//  export const BASE_URL = "https://portalapp.ahilyanagarsamwadsetu.com/api/";
+ export const BASE_URL = "https://portalapp.ahilyanagarsamwadsetu.com/api/";
 
 
 // HTTPS IP below
