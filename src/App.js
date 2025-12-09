@@ -2,6 +2,7 @@ import { ThemeProvider, createTheme } from "@mui/material/styles";
 import "./App.css";
 import { ModeContextProvider, useThemeMode } from "./Dashboard/Theme";
 import Routing from "./Routes/Routing.jsx";
+import CustomCursor from "./components/CustomCursor.jsx";
 
 const lightTheme = createTheme({
   palette: {
@@ -67,6 +68,8 @@ function App() {
   return (
     <ModeContextProvider>
       <ThemedApp />
+            {/* <CustomCursor /> */}
+
     </ModeContextProvider>
   );
 }

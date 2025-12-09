@@ -73,23 +73,12 @@ export default function LandAcquistionReport() {
   }, [fromDate, toDate]);
 
   const officerColumns = [
-    //     {
-    //       field: "srNo",
-    //       headerName: "SR NO",
-    //  minWidth: 60,
-    //       maxWidth: 70,
-    //       flex: 0.2,
-    //             sortable: false,
-    //       headerAlign: "center",
-    //       align: "center",
-    //       renderCell: (params) =>
-    //         params.api.getSortedRowIds().indexOf(params.id) + 1,
-    //     },
+    
     {
       field: "srNo",
       headerName: "SR NO",
-      minWidth: 60,
-      maxWidth: 70,
+      minWidth: 90,
+      maxWidth: 100,
       flex: 0.2,
       sortable: false,
       headerAlign: "center",

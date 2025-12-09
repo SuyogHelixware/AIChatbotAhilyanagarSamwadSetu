@@ -5,6 +5,10 @@ import { BarChart, LineChart, PieChart } from "@mui/x-charts";
 import * as React from "react";
 import CountUp from "react-countup";
 import { useThemeMode } from "../Dashboard/Theme";
+import PeopleAltOutlinedIcon from '@mui/icons-material/PeopleAltOutlined';
+import DescriptionOutlinedIcon from "@mui/icons-material/DescriptionOutlined";
+import PersonOutlineIcon from "@mui/icons-material/PersonOutline";
+import HomeWorkOutlinedIcon from '@mui/icons-material/HomeWorkOutlined';
 
 const uData = [4000, 3000, 2000, 2780, 1890, 2390, 3490];
 const pData = [2400, 1398, 9800, 3908, 4800, 3800, 4300];
@@ -19,11 +23,11 @@ const xLabels = [
 ];
 
 export default function Home() {
-    const { checkAccess } = useThemeMode();
-  
-    const canAdd = checkAccess(11, "IsAdd");
-    // const canEdit = checkAccess(11, "IsEdit");
-    // const canDelete = checkAccess(11, "IsDelete");
+  const { checkAccess } = useThemeMode();
+
+  const canAdd = checkAccess(11, "IsAdd");
+  // const canEdit = checkAccess(11, "IsEdit");
+  // const canDelete = checkAccess(11, "IsDelete");
 
   return (
     <>
@@ -38,14 +42,15 @@ export default function Home() {
                 borderRadius: 3,
                 height: 130,
                 transition: "background-color 0.3s ease",
-                "&:hover": {
-                  // backgroundColor: "#A4C1FF",
-                  // color:"white",
-                },
+                alignItems: "center",
               }}
               elevation={1}
             >
-              Total Registered Users
+              {/* Total Registered Users */}
+              <Box display="flex" alignItems="center" gap={1}>
+                <PersonOutlineIcon fontSize="large" />
+                Total Registered Users
+              </Box>
               <h2>
                 <CountUp start={0} end={150} duration={2.75} separator="," />
               </h2>{" "}
@@ -60,58 +65,65 @@ export default function Home() {
                 borderRadius: 3,
                 height: 130,
                 transition: "background-color 0.3s ease",
-                "&:hover": {
-                  // backgroundColor: "#A4C1FF",
-                  // color:"white",
-                },
-              }}
-              elevation={1}
-            >
-              Total Gazetted Officers
-              <h2>
-                <CountUp start={0} end={80} duration={2.75} separator="," /> 
-              </h2>{" "}
-            </Paper>
-          </Grid>
-          <Grid item xs={12} sm={6} md={3}>
-            <Paper
-              sx={{
-                display: "flex",
-                flexDirection: "column",
-                justifyContent: "center",
-                borderRadius: 3,
-                height: 130,
-                transition: "background-color 0.3s ease",
-                "&:hover": {
-                  // backgroundColor: "#A4C1FF",
-                  // color:"white",
-                },
-              }}
-              elevation={1}
-            >
-               Total Uploaded Document
-              <h2>
-                <CountUp start={0} end={50} duration={2.75} separator="," />
-              </h2>{" "}
-            </Paper>
-          </Grid>
-          <Grid item xs={12} sm={6} md={3}>
-            <Paper
-              sx={{
-                display: "flex",
-                flexDirection: "column",
-                justifyContent: "center",
-                borderRadius: 3,
-                height: 130,
-                transition: "background-color 0.3s ease",
-              
+                alignItems: "center",
+
                 
               }}
               elevation={1}
             >
-             Total Services
+              <Box display="flex" alignItems="center" gap={1}>
+                <PeopleAltOutlinedIcon fontSize="large" />
+              Total Gazetted Officers
+              </Box>
               <h2>
-                <CountUp start={0} end={60} duration={2.75} separator="," />
+                <CountUp start={0} end={80} duration={2.75} separator="," />
+              </h2>{" "}
+            </Paper>
+          </Grid>
+          <Grid item xs={12} sm={6} md={3}>
+            <Paper
+              sx={{
+                display: "flex",
+                flexDirection: "column",
+                justifyContent: "center",
+                borderRadius: 3,
+                height: 130,
+                transition: "background-color 0.3s ease",
+                                 alignItems: "center",
+
+              }}
+              elevation={1}
+            >
+
+              <Box display="flex" alignItems="center" gap={1}>
+                <DescriptionOutlinedIcon fontSize="large" />
+              Total Uploaded Document
+              </Box>
+              <h2>
+                <CountUp start={0} end={18} duration={2.75} separator="," />
+              </h2>{" "}
+            </Paper>
+          </Grid>
+          <Grid item xs={12} sm={6} md={3}>
+            <Paper
+              sx={{
+                display: "flex",
+                flexDirection: "column",
+                justifyContent: "center",
+                borderRadius: 3,
+                height: 130,
+                transition: "background-color 0.3s ease",
+                                alignItems: "center",
+
+              }}
+              elevation={1}
+            >
+              <Box display="flex" alignItems="center" gap={1}>
+                <HomeWorkOutlinedIcon fontSize="large" />
+              Total Department
+              </Box>
+              <h2>
+                <CountUp start={0} end={3} duration={2.75} separator="," />
               </h2>{" "}
             </Paper>
           </Grid>
@@ -187,7 +199,7 @@ export default function Home() {
 // const Home = () => {
 //     return (
 //         <>
-            
+
 //         </>
 //     );
 // }

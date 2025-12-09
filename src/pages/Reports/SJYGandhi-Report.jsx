@@ -1,53 +1,3 @@
-// import React, { useEffect, useState } from "react";
-// import { Grid, Paper, Button, TextField, Box, Typography } from "@mui/material";
-// import { DataGrid } from "@mui/x-data-grid";
-// import dayjs from "dayjs";
-// import axios from "axios";
-// import { BASE_URL } from "../../Constant";
-// import { DatePickerField } from "../../components/Component";
-// import { Controller, useForm } from "react-hook-form";
-
-// import { DatePicker } from "@mui/x-date-pickers";
-
-// import { DateRangePicker } from "@mui/x-date-pickers-pro";
-
-// import { LocalizationProvider } from "@mui/x-date-pickers/LocalizationProvider";
-// import { AdapterDayjs } from "@mui/x-date-pickers/AdapterDayjs";
-// import DateRangePickerField from "../../components/DateRangePickerField";
-
-// export default function SJYGandhiReport() {
-
-//   return (
-//     <>
-//
-//       <Grid container spacing={2} alignItems="center" justifyContent="flex-end">
-//
-//
-//       </Grid>
-
-//          <Grid item xs={12} sx={{ mt: 3 }}>
-//         <Paper elevation={7} sx={{ borderRadius: 3, p: 2 }}>
-//           <h3>Success List</h3>
-//           <div style={{ height: 280, width: "100%", marginTop: 5 }}>
-//
-//           </div>
-//         </Paper>
-//       </Grid>
-
-//       {/* DataGrid */}
-//       <Grid item xs={12} sx={{ mt: 3 }}>
-//         <Paper elevation={7} sx={{ borderRadius: 3, p: 2 }}>
-//
-//           <div style={{ height: 280, width: "100%", marginTop: 5 }}>
-//
-//           </div>
-//         </Paper>
-//       </Grid>
-
-//     </>
-//   );
-// }
-
 import { Chip, Divider, Grid, Paper, Typography } from "@mui/material";
 import { DataGrid } from "@mui/x-data-grid";
 import axios from "axios";
@@ -60,23 +10,15 @@ import PhoneIcon from "@mui/icons-material/Phone";
 import CustomToolbar from "../../components/CustomToolbar";
 import TagIcon from "@mui/icons-material/Tag";
 import CustomMuiRangePicker from "../../components/DateRangePickerField";
+
 export default function LandAcquistionReport() {
   const [DocMissingCount, setDocMissingCount] = React.useState(0);
   const [DocReadyCount, setDocReadyCount] = React.useState(0);
   const [fromDate, setFromDate] = useState(dayjs().startOf("month"));
   const [toDate, setToDate] = useState(dayjs());
-
   const [SJYFailed, setSJYFailed] = React.useState([]);
   const [SJYSuccess, setSJYSuccess] = React.useState([]);
-
-  // const {  } = useForm({
-  //   defaultValues: {
-  //     DateRange: [dayjs(), dayjs()],
-  //   },
-  // });
-
-  // const fetchReport = async (selectedFrom, selectedTo) => {
-
+ 
   const fetchReport = async () => {
     try {
       const params = {
@@ -84,7 +26,7 @@ export default function LandAcquistionReport() {
         ToDate: dayjs(toDate).format("YYYY-MM-DD"),
       };
 
-      const response = await axios.get(`${BASE_URL}Reports/LandAcqu`, {
+      const response = await axios.get(`${BASE_URL}Reports/SanjayGandhi`, {
         params,
       });
 
@@ -103,7 +45,7 @@ export default function LandAcquistionReport() {
       const SJYFailed =
         FailGroup?.Values?.map((item, idx) => ({
           ...item,
-          id: item.Id ?? `DocMissing-${idx + 1}`,
+          id: item.Id ?? `SJYFailed-${idx + 1}`,
         })) || [];
       setDocMissingCount(FailGroup?.Count ?? 0);
 
@@ -112,7 +54,7 @@ export default function LandAcquistionReport() {
       const SJYSuccess =
         SuccessGroup?.Values?.map((item, idx) => ({
           ...item,
-          id: item.Id ?? `DocReady-${idx + 1}`,
+          id: item.Id ?? `SJYSuccess-${idx + 1}`,
         })) || [];
       setDocReadyCount(SuccessGroup?.Count ?? 0);
 
@@ -125,9 +67,7 @@ export default function LandAcquistionReport() {
     } finally {
     }
   };
-  // useEffect(() => {
-  //   fetchReport();
-  // }, []);
+ 
   useEffect(() => {
     if (fromDate && toDate) {
       fetchReport();
@@ -135,21 +75,11 @@ export default function LandAcquistionReport() {
   }, [fromDate, toDate]);
 
   const officerColumns = [
-    // {
-    //   field: "srNo",
-    //   headerName: "SR NO",
-    //   width: 80,
-    //   sortable: false,
-    //   headerAlign: "center",
-    //   align: "center",
-    //   renderCell: (params) =>
-    //     params.api.getSortedRowIds().indexOf(params.id) + 1,
-    // },
     {
       field: "srNo",
       headerName: "SR NO",
-      minWidth: 60,
-      maxWidth: 70,
+      minWidth: 90,
+      maxWidth: 100,
       flex: 0.2,
       sortable: false,
       headerAlign: "center",

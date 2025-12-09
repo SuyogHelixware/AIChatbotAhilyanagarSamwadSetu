@@ -506,7 +506,7 @@ export default function LandAcquisition() {
                     },
                   }}
                 >
-                  <Paper
+                  {/* <Paper
                     sx={{
                       p: 1.3,
                       borderRadius: 2.5,
@@ -519,7 +519,7 @@ export default function LandAcquisition() {
                         transform: "translateY(-2px)",
                       },
                     }}
-                  >
+                  > */}
                     <CustomMuiRangePicker
                       fromDate={chartfromDate}
                       toDate={charttoDate}
@@ -527,7 +527,7 @@ export default function LandAcquisition() {
                       setToDate={setchartToDate}
                       inputPlaceholder="Pick date range"
                     />
-                  </Paper>
+                  {/* </Paper> */}
                 </Grid>
               </Grid>
 

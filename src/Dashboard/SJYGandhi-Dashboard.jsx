@@ -146,14 +146,14 @@ export default function SJYGandhiDashboard() {
         >
           {" "}
           <Paper
-            elevation={4}
+            elevation={1}
             sx={{
               p: 1.5,
               borderRadius: 2,
-              boxShadow: "0 4px 10px rgba(0, 90, 91, 0.15)",
+              boxShadow: "0 1px 1px rgba(0, 90, 91, 0.15)",
               transition: "all 0.2s ease",
               "&:hover": {
-                boxShadow: "0 6px 16px rgba(0, 90, 91, 0.25)",
+                boxShadow: "0 1px 1px rgba(0, 90, 91, 0.25)",
                 transform: "translateY(-2px)",
               },
             }}
@@ -171,7 +171,7 @@ export default function SJYGandhiDashboard() {
         <Grid container spacing={3}>
           {/* CARD 1 */}
           <Grid item xs={12} sm={6} md={3}>
-            <Paper sx={cardStyle} elevation={5}>
+            <Paper sx={cardStyle} elevation={1}>
               <IconBox color="#2196F3">
                 <MessageIcon sx={{ fontSize: 35, color: "white" }} />
               </IconBox>
@@ -189,7 +189,7 @@ export default function SJYGandhiDashboard() {
           </Grid>
           {/* 2 */}
           <Grid item xs={12} sm={6} md={3}>
-            <Paper sx={cardStyle} elevation={5}>
+            <Paper sx={cardStyle} elevation={1}>
               <IconBox color="#e27857ff">
                 <SpeakerNotesOffIcon sx={{ fontSize: 35, color: "white" }} />
               </IconBox>
@@ -207,7 +207,7 @@ export default function SJYGandhiDashboard() {
           </Grid>
           {/* 3 */}
           <Grid item xs={12} sm={6} md={3}>
-            <Paper sx={cardStyle} elevation={5}>
+            <Paper sx={cardStyle} elevation={1}>
               <IconBox color="#2196F3">
                 <CheckCircleOutlineIcon sx={{ fontSize: 38, color: "white" }} />
               </IconBox>
@@ -225,7 +225,7 @@ export default function SJYGandhiDashboard() {
           </Grid>
           {/* 4 */}
           <Grid item xs={12} sm={6} md={3}>
-            <Paper sx={cardStyle} elevation={5}>
+            <Paper sx={cardStyle} elevation={1}>
               <IconBox color="#e27857ff">
                 <ErrorOutlineIcon sx={{ fontSize: 38, color: "white" }} />
               </IconBox>
@@ -243,7 +243,7 @@ export default function SJYGandhiDashboard() {
           </Grid>
 
           <Grid item xs={12} md={12}>
-            <Paper elevation={6} sx={{ borderRadius: 3, py: 3 }}>
+            <Paper elevation={1} sx={{ borderRadius: 3, py: 3 }}>
               <Grid
                 container
                 alignItems="center"
@@ -288,7 +288,7 @@ export default function SJYGandhiDashboard() {
                     },
                   }}
                 >
-                  <Paper
+                  {/* <Paper
                     sx={{
                       p: 1.3,
                       borderRadius: 2.5,
@@ -297,11 +297,10 @@ export default function SJYGandhiDashboard() {
                       transition: "all 0.2s ease",
                       "&:hover": {
                         borderColor: "#0288d1",
-                        boxShadow: "0 4px 10px rgba(0,0,0,0.12)",
                         transform: "translateY(-2px)",
                       },
                     }}
-                  >
+                  > */}
                     <CustomMuiRangePicker
                       fromDate={chartfromDate}
                       toDate={charttoDate}
@@ -309,7 +308,7 @@ export default function SJYGandhiDashboard() {
                       setToDate={setchartToDate}
                       inputPlaceholder="Pick date range"
                     />
-                  </Paper>
+                  {/* </Paper> */}
                 </Grid>
               </Grid>
               {ChartData &&
