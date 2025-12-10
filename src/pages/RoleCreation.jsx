@@ -185,9 +185,8 @@ const RoleCreation = () => {
     {
       field: "IsRead",
       headerName: "READ",
-      flex: 1,
-      width: 90,
-
+      width: 50,
+      flex: 0.2,
       headerAlign: "center",
       align: "center",
       sortable: false,
@@ -206,9 +205,8 @@ const RoleCreation = () => {
     {
       field: "IsAdd",
       headerName: "ADD",
-      width: 90,
-
-      flex: 1,
+      width: 50,
+      flex: 0.2,
       headerAlign: "center",
       align: "center",
       sortable: false,
@@ -229,7 +227,7 @@ const RoleCreation = () => {
       headerName: "EDIT",
       width: 50,
 
-      flex: 1,
+      flex: 0.2,
       headerAlign: "center",
       align: "center",
       sortable: false,
@@ -249,8 +247,7 @@ const RoleCreation = () => {
       field: "IsDelete",
       headerName: "DELETE",
       width: 50,
-
-      flex: 1,
+      flex: 0.2,
       headerAlign: "center",
       align: "center",
       sortable: false,
@@ -271,8 +268,8 @@ const RoleCreation = () => {
     {
       field: "actions",
       headerName: "Action",
-      minWidth: 70,
-      maxWidth: 90,
+      minWidth: 80,
+      maxWidth: 100,
       flex: 0.3,
       sortable: false,
       renderCell: (params) => (
@@ -1406,9 +1403,10 @@ const RoleCreation = () => {
         <Box sx={{ height: "75vh", width: "100%" }}>
           <DataGrid
             className="datagrid-style"
+             rowHeight={70}
             sx={{
-              height: "100%",
-              minHeight: "400px",
+              // height: "100%",
+              // minHeight: "400px",
               "& .MuiDataGrid-columnHeaders": {
                 backgroundColor: (theme) => theme.palette.custome.datagridcolor,
               },

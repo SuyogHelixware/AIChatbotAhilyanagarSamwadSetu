@@ -1529,8 +1529,8 @@ const DocumentMaster = () => {
           <DataGrid
             className="datagrid-style"
             sx={{
-              height: "100%",
-              minHeight: "400px",
+              // height: "100%",
+              // minHeight: "400px",
               "& .MuiDataGrid-columnHeaders": {
                 backgroundColor: (theme) => theme.palette.custome.datagridcolor,
               },
@@ -1591,8 +1591,7 @@ const DocumentMaster = () => {
             }}
             getRowId={(row) => row.Id}
           />
-          {/* </Grid> */}
-        </Box>
+         </Box>
       </Paper>
     </>
   );

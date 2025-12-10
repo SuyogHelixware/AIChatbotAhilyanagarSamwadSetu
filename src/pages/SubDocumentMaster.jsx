@@ -1131,8 +1131,6 @@ const SubDocumentMaster = () => {
         <DataGrid
           className="datagrid-style"
           sx={{
-            height: "100%",
-            minHeight: "500px",
             "& .MuiDataGrid-columnHeaders": {
               backgroundColor: (theme) => theme.palette.custome.datagridcolor,
             },

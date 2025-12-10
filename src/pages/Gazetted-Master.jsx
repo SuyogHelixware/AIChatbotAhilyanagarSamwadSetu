@@ -612,8 +612,7 @@ const GazettedMaster = () => {
             }}
             getRowId={(row) => row.Id}
             sx={{
-              height: "100%",
-              minHeight: "500px",
+          
               "& .MuiDataGrid-columnHeaders": {
                 backgroundColor: (theme) => theme.palette.custome.datagridcolor,
               },

@@ -125,6 +125,12 @@ export default function ManageUsers() {
     setClearUpdateButton("RESET");
     setOn(true);
 
+ setRolePage(0);
+    setRoleList([]);
+    setHasMoreRole(true);
+    fetchRoleList({ page: 0 });
+    handleFetchGazOfficers({ page: 0 });
+
     try {
       setLoading(true);
       const apiUrl = `${BASE_URL}Users/${row.Id}`;

@@ -2259,8 +2259,7 @@ const UploadDocument = () => {
           <DataGrid
             className="datagrid-style"
             sx={{
-              height: "100%",
-              minHeight: "400px",
+             
               "& .MuiDataGrid-columnHeaders": {
                 backgroundColor: (theme) => theme.palette.custome.datagridcolor,
               },

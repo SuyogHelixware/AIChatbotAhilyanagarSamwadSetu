@@ -295,9 +295,9 @@ const handleApply = () => {
         sx={{ minWidth: 260, cursor: "pointer" }}
       />
 
-      <Popper open={open} anchorEl={anchorEl} placement="bottom-start" sx={{ zIndex: 1400 }}>
+      <Popper open={open} anchorEl={anchorEl} placement="bottom-start" sx={{ zIndex: 999 }}>
         <ClickAwayListener onClickAway={handleClickAway}>
-          <Paper elevation={8} sx={{ mt: 1, p: 2, width: 320 }}>
+          <Paper elevation={4} sx={{ mt: 1, p: 2, width: 320 }}>
             <Stack spacing={1}>
               {/* Header: Month + nav */}
               <Box sx={{ display: "flex", alignItems: "center", justifyContent: "space-between", mb: 0.5 }}>

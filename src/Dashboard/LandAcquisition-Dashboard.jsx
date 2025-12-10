@@ -462,7 +462,7 @@ export default function LandAcquisition() {
 
           <Grid item xs={12} md={12}>
             <Paper elevation={1} sx={{ borderRadius: 3, py: 3 }}>
-              <Grid
+              {/* <Grid
                 container
                 alignItems="center"
                 sx={{
@@ -506,20 +506,7 @@ export default function LandAcquisition() {
                     },
                   }}
                 >
-                  {/* <Paper
-                    sx={{
-                      p: 1.3,
-                      borderRadius: 2.5,
-                      border: "1px solid #e0e0e0",
-                      boxShadow: "0 1px 1px rgba(0,0,0,0.08)",
-                      transition: "all 0.2s ease",
-                      "&:hover": {
-                        borderColor: "#0288d1",
-                        boxShadow: "0 4px 10px rgba(0,0,0,0.12)",
-                        transform: "translateY(-2px)",
-                      },
-                    }}
-                  > */}
+                 
                     <CustomMuiRangePicker
                       fromDate={chartfromDate}
                       toDate={charttoDate}
@@ -527,9 +514,58 @@ export default function LandAcquisition() {
                       setToDate={setchartToDate}
                       inputPlaceholder="Pick date range"
                     />
-                  {/* </Paper> */}
-                </Grid>
-              </Grid>
+                 </Grid>
+              </Grid> */}
+<Grid
+  container
+  alignItems="center"
+  spacing={1}
+  sx={{ mb: 2, px: 1 }}
+>
+  {/* Title */}
+  <Grid
+    item
+    xs={12}
+    md={10}
+    sx={{
+      display: "flex",
+      justifyContent: {
+        xs: "center",  // mobile
+        sm: "center",  // tablet
+        md: "flex-start", // desktop
+      },
+      textAlign: { xs: "center", md: "center" },
+      mb: { xs: 1, md: 0 },
+    }}
+  >
+    <Typography variant="h6" fontWeight="bold">
+      Certificates Generated Per Month
+    </Typography>
+  </Grid>
+
+  {/* Date Picker */}
+  <Grid
+    item
+    xs={12}
+    md={2}
+    sx={{
+      display: "flex",
+      justifyContent: {
+        xs: "center",     // mobile
+        sm: "center",     // tablet
+        md: "flex-end",   // desktop
+      },
+    }}
+  >
+    <CustomMuiRangePicker
+      fromDate={chartfromDate}
+      toDate={charttoDate}
+      setFromDate={setchartFromDate}
+      setToDate={setchartToDate}
+      inputPlaceholder="Pick date range"
+    />
+  </Grid>
+</Grid>
 
               <BarChart
                 series={[
