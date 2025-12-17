@@ -137,14 +137,50 @@ export default function SJYGandhiDashboard() {
   return (
     <>
       <Box sx={{ width: "100%", p: 1 }}>
-        <Box
+        {/* <Box
           sx={{
             display: "flex",
             justifyContent: "flex-end",
             mb: 2,
           }}
+        > */}
+        <Grid
+          container
+          spacing={2}
+          alignItems="center"
+          sx={{
+             display:"flex",
+              justifyContent: "flex-end",
+                    width: "100%",
+                    alignItems: "center",
+                    justifyContent: "space-between",
+                    mb: 2,
+          }}
+          
         >
           {" "}
+          <Grid item xs={12} sm={7}md={4} lg={4} >
+    <Paper
+      elevation={1}
+      sx={{
+        p: 1.5,
+        borderRadius: 2,
+        boxShadow: "0 1.5px 1.5px rgba(0, 90, 91, 0.15)",
+      }}
+    >
+      <Typography
+        variant="h6"
+        sx={{
+          fontWeight: 600,
+          color: "#4a91caff",
+        }}
+      >
+        Sanjay Gandhi Dashboard
+      </Typography>
+    </Paper>
+  </Grid>
+      <Grid item xs={6} sm={3}>
+
           <Paper
             elevation={1}
             sx={{
@@ -166,7 +202,10 @@ export default function SJYGandhiDashboard() {
               inputPlaceholder="Pick date range"
             />
           </Paper>
-        </Box>
+        {/* </Box> */}
+        </Grid>
+        </Grid>
+
 
         <Grid container spacing={3}>
           {/* CARD 1 */}

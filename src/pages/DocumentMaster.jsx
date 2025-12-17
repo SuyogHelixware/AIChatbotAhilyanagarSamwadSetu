@@ -479,28 +479,6 @@ const DocumentMaster = () => {
         return page * pageSize + (rowIndex + 1);
       },
     },
-
-    // {
-    //   field: "IsMainDoc",
-    //   headerName: "MAIN DOCUMENT",
-    //   width: 120,
-    //   sortable: false,
-    //   renderCell: (params) => (
-    //     <Checkbox
-    //       checked={params.value === true}
-    //       color="success"
-    //       size="medium"
-    //       onChange={(e) => {
-    //         const newValue = e.target.checked;
-    //         params.api.setEditCellValue({
-    //           id: params.id,
-    //           field: "IsMainDoc",
-    //           value: newValue,
-    //         });
-    //       }}
-    //     />
-    //   ),
-    // },
     {
       field: "NameEN",
       headerName: "DOCUMENT NAME",
@@ -511,7 +489,7 @@ const DocumentMaster = () => {
       sortable: false,
       renderCell: (params) => (
         <Tooltip title={params.value || ""} arrow placement="top-start">
-          <Typography
+          <span
             noWrap
             sx={{
               overflow: "hidden",
@@ -521,7 +499,7 @@ const DocumentMaster = () => {
             }}
           >
             {params.value}
-          </Typography>
+          </span>
         </Tooltip>
       ),
     },
@@ -535,7 +513,7 @@ const DocumentMaster = () => {
       sortable: false,
       renderCell: (params) => (
         <Tooltip title={params.value || ""} arrow placement="top-start">
-          <Typography
+          <span
             noWrap
             sx={{
               overflow: "hidden",
@@ -545,7 +523,7 @@ const DocumentMaster = () => {
             }}
           >
             {params.value}
-          </Typography>
+          </span>
         </Tooltip>
       ),
     },
@@ -558,7 +536,7 @@ const DocumentMaster = () => {
       sortable: false,
       renderCell: (params) => (
         <Tooltip title={params.value || ""} arrow placement="top-start">
-          <Typography
+          <span
             noWrap
             sx={{
               overflow: "hidden",
@@ -568,7 +546,7 @@ const DocumentMaster = () => {
             }}
           >
             {params.value}
-          </Typography>
+          </span>
         </Tooltip>
       ),
     },
@@ -960,7 +938,7 @@ const DocumentMaster = () => {
             pb: 1,
           }}
         >
-          DOCUMENT MASTER
+           MAIN DOCUMENT
           <IconButton onClick={handleClose}>
             <CloseIcon sx={{ fontSize: 30 }} />
           </IconButton>

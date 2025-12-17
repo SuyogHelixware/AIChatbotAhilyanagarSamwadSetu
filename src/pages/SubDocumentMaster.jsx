@@ -1,14 +1,13 @@
 import AddIcon from "@mui/icons-material/Add";
 import ClearIcon from "@mui/icons-material/Clear";
 import CloseIcon from "@mui/icons-material/Close";
-import DeleteForeverIcon from "@mui/icons-material/DeleteForever";
-import EditNoteIcon from "@mui/icons-material/EditNote";
+import DeleteOutlineOutlinedIcon from "@mui/icons-material/DeleteOutlineOutlined";
+import EditOutlinedIcon from "@mui/icons-material/EditOutlined";
 import SearchIcon from "@mui/icons-material/Search";
 import {
   Box,
   Button,
   Checkbox,
-  Chip,
   Dialog,
   DialogActions,
   DialogContent,
@@ -18,7 +17,6 @@ import {
   Grid,
   IconButton,
   InputAdornment,
-  Modal,
   Paper,
   Table,
   TableBody,
@@ -29,6 +27,7 @@ import {
   Tooltip,
   Typography,
 } from "@mui/material";
+import { useTheme } from "@mui/styles";
 import { DataGrid, GridToolbar } from "@mui/x-data-grid";
 import axios from "axios";
 import dayjs from "dayjs";
@@ -38,9 +37,6 @@ import Swal from "sweetalert2";
 import Loader from "../components/Loader";
 import { BASE_URL } from "../Constant";
 import { useThemeMode } from "../Dashboard/Theme";
-import { useTheme } from "@mui/styles";
-import DeleteOutlineOutlinedIcon from "@mui/icons-material/DeleteOutlineOutlined";
-import EditOutlinedIcon from "@mui/icons-material/EditOutlined";
 
 const SubDocumentMaster = () => {
   const [loaderOpen, setLoaderOpen] = React.useState(false);
@@ -348,7 +344,7 @@ const SubDocumentMaster = () => {
 
   const renderTooltipText = (params) => (
     <Tooltip title={params.value || ""} arrow placement="top-start">
-      <Typography
+      <span
         noWrap
         sx={{
           overflow: "hidden",
@@ -358,7 +354,7 @@ const SubDocumentMaster = () => {
         }}
       >
         {params.value}
-      </Typography>
+      </span>
     </Tooltip>
   );
 
@@ -369,10 +365,7 @@ const SubDocumentMaster = () => {
       headerAlign: "center",
       align: "center",
       sortable: false,
-
-      minWidth: 90,
-      maxWidth: 110,
-      flex: 0.3,
+      width: 110,
       renderCell: (params) => (
         <strong>
           <Tooltip
@@ -420,10 +413,7 @@ const SubDocumentMaster = () => {
       sortable: false,
       headerAlign: "center",
       align: "center",
-
-      minWidth: 65,
-      maxWidth: 80,
-      flex: 0.2,
+      width: 70,
       renderCell: (params) => {
         const page = params.api.state.pagination.paginationModel.page;
         const pageSize = params.api.state.pagination.paginationModel.pageSize;
@@ -431,76 +421,47 @@ const SubDocumentMaster = () => {
         return page * pageSize + (rowIndex + 1);
       },
     },
-
     {
       field: "NameEN",
       headerName: "DOCUMENT NAME",
-      minWidth: 250,
-      flex: 1.2,
+      minWidth: 230,
+      maxWidth: 300,
+      flex: 1.5,
       headerAlign: "center",
-      align: "center",
       sortable: false,
+      minWidth: 220,
+      align: "left",
       renderCell: renderTooltipText,
-
-      // renderCell: (params) => (
-      //   <Tooltip title={params.value || ""} arrow placement="top-start">
-      //     <Typography
-      //       noWrap
-      //       sx={{
-      //         overflow: "hidden",
-      //         textOverflow: "ellipsis",
-      //         whiteSpace: "nowrap",
-      //         width: "100%",
-      //       }}
-      //     >
-      //       {params.value}
-      //     </Typography>
-      //   </Tooltip>
-      // ),
     },
     {
       field: "NameMR",
       headerName: "DOCUMENT NAME (MARATHI)",
-      minWidth: 250,
-      flex: 1.2,
+      maxWidth: 300,
+      flex: 1.5,
       headerAlign: "center",
-      align: "center",
       sortable: false,
+
+      minWidth: 240,
+      align: "left",
       renderCell: renderTooltipText,
-      // renderCell: (params) => (
-      //   <Tooltip title={params.value || ""} arrow placement="top-start">
-      //     <Typography
-      //       noWrap
-      //       sx={{
-      //         overflow: "hidden",
-      //         textOverflow: "ellipsis",
-      //         whiteSpace: "nowrap",
-      //         width: "100%",
-      //       }}
-      //     >
-      //       {params.value}
-      //     </Typography>
-      //   </Tooltip>
-      // ),
     },
 
     {
       field: "Description",
       headerName: "DOCUMENT DESCRIPTION",
-      minWidth: 350,
-      flex: 1.8,
       headerAlign: "center",
-      align: "center",
       sortable: false,
+      flex: 2,
+      minWidth: 320,
+      align: "left",
       renderCell: renderTooltipText,
     },
     {
       field: "Status",
       headerName: "Status",
-      minWidth: 80,
-      maxWidth: 100,
-      flex: 0.3,
       headerAlign: "center",
+      sortable: false,
+      width: 100,
       align: "center",
       sortable: false,
       valueGetter: (params) =>
@@ -687,7 +648,7 @@ const SubDocumentMaster = () => {
             pb: 1,
           }}
         >
-          SUB DOCUMENT MASTER
+          SUB DOCUMENT
           <IconButton onClick={handleClose}>
             <CloseIcon sx={{ fontSize: 30 }} />
           </IconButton>
@@ -996,7 +957,7 @@ const SubDocumentMaster = () => {
           sx={{
             borderBottomWidth: 0.6,
             backgroundColor: "#ccc",
-             boxShadow: "0px 1px 2px rgba(0,0,0,0.2)",
+            boxShadow: "0px 1px 2px rgba(0,0,0,0.2)",
           }}
         />
         {/* =====================Footer=================== */}
@@ -1048,7 +1009,7 @@ const SubDocumentMaster = () => {
           </Button>
         </DialogActions>
       </Dialog>
-      
+
       {/* <Grid
         container
         md={12}
