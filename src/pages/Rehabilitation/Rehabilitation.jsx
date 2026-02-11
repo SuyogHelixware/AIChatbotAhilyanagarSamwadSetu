@@ -1044,6 +1044,9 @@ import EditOutlinedIcon from "@mui/icons-material/EditOutlined";
 import { useTheme } from "@mui/styles";
 import { useThemeMode } from "../../Dashboard/Theme";
 
+// import Loader from "../components/Loader";
+
+ 
 const Rehabilitation = () => {
   const [loaderOpen, setLoaderOpen] = React.useState(false);
   const [Documentlist, setDocumentlist] = React.useState([]);
@@ -2141,7 +2144,6 @@ const Rehabilitation = () => {
       formData.append(`oDocLines[${index}].Id`, row.Id || "");
       formData.append(`oDocLines[${index}].LineNum`, row.LineNum || "");
       formData.append(`oDocLines[${index}].FileExt`, row.FileExt || "");
-
       formData.append(
         `oDocLines[${index}].FileName`,
         row.FileName && row.FileName.trim() !== ""
