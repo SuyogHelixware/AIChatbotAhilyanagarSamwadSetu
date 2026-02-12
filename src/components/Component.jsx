@@ -111,6 +111,47 @@ export default class InputTextField extends React.Component {
   }
 }
 
+
+
+export   class InputTextFieldTitle extends React.Component {
+  render() {
+    const {
+      label,
+      onChange,
+      disabled,
+      id,
+      type,
+      value,
+      error,
+      helperText,
+      inputProps,
+      fullWidth,
+      sx,
+    } = this.props;
+
+    return (
+      <TextField
+        label={label}
+        onChange={onChange}
+        disabled={disabled}
+        id={id}
+        name={id}
+        type={type}
+        value={value}
+        size="small"
+        fullWidth={fullWidth}  
+        sx={sx}                
+        inputProps={{
+          ...(inputProps || {}),
+        }}
+        error={error}
+        helperText={helperText}
+      />
+    );
+  }
+}
+
+
 export function InputTextFieldNewUserMail({
   label,
   value,

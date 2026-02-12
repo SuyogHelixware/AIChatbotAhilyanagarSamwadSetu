@@ -329,6 +329,12 @@ export default function Dashboard() {
       path: "Rehabilitation",
       menuId: 11,
     },
+     {
+      label: "Notification",
+      icon: <CorporateFareIcon />,
+      path: "SendNotification",
+      menuId: 11,
+    },
     //  {
     //   label: "LandAcquistion Report",
     //   icon: <DriveFolderUploadIcon />,

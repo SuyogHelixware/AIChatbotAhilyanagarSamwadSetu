@@ -25,6 +25,8 @@ import RoleCreation from "../pages/RoleCreation";
 
 import SanjayGandhi from "../pages/SanjavGandhi/SanjayGandhi";
 import Rehabilitation from "../pages/Rehabilitation/Rehabilitation";
+import SendNotification from "../pages/SendNotificaion";
+
 import { useThemeMode } from "../Dashboard/Theme";
 import ProtectedRoute from "./ProtectedRoute";
 import SJYGandhiDashboard from "../Dashboard/SJYGandhi-Dashboard";
@@ -42,7 +44,7 @@ export default function Routing() {
         <Routes>
           <Route path="/" element={<Signin />} />
           <Route path="forgot-password" element={<ForgotPassword />} />
-           <Route path="dashboard" element={<Dashboard />}>
+          <Route path="dashboard" element={<Dashboard />}>
             {/* <Route path="home" element={<Home />} /> */}
             <Route
               path="home"
@@ -68,7 +70,6 @@ export default function Routing() {
                 </ProtectedRoute>
               }
             />
-           
             <Route
               path="manage-user"
               element={
@@ -77,7 +78,7 @@ export default function Routing() {
                 </ProtectedRoute>
               }
             />
-             <Route
+            <Route
               path="RoleCreation"
               element={
                 <ProtectedRoute menuId={12} roleAccess={roleAccess}>
@@ -85,7 +86,7 @@ export default function Routing() {
                 </ProtectedRoute>
               }
             />
-             <Route
+            <Route
               path="department"
               element={
                 <ProtectedRoute menuId={6} roleAccess={roleAccess}>
@@ -93,7 +94,7 @@ export default function Routing() {
                 </ProtectedRoute>
               }
             />
-             <Route
+            <Route
               path="Services"
               element={
                 <ProtectedRoute menuId={7} roleAccess={roleAccess}>
@@ -110,7 +111,7 @@ export default function Routing() {
                 </ProtectedRoute>
               }
             />
-             {/* <Route
+            {/* <Route
               path="DocumentMaster"
               element={
                 <ProtectedRoute menuId={5} roleAccess={roleAccess}>
@@ -118,7 +119,7 @@ export default function Routing() {
                 </ProtectedRoute>
               }
             /> */}
-               <Route
+            <Route
               path="ManageDocPage"
               element={
                 <ProtectedRoute menuId={5} roleAccess={roleAccess}>
@@ -126,7 +127,6 @@ export default function Routing() {
                 </ProtectedRoute>
               }
             />
-            
             <Route
               path="EmailSetup"
               element={
@@ -144,7 +144,6 @@ export default function Routing() {
                 </ProtectedRoute>
               }
             />
-            
             <Route
               path="Upload-Document"
               element={
@@ -161,7 +160,7 @@ export default function Routing() {
                 </ProtectedRoute>
               }
             />
-             <Route
+            <Route
               path="Rehabilitation"
               element={
                 <ProtectedRoute menuId={11} roleAccess={roleAccess}>
@@ -169,9 +168,16 @@ export default function Routing() {
                 </ProtectedRoute>
               }
             />
-
+            <Route
+              path="SendNotification"
+              element={
+                <ProtectedRoute menuId={11} roleAccess={roleAccess}>
+                  <SendNotification />
+                </ProtectedRoute>
+              }
+            />
             {/* ==============REPORT========== */}
-             <Route
+            <Route
               path="LandAcquistionReport"
               element={
                 <ProtectedRoute menuId={15} roleAccess={roleAccess}>
@@ -187,7 +193,6 @@ export default function Routing() {
                 </ProtectedRoute>
               }
             />
-
             {/* <Route path="Rehabilitation" element={<Rehabilitation />} /> */}
           </Route>
           {/* <Route path="/dashboard/special" element={<SpecialLayout />}> */}
