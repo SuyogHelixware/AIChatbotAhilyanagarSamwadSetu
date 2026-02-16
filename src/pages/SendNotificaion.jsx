@@ -21,23 +21,30 @@ import { useEffect, useState } from "react";
 import axios from "axios";
 import { useRef } from "react";
 import Swal from "sweetalert2";
+import { BASE_URL } from "../Constant";
 export default function UserCreation() {
-  const { control, handleSubmit, getValues, reset, setValue, watch } =
-    useForm();
-
   const theme = useTheme();
-
   const hasFetched = useRef(false);
-
   const [allTemplates, setAllTemplates] = useState([]);
   const [filteredTemplates, setFilteredTemplates] = useState([]);
+
+  const initial = {
+    Title: "",
+    Type: "",
+    template: "",
+    FileName: "",
+    CampaignDataFile: "",
+  };
+  const { handleSubmit, control, reset, watch, setValue } = useForm({
+    defaultValues: initial,
+  });
 
   const getMessageTemplates = async () => {
     try {
       const response = await axios.request({
         method: "get",
         maxBodyLength: Infinity,
-        url: "/v3/707885182274627/message_templates",
+        url: `${BASE_URL}WPUtility`,
         params: {
           fields: "name,components,language",
         },
@@ -45,12 +52,15 @@ export default function UserCreation() {
           apikey: "8552af6c-8c67-11f0-98fc-02c8a5e042bd",
         },
       });
+      const jsonData = response.data.response;
+      const jsonDataOBJ = JSON.parse(jsonData);
 
-      const templates = response?.data?.data || [];
+      console.log("PARSED JSON OBJECT:", jsonDataOBJ);
+
+      const templates = jsonDataOBJ?.data || [];
       setAllTemplates(templates);
-      console.log("Full Response:", response.data);
     } catch (error) {
-      console.error("Error fetching templates kt:", error);
+      console.error("Error fetching templates:", error);
     }
   };
 
@@ -83,23 +93,53 @@ export default function UserCreation() {
   useEffect(() => {
     if (hasFetched.current) return;
     hasFetched.current = true;
-
     getMessageTemplates();
   }, []);
 
-  const handleSubmitForm = (data) => {
-    const postObj = {
-      title: data.Title,
-      type: data.Type,
-      templateName: data.template,
-      message: data.Message,
-    };
+  const handleSubmitForm = async (data) => {
+    try {
+      const formData = new FormData();
 
-    console.log("POST OBJ:", postObj);
+      formData.append("Title", data.Title || "");
+      formData.append("Type", data.Type || "");
+      formData.append("Templete", data.template || "");
+      formData.append("Attachment", data.FileName);
+      formData.append("CampaignDataFile", data.CampaignDataFile);
 
-    // axios.post("/api/endpoint", postObj);
+      let response = await axios.post(
+        `${BASE_URL}WPUtility/Campaign`,
+        formData,
+      );
+      console.log("POST", response);
+      reset();
+      setValue("Message", "");
+      setValue("Title", "");
+      setValue("template", "");
+      setValue("FileName", "");
+      setValue("Type", "");
+
+      Swal.fire({
+        icon: "success",
+        title: "Success",
+        text: "Send successfully...",
+        toast: true,
+        position: "center",
+        timer: 2000,
+        showConfirmButton: false,
+      });
+    } catch (error) {
+      let errorMessage = "Something went wrong. Please try again.";
+
+      if (error.response) {
+        errorMessage =
+          error.response.data?.message ||
+          error.response.data?.error ||
+          "Server error occurred";
+      }
+    }
   };
-const selectedType = watch("Type");
+
+  const selectedType = watch("Type");
 
   return (
     <>
@@ -162,12 +202,14 @@ const selectedType = watch("Type");
                   name="Title"
                   control={control}
                   defaultValue=""
-                  render={({ field }) => (
+                  render={({ field, fieldState: { error } }) => (
                     <InputTextFieldTitle
                       {...field}
                       label="ENTER TITLE"
                       id="Title"
                       fullWidth
+                      error={!!error}
+                      helperText={error?.message}
                     />
                   )}
                 />
@@ -175,7 +217,7 @@ const selectedType = watch("Type");
 
               <Grid item md={6} sm={6} xs={12}>
                 <Controller
-                  name="MobileNoCSV"
+                  name="CampaignDataFile"
                   control={control}
                   defaultValue={null}
                   rules={{
@@ -261,9 +303,9 @@ const selectedType = watch("Type");
                     />
                   )}
                 />
-              </Grid>        
+              </Grid>
 
-                  {/* ROW 2 */}
+              {/* ROW 2 */}
               <Grid item md={6} sm={6} xs={12}>
                 <Controller
                   name="Type"
@@ -289,12 +331,10 @@ const selectedType = watch("Type");
                           const value = v ? v.Name : null;
                           field.onChange(value);
                           handleTypeChange(value);
-                              if (value === "TEXT") {
-            setValue("FileName", null);
-          }
-        
+                          if (value === "TEXT") {
+                            setValue("FileName", null);
+                          }
                         }}
-                        
                         renderInput={(params) => (
                           <TextField
                             {...params}
@@ -309,99 +349,99 @@ const selectedType = watch("Type");
                 />
               </Grid>
               {(selectedType === "DOCUMENT" || selectedType === "IMG") && (
-                 <Grid item md={6} sm={6} xs={12}>
-                <Controller
-                  name="FileName"
-                  control={control}
-                  defaultValue={null}
-                  rules={{
-                    required: "File is required",
-                    validate: (file) => {
-                      if (!file) return true;
+                <Grid item md={6} sm={6} xs={12}>
+                  <Controller
+                    name="FileName"
+                    control={control}
+                    defaultValue={null}
+                    rules={{
+                      required: "File is required",
+                      validate: (file) => {
+                        if (!file) return true;
 
-                      const allowedTypes = [
-                        "application/pdf",
-                        "image/jpeg",
-                        "image/png",
-                        "image/jpg",
-                        "image/gif",
-                        "image/bmp",
-                        "image/webp",
-                      ];
+                        const allowedTypes = [
+                          "application/pdf",
+                          "image/jpeg",
+                          "image/png",
+                          "image/jpg",
+                          "image/gif",
+                          "image/bmp",
+                          "image/webp",
+                        ];
 
-                      return (
-                        allowedTypes.includes(file.type) ||
-                        "Only PDF or Image files are allowed"
-                      );
-                    },
-                  }}
-                  render={({ field, fieldState }) => (
-                    <TextField
-                      fullWidth
-                      size="small"
-                      label="ATTACH FILE"
-                      value={field.value?.name || ""}
-                      placeholder="Choose file"
-                      error={!!fieldState.error}
-                      helperText={fieldState.error?.message}
-                      InputProps={{
-                        readOnly: true,
-                        endAdornment: (
-                          <Button
-                            component="label"
-                            variant="outlined"
-                            size="small"
-                            sx={{ ml: 1, textTransform: "none" }}
-                          >
-                            Upload
-                            <input
-                              type="file"
-                              hidden
-                              accept=".pdf,image/*"
-                              onChange={(e) => {
-                                const file = e.target.files?.[0];
+                        return (
+                          allowedTypes.includes(file.type) ||
+                          "Only PDF or Image files are allowed"
+                        );
+                      },
+                    }}
+                    render={({ field, fieldState }) => (
+                      <TextField
+                        fullWidth
+                        size="small"
+                        label="ATTACH FILE"
+                        value={field.value?.name || ""}
+                        placeholder="Choose file"
+                        error={!!fieldState.error}
+                        helperText={fieldState.error?.message}
+                        InputProps={{
+                          readOnly: true,
+                          endAdornment: (
+                            <Button
+                              component="label"
+                              variant="outlined"
+                              size="small"
+                              sx={{ ml: 1, textTransform: "none" }}
+                            >
+                              Upload
+                              <input
+                                type="file"
+                                hidden
+                                accept=".pdf,image/*"
+                                onChange={(e) => {
+                                  const file = e.target.files?.[0];
 
-                                if (!file) {
-                                  field.onChange(null);
-                                  return;
-                                }
+                                  if (!file) {
+                                    field.onChange(null);
+                                    return;
+                                  }
 
-                                const allowedTypes = [
-                                  "application/pdf",
-                                  "image/jpeg",
-                                  "image/png",
-                                  "image/jpg",
-                                  "image/gif",
-                                  "image/bmp",
-                                  "image/webp",
-                                ];
+                                  const allowedTypes = [
+                                    "application/pdf",
+                                    "image/jpeg",
+                                    "image/png",
+                                    "image/jpg",
+                                    "image/gif",
+                                    "image/bmp",
+                                    "image/webp",
+                                  ];
 
-                                if (!allowedTypes.includes(file.type)) {
-                                  Swal.fire({
-                                    icon: "warning",
-                                    title: "Invalid File",
-                                    text: "Please upload only PDF or Image files.",
-                                    toast: true,
-                                    position: "center",
-                                    timer: 3000,
-                                    showConfirmButton: false,
-                                  });
+                                  if (!allowedTypes.includes(file.type)) {
+                                    Swal.fire({
+                                      icon: "warning",
+                                      title: "Invalid File",
+                                      text: "Please upload only PDF or Image files.",
+                                      toast: true,
+                                      position: "center",
+                                      timer: 3000,
+                                      showConfirmButton: false,
+                                    });
 
-                                  e.target.value = "";
-                                  field.onChange(null);
-                                  return;
-                                }
+                                    e.target.value = "";
+                                    field.onChange(null);
+                                    return;
+                                  }
 
-                                field.onChange(file);
-                              }}
-                            />
-                          </Button>
-                        ),
-                      }}
-                    />
-                  )}
-                />
-              </Grid>
+                                  field.onChange(file);
+                                }}
+                              />
+                            </Button>
+                          ),
+                        }}
+                      />
+                    )}
+                  />
+                </Grid>
               )}
 
               <Grid item md={6} sm={6} xs={12}>
@@ -468,16 +508,25 @@ const selectedType = watch("Type");
                   control={control}
                   defaultValue=""
                   render={({ field, fieldState: { error } }) => (
-                    <TextField
-                      {...field}
-                      label="MESSAGE"
-                      size="small"
-                      multiline
-                      rows={5}
-                      fullWidth
-                      error={!!error}
-                      helperText={error?.message}
-                    />
+                    <Tooltip
+                      title={field.value || "No message entered"}
+                      placement="bottom-start"
+                      arrow
+                    >
+                      <TextField
+                        {...field}
+                        label="MESSAGE"
+                        size="small"
+                        multiline
+                        rows={6}
+                        fullWidth
+                        error={!!error}
+                        helperText={error?.message}
+                        InputProps={{
+                          readOnly: true,
+                        }}
+                      />
+                    </Tooltip>
                   )}
                 />
               </Grid>
