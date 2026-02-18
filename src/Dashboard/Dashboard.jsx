@@ -330,7 +330,7 @@ export default function Dashboard() {
       menuId: 11,
     },
      {
-      label: "Notification",
+      label: "Send Message",
       icon: <CorporateFareIcon />,
       path: "SendNotification",
       menuId: 11,

@@ -33,7 +33,8 @@ export default function UserCreation() {
     Type: "",
     template: "",
     FileName: "",
-    CampaignDataFile: "",
+    // CampaignDataFile: "",
+     CampaignDataFile: null,
   };
   const { handleSubmit, control, reset, watch, setValue } = useForm({
     defaultValues: initial,
@@ -169,7 +170,7 @@ export default function UserCreation() {
           padding={1}
           noWrap
         >
-          Send Notifications
+          Send Message
         </Typography>
       </Grid>
       <Box sx={{ p: 4 }}>
@@ -231,7 +232,7 @@ export default function UserCreation() {
                     <TextField
                       fullWidth
                       size="small"
-                      label="UPLOAD MOBILE NO CSV FILE"
+                      label="UPLOAD MOBILE NO FILE"
                       value={field.value?.name || ""}
                       placeholder="Choose file"
                       error={!!fieldState.error}
