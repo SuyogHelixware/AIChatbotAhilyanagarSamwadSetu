@@ -1,4 +1,4 @@
-import { Chip, Divider, Grid, Paper, Typography } from "@mui/material";
+import { Chip, Divider, Grid, Paper, Typography, useTheme } from "@mui/material";
 import { DataGrid } from "@mui/x-data-grid";
 import axios from "axios";
 import dayjs from "dayjs";
@@ -18,7 +18,8 @@ export default function LandAcquistionReport() {
   const [toDate, setToDate] = useState(dayjs());
   const [SJYFailed, setSJYFailed] = React.useState([]);
   const [SJYSuccess, setSJYSuccess] = React.useState([]);
- 
+   const theme = useTheme();
+
   const fetchReport = async () => {
     try {
       const params = {
@@ -227,7 +228,7 @@ export default function LandAcquistionReport() {
       </Grid>
       <Grid container spacing={2} sx={{ mt: 3 }}>
         <Grid item xs={12} sm={12} md={12} lg={6}>
-          <Paper elevation={1} sx={{ borderRadius: 3, p: 2 }}>
+          <Paper elevation={1} sx={{ borderRadius: 3, p: 2 , color : theme.palette.DHeaderColor.color,  }}>
             <h3
               style={{
                 display: "flex",
@@ -286,7 +287,7 @@ export default function LandAcquistionReport() {
         </Grid>
 
         <Grid item xs={12} sm={12} md={12} lg={6}>
-          <Paper elevation={1} sx={{ borderRadius: 3, p: 2 }}>
+          <Paper elevation={1} sx={{ borderRadius: 3, p: 2 , color : theme.palette.DHeaderColor.color, }}>
             <h3
               style={{
                 display: "flex",

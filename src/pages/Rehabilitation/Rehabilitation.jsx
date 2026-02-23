@@ -2519,6 +2519,9 @@ const Rehabilitation = () => {
             justifyContent: "space-between",
             alignItems: "center",
             pb: 1,
+             borderBottom: "1px solid #90caf9",
+    background: theme.palette.DHeaderbg.background,
+    color : theme.palette.DHeaderColor.color,
           }}
         >
           REHABILITATION 
@@ -2753,6 +2756,8 @@ const Rehabilitation = () => {
               justifyContent: "space-between",
               px: 3,
               pb: 2,
+                          borderTop: "1px solid #90caf9",
+
             }}
           >
             <Button
@@ -2821,7 +2826,11 @@ const Rehabilitation = () => {
             container
             alignItems="center"
             justifyContent="center"
-            sx={{ position: "relative" }}
+            sx={{ position: "relative" , 
+
+               borderBottom: "1px solid #90caf9",
+     color : theme.palette.DHeaderColor.color,
+            }}
           >
             <Typography
               fontWeight="600"
@@ -2955,7 +2964,8 @@ const Rehabilitation = () => {
         <DialogActions
           sx={{
             p: 2,
-            borderTop: "1px solid #eee",
+                         borderTop: "1px solid #90caf9",
+
           }}
         >
           <Button

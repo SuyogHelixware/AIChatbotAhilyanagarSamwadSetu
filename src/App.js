@@ -15,6 +15,10 @@ const lightTheme = createTheme({
     custome: { datagridcolor: "#e6f2fcff" },
     customAppbar: { appbarcolor: "#2196F3" },
     Button: { background: "#2196F3" },
+    DHeaderbg: { background:"linear-gradient(90deg, #e3f2fd 0%, #bbdefb 100%)" },
+    DHeaderColor: { color: "#0d47a1" },
+
+
   },
 });
 
@@ -29,6 +33,10 @@ const darkTheme = createTheme({
     custome: { datagridcolor: "#171821" },
     customAppbar: { appbarcolor: "#393A44" },
     Button: { background: "#393A44" },
+        DHeaderbg: { background: "#393A44" },
+        DHeaderColor: { color: "#fff" },
+
+
   },
 });
 

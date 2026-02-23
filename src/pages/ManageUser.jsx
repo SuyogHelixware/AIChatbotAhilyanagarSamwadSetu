@@ -863,16 +863,32 @@ export default function ManageUsers() {
       >
         {/* HEADER */}
         <DialogTitle
-          sx={{
-            display: "flex",
-            justifyContent: "space-between",
-            alignItems: "center",
-            pb: 1,
-          }}
+          // sx={{
+          //   display: "flex",
+          //   justifyContent: "space-between",
+          //   alignItems: "center",
+          //   pb: 1,
+          // }}
+           sx={{
+    display: "flex",
+    justifyContent: "space-between",
+    alignItems: "center",
+    pb: 1,
+    px: 3,
+    color: "#fff",
+    // fontWeight: 500,
+    // fontSize: "16px",
+    //  color: "#0d47a1",
+    // background: "linear-gradient(90deg, #e3f2fd 0%, #bbdefb 100%)",
+    borderBottom: "1px solid #90caf9",
+    background: theme.palette.DHeaderbg.background,
+    color : theme.palette.DHeaderColor.color,
+
+    
+  }}
         >
            USER CREATION
             
-
           <IconButton onClick={handleClose} sx={{ p: 0, mt: 0 }}>
             <CloseIcon sx={{ fontSize: 30 }} />
           </IconButton>
@@ -1266,6 +1282,7 @@ export default function ManageUsers() {
             zIndex: 1000,
             display: "flex",
             justifyContent: "space-between",
+            borderTop: "1px solid #90caf9",
           }}
         >
           {/* Cancel Button (Left) */}

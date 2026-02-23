@@ -1,11 +1,19 @@
-import { Box, IconButton } from "@mui/material";
+import {
+  Box,
+  Button,
+  CircularProgress,
+  IconButton,
+  InputAdornment,
+  TextField,
+  Typography,
+} from "@mui/material";
 import React, { useState } from "react";
 import darkThemeLogo from "../assets/darkThemeLogo.png";
 import Swal from "sweetalert2";
 import axios from "axios";
 import { useNavigate } from "react-router-dom";
 import { BASE_URL } from "../Constant";
-import { Visibility, VisibilityOff } from "@mui/icons-material";
+import { Visibility, VisibilityOff, Person, Lock } from "@mui/icons-material";
 import Loader from "../components/Loader";
 import PersonIcon from "@mui/icons-material/Person";
 // import PersonIcon from "@mui/icons-material/Person";
@@ -13,7 +21,6 @@ import CryptoJS from "crypto-js";
 import { useThemeMode } from "./Theme";
 import { DASHBOARDMENU_PATHS, MENU_PATHS } from "../Routes/ProtectedRoute";
 import LoginBack from "../assets/Loginimg.jpg";
-
 const Signin = () => {
   const [userId, setUserId] = useState("");
   const [password, setPassword] = useState("");
@@ -69,7 +76,7 @@ const Signin = () => {
             const encodedRoleName = encodeURIComponent(roleNameToUse);
 
             const roleResponse = await axios.get(
-              `${BASE_URL}Role?RoleName=${encodedRoleName}`
+              `${BASE_URL}Role?RoleName=${encodedRoleName}`,
             );
 
             if (roleResponse.data.success === true) {
@@ -85,7 +92,7 @@ const Signin = () => {
 
               const encryptedRoleDetails = CryptoJS.AES.encrypt(
                 JSON.stringify(RoleDetails),
-                SECRET_KEY
+                SECRET_KEY,
               ).toString();
 
               sessionStorage.setItem("RoleDetails", encryptedRoleDetails);
@@ -116,7 +123,7 @@ const Signin = () => {
                 const oLines = decrypted?.oLines ?? [];
 
                 const dashboardMenus = oLines.filter(
-                  (m) => Number(m?.ParentMenuId) === 1
+                  (m) => Number(m?.ParentMenuId) === 1,
                 );
 
                 if (dashboardMenus.length > 0) {
@@ -194,11 +201,11 @@ const Signin = () => {
           fontFamily: "Arial, sans-serif",
           px: 2,
           backgroundImage: `url(${LoginBack})`,
-          backgroundSize: "cover", 
+          backgroundSize: "cover",
           backgroundPosition: "center",
           backgroundRepeat: "no-repeat",
           fontFamily: "Arial, sans-serif",
-         }}
+        }}
       >
         <Box
           sx={{
@@ -220,7 +227,7 @@ const Signin = () => {
               alignItems: "center",
             }}
           >
-            <h2
+            {/* <h2
               style={{
                 fontSize: "24px",
                 fontWeight: "bold",
@@ -228,83 +235,147 @@ const Signin = () => {
               }}
             >
               Sign In
-            </h2>
+            </h2> */}
+            <Typography variant="h5" fontWeight={600} mb={1}>
+              Sign In
+            </Typography>
+            <Typography variant="body2" color="text.secondary" mb={3}>
+              Secure Access to Government Portal
+            </Typography>
 
             <Box
               sx={{
                 width: "100%",
-                // display: "flex", flexDirection: "column", alignItems: "center", gap: 2,
                 maxWidth: { xs: "90%", sm: "80%", md: "320px" },
-                mx: "auto", // center
+                mx: "auto",
               }}
             >
-              <Box sx={{ position: "relative", mb: 2 }}>
-                <PersonIcon
+              {/* <Box sx={{ position: "relative", mb: 2 }}> */}
+              {/* <PersonIcon
                   style={{
                     position: "absolute",
                     top: "50%",
                     right: "7px",
-                    // left: "15px",
-                    transform: "translateY(-50%)",
+                     transform: "translateY(-50%)",
                     fontSize: "25px",
                     color: "#888",
                   }}
-                />
-                {/* 📧 */}
+                /> */}
 
-                <input
-                  type="text"
-                  placeholder="Username"
-                  value={userId}
-                  onChange={(e) => setUserId(e.target.value)}
-                  tabIndex={1}
-                  style={{
-                    width: "80%",
-                    padding: "12px 12px 12px 40px",
-                    border: "none",
-                    borderRadius: "20px",
-                    background: "#f5f5f5",
-                    fontSize: "16px",
-                  }}
-                />
-              </Box>
+              <TextField
+                fullWidth
+                type="text"
+                label="Username"
+                placeholder="Username"
+                value={userId}
+                margin="normal"
+                onChange={(e) => setUserId(e.target.value)}
+                tabIndex={1}
+                InputProps={{
+                  startAdornment: (
+                    <InputAdornment position="start">
+                      <Person fontSize="small" />
+                    </InputAdornment>
+                  ),
+                }}
+                // style={{
+                //   width: "80%",
+                //   padding: "12px 12px 12px 40px",
+                //   border: "none",
+                //   borderRadius: "20px",
+                //   background: "#f5f5f5",
+                //   fontSize: "16px",
+                // }}
+                sx={{
+                  "& .MuiOutlinedInput-root": {
+                    borderRadius: "30px",
+                    backgroundColor: "#f9fbff",
+                    transition: "all 0.3s ease",
+                  },
+                  "& .Mui-focused": {
+                    boxShadow: "0 0 0 3px rgba(33,150,243,0.2)",
+                  },
+                }}
+              />
+              {/* </Box> */}
 
-              <Box sx={{ position: "relative", mb: 2 }}>
-                <IconButton
-                  onClick={() => setShowPassword(!showPassword)}
-                  sx={{
-                    position: "absolute",
-                    top: "50%",
-                    right: "7px",
-                    // left: "1px",
-                    transform: "translateY(-50%)",
-                    color: "#888",
-                    p: 0,
-                  }}
-                >
-                  {showPassword ? <VisibilityOff /> : <Visibility />}
-                </IconButton>
-                <input
-                  type={showPassword ? "text" : "password"}
-                  placeholder="Password"
-                  value={password}
-                  onChange={(e) => setPassword(e.target.value)}
-                  onKeyDown={(e) => {
-                    if (e.key === "Enter") {
-                      login(e);
-                    }
-                  }}
-                  tabIndex={2}
-                  style={{
-                    width: "80%",
-                    padding: "12px 12px 12px 45px",
-                    border: "none",
-                    borderRadius: "20px",
-                    background: "#f5f5f5",
-                    fontSize: "16px",
-                  }}
-                />
-              </Box>
+              {/* <Box sx={{ position: "relative", mb: 2 }}> */}
+              {/* <IconButton
+                onClick={() => setShowPassword(!showPassword)}
+                sx={{
+                  position: "absolute",
+                  top: "50%",
+                  right: "7px",
+                  transform: "translateY(-50%)",
+                  color: "#888",
+                  p: 0,
+                }}
+              >
+                {showPassword ? <VisibilityOff /> : <Visibility />}
+              </IconButton>
+              <input
+                type={showPassword ? "text" : "password"}
+                placeholder="Password"
+                value={password}
+                onChange={(e) => setPassword(e.target.value)}
+                onKeyDown={(e) => {
+                  if (e.key === "Enter") {
+                    login(e);
+                  }
+                }}
+                tabIndex={2}
+                style={{
+                  width: "80%",
+                  padding: "12px 12px 12px 45px",
+                  border: "none",
+                  borderRadius: "20px",
+                  background: "#f5f5f5",
+                  fontSize: "16px",
+                }}
+              /> */}
+              <TextField
+                fullWidth
+                type={showPassword ? "text" : "password"}
+                label="Password"
+                placeholder="Password"
+                value={password}
+                onChange={(e) => setPassword(e.target.value)}
+                 onKeyDown={(e) => {
+                  if (e.key === "Enter") {
+                    login(e);
+                  }
+                }}
+                margin="normal"
+                tabIndex={2}
+                InputProps={{
+                  startAdornment: (
+                    <InputAdornment position="start">
+                      <Lock fontSize="small" />
+                    </InputAdornment>
+                  ),
+                  endAdornment: (
+                    <InputAdornment position="end">
+                      <IconButton
+                        onClick={() => setShowPassword(!showPassword)}
+                        edge="end"
+                      >
+                        {showPassword ? <VisibilityOff /> : <Visibility />}
+                      </IconButton>
+                    </InputAdornment>
+                  ),
+                }}
+                sx={{
+                  "& .MuiOutlinedInput-root": {
+                    borderRadius: "30px",
+                    backgroundColor: "#f9fbff",
+                    transition: "all 0.3s ease",
+                  },
+                  "& .Mui-focused": {
+                    boxShadow: "0 0 0 3px rgba(33,150,243,0.2)",
+                  },
+                }}
+              />
+              {/* </Box> */}
 
               <p
                 onClick={() => navigate("/forgot-password")}
@@ -318,23 +389,44 @@ const Signin = () => {
                 Forgot Password?
               </p>
 
-              <button
+              <Button
+                fullWidth
                 onClick={login}
                 tabIndex={3}
-                style={{
-                  width: "100%",
-                  background: "#347db9ff",
-                  color: "white",
-                  border: "none",
-                  padding: "12px",
-                  borderRadius: "25px",
-                  fontSize: "16px",
-                  cursor: "pointer",
-                  marginTop: "10px",
+                // style={{
+                //   width: "100%",
+                //   background: "#347db9ff",
+                //   color: "white",
+                //   border: "none",
+                //   padding: "12px",
+                //   borderRadius: "25px",
+                //   fontSize: "16px",
+                //   cursor: "pointer",
+                //   marginTop: "10px",
+                // }}
+
+                sx={{
+                  mt: 3,
+                  py: 1.3,
+                  borderRadius: "30px",
+                  background: "linear-gradient(135deg, #3f8edc, #2f6fa3)",
+                  color: "#fff",
+                  fontWeight: 600,
+                  letterSpacing: "0.5px",
+                  boxShadow: "0 10px 25px rgba(33,150,243,0.3)",
+                  transition: "all 0.3s ease",
+                  "&:hover": {
+                    transform: "translateY(-2px)",
+                    boxShadow: "0 15px 30px rgba(33,150,243,0.4)",
+                  },
                 }}
               >
-                Sign In
-              </button>
+                {loading ? (
+                  <CircularProgress size={22} sx={{ color: "#fff" }} />
+                ) : (
+                  "Sign In"
+                )}
+              </Button>
             </Box>
           </Box>
 

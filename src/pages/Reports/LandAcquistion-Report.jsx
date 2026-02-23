@@ -1,7 +1,7 @@
 import DateRangeIcon from "@mui/icons-material/DateRange";
 import FormatListNumberedIcon from "@mui/icons-material/FormatListNumbered";
 import PhoneIcon from "@mui/icons-material/Phone";
-import { Chip, Divider, Grid, Paper, Typography } from "@mui/material";
+import { Chip, Divider, Grid, Paper, Typography, useTheme } from "@mui/material";
 import { DataGrid } from "@mui/x-data-grid";
 import axios from "axios";
 import dayjs from "dayjs";
@@ -17,6 +17,9 @@ export default function LandAcquistionReport() {
   const [DocReadyCount, setDocReadyCount] = React.useState(0);
   const [docMissingRows, setDocMissingRows] = React.useState([]);
   const [docReadyRows, setDocReadyRows] = React.useState([]);
+    const theme = useTheme();
+  
+  
   const fetchReport = async (selectedFrom, selectedTo) => {
     try {
       const params = {
@@ -225,13 +228,15 @@ export default function LandAcquistionReport() {
 
       <Grid container spacing={2} sx={{ mt: 3 }}>
         <Grid item xs={12} sm={12} md={12} lg={6}>
-          <Paper elevation={1} sx={{ borderRadius: 3, p: 2 }}>
+          <Paper elevation={1} sx={{ borderRadius: 3, p: 2  ,   
+    color : theme.palette.DHeaderColor.color,  }}>
             <h3
               style={{
                 display: "flex",
                 alignItems: "center",
                 gap: "10px",
                 justifyContent: "center",
+                
               }}
             >
               Uploaded Document
@@ -242,6 +247,7 @@ export default function LandAcquistionReport() {
                   fontWeight: "bold",
                   color: "white",
                   backgroundColor: "#2196F3",
+                  
                 }}
               />
             </h3>
@@ -252,6 +258,9 @@ export default function LandAcquistionReport() {
                   backgroundColor: "#ccc",
                   boxShadow: "0px 1px 2px rgba(0,0,0,0.2)",
                   mx: -2,
+                                borderBottom: "1px solid #90caf9",
+  
+
                 }}
               />
             </Grid>
@@ -285,7 +294,8 @@ export default function LandAcquistionReport() {
 
         {/* DataGrid */}
         <Grid item xs={12} sm={12} md={12} lg={6}>
-          <Paper elevation={1} sx={{ borderRadius: 3, p: 2 }}>
+          <Paper elevation={1} sx={{ borderRadius: 3, p: 2 ,   
+    color : theme.palette.DHeaderColor.color,   }}>
             <h3
               style={{
                 display: "flex",
@@ -309,6 +319,8 @@ export default function LandAcquistionReport() {
                   backgroundColor: "#ccc",
                   boxShadow: "0px 1px 2px rgba(0,0,0,0.2)",
                   mx: -2,
+                              borderBottom: "1px solid #90caf9",
+
                 }}
               />
             </Grid>

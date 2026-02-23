@@ -27,6 +27,7 @@ import profile from "../assets/avtar.png";
 import {
   Avatar,
   Button,
+  CircularProgress,
   Collapse,
   Grid,
   MenuItem,
@@ -191,6 +192,7 @@ export default function Dashboard() {
     React.useState(false);
   const [userType, setUserType] = useState(null);
   const { roleAccess } = useThemeMode();
+  const [loggingOut, setLoggingOut] = useState(false);
 
   // const [drawerOpen, setDrawerOpen] = React.useState(false);
   const [userData, setUserData] = React.useState({
@@ -329,7 +331,7 @@ export default function Dashboard() {
       path: "Rehabilitation",
       menuId: 11,
     },
-     {
+    {
       label: "Send Message",
       icon: <CorporateFareIcon />,
       path: "SendNotification",
@@ -513,7 +515,7 @@ export default function Dashboard() {
       .map((menu) => {
         if (menu.children) {
           const visibleChildren = menu.children.filter((child) =>
-            allowedMenuIds.includes(child.menuId)
+            allowedMenuIds.includes(child.menuId),
           );
           if (visibleChildren.length > 0)
             return { ...menu, children: visibleChildren };
@@ -554,7 +556,7 @@ export default function Dashboard() {
     const active = visibleMenus.find(
       (menu) =>
         Array.isArray(menu.children) &&
-        menu.children.some((c) => location.pathname === `/dashboard/${c.path}`)
+        menu.children.some((c) => location.pathname === `/dashboard/${c.path}`),
     );
     if (active) {
       setOpenCollapse(active.label);
@@ -662,7 +664,7 @@ export default function Dashboard() {
                       </MenuItem>
                     </Grid>
 
-                    <Grid
+                    {/* <Grid
                       display={"flex"}
                       flexDirection={"column"}
                       alignItems={"center"}
@@ -690,6 +692,44 @@ export default function Dashboard() {
                         }}
                       >
                         Log Out
+                      </Button>
+                    </Grid> */}
+                    <Grid
+                      display="flex"
+                      flexDirection="column"
+                      alignItems="center"
+                      paddingBottom={2}
+                    >
+                      <Button
+                        onClick={() => {
+                          setLoggingOut(true);
+
+                          setTimeout(() => {
+                            sessionStorage.clear();
+                            Navigate("/");
+                          }, 1200);
+                        }}
+                        disabled={loggingOut}
+                        sx={{
+                          boxShadow: 4,
+                          borderRadius: 2,
+                          background: "#2196F3",
+                          color: "white",
+                          fontSize: 11,
+                          fontWeight: "bold",
+                          minWidth: 100,
+                          transition: "all 0.3s ease",
+
+                          "&:hover": {
+                            background: "#1976d2",
+                          },
+                        }}
+                      >
+                        {loggingOut ? (
+                          <CircularProgress size={18} sx={{ color: "white" }} />
+                        ) : (
+                          "Log Out"
+                        )}
                       </Button>
                     </Grid>
                   </Paper>

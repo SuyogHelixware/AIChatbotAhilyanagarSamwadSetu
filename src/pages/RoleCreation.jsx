@@ -101,7 +101,7 @@ const RoleCreation = () => {
           IsAdd: true,
           IsEdit: true,
           IsDelete: true,
-        })
+        }),
       ),
     },
   ]);
@@ -110,7 +110,7 @@ const RoleCreation = () => {
     {
       field: "srNo",
       headerName: "SR NO",
-      width:60,
+      width: 60,
       sortable: false,
       headerAlign: "center",
       align: "center",
@@ -421,7 +421,7 @@ const RoleCreation = () => {
             ...item,
             // id: page * limit + index + 1,
             id: item.Id || item.id || page * limit + index + 1,
-          }))
+          })),
         );
         setTotalRows(response.data.count);
       }
@@ -468,8 +468,8 @@ const RoleCreation = () => {
       prev.filter(
         (r) =>
           String(r.id) !== String(displayId) &&
-          !String(r.id).startsWith(`${displayId}-child-`)
-      )
+          !String(r.id).startsWith(`${displayId}-child-`),
+      ),
     );
   };
 
@@ -581,7 +581,7 @@ const RoleCreation = () => {
   const handleSelectedMenus = () => {
     if (!Array.isArray(selectedIds) || selectedIds.length === 0) return;
     const existingSubMenus = new Set(
-      (RoleTableData || []).map((r) => Number(r.SubMenuId))
+      (RoleTableData || []).map((r) => Number(r.SubMenuId)),
     );
     const selectedData = [];
     MenuList.forEach((menu) => {
@@ -591,7 +591,7 @@ const RoleCreation = () => {
           !existingSubMenus.has(sub.LineNum)
         ) {
           const filteredAccess = (sub.oSubMenusSpeAccess || []).filter((acc) =>
-            selectedIds.includes(`${sub.id}_${acc.LineNum}`)
+            selectedIds.includes(`${sub.id}_${acc.LineNum}`),
           );
           selectedData.push({
             id: `${sub.id}_${Date.now()}`,
@@ -850,7 +850,7 @@ const RoleCreation = () => {
     setExpandedRowIds((prev) =>
       prev.includes(rowId)
         ? prev.filter((id) => id !== rowId)
-        : [...prev, rowId]
+        : [...prev, rowId],
     );
   };
 
@@ -878,7 +878,7 @@ const RoleCreation = () => {
           }
         }
         return parent;
-      })
+      }),
     );
   };
 
@@ -946,9 +946,19 @@ const RoleCreation = () => {
               sm: "space-between",
             },
             gap: 2,
+            borderBottom: "1px solid #90caf9",
+            background: theme.palette.DHeaderbg.background,
+            color: theme.palette.DHeaderColor.color,
           }}
         >
-          <DialogTitle>MENUS</DialogTitle>
+          <DialogTitle
+            sx={{
+              color: theme.palette.DHeaderColor.color,
+            }}
+          >
+            {" "}
+            MENUS
+          </DialogTitle>
 
           <div style={{ display: "flex", alignItems: "center", gap: 8 }}>
             <TextField
@@ -956,10 +966,8 @@ const RoleCreation = () => {
               placeholder="Search Menu here..."
               value={menuSearch}
               onChange={(e) => setMenuSearch(e.target.value)}
-                  sx={{ width: 250, borderRadius: "9px" }} 
-
-
-               InputProps={{
+              sx={{ width: 250, borderRadius: "9px" }}
+              InputProps={{
                 startAdornment: (
                   <InputAdornment position="start">
                     <SearchIcon fontSize="small" color="action" />
@@ -1008,10 +1016,11 @@ const RoleCreation = () => {
           }}
         />
         <DialogActions
-          sx={{
+          sx={{ 
             display: "flex",
             justifyContent: "end",
             px: 3,
+            borderTop: "1px solid #90caf9",
           }}
         >
           <Button
@@ -1030,10 +1039,10 @@ const RoleCreation = () => {
         </DialogActions>
       </Dialog>
       {loaderOpen && <Loader open={loaderOpen} />}
-      
+
       <Dialog
         open={on}
-         maxWidth="xl"
+        maxWidth="xl"
         fullWidth
         PaperProps={{
           sx: {
@@ -1057,10 +1066,15 @@ const RoleCreation = () => {
             justifyContent: "space-between",
             alignItems: "center",
             pb: 1,
+            // fontWeight: 500,
+            //  fontSize: "16px",
+            borderBottom: "1px solid #90caf9",
+            background: theme.palette.DHeaderbg.background,
+            color: theme.palette.DHeaderColor.color,
           }}
         >
-           ROLE CREATION
-           <IconButton onClick={handleClose}  >
+          ROLE CREATION
+          <IconButton onClick={handleClose}>
             <CloseIcon sx={{ fontSize: 30 }} />
           </IconButton>
         </DialogTitle>
@@ -1250,7 +1264,6 @@ const RoleCreation = () => {
           </Grid>
         </DialogContent>
 
-    
         <Divider
           sx={{
             borderBottomWidth: 0.6,
@@ -1265,6 +1278,7 @@ const RoleCreation = () => {
             justifyContent: "space-between",
             px: 3,
             pb: 2,
+            borderTop: "1px solid #90caf9",
           }}
         >
           <Button
@@ -1286,7 +1300,7 @@ const RoleCreation = () => {
             onClick={handleSubmit(onSubmit)}
             sx={{
               p: 1,
-               color: "white",
+              color: "white",
               width: 80,
               backgroundColor: theme.palette.Button.background,
               "&:hover": {
@@ -1402,7 +1416,7 @@ const RoleCreation = () => {
         <Box sx={{ height: "75vh", width: "100%" }}>
           <DataGrid
             className="datagrid-style"
-             rowHeight={70}
+            rowHeight={70}
             sx={{
               // height: "100%",
               // minHeight: "400px",
