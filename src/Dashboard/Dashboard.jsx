@@ -707,7 +707,7 @@ export default function Dashboard() {
                           setTimeout(() => {
                             sessionStorage.clear();
                             Navigate("/");
-                          }, 1200);
+                          }, 1000);
                         }}
                         disabled={loggingOut}
                         sx={{
