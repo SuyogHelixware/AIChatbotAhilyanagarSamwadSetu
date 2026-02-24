@@ -34,6 +34,7 @@ import LandAcquistionReport from "../pages/Reports/LandAcquistion-Report";
 import SJYGandhiReport from "../pages/Reports/SJYGandhi-Report";
 import LandAcquisition from "../Dashboard/LandAcquisition-Dashboard";
 import ManageDocPage from "../pages/ManageDocPage";
+import SendMessageReport from "../pages/Reports/SendMessage-Report";
 
 export default function Routing() {
   const { roleAccess } = useThemeMode();
@@ -190,6 +191,14 @@ export default function Routing() {
               element={
                 <ProtectedRoute menuId={16} roleAccess={roleAccess}>
                   <SJYGandhiReport />
+                </ProtectedRoute>
+              }
+            />
+            <Route
+              path="SendMessageReport"
+              element={
+                <ProtectedRoute menuId={16} roleAccess={roleAccess}>
+                  <SendMessageReport />
                 </ProtectedRoute>
               }
             />

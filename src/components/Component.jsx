@@ -127,6 +127,7 @@ export   class InputTextFieldTitle extends React.Component {
       inputProps,
       fullWidth,
       sx,
+      inputRef, 
     } = this.props;
 
     return (
@@ -138,6 +139,7 @@ export   class InputTextFieldTitle extends React.Component {
         name={id}
         type={type}
         value={value}
+         inputRef={inputRef}   
         size="small"
         fullWidth={fullWidth}  
         sx={sx}                
