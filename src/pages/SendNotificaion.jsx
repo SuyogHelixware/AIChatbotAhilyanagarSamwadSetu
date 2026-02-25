@@ -55,6 +55,8 @@ export default function UserCreation() {
   const [newName, setNewName] = useState("");
   const [isEdit, setIsEdit] = useState("SAVE");
   const [editMobile, setEditMobile] = useState("");
+  const [inputValue, setInputValue] = useState("");
+  const [paramValues, setParamValues] = useState({});
 
   const handleEditNumber = (row) => {
     setNewName(row.name);
@@ -234,110 +236,347 @@ export default function UserCreation() {
   // };
   // ---------------New logic on below----------------------
 
+  // const handleSubmitForm = async (data) => {
+  //   try {
+  //     const formData = new FormData();
+  //     let finalFile;
+
+  //     // 🔹 Convert dropdown IDs → mobile numbers
+  //     // const selectedNumbers = campaignOptions
+  //     //   .filter((item) => data.MobileNo?.includes(item.id))
+  //     //   .map((item) => item.mobileNo);
+
+  //     // console.log("Selected Dropdown Numbers:", selectedNumbers);
+
+  //     // // ==================================================
+  //     // // ✅ CASE 1: File Uploaded
+  //     // // ==================================================
+  //     // if (data.CampaignDataFile) {
+  //     //   const fileText = await data.CampaignDataFile.text();
+
+  //     //   const lines = fileText
+  //     //     .split(/\r?\n/)
+  //     //     .filter((line) => line.trim() !== "");
+
+  //     //   const existingNumbers = lines.slice(1);
+
+  //     //   console.log("Existing Numbers From File:", existingNumbers);
+
+  //     //   // Merge
+  //     //   const allNumbers = [...existingNumbers, ...selectedNumbers];
+
+  //     //   // Remove duplicates
+  //     //   const uniqueNumbers = [...new Set(allNumbers)];
+
+  //     //   console.log("Final Unique Numbers:", uniqueNumbers);
+
+  //     //   const finalCsvContent = "MobileNumber\n" + uniqueNumbers.join("\n");
+
+  //     //   finalFile = new File([finalCsvContent], data.CampaignDataFile.name, {
+  //     //     type: "text/csv",
+  //     //   });
+  //     // }
+
+  //     // // ==================================================
+  //     // // ✅ CASE 2: File NOT Uploaded → Create New CSV
+  //     // // ==================================================
+  //     // else {
+  //     //   if (selectedNumbers.length === 0) {
+  //     //     Swal.fire({
+  //     //       icon: "warning",
+  //     //       title: "No Data",
+  //     //       text: "Please upload file or select mobile numbers.",
+  //     //     });
+  //     //     return;
+  //     //   }
+
+  //     //   const uniqueNumbers = [...new Set(selectedNumbers)];
+  //     //   console.log("Creating New File With Numbers:", uniqueNumbers);
+  //     //   const newCsvContent = "MobileNumber\n" + uniqueNumbers.join("\n");
+  //     //   finalFile = new File([newCsvContent], "CampaignData.csv", {
+  //     //     type: "text/csv",
+  //     //   });
+  //     // }
+
+  //     // console.log("Final CSV Ready To Send:");
+  //     // console.log(await finalFile.text());
+
+      
+  //     // 🔹 1️⃣ Dropdown IDs → mobile numbers
+  //     const selectedNumbers = campaignOptions
+  //       .filter((item) => data.MobileNo?.includes(item.id))
+  //       .map((item) => item.mobileNo?.trim());
+
+  //     console.log("Selected Dropdown Numbers:", selectedNumbers);
+
+  //     // 🔹 2️⃣ Custom Chip Numbers
+  //     const customNumbers = (data.CustomNo || [])
+  //       .map((num) => num.trim())
+  //       .filter((num) => /^\d{10}$/.test(num));
+
+  //     console.log("Custom Chip Numbers:", customNumbers);
+
+  //     // ==================================================
+  //     // ✅ CASE 1: File Uploaded
+  //     // ==================================================
+  //     const uploadedFile = data.CampaignDataFile;
+
+  //     if (uploadedFile) {
+  //       const fileText = await uploadedFile.text();
+
+  //       const lines = fileText
+  //         .split(/\r?\n/)
+  //         .map((line) => line.trim())
+  //         .filter((line) => line !== "");
+
+  //       // Remove header
+  //       const existingNumbers = lines.slice(1);
+
+  //       console.log("Existing Numbers From File:", existingNumbers);
+
+  //       // 🔥 Merge All 3 Sources
+  //       const allNumbers = [
+  //         ...existingNumbers,
+  //         ...selectedNumbers,
+  //         ...customNumbers,
+  //       ];
+
+  //       // Remove duplicates
+  //       const uniqueNumbers = [...new Set(allNumbers)];
+
+  //       console.log("Final Unique Numbers:", uniqueNumbers);
+
+  //       const finalCsvContent = "MobileNumber\n" + uniqueNumbers.join("\n");
+
+  //       finalFile = new File([finalCsvContent], uploadedFile.name, {
+  //         type: "text/csv",
+  //       });
+  //     }
+
+  //     // ==================================================
+  //     // ✅ CASE 2: File NOT Uploaded
+  //     // ==================================================
+  //     else {
+  //       const allNumbers = [...selectedNumbers, ...customNumbers];
+
+  //       const uniqueNumbers = [...new Set(allNumbers)];
+
+  //       if (uniqueNumbers.length === 0) {
+  //         Swal.fire({
+  //           icon: "warning",
+  //           title: "No Data",
+  //           text: "Please upload file, select mobile numbers, or enter custom numbers.",
+  //         });
+  //         return;
+  //       }
+
+  //       console.log("Creating New File With Numbers:", uniqueNumbers);
+
+  //       const newCsvContent = "MobileNumber\n" + uniqueNumbers.join("\n");
+
+  //       finalFile = new File([newCsvContent], "CampaignData.csv", {
+  //         type: "text/csv",
+  //       });
+  //     }
+
+  //     console.log("Final CSV Ready To Send:");
+  //     console.log(await finalFile.text());
+
+  //     // Append file
+  //     formData.append("CampaignDataFile", finalFile);
+
+  //     // Other fields
+  //     formData.append("Title", data.Title || "");
+  //     formData.append("Type", data.Type || "");
+  //     formData.append("Templete", data.template || "");
+  //     formData.append("Attachment", data.FileName);
+
+  //     // Debug FormData
+  //     console.log("FormData Values:");
+  //     for (let pair of formData.entries()) {
+  //       console.log(pair[0], pair[1]);
+  //     }
+
+  //     // API Call
+  //     let response = await axios.post(
+  //       `${BASE_URL}WPUtility/Campaign01`,
+  //       formData,
+  //     );
+
+  //     console.log("POST", response);
+
+  //     Swal.fire({
+  //       icon: "success",
+  //       title: "Success",
+  //       text: "Send successfully...",
+  //       toast: true,
+  //       position: "center",
+  //       timer: 2000,
+  //       showConfirmButton: false,
+  //     });
+  //   } catch (error) {
+  //     console.log("ERROR", error);
+  //   }
+  // };
+
   const handleSubmitForm = async (data) => {
-    try {
-      const formData = new FormData();
-      let finalFile;
+  try {
+    const formData = new FormData();
+    let finalFile;
 
-      // 🔹 Convert dropdown IDs → mobile numbers
-      const selectedNumbers = campaignOptions
-        .filter((item) => data.MobileNo?.includes(item.id))
-        .map((item) => item.mobileNo);
+    // 🔹 1️⃣ Dropdown IDs → mobile numbers
+    const selectedNumbers = campaignOptions
+      .filter((item) => data.MobileNo?.includes(item.id))
+      .map((item) => item.mobileNo?.trim());
 
-      console.log("Selected Dropdown Numbers:", selectedNumbers);
+    console.log("Selected Dropdown Numbers:", selectedNumbers);
 
-      // ==================================================
-      // ✅ CASE 1: File Uploaded
-      // ==================================================
-      if (data.CampaignDataFile) {
-        const fileText = await data.CampaignDataFile.text();
+    // 🔹 2️⃣ Custom Chip Numbers
+    const customNumbers = (data.CustomNo || [])
+      .map((num) => num.trim())
+      .filter((num) => /^\d{10}$/.test(num));
 
-        const lines = fileText
-          .split(/\r?\n/)
-          .filter((line) => line.trim() !== "");
+    console.log("Custom Chip Numbers:", customNumbers);
 
-        const existingNumbers = lines.slice(1);
+    // 🔹 3️⃣ Prepare Template Param Columns (b1, b2, b3...)
+    const paramKeys = uniqueParams.map((param) =>
+      param.replace(/[{}]/g, "")
+    );
 
-        console.log("Existing Numbers From File:", existingNumbers);
+    const paramColumns = paramKeys.map(
+      (key) => paramValues[key] || ""
+    );
 
-        // Merge
-        const allNumbers = [...existingNumbers, ...selectedNumbers];
+    // ==================================================
+    // ✅ CASE 1: File Uploaded
+    // ==================================================
+    const uploadedFile = data.CampaignDataFile;
 
-        // Remove duplicates
-        const uniqueNumbers = [...new Set(allNumbers)];
+    if (uploadedFile) {
+      const fileText = await uploadedFile.text();
 
-        console.log("Final Unique Numbers:", uniqueNumbers);
+      const lines = fileText
+        .split(/\r?\n/)
+        .map((line) => line.trim())
+        .filter((line) => line !== "");
 
-        const finalCsvContent = "MobileNumber\n" + uniqueNumbers.join("\n");
+      // Remove header
+      const existingNumbers = lines.slice(1);
 
-        finalFile = new File([finalCsvContent], data.CampaignDataFile.name, {
-          type: "text/csv",
-        });
-      }
+      console.log("Existing Numbers From File:", existingNumbers);
 
-      // ==================================================
-      // ✅ CASE 2: File NOT Uploaded → Create New CSV
-      // ==================================================
-      else {
-        if (selectedNumbers.length === 0) {
-          Swal.fire({
-            icon: "warning",
-            title: "No Data",
-            text: "Please upload file or select mobile numbers.",
-          });
-          return;
-        }
+      // 🔥 Merge All 3 Sources
+      const allNumbers = [
+        ...existingNumbers,
+        ...selectedNumbers,
+        ...customNumbers,
+      ];
 
-        const uniqueNumbers = [...new Set(selectedNumbers)];
-        console.log("Creating New File With Numbers:", uniqueNumbers);
-        const newCsvContent = "MobileNumber\n" + uniqueNumbers.join("\n");
-        finalFile = new File([newCsvContent], "CampaignData.csv", {
-          type: "text/csv",
-        });
-      }
+      // Remove duplicates
+      const uniqueNumbers = [...new Set(allNumbers)];
 
-      console.log("Final CSV Ready To Send:");
-      console.log(await finalFile.text());
+      console.log("Final Unique Numbers:", uniqueNumbers);
 
-      // Append file
-      formData.append("CampaignDataFile", finalFile);
-
-      // Other fields
-      formData.append("Title", data.Title || "");
-      formData.append("Type", data.Type || "");
-      formData.append("Templete", data.template || "");
-      formData.append("Attachment", data.FileName);
-
-      // Debug FormData
-      console.log("FormData Values:");
-      for (let pair of formData.entries()) {
-        console.log(pair[0], pair[1]);
-      }
-
-      // API Call
-      let response = await axios.post(
-        `${BASE_URL}WPUtility/Campaign01`,
-        formData,
-      );
-
-      console.log("POST", response);
-
-      Swal.fire({
-        icon: "success",
-        title: "Success",
-        text: "Send successfully...",
-        toast: true,
-        position: "center",
-        timer: 2000,
-        showConfirmButton: false,
+      // 🔥 Create Header with Params
+      let header = "MobileNumber";
+      paramKeys.forEach((_, index) => {
+        header += `,b${index + 1}`;
       });
-    } catch (error) {
-      console.log("ERROR", error);
+
+      // 🔥 Create Rows
+      const rows = uniqueNumbers.map((number) => {
+        return [number, ...paramColumns].join(",");
+      });
+
+      const finalCsvContent = header + "\n" + rows.join("\n");
+
+      finalFile = new File([finalCsvContent], uploadedFile.name, {
+        type: "text/csv",
+      });
     }
-  };
+
+    // ==================================================
+    // ✅ CASE 2: File NOT Uploaded
+    // ==================================================
+    else {
+      const allNumbers = [...selectedNumbers, ...customNumbers];
+
+      const uniqueNumbers = [...new Set(allNumbers)];
+
+      if (uniqueNumbers.length === 0) {
+        Swal.fire({
+          icon: "warning",
+          title: "No Data",
+          text:
+            "Please upload file, select mobile numbers, or enter custom numbers.",
+        });
+        return;
+      }
+
+      console.log("Creating New File With Numbers:", uniqueNumbers);
+
+      // 🔥 Create Header with Params
+      let header = "MobileNumber";
+      paramKeys.forEach((_, index) => {
+        header += `,b${index + 1}`;
+      });
+
+      // 🔥 Create Rows
+      const rows = uniqueNumbers.map((number) => {
+        return [number, ...paramColumns].join(",");
+      });
+
+      const newCsvContent = header + "\n" + rows.join("\n");
+
+      finalFile = new File([newCsvContent], "CampaignData.csv", {
+        type: "text/csv",
+      });
+    }
+
+    console.log("Final CSV Ready To Send:");
+    console.log(await finalFile.text());
+
+    // Append file
+    formData.append("CampaignDataFile", finalFile);
+
+    // Other fields
+    formData.append("Title", data.Title || "");
+    formData.append("Type", data.Type || "");
+    formData.append("Templete", data.template || "");
+    formData.append("Attachment", data.FileName);
+
+    // Debug FormData
+    console.log("FormData Values:");
+    for (let pair of formData.entries()) {
+      console.log(pair[0], pair[1]);
+    }
+
+    // API Call
+    let response = await axios.post(
+      `${BASE_URL}WPUtility/Campaign01`,
+      formData,
+    );
+
+    console.log("POST", response);
+
+    Swal.fire({
+      icon: "success",
+      title: "Success",
+      text: "Send successfully...",
+      toast: true,
+      position: "center",
+      timer: 2000,
+      showConfirmButton: false,
+    });
+  } catch (error) {
+    console.log("ERROR", error);
+  }
+};
 
   // ---------------------------------
   const selectedType = watch("Type");
+  const isAttachmentEnabled =
+    selectedType === "DOCUMENT" || selectedType === "IMG";
 
   const [campaignOptions, setCampaignOptions] = useState([
     { id: 1, name: "Rahul Sharma", mobileNo: "9876543210" },
@@ -588,6 +827,29 @@ export default function UserCreation() {
       confirmButtonText: "OK",
     });
   };
+  // --------------------------------------------------
+
+  // Watch message field
+  const messageValue = watch("Message") || "";
+
+  // Extract {{1}}, {{2}}, etc
+  const paramMatches = messageValue.match(/{{\d+}}/g) || [];
+  const uniqueParams = [...new Set(paramMatches)];
+
+  // Store dynamic parameter values
+
+  // Generate live preview message
+  const getPreviewMessage = () => {
+    let preview = messageValue;
+
+    uniqueParams.forEach((param) => {
+      const key = param.replace(/[{}]/g, ""); // "{{1}}" → "1"
+      const value = paramValues[key] || param;
+      preview = preview.split(param).join(value);
+    });
+
+    return preview;
+  };
 
   return (
     <>
@@ -620,7 +882,7 @@ export default function UserCreation() {
             {/* Name */}
             <Grid item xs={12} sm={6}>
               <TextField
-                label="Name"
+                label="NAME"
                 name="name"
                 value={newName}
                 onChange={(e) => setNewName(e.target.value)}
@@ -635,7 +897,7 @@ export default function UserCreation() {
                 fullWidth
                 size="small"
                 type="tel"
-                label="Mobile Number"
+                label="MOBILE NUMBER"
                 value={newMobile}
                 onChange={(e) => {
                   const value = e.target.value.replace(/\D/g, "").slice(0, 10);
@@ -755,9 +1017,21 @@ export default function UserCreation() {
         </Typography>
       </Grid>
       <Box>
-        <Paper
+        {/* <Paper
           sx={{
             maxWidth: 850,
+            mx: "auto",
+            borderRadius: 4,
+            overflow: "hidden",
+            mb:2
+
+
+            
+          }}
+        >Test</Paper> */}
+        <Paper
+          sx={{
+            maxWidth: 1100,
             mx: "auto",
             borderRadius: 4,
             overflow: "hidden",
@@ -768,7 +1042,7 @@ export default function UserCreation() {
             onSubmit={handleSubmit(handleSubmitForm)}
             sx={{
               p: 4,
-              maxHeight: "70vh",
+              maxHeight: "120vh",
               overflowY: "auto",
               "&::-webkit-scrollbar": { width: "6px" },
               "&::-webkit-scrollbar-thumb": {
@@ -777,17 +1051,20 @@ export default function UserCreation() {
               },
             }}
           >
-            <Grid container spacing={3}>
+            <Grid container spacing={5}>
               {/* ROW 1 */}
 
-              <Grid item md={4} sm={4} xs={12}>
+              <Grid
+                item
+                md={12}
+                sm={12}
+                xs={12}
+                sx={{ alignItems: "start", textAlign: "left" }}
+              >
                 <Controller
                   name="Title"
                   control={control}
                   defaultValue=""
-                  // rules={{
-                  //   required: "Title field is required",
-                  // }}
                   render={({ field, fieldState: { error } }) => (
                     <InputTextFieldTitle
                       {...field}
@@ -811,11 +1088,20 @@ export default function UserCreation() {
                       render={({ field, fieldState }) => (
                         <TextField
                           size="small"
-                          label="UPLOAD MOBILE NO FILE"
+                          label="UPLOAD MOBILE NO"
                           value={field.value?.name || ""}
                           placeholder="Choose file"
                           InputLabelProps={{
                             shrink: true,
+                          }}
+                          sx={{
+                            "& .MuiOutlinedInput-root": {
+                              minHeight: 82,
+                            },
+                            "& .MuiInputBase-input": {
+                              paddingTop: "14px",
+                              paddingBottom: "14px",
+                            },
                           }}
                           InputProps={{
                             readOnly: true,
@@ -903,7 +1189,7 @@ export default function UserCreation() {
               {/* Dropdown Field */}
               <Grid item md={4} sm={4} xs={12}>
                 <Box display="flex" alignItems="center" gap={1}>
-                  <Box flex={1} minWidth={0}>
+                  {/* <Box flex={1} minWidth={0}>
                     <Controller
                       name="MobileNo"
                       control={control}
@@ -915,15 +1201,15 @@ export default function UserCreation() {
                             size="small"
                             error={!!fieldState.error}
                           >
-                            <InputLabel>MOBILE NO</InputLabel>
+                            <InputLabel>SELECT MOBILE NO</InputLabel>
 
                             <Select
                               {...field}
                               multiple
                               value={field.value || []}
-                              label="MOBILE NO"
+                              label="SELECT MOBILE NO"
                               sx={{
-                                height: 40,
+                                minHeight: 85,
                                 "& .MuiSelect-select": {
                                   display: "flex",
                                   alignItems: "center",
@@ -944,34 +1230,181 @@ export default function UserCreation() {
                                 if (selectedItems.length === 0) {
                                   return "Select Mobile No";
                                 }
+                                const mobileNumbers = selectedItems.map(
+                                  (item) => item.mobileNo,
+                                );
 
                                 return (
-                                  <Box
-                                    sx={{
-                                      display: "flex",
-                                      gap: 0.5,
-                                      alignItems: "center",
-                                      overflow: "hidden",
-                                    }}
+                                  <Tooltip
+                                    arrow
+                                    placement="top"
+                                    title={mobileNumbers.join(", ")}
                                   >
-                                    {selectedItems.slice(0, 2).map((item) => (
-                                      <Chip
-                                        key={item.id}
-                                        label={item.mobileNo}
-                                        size="small"
-                                      />
-                                    ))}
-
-                                    {selectedItems.length > 2 && (
-                                      <Chip
-                                        label={`+${selectedItems.length - 2}`}
-                                        size="small"
-                                      />
-                                    )}
-                                  </Box>
+                                    <Box                                     
+                                      sx={{
+                                        display: "flex",
+                                        flexWrap: "wrap", 
+                                        gap: 0.5,
+                                        maxHeight: 70, 
+                                        overflowY: "auto", 
+                                        width: "100%",
+                                      }}
+                                    >                                   
+                                      {selectedItems.map((item) => (
+                                        <Chip
+                                          key={item.id}
+                                          label={item.mobileNo}
+                                          size="small"
+                                          color="primary"
+                                          sx={{
+                                            width: "48%",  
+                                          }}
+                                        />
+                                      ))}
+                                    </Box>
+                                  </Tooltip>
                                 );
                               }}
                             >
+                              {campaignOptions.map((option) => (
+                                <MenuItem key={option.id} value={option.id}>
+                                  <Checkbox
+                                    checked={field.value?.includes(option.id)}
+                                  />
+                                  <ListItemText
+                                    primary={option.name}
+                                    secondary={option.mobileNo}
+                                  />
+                                </MenuItem>
+                              ))}
+                            </Select>
+
+                            {fieldState.error && (
+                              <FormHelperText>
+                                {fieldState.error.message}
+                              </FormHelperText>
+                            )}
+                          </FormControl>
+                        );
+                      }}
+                    />
+                  </Box> */}
+                  <Box flex={1} minWidth={0}>
+                    <Controller
+                      name="MobileNo"
+                      control={control}
+                      defaultValue={[]}
+                      render={({ field, fieldState }) => {
+                        const allIds = campaignOptions.map((item) => item.id);
+                        const isAllSelected =
+                          allIds.length > 0 &&
+                          field.value?.length === allIds.length;
+
+                        return (
+                          <FormControl
+                            fullWidth
+                            size="small"
+                            error={!!fieldState.error}
+                          >
+                            <InputLabel>SELECT MOBILE NO</InputLabel>
+
+                            <Select
+                              {...field}
+                              multiple
+                              value={field.value || []}
+                              label="SELECT MOBILE NO"
+                              onChange={(event) => {
+                                const value = event.target.value;
+
+                                // ✅ Select All Logic
+                                if (value.includes("all")) {
+                                  if (isAllSelected) {
+                                    field.onChange([]); // Unselect all
+                                  } else {
+                                    field.onChange(allIds); // Select all
+                                  }
+                                } else {
+                                  field.onChange(value);
+                                }
+                              }}
+                              sx={{
+                                minHeight: 85,
+                                "& .MuiSelect-select": {
+                                  display: "flex",
+                                  alignItems: "flex-start",
+                                  paddingTop: "8px",
+                                  paddingBottom: "8px",
+                                },
+                              }}
+                              MenuProps={{
+                                PaperProps: {
+                                  sx: {
+                                    maxHeight: 250,
+                                  },
+                                },
+                              }}
+                              renderValue={(selected) => {
+                                const selectedItems = campaignOptions.filter(
+                                  (item) => selected.includes(item.id),
+                                );
+
+                                if (selectedItems.length === 0) {
+                                  return "Select Mobile No";
+                                }
+
+                                const mobileNumbers = selectedItems.map(
+                                  (item) => item.mobileNo,
+                                );
+
+                                return (
+                                  <Tooltip
+                                    arrow
+                                    placement="top"
+                                    title={mobileNumbers.join(", ")}
+                                  >
+                                    <Box
+                                      sx={{
+                                        display: "flex",
+                                        flexWrap: "wrap",
+                                        gap: 0.5,
+                                        maxHeight: 70,
+                                        overflowY: "auto",
+                                        width: "100%",
+                                      }}
+                                    >
+                                      {selectedItems.map((item) => (
+                                        <Chip
+                                          key={item.id}
+                                          label={item.mobileNo}
+                                          size="small"
+                                          color="primary"
+                                          sx={{
+                                            width: "48%",
+                                          }}
+                                        />
+                                      ))}
+                                    </Box>
+                                  </Tooltip>
+                                );
+                              }}
+                            >
+                              {/* ✅ Select All Option */}
+                              <MenuItem value="all">
+                                <Checkbox
+                                  checked={isAllSelected}
+                                  indeterminate={
+                                    field.value?.length > 0 &&
+                                    field.value?.length < allIds.length
+                                  }
+                                />
+                                <ListItemText
+                                  primary={`Select All (${allIds.length})`}
+                                />
+                              </MenuItem>
+
+                              <Divider />
+
+                              {/* ✅ Your Existing Options */}
                               {campaignOptions.map((option) => (
                                 <MenuItem key={option.id} value={option.id}>
                                   <Checkbox
@@ -1012,8 +1445,220 @@ export default function UserCreation() {
                   </IconButton>
                 </Box>
               </Grid>
-              {/* --------------------------------- */}
 
+              {/* <Grid item md={4} sm={4} xs={12}>
+                <Controller
+                  name="CustomNo"
+                  control={control}
+                  defaultValue={[]}
+                  rules={{
+                    validate: (value) => {
+                      if (!value || value.length === 0) {
+                        return "Please enter at least one mobile number";
+                      }
+                      return true;
+                    },
+                  }}
+                  render={({ field, fieldState: { error } }) => {
+                    const handleAddNumber = (number) => {
+                      if (!/^\d{10}$/.test(number)) return;
+
+                      if (!field.value.includes(number)) {
+                        field.onChange([...field.value, number]);
+                      }
+                    };
+
+                    return (
+                      <Tooltip
+                        arrow
+                        placement="top"
+                        title={
+                          field.value && field.value.length > 0
+                            ? field.value.join(", ")
+                            : "Enter 10 digit mobile number and press Enter"
+                        }
+                      >
+                        <Box>
+                          <Autocomplete
+                            multiple
+                            freeSolo
+                            options={[]}
+                            value={field.value || []}
+                            inputValue={inputValue}
+                            // 🔹 FIX DELETE ISSUE
+                            onChange={(event, newValue) => {
+                              field.onChange(newValue);
+                            }}
+                            onInputChange={(event, newInputValue) => {
+                              const numericValue = newInputValue.replace(
+                                /\D/g,
+                                "",
+                              );
+                              if (numericValue.length <= 10) {
+                                setInputValue(numericValue);
+                              }
+                            }}
+                            onKeyDown={(e) => {
+                              if (e.key === "Enter") {
+                                e.preventDefault();
+                                handleAddNumber(inputValue);
+                                setInputValue("");
+                              }
+                            }}
+                            renderTags={(value, getTagProps) =>
+                              value.map((option, index) => (
+                                <Chip
+                                  label={option}
+                                  {...getTagProps({ index })}
+                                  size="small"
+                                  color="primary"
+                                />
+                              ))
+                            }
+                            renderInput={(params) => (
+                              <TextField
+                                {...params}
+                                label="ENTER CUSTOM NO."
+                                error={!!error}
+                                helperText={
+                                  error?.message ||
+                                  "Only 10 digit mobile numbers allowed"
+                                }
+                                inputProps={{
+                                  ...params.inputProps,
+                                  maxLength: 10,
+                                  inputMode: "numeric",
+                                }}
+                                
+                              />
+                            )}
+                            // 🔹 FIX HEIGHT + 2 CHIP PER ROW + SCROLL
+                            sx={{
+                              "& .MuiOutlinedInput-root": {
+                                minHeight: "70px",
+                                maxHeight: "70px",
+                                overflowY: "auto",
+                                alignItems: "flex-start",
+                                flexWrap: "wrap",
+                                gap: "4px",
+                              },
+                              "& .MuiChip-root": {
+                                maxWidth: "48%", // 2 chips per row approx
+                              },
+                            }}
+                          />
+                        </Box>
+                      </Tooltip>
+                    );
+                  }}
+                />
+              </Grid> */}
+
+              <Grid item md={4} sm={4} xs={12}>
+                <Controller
+                  name="CustomNo"
+                  control={control}
+                  defaultValue={[]}
+                  render={({ field, fieldState: { error } }) => {
+                    const handleAddNumber = (number) => {
+                      if (!/^\d{10}$/.test(number)) return;
+                      if (!field.value.includes(number)) {
+                        field.onChange([...field.value, number]);
+                      }
+                    };
+
+                    return (
+                      <Tooltip
+                        arrow
+                        placement="top"
+                        title={
+                          field.value?.length
+                            ? field.value.join(", ")
+                            : "Enter 10 digit mobile number and press Enter"
+                        }
+                      >
+                        <Autocomplete
+                          multiple
+                          freeSolo
+                          options={[]}
+                          value={field.value || []}
+                          inputValue={inputValue}
+                          onChange={(e, newValue) => field.onChange(newValue)}
+                          onInputChange={(e, newInputValue) => {
+                            const numericValue = newInputValue.replace(
+                              /\D/g,
+                              "",
+                            );
+                            if (numericValue.length <= 10) {
+                              setInputValue(numericValue);
+                            }
+                          }}
+                          onKeyDown={(e) => {
+                            if (e.key === "Enter") {
+                              e.preventDefault();
+                              handleAddNumber(inputValue);
+                              setInputValue("");
+                            }
+                          }}
+                          renderTags={(value, getTagProps) => (
+                            <Box
+                              sx={{
+                                display: "flex",
+                                flexWrap: "wrap",
+                                gap: "4px",
+                                maxHeight: "60px",
+                                overflowY: "auto",
+                                width: "100%",
+                              }}
+                            >
+                              {value.map((option, index) => (
+                                <Chip
+                                  {...getTagProps({ index })}
+                                  label={option}
+                                  size="small"
+                                  color="primary"
+                                  sx={{ maxWidth: "48%" }}
+                                />
+                              ))}
+                            </Box>
+                          )}
+                          renderInput={(params) => (
+                            <TextField
+                              {...params}
+                              label="ENTER CUSTOM NO."
+                              error={!!error}
+                              helperText={
+                                error?.message ||
+                                "Only 10 digit mobile numbers allowed"
+                              }
+                              inputProps={{
+                                ...params.inputProps,
+                                maxLength: 10,
+                                inputMode: "numeric",
+                              }}
+                            />
+                          )}
+                          sx={{
+                            "& .MuiOutlinedInput-root": {
+                              minHeight: "75px",
+                              alignItems: "flex-start",
+                            },
+                          }}
+                        />
+                      </Tooltip>
+                    );
+                  }}
+                />
+              </Grid>
+              {/* --------------------------------- */}
+              {/* <Divider
+                sx={{
+                  borderBottom: "0.5px solid #111111",
+                  width: "100%",
+                  position: "relative",
+                  mt: 2,
+                }}
+              /> */}
               {/* ROW 2 */}
               <Grid item md={4} sm={6} xs={12}>
                 <Controller
@@ -1088,7 +1733,7 @@ export default function UserCreation() {
                         onChange={(_, v) => {
                           //  set template name in form
                           field.onChange(v ? v.Name : null);
-
+                             setParamValues({}); 
                           //  BODY text → MESSAGE
                           if (v?.template?.components) {
                             const bodyComponent = v.template.components.find(
@@ -1128,105 +1773,122 @@ export default function UserCreation() {
                   }}
                 />
               </Grid>
-              {(selectedType === "DOCUMENT" || selectedType === "IMG") && (
-                <Grid item md={4} sm={6} xs={12}>
-                  <Controller
-                    name="FileName"
-                    control={control}
-                    defaultValue={null}
-                    rules={{
-                      required: "File is required",
-                      validate: (file) => {
-                        if (!file) return true;
+              {/* {(selectedType === "DOCUMENT" || selectedType === "IMG") && ( */}
+              <Grid item md={4} sm={6} xs={12}>
+                <Controller
+                  name="FileName"
+                  control={control}
+                  defaultValue={null}
+                  rules={{
+                    required: isAttachmentEnabled ? "File is required" : false,
+                    // required: "File is required",
+                    validate: (file) => {
+                      if (!file) return true;
 
-                        const allowedTypes = [
-                          "application/pdf",
-                          "image/jpeg",
-                          "image/png",
-                          "image/jpg",
-                          "image/gif",
-                          "image/bmp",
-                          "image/webp",
-                        ];
+                      const allowedTypes = [
+                        "application/pdf",
+                        "image/jpeg",
+                        "image/png",
+                        "image/jpg",
+                        "image/gif",
+                        "image/bmp",
+                        "image/webp",
+                      ];
 
-                        return (
-                          allowedTypes.includes(file.type) ||
-                          "Only PDF or Image files are allowed"
-                        );
-                      },
-                    }}
-                    render={({ field, fieldState }) => (
-                      <TextField
-                        fullWidth
-                        size="small"
-                        label="ATTACH FILE"
-                        value={field.value?.name || ""}
-                        placeholder="Choose file"
-                        error={!!fieldState.error}
-                        helperText={fieldState.error?.message}
-                        InputLabelProps={{
-                          shrink: true,
-                        }}
-                        InputProps={{
-                          readOnly: true,
-                          endAdornment: (
-                            <Button
-                              component="label"
-                              variant="outlined"
-                              size="small"
-                              sx={{ ml: 1, textTransform: "none" }}
-                            >
-                              Upload
-                              <input
-                                type="file"
-                                hidden
-                                accept=".pdf,image/*"
-                                onChange={(e) => {
-                                  const file = e.target.files?.[0];
+                      return (
+                        allowedTypes.includes(file.type) ||
+                        "Only PDF or Image files are allowed"
+                      );
+                    },
+                  }}
+                  render={({ field, fieldState }) => (
+                    <Tooltip
+                      arrow
+                      placement="top"
+                      title={
+                        !isAttachmentEnabled
+                          ? "Attachment allowed only for DOCUMENT or IMG type"
+                          : ""
+                      }
+                    >
+                      <span>
+                        <TextField
+                          fullWidth
+                          size="small"
+                          label="ATTACH FILE"
+                          value={field.value?.name || ""}
+                          placeholder="Choose file"
+                          error={!!fieldState.error}
+                          helperText={fieldState.error?.message}
+                          disabled={!isAttachmentEnabled}
+                          InputLabelProps={{
+                            shrink: true,
+                          }}
+                          InputProps={{
+                            readOnly: true,
+                            endAdornment: (
+                              <Button
+                                component="label"
+                                variant="outlined"
+                                size="small"
+                                disabled={!isAttachmentEnabled}
+                                sx={{ ml: 1, textTransform: "none" }}
+                              >
+                                Upload
+                                <input
+                                  type="file"
+                                  hidden
+                                  accept=".pdf,image/*"
+                                  disabled={!isAttachmentEnabled}
+                                  onChange={(e) => {
+                                    const file = e.target.files?.[0];
 
-                                  if (!file) {
-                                    field.onChange(null);
-                                    return;
-                                  }
+                                    if (!file) {
+                                      field.onChange(null);
+                                      return;
+                                    }
 
-                                  const allowedTypes = [
-                                    "application/pdf",
-                                    "image/jpeg",
-                                    "image/png",
-                                    "image/jpg",
-                                    "image/gif",
-                                    "image/bmp",
-                                    "image/webp",
-                                  ];
+                                    const allowedTypes = [
+                                      "application/pdf",
+                                      "image/jpeg",
+                                      "image/png",
+                                      "image/jpg",
+                                      "image/gif",
+                                      "image/bmp",
+                                      "image/webp",
+                                    ];
 
-                                  if (!allowedTypes.includes(file.type)) {
-                                    Swal.fire({
-                                      icon: "warning",
-                                      title: "Invalid File",
-                                      text: "Please upload only PDF or Image files.",
-                                      toast: true,
-                                      position: "center",
-                                      timer: 3000,
-                                      showConfirmButton: false,
-                                    });
-                                    e.target.value = "";
-                                    field.onChange(null);
-                                    return;
-                                  }
+                                    if (!allowedTypes.includes(file.type)) {
+                                      Swal.fire({
+                                        icon: "warning",
+                                        title: "Invalid File",
+                                        text: "Please upload only PDF or Image files.",
+                                        toast: true,
+                                        position: "center",
+                                        timer: 3000,
+                                        showConfirmButton: false,
+                                      });
+                                      e.target.value = "";
+                                      field.onChange(null);
+                                      return;
+                                    }
 
-                                  field.onChange(file);
-                                }}
-                              />
-                            </Button>
-                          ),
-                        }}
-                      />
-                    )}
-                  />
-                </Grid>
-              )}
+                                    field.onChange(file);
+                                  }}
+                                />
+                              </Button>
+                            ),
+                          }}
+                        />
+                      </span>
+                    </Tooltip>
+                  )}
+                />
+              </Grid>
+              {/* )} */}
+
               {/* MESSAGE */}
-              <Grid item xs={12}>
+              {/* <Grid item xs={12}>
                 <Controller
                   name="Message"
                   control={control}
@@ -1253,7 +1915,59 @@ export default function UserCreation() {
                     </Tooltip>
                   )}
                 />
+              </Grid> */}
+              <Grid item xs={12}>
+                <Controller
+                  name="Message"
+                  control={control}
+                  defaultValue=""
+                  render={({ field, fieldState: { error } }) => (
+                    <Tooltip
+                      title={getPreviewMessage() || "No message entered"}
+                      placement="bottom-start"
+                      arrow
+                    >
+                      <TextField
+                        {...field}
+                        value={getPreviewMessage()} // ✅ Show live replaced message
+                        label="MESSAGE"
+                        size="small"
+                        multiline
+                        rows={6}
+                        fullWidth
+                        error={!!error}
+                        helperText={error?.message}
+                        InputProps={{
+                          readOnly: true,
+                        }}
+                      />
+                    </Tooltip>
+                  )}
+                />
               </Grid>
+              {uniqueParams.length > 0 && (
+                <Grid container spacing={2} sx={{ mt: 1 }}>
+                  {uniqueParams.map((param) => {
+                    const key = param.replace(/[{}]/g, "");
+
+                    return (
+                      <Grid item xs={12} sm={4} key={key}>
+                        <TextField                           
+                          size="small"
+                          label={`Enter value for ${param}`}
+                          value={paramValues[key] || ""}
+                          onChange={(e) =>
+                            setParamValues({
+                              ...paramValues,
+                              [key]: e.target.value,
+                            })
+                          }
+                        />
+                      </Grid>
+                    );
+                  })}
+                </Grid>
+              )}
             </Grid>
 
             <Divider sx={{ my: 2 }} />
