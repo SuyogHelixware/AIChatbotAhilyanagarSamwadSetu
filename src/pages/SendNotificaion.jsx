@@ -1,53 +1,50 @@
-import {
-  Box,
-  Paper,
-  Grid,
-  Typography,
-  Divider,
-  Button,
-  IconButton,
-  Autocomplete,
-  Tooltip,
-  TextField,
-  MenuItem,
-  Select,
-  InputLabel,
-  FormControl,
-  FormHelperText,
-  Checkbox,
-  ListItemText,
-  Chip,
-  FormControlLabel,
-} from "@mui/material";
-import CloseIcon from "@mui/icons-material/Close";
-import { Controller, useForm } from "react-hook-form";
-import InputTextField, {
-  InputDescriptionField,
-  InputTextFieldTitle,
-} from "../components/Component";
-import { useTheme } from "@mui/styles";
-import { useEffect, useState } from "react";
-import axios from "axios";
-import { useRef } from "react";
-import Swal from "sweetalert2";
-import { BASE_URL } from "../Constant";
-import EditIcon from "@mui/icons-material/Edit";
-import DeleteIcon from "@mui/icons-material/Delete";
-import dayjs from "dayjs";
 import AddIcon from "@mui/icons-material/Add";
-import {
-  Dialog,
-  DialogTitle,
-  DialogContent,
-  DialogActions,
-} from "@mui/material";
-import { DataGrid } from "@mui/x-data-grid";
-import InfoIcon from "@mui/icons-material/Info";
+import CloseIcon from "@mui/icons-material/Close";
 import DeleteOutlineOutlinedIcon from "@mui/icons-material/DeleteOutlineOutlined";
 import EditOutlinedIcon from "@mui/icons-material/EditOutlined";
+import InfoIcon from "@mui/icons-material/Info";
+import {
+  Autocomplete,
+  Box,
+  Button,
+  Card,
+  CardActions,
+  CardContent,
+  Checkbox,
+  Chip,
+  Dialog,
+  DialogActions,
+  DialogContent,
+  DialogTitle,
+  Divider,
+  FormControl,
+  FormControlLabel,
+  FormHelperText,
+  Grid,
+  IconButton,
+  InputLabel,
+  ListItemText,
+  MenuItem,
+  Paper,
+  Select,
+  TextField,
+  Tooltip,
+  Typography,
+} from "@mui/material";
+import { useTheme } from "@mui/styles";
+import { DataGrid } from "@mui/x-data-grid";
+import axios from "axios";
+import dayjs from "dayjs";
+import { useEffect, useRef, useState } from "react";
+import { Controller, useForm } from "react-hook-form";
+import Swal from "sweetalert2";
+import { InputTextFieldTitle } from "../components/Component";
+import Loader from "../components/Loader";
+import { BASE_URL } from "../Constant";
 
 export default function UserCreation() {
   const theme = useTheme();
+  const [loaderOpen, setLoaderOpen] = useState(false);
   const hasFetched = useRef(false);
   const [allTemplates, setAllTemplates] = useState([]);
   const [filteredTemplates, setFilteredTemplates] = useState([]);
@@ -61,21 +58,14 @@ export default function UserCreation() {
   const [paramValues, setParamValues] = useState({});
   const [PrevDocEntry, setPrevDocEntry] = useState("");
   const [searchText, setSearchText] = useState("");
-  const [drawerOpen, setDrawerOpen] = useState(false);
+  const [searchTextList, setSearchTextList] = useState("");
 
   // --------Sidebar -----------------------------------
   const [listData, setListData] = useState([]);
-const [page, setPage] = useState(0);
-const [hasMore, setHasMore] = useState(true);
-const [loading, setLoading] = useState(false);
-// --------------------------------------------------
-  // const handleEditNumber = (row) => {
-  //   setNewName(row.Name);
-  //   setNewMobile(row.Phone);
-
-  //   // Agar modal use kar rahe ho to open bhi kar do
-  //   setOpenMobileModal(true);
-  // };
+  const [page, setPage] = useState(0);
+  const [hasMore, setHasMore] = useState(true);
+  const [loading, setLoading] = useState(false);
+  // --------------------------------------------------
 
   const handleEditNumber = async (Id) => {
     setIsEdit("UPDATE");
@@ -194,16 +184,15 @@ const [loading, setLoading] = useState(false);
 
   const initial = {
     Title: "",
-    Type: "DOCUMENT",
+    // Type: "DOCUMENT",
+    Type: "",
     template: "",
     FileName: "",
-    // CampaignDataFile: "",
     CampaignDataFile: null,
   };
   const { handleSubmit, control, reset, watch, setValue, getValues } = useForm({
     defaultValues: initial,
   });
-
   const getMessageTemplates = async () => {
     const token = sessionStorage.getItem("BearerTokan");
     if (!token) {
@@ -215,23 +204,17 @@ const [loading, setLoading] = useState(false);
         method: "get",
         maxBodyLength: Infinity,
         url: `${BASE_URL}Campaign/Templetes`,
-        // params: {
-        //   fields: "name,components,language",
-        // },
         headers: {
-          // apikey: "8552af6c-8c67-11f0-98fc-02c8a5e042bd",
           Authorization: token.startsWith("Bearer ")
             ? token
             : `Bearer ${token}`,
         },
       });
-      const jsonData = response.data.response;
-      console.log("Without JSON", jsonData);
-      // const jsonDataOBJ = JSON.parse(jsonData);
-      // console.log("With JSON", jsonDataOBJ)
 
-      const templates = jsonData?.data || [];
+      const jsonData = response.data.values || [];
+      const templates = jsonData;
       setAllTemplates(templates);
+      console.log("Templetes", templates);
     } catch (error) {
       console.error("Error fetching templates:", error);
     }
@@ -267,53 +250,9 @@ const [loading, setLoading] = useState(false);
     if (hasFetched.current) return;
     hasFetched.current = true;
     getMessageTemplates();
-    fetchListData()
   }, []);
-  // ---------old logic-------
-  // const handleSubmitForm = async (data) => {
-  //   try {
-  //     const formData = new FormData();
 
-  //     formData.append("Title", data.Title || "");
-  //     formData.append("Type", data.Type || "");
-  //     formData.append("Templete", data.template || "");
-  //     formData.append("Attachment", data.FileName);
-  //     formData.append("CampaignDataFile", data.CampaignDataFile);
-
-  //     let response = await axios.post(
-  //       `${BASE_URL}WPUtility/Campaign01`,
-  //       formData,
-  //     );
-  //     console.log("POST", response);
-  //     reset();
-  //     setValue("Message", "");
-  //     setValue("Title", "");
-  //     setValue("template", "");
-  //     setValue("FileName", "");
-  //     setValue("Type", "");
-
-  //     Swal.fire({
-  //       icon: "success",
-  //       title: "Success",
-  //       text: "Send successfully...",
-  //       toast: true,
-  //       position: "center",
-  //       timer: 2000,
-  //       showConfirmButton: false,
-  //     });
-  //   } catch (error) {
-  //     let errorMessage = "Something went wrong. Please try again.";
-
-  //     if (error.response) {
-  //       errorMessage =
-  //         error.response.data?.message ||
-  //         error.response.data?.error ||
-  //         "Server error occurred";
-  //     }
-  //   }
-  // };
-  // ---------------New logic on below----------------------
-
+  //  -------------------------------------------
   const handleSubmitForm = async (data) => {
     try {
       const formData = new FormData();
@@ -343,7 +282,6 @@ const [loading, setLoading] = useState(false);
 
       // ==================================================
       // CASE 1: File Uploaded
-      // ==================================================
       const uploadedFile = data.CampaignDataFile;
 
       if (uploadedFile) {
@@ -391,7 +329,6 @@ const [loading, setLoading] = useState(false);
 
       // ==================================================
       //  CASE 2: File NOT Uploaded
-      // ==================================================
       else {
         const allNumbers = [...selectedNumbers, ...customNumbers];
 
@@ -431,27 +368,46 @@ const [loading, setLoading] = useState(false);
 
       // Append file
       formData.append("CampaignDataFile", finalFile);
-
-      // Other fields
+      formData.append("CreatedDate", dayjs().format("YYYY-MM-DD"));
+      formData.append("CreatedBy", sessionStorage.getItem("userId") || "");
       formData.append("Title", data.Title || "");
       formData.append("Type", data.Type || "");
       formData.append("Templete", data.template || "");
       formData.append("Attachment", data.FileName);
 
-      // Debug FormData
       console.log("FormData Values:");
       for (let pair of formData.entries()) {
         console.log(pair[0], pair[1]);
       }
 
+      const token = sessionStorage.getItem("BearerTokan");
+
+      if (!token) {
+        Swal.fire({
+          icon: "error",
+          title: "Session Expired",
+          text: "Please login again.",
+        });
+        return;
+      }
+
+      const formattedToken = token.startsWith("Bearer ")
+        ? token
+        : `Bearer ${token}`;
+
+      setLoaderOpen(true);
       // API Call
-      let response = await axios.post(
-        `${BASE_URL}WPUtility/Campaign01`,
-        formData,
-      );
+      let response = await axios.post(`${BASE_URL}Campaign`, formData, {
+        headers: {
+          Authorization: formattedToken,
+          "Content-Type": "multipart/form-data", // important for formData
+        },
+      });
 
       console.log("POST", response);
-
+      setLoaderOpen(false);
+      reset();
+      fetchListData();
       Swal.fire({
         icon: "success",
         title: "Success",
@@ -463,128 +419,21 @@ const [loading, setLoading] = useState(false);
       });
     } catch (error) {
       console.log("ERROR", error);
+      setLoaderOpen(false);
     }
   };
 
   // ---------------------------------
   const selectedType = watch("Type");
+
   const isAttachmentEnabled =
     selectedType === "DOCUMENT" || selectedType === "IMG";
 
-  // const handleAddAndSave = async (data) => {
-  //   try {
-  //     const Toast = Swal.mixin({
-  //       toast: true,
-  //       position: "center",
-  //       showConfirmButton: false,
-  //       timer: 1500,
-  //       timerProgressBar: true,
-  //     });
-
-  //     // ===== Validation =====
-  //     if (!newName || !newMobile) {
-  //       Toast.fire({
-  //         icon: "error",
-  //         title: "Please enter both fields",
-  //       });
-  //       return;
-  //     }
-
-  //     if (!/^\d{10}$/.test(newMobile)) {
-  //       Toast.fire({
-  //         icon: "error",
-  //         title: "Enter valid 10 digit mobile number",
-  //       });
-  //       return;
-  //     }
-
-  //     // Duplicate check (Skip in Edit if same number)
-  //     const isDuplicate = mobileRows.some((row) => row.mobileNo === newMobile);
-
-  //     if (isDuplicate) {
-  //       Toast.fire({
-  //         icon: "error",
-  //         title: "Mobile number already added",
-  //       });
-  //       return;
-  //     }
-
-  //     // ===== Payload =====
-  //     const payload = {
-  //       UserId: sessionStorage.getItem("userId"),
-  //       CreatedBy: sessionStorage.getItem("userId"),
-  //       CreatedDate: dayjs().format("YYYY-MM-DDTHH:mm:ss"),
-  //       ModifiedBy: sessionStorage.getItem("userId"),
-  //       ModifiedDate: dayjs().format("YYYY-MM-DDTHH:mm:ss"),
-  //       Name: newName,
-  //       Phone: newMobile,
-  //       Status: status,
-  //     };
-  //     console.log("object", payload);
-  //     // return
-  //     // ===== API CALL =====
-  //     if (isEdit === "UPDATE") {
-  //       await BASE_URL.put(`/MobileMaster/${editMobile}`, payload);
-  //       let response = await axios.put(
-  //         `${BASE_URL}MobileMaster/${data.Id}`,
-  //         payload,
-  //       );
-
-  //       Toast.fire({
-  //         icon: "success",
-  //         title: "Updated successfully",
-  //       });
-
-  //       // Update DataGrid row
-  //       setMobileRows((prev) =>
-  //         prev.map((row) =>
-  //           row.mobileNo === editMobile
-  //             ? { ...row, name: newName, mobileNo: newMobile }
-  //             : row,
-  //         ),
-  //       );
-  //     } else {
-  //       const token = sessionStorage.getItem("BearerTokan");
-
-  //       if (!token) {
-  //         console.error("No token found! Please login first.");
-  //         return;
-  //       }
-
-  //       const formattedToken = token.startsWith("Bearer ")
-  //         ? token
-  //         : `Bearer ${token}`;
-
-  //       let response = await axios.post(`${BASE_URL}LawyerSetup`, payload, {
-  //         headers: {
-  //           Authorization: formattedToken,
-  //         },
-  //       });
-
-  //       Toast.fire({
-  //         icon: "success",
-  //         title: "Added successfully",
-  //       });
-  //     }
-
-  //     setNewName("");
-  //     setNewMobile("");
-  //     setIsEdit(false);
-  //     setEditMobile(null);
-  //     HandlegetMobileLIst({ page: 0, search: "" });
-
-  //     // setOpenMobileModal(false);
-  //   } catch (error) {
-  //     console.error(error);
-  //     Swal.fire({
-  //       icon: "error",
-  //       title: "Save Failed",
-  //       text:error.response?.data?.message ||
-  //         "Something went wrong while saving. Please try again.",
-  //       confirmButtonText: "OK",
-  //     });
-  //   }
-  // };
+  useEffect(() => {
+    if (selectedType) {
+      handleTypeChange(selectedType);
+    }
+  }, [selectedType]);
 
   const handleAddAndSave = async () => {
     try {
@@ -787,205 +636,242 @@ const [loading, setLoading] = useState(false);
     return preview;
   };
 
-  // const sidebarContent = (
-  //   <>
-  //     <Grid
-  //       item
-  //       width={"100%"}
-  //       py={0.5}
-  //       alignItems={"center"}
-  //       border={"1px solid silver"}
-  //       borderBottom={"none"}
-  //       position={"relative"}
-  //       sx={{
-  //         backgroundColor:
-  //           theme.palette.mode === "light" ? "#F5F6FA" : "#080D2B",
-  //       }}
-  //     >
-  //       <Typography
-  //         textAlign={"center"}
-  //         alignContent={"center"}
-  //         height={"100%"}
-  //       >
-  //         Send Message List
-  //       </Typography>
-  //       <IconButton
-  //         edge="end"
-  //         color="inherit"
-  //         aria-label="close"
-  //         onClick={() => setDrawerOpen(false)}
-  //         sx={{
-  //           position: "absolute",
-  //           right: "10px",
-  //           top: "0px",
-  //           display: { lg: "none", xs: "block" },
-  //         }}
-  //       >
-  //         <CloseIcon />
-  //       </IconButton>
-  //     </Grid>
-
-  //     <Grid
-  //       container
-  //       item
-  //       width={"100%"}
-  //       height={"100%"}
-  //       border={"1px silver solid"}
-  //       sx={{
-  //         backgroundColor:
-  //           theme.palette.mode === "light" ? "#F5F6FA" : "#080D2B",
-  //       }}
-  //     >
-  //       <Grid item md={12} sm={12} width={"100%"} height={`100%`}>
-  //         <Box
-  //           sx={{
-  //             width: "100%",
-  //             height: "100%",
-  //             px: 1,
-  //             overflow: "scroll",
-  //             overflowX: "hidden",
-  //             typography: "body1",
-  //           }}
-  //           id="ListScroll"
-  //         >
-  //           <Grid
-  //             item
-  //             padding={1}
-  //             md={12}
-  //             sm={12}
-  //             width={"100%"}
-  //             sx={{
-  //               position: "sticky",
-  //               top: "0",
-  //               backgroundColor:
-  //                 theme.palette.mode === "light" ? "#F5F6FA" : "#080D2B",
-  //             }}
-  //           >
-  //             {/* <SearchInputField
-  //               onChange={(e) => handleOpenListSearch(e.target.value)}
-  //               value={openListquery}
-  //               onClickClear={handleOpenListClear}
-  //             /> */}
-  //           </Grid>
-  //           {/* <InfiniteScroll
-  //             style={{ textAlign: "center", justifyContent: "center" }}
-  //             // dataLength={openListData.length}
-  //             // hasMore={hasMoreOpen}
-  //             // next={fetchMoreOpenListData}
-  //             // loader={
-  //             //   <BeatLoader 
-  //             //     color={theme.palette.mode === "light" ? "black" : "white"}
-  //             //   />
-  //             // }
-  //             scrollableTarget="ListScroll"
-  //             endMessage={<Typography>No More Records</Typography>}
-  //           > */}
-  //           {/* {openListData.map((item, i) => (
-  //               <CardComponent
-  //                 key={i}
-  //                 title={item.TemplateName}
-  //                 subtitle={item.Email}
-  //                 isSelected={selectedData === item.DocEntry}
-  //                 searchResult={openListquery}
-  //               />
-  //             ))} */}
-  //           {/* </InfiniteScroll> */}
-  //         </Box>
-  //       </Grid>
-  //     </Grid>
-  //   </>
-  // );
-  
   const sidebarContent = (
-  <Box
-    sx={{
-      height: "100%",
-      display: "flex",
-      flexDirection: "column",
-      border: "1px solid silver",
-      backgroundColor:
-        theme.palette.mode === "light" ? "#F5F6FA" : "#080D2B",
-    }}
-  >
-    {/* HEADER */}
     <Box
       sx={{
-        py: 1,
-        textAlign: "center",
-        position: "relative",
-        borderBottom: "1px solid silver",
+        height: "79.5vh",
+        overflowY: "auto",
+        display: "flex",
+        flexDirection: "column",
+        border: "1px solid silver",
+        backgroundColor: theme.palette.mode === "light" ? "#F5F6FA" : "#080D2B",
       }}
     >
-      <Typography>Send Message List</Typography>
-
-      <IconButton
-        onClick={() => setDrawerOpen(false)}
+      {/* HEADER */}
+      <Box
         sx={{
-          position: "absolute",
-          right: 10,
-          top: 2,
-          display: { lg: "none", xs: "block" },
+          py: 1,
+          textAlign: "center",
+          position: "relative",
+          borderBottom: "1px solid silver",
+          flexShrink: 0,
         }}
       >
-        <CloseIcon />
-      </IconButton>
-    </Box>
+        <Typography sx={{ fontWeight: 600 }}>
+          {" "}
+          Send Notification List
+        </Typography>
+      </Box>
+      {/* <TextField
+    size="small"
+    fullWidth
+    placeholder="Search..."
+    value={searchTextList}
+    onChange={(e) => setSearchTextList(e.target.value)}
+ 
+  /> */}
+      {/* SCROLL AREA */}
+      <Box
+        id="ListScroll"
+        sx={{
+          flex: 1,
+          overflowY: "auto",
+          px: 1,
+          minHeight: 0,
 
-    {/* SCROLL AREA */}
-    <Box
-      id="ListScroll"
-      sx={{
-        flex: 1,
-        overflowY: "auto",
-        px: 1,
-      }}
-    >
-      {/* Infinite Scroll Here */}
-    </Box>
-  </Box>
-);
-  
-const fetchListData = async () => {
-  if (loading) return;
+          scrollBehavior: "smooth",
 
-  setLoading(true);
-   const token = sessionStorage.getItem("BearerTokan");
+          scrollbarWidth: "thin",
+          scrollbarColor: "#888 transparent",
+
+          "&::-webkit-scrollbar": {
+            width: "6px",
+          },
+          "&::-webkit-scrollbar-track": {
+            background: "transparent",
+          },
+          "&::-webkit-scrollbar-thumb": {
+            backgroundColor: "#888",
+            borderRadius: "10px",
+          },
+          "&::-webkit-scrollbar-thumb:hover": {
+            backgroundColor: "#555",
+          },
+        }}
+        onScroll={(e) => {
+          const { scrollTop, scrollHeight, clientHeight } = e.target;
+
+          if (
+            scrollHeight - scrollTop - clientHeight < 5 &&
+            hasMore &&
+            !fetchingRef.current
+          ) {
+            setPage((prev) => prev + 1);
+          }
+        }}
+      >
+        {listData.map((item, index) => (
+          <Card
+            key={item.id || index}
+            sx={{
+              mb: 1,
+              p: 2,
+              borderRadius: 2,
+              cursor: "pointer",
+              boxShadow: 2,
+              position: "relative",
+              minHeight: 80,
+            }}
+          >
+            {/* Top Left */}
+            <Typography
+              sx={{
+                position: "absolute",
+                top: 8,
+                left: 12,
+                fontWeight: 600,
+                fontSize: 17,
+              }}
+            >
+              {item.Title}
+            </Typography>
+
+            {/* Top Right */}
+            <Typography
+              sx={{
+                position: "absolute",
+                top: 8,
+                right: 12,
+                fontSize: 15,
+                fontWeight: 600,
+                color: "text.secondary",
+              }}
+            >
+              {(item?.MsgSentCnt ?? 0) + (item?.MsgFailedCnt ?? 0)}
+            </Typography>
+
+            {/* Bottom Left */}
+            <Typography
+              sx={{
+                position: "absolute",
+                bottom: 8,
+                left: 12,
+                fontSize: 15,
+                color: "primary.main",
+              }}
+            >
+              {item.CreatedDate
+                ? new Date(item.CreatedDate).toLocaleDateString("en-GB")
+                : ""}
+            </Typography>
+
+            {/* Bottom Right */}
+            <Typography
+              sx={{
+                position: "absolute",
+                bottom: 8,
+                right: 12,
+                fontSize: 15,
+                fontWeight: 500,
+              }}
+            >
+              <Box component="span" sx={{ color: "error.main" }}>
+                {item?.MsgFailedCnt ?? 0}
+              </Box>
+              {" || "}
+              <Box component="span" sx={{ color: "success.main" }}>
+                {item?.MsgSentCnt ?? 0}
+              </Box>
+            </Typography>
+          </Card>
+        ))}
+
+        {loading && (
+          <Typography textAlign="center" py={2}>
+            Loading...
+          </Typography>
+        )}
+
+        {!hasMore && (
+          <Typography textAlign="center" py={2}>
+            No More Data
+          </Typography>
+        )}
+      </Box>
+    </Box>
+  );
+
+  const fetchingRef = useRef(false);
+  const fetchListData = async () => {
+    if (fetchingRef.current || !hasMore) return;
+
+    fetchingRef.current = true;
+    setLoading(true);
+
+    const token = sessionStorage.getItem("BearerTokan");
     if (!token) {
-      console.error("No token found! Please login first.");
+      setLoading(false);
+      fetchingRef.current = false;
       return;
     }
-  try {  
 
-     const response = await axios.request({
-        method: "get",
-        maxBodyLength: Infinity,
-        url: `${BASE_URL}Campaign`,
+    try {
+      setLoaderOpen(true);
+      const response = await axios.get(`${BASE_URL}Campaign`, {
         params: {
- page: page,
-      pageSize: 10,        },
+          Page: page,
+          Limit: 20,
+          SearchText: searchTextList,
+        },
         headers: {
-           Authorization: token.startsWith("Bearer ")
+          Authorization: token.startsWith("Bearer ")
             ? token
             : `Bearer ${token}`,
         },
       });
-    const newData = response.data.values;
-console.log("object=====", newData)
-    if (newData.length === 0) {
-      setHasMore(false);
-    } else {
-      setListData((prev) => [...prev, ...newData]);
-      setPage((prev) => prev + 1);
-    }
-  } catch (error) {
-    console.error(error);
-  }
 
-  setLoading(false);
-};
-  
+      const newData = response.data.values;
+      setLoaderOpen(false);
+
+      if (newData.length === 0) {
+        setHasMore(false);
+      } else {
+        setListData((prev) => [...prev, ...newData]);
+      }
+    } catch (error) {
+      console.error(error);
+      setLoaderOpen(false);
+    }
+    setLoaderOpen(false);
+
+    setLoading(false);
+    fetchingRef.current = false;
+  };
+
+  useEffect(() => {
+    setListData([]);
+    setPage(1);
+    setHasMore(true);
+  }, []);
+
+  useEffect(() => {
+    fetchListData();
+  }, [page]);
+
+  //    useEffect(() => {
+  //   const delayDebounce = setTimeout(() => {
+  //     fetchingRef.current = false;
+  //     setHasMore(true);
+  //     setPage(1);
+  //   }, 500);
+
+  //   return () => clearTimeout(delayDebounce);
+  // }, [searchTextList]);
+
   return (
     <>
+      {loaderOpen && <Loader open={loaderOpen} />}
+
       {/* MODAL */}
       <Dialog open={openMobileModal} maxWidth="sm" fullWidth>
         <DialogTitle
@@ -1159,791 +1045,759 @@ console.log("object=====", newData)
           padding={1}
           noWrap
         >
-          Send Message
+          Send Notification
         </Typography>
       </Grid>
       {/* MAIN SECTION */}
-      <Box sx={{ height: "70vh" }}>
-      <Grid container spacing={1} sx={{ height: "100%" }}>
-        <Grid item xs={12} md={3} lg={3}>
-          {sidebarContent}
-        </Grid>
-        {/* <Box> */}
-          <Grid item xs={12} md={9} lg={9} sx={{ height: "100%" }}> 
-          <Paper
-            sx={{
-              maxWidth: 1100,
-              mx: "auto",
-              borderRadius: 4,
-              overflow: "hidden",
-            }}
-          >
-            <Box
+      <Box sx={{ maxHeight: "80vh", overflowY: "auto" }}>
+        <Grid
+          container
+          // spacing={1}
+          sx={{ height: "100%", border: "1px solid #ccc" }}
+        >
+          <Grid item xs={12} md={3} lg={3}>
+            {sidebarContent}
+          </Grid>
+          {/* <Box> */}
+          <Grid item xs={12} md={9} lg={9} sx={{ height: "79.5vh" }}>
+            <Card
               component="form"
               onSubmit={handleSubmit(handleSubmitForm)}
               sx={{
-                p: 4,
-                maxHeight: "120vh",
-                overflowY: "auto",
-                "&::-webkit-scrollbar": { width: "6px" },
-                "&::-webkit-scrollbar-thumb": {
-                  background: "#bbb",
-                  borderRadius: "8px",
-                },
+                maxWidth: "100%",
+                height: "100%",
+                margin: 0,
               }}
             >
-              <Grid
-                container
-                spacing={5}
-                width="100%"
-                height="100%"
-                sm={12}
-                md={12}
-                position="relative"
+              <CardContent
+                sx={{
+                  p: 4,
+                  flex: 1,
+                  height: "75vh",
+                  overflowY: "auto",
+                  "&::-webkit-scrollbar": { width: "6px" },
+                  "&::-webkit-scrollbar-thumb": {
+                    background: "#bbb",
+                  },
+                }}
               >
-                {/* ROW 1 */}
-
                 <Grid
+                  container
                   item
-                  md={12}
+                  spacing={2}
+                  width="100%"
                   sm={12}
-                  xs={12}
-                  sx={{ alignItems: "start", textAlign: "left" }}
+                  md={12}
+                  position="relative"
                 >
-                  <Controller
-                    name="Title"
-                    control={control}
-                    defaultValue=""
-                    render={({ field, fieldState: { error } }) => (
-                      <InputTextFieldTitle
-                        {...field}
-                        inputRef={field.ref}
-                        label="ENTER TITLE"
-                        id="Title"
-                        error={!!error}
-                        helperText={error?.message}
-                      />
-                    )}
-                  />
-                </Grid>
+                  {/* ROW 1 */}
 
-                <Grid item md={4} sm={4} xs={12}>
-                  <Box display="flex">
-                    <Box flex={1} minWidth={0}>
-                      <Controller
-                        name="CampaignDataFile"
-                        control={control}
-                        defaultValue={null}
-                        render={({ field, fieldState }) => (
-                          <TextField
-                            size="small"
-                            label="UPLOAD MOBILE NO"
-                            value={field.value?.name || ""}
-                            placeholder="Choose file"
-                            InputLabelProps={{
-                              shrink: true,
-                            }}
-                            sx={{
-                              "& .MuiOutlinedInput-root": {
-                                minHeight: 82,
-                              },
-                              "& .MuiInputBase-input": {
-                                paddingTop: "14px",
-                                paddingBottom: "14px",
-                              },
-                            }}
-                            InputProps={{
-                              readOnly: true,
-                              endAdornment: (
-                                <Button
-                                  component="label"
-                                  variant="outlined"
-                                  size="small"
-                                  sx={{ ml: 1, textTransform: "none" }}
-                                >
-                                  Upload
-                                  <input
-                                    type="file"
-                                    hidden
-                                    accept=".csv,.xls,.xlsx"
-                                    onChange={(e) => {
-                                      const file = e.target.files?.[0];
+                  <Grid
+                    item
+                    md={12}
+                    sm={12}
+                    xs={12}
+                    sx={{
+                      alignItems: "start",
+                      textAlign: "left",
+                      marginBottom: 2,
+                    }}
+                  >
+                    <Controller
+                      name="Title"
+                      control={control}
+                      defaultValue=""
+                      render={({ field, fieldState: { error } }) => (
+                        <InputTextFieldTitle
+                          {...field}
+                          inputRef={field.ref}
+                          label="ENTER TITLE"
+                          id="Title"
+                          error={!!error}
+                          helperText={error?.message}
+                        />
+                      )}
+                    />
+                  </Grid>
 
-                                      if (!file) {
-                                        field.onChange(null);
-                                        return;
-                                      }
-
-                                      const allowedMimeTypes = [
-                                        "text/csv",
-                                        "application/vnd.ms-excel",
-                                        "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet",
-                                      ];
-
-                                      const allowedExtensions = [
-                                        ".csv",
-                                        ".xls",
-                                        ".xlsx",
-                                      ];
-
-                                      const fileName = file.name.toLowerCase();
-
-                                      const isValid =
-                                        allowedMimeTypes.includes(file.type) ||
-                                        allowedExtensions.some((ext) =>
-                                          fileName.endsWith(ext),
-                                        );
-
-                                      if (!isValid) {
-                                        Swal.fire({
-                                          icon: "warning",
-                                          title: "Invalid File Type",
-                                          text: "Please upload only CSV or Excel files (.csv, .xls, .xlsx).",
-                                          toast: true,
-                                          position: "center",
-                                          timer: 3000,
-                                          showConfirmButton: false,
-                                        });
-
-                                        e.target.value = "";
-                                        field.onChange(null);
-                                        return;
-                                      }
-
-                                      field.onChange(file);
-                                    }}
-                                  />
-                                </Button>
-                              ),
-                            }}
-                          />
-                        )}
-                      />
-                    </Box>
-                    <Tooltip
-                      title="Click to download mobile number CSV template"
-                      arrow
-                      placement="top"
-                    >
-                      <IconButton
-                        color="primary"
-                        onClick={HandleMobileCsvDownload}
-                      >
-                        <InfoIcon />
-                      </IconButton>
-                    </Tooltip>
-                  </Box>
-                </Grid>
-
-                {/* Dropdown Field */}
-                <Grid item md={4} sm={4} xs={12}>
-                  <Box display="flex" alignItems="center" gap={1}>
-                    <Box flex={1} minWidth={0}>
-                      <Controller
-                        name="MobileNo"
-                        control={control}
-                        defaultValue={[]}
-                        render={({ field, fieldState }) => {
-                          const activeMobileRows = mobileRows.filter(
-                            (item) => Number(item.Status) === 1,
-                          );
-                          // const allIds = mobileRows.map((item) => item.Id);
-                          const allIds = activeMobileRows.map(
-                            (item) => item.Id,
-                          );
-                          const isAllSelected =
-                            allIds.length > 0 &&
-                            field.value?.length === allIds.length;
-
-                          return (
-                            <FormControl
-                              fullWidth
+                  <Grid item md={4} sm={4} xs={12} marginBottom={2}>
+                    <Box display="flex">
+                      <Box flex={1} minWidth={0}>
+                        <Controller
+                          name="CampaignDataFile"
+                          control={control}
+                          defaultValue={null}
+                          render={({ field, fieldState }) => (
+                            <TextField
                               size="small"
-                              error={!!fieldState.error}
-                            >
-                              <InputLabel>SELECT MOBILE NO</InputLabel>
+                              label="UPLOAD MOBILE NO"
+                              value={field.value?.name || ""}
+                              placeholder="Choose file"
+                              InputLabelProps={{
+                                shrink: true,
+                              }}
+                              sx={{
+                                "& .MuiOutlinedInput-root": {
+                                  minHeight: 82,
+                                },
+                                "& .MuiInputBase-input": {
+                                  paddingTop: "14px",
+                                  paddingBottom: "14px",
+                                },
+                              }}
+                              InputProps={{
+                                readOnly: true,
+                                endAdornment: (
+                                  <Button
+                                    component="label"
+                                    variant="outlined"
+                                    size="small"
+                                    sx={{ ml: 1, textTransform: "none" }}
+                                  >
+                                    Upload
+                                    <input
+                                      type="file"
+                                      hidden
+                                      accept=".csv,.xls,.xlsx"
+                                      onChange={(e) => {
+                                        const file = e.target.files?.[0];
 
-                              <Select
-                                {...field}
-                                multiple
-                                value={field.value || []}
-                                label="SELECT MOBILE NO"
-                                onChange={(event) => {
-                                  const value = event.target.value;
+                                        if (!file) {
+                                          field.onChange(null);
+                                          return;
+                                        }
 
-                                  //  Select All Logic
-                                  if (value.includes("all")) {
-                                    if (isAllSelected) {
-                                      field.onChange([]);
-                                    } else {
-                                      field.onChange(allIds);
-                                    }
-                                  } else {
-                                    field.onChange(value);
-                                  }
-                                }}
-                                sx={{
-                                  minHeight: 85,
-                                  "& .MuiSelect-select": {
-                                    display: "flex",
-                                    alignItems: "flex-start",
-                                    paddingTop: "8px",
-                                    paddingBottom: "8px",
-                                  },
-                                }}
-                                MenuProps={{
-                                  autoFocus: false,
-                                  disableAutoFocusItem: true,
-                                  PaperProps: {
-                                    sx: {
-                                      maxHeight: 250,
-                                    },
-                                  },
-                                }}
-                                renderValue={(selected) => {
-                                  const selectedItems = activeMobileRows.filter(
-                                    (item) =>
-                                      selected.includes(item.Id) &&
-                                      Number(item.Status) === 1,
-                                  );
+                                        const allowedMimeTypes = [
+                                          "text/csv",
+                                          "application/vnd.ms-excel",
+                                          "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet",
+                                        ];
 
-                                  if (selectedItems.length === 0) {
-                                    return "Select Mobile No";
-                                  }
+                                        const allowedExtensions = [
+                                          ".csv",
+                                          ".xls",
+                                          ".xlsx",
+                                        ];
 
-                                  const mobileNumbers = selectedItems.map(
-                                    (item) => item.Phone,
-                                  );
+                                        const fileName =
+                                          file.name.toLowerCase();
 
-                                  return (
-                                    <Tooltip
-                                      arrow
-                                      placement="top"
-                                      title={mobileNumbers.join(", ")}
-                                    >
-                                      <Box
-                                        sx={{
-                                          display: "flex",
-                                          flexWrap: "wrap",
-                                          gap: 0.5,
-                                          maxHeight: 70,
-                                          overflowY: "auto",
-                                          width: "100%",
-                                        }}
-                                      >
-                                        {selectedItems.map((item) => (
-                                          <Chip
-                                            key={item.Id}
-                                            label={item.Phone}
-                                            size="small"
-                                            color="primary"
-                                            sx={{
-                                              width: "48%",
-                                            }}
-                                          />
-                                        ))}
-                                      </Box>
-                                    </Tooltip>
-                                  );
-                                }}
+                                        const isValid =
+                                          allowedMimeTypes.includes(
+                                            file.type,
+                                          ) ||
+                                          allowedExtensions.some((ext) =>
+                                            fileName.endsWith(ext),
+                                          );
+
+                                        if (!isValid) {
+                                          Swal.fire({
+                                            icon: "warning",
+                                            title: "Invalid File Type",
+                                            text: "Please upload only CSV or Excel files (.csv, .xls, .xlsx).",
+                                            toast: true,
+                                            position: "center",
+                                            timer: 3000,
+                                            showConfirmButton: false,
+                                          });
+
+                                          e.target.value = "";
+                                          field.onChange(null);
+                                          return;
+                                        }
+
+                                        field.onChange(file);
+                                      }}
+                                    />
+                                  </Button>
+                                ),
+                              }}
+                            />
+                          )}
+                        />
+                      </Box>
+                      <Tooltip
+                        title="Click to download mobile number CSV template"
+                        arrow
+                        placement="top"
+                      >
+                        <IconButton
+                          color="primary"
+                          onClick={HandleMobileCsvDownload}
+                        >
+                          <InfoIcon />
+                        </IconButton>
+                      </Tooltip>
+                    </Box>
+                  </Grid>
+
+                  {/* Dropdown Field */}
+                  <Grid item md={4} sm={4} xs={12} marginBottom={2}>
+                    <Box display="flex" alignItems="center" gap={1}>
+                      <Box flex={1} minWidth={0}>
+                        <Controller
+                          name="MobileNo"
+                          control={control}
+                          defaultValue={[]}
+                          render={({ field, fieldState }) => {
+                            const activeMobileRows = mobileRows.filter(
+                              (item) => Number(item.Status) === 1,
+                            );
+                            // const allIds = mobileRows.map((item) => item.Id);
+                            const allIds = activeMobileRows.map(
+                              (item) => item.Id,
+                            );
+                            const isAllSelected =
+                              allIds.length > 0 &&
+                              field.value?.length === allIds.length;
+
+                            return (
+                              <FormControl
+                                fullWidth
+                                size="small"
+                                error={!!fieldState.error}
                               >
-                                <MenuItem value="all">
-                                  <Checkbox
-                                    checked={isAllSelected}
-                                    indeterminate={
-                                      field.value?.length > 0 &&
-                                      field.value?.length < allIds.length
+                                <InputLabel>SELECT MOBILE NO</InputLabel>
+
+                                <Select
+                                  {...field}
+                                  multiple
+                                  value={field.value || []}
+                                  label="SELECT MOBILE NO"
+                                  onChange={(event) => {
+                                    const value = event.target.value;
+
+                                    //  Select All Logic
+                                    if (value.includes("all")) {
+                                      if (isAllSelected) {
+                                        field.onChange([]);
+                                      } else {
+                                        field.onChange(allIds);
+                                      }
+                                    } else {
+                                      field.onChange(value);
                                     }
-                                  />
-                                  <ListItemText
-                                    primary={`Select All (${allIds.length})`}
-                                  />
-                                </MenuItem>
+                                  }}
+                                  sx={{
+                                    minHeight: 85,
+                                    "& .MuiSelect-select": {
+                                      display: "flex",
+                                      alignItems: "flex-start",
+                                      paddingTop: "8px",
+                                      paddingBottom: "8px",
+                                    },
+                                  }}
+                                  MenuProps={{
+                                    autoFocus: false,
+                                    disableAutoFocusItem: true,
+                                    PaperProps: {
+                                      sx: {
+                                        maxHeight: 250,
+                                      },
+                                    },
+                                  }}
+                                  renderValue={(selected) => {
+                                    const selectedItems =
+                                      activeMobileRows.filter(
+                                        (item) =>
+                                          selected.includes(item.Id) &&
+                                          Number(item.Status) === 1,
+                                      );
 
-                                {/* <MenuItem disableRipple disableTouchRipple>
-                                <TextField
-                                  fullWidth
-                                  size="small"
-                                  placeholder="Search mobile..."
-                                  value={searchText}
-                                      autoFocus  
+                                    if (selectedItems.length === 0) {
+                                      return "Select Mobile No";
+                                    }
 
-                                  onChange={(e) =>
-                                    setSearchText(e.target.value)
-                                  }
-                                  onKeyDown={(e) => e.stopPropagation()}
-                                />
-                              </MenuItem> */}
-                                <Divider />
+                                    const mobileNumbers = selectedItems.map(
+                                      (item) => item.Phone,
+                                    );
 
-                                {activeMobileRows.map((option) => (
-                                  <MenuItem key={option.Id} value={option.Id}>
+                                    return (
+                                      <Tooltip
+                                        arrow
+                                        placement="top"
+                                        title={mobileNumbers.join(", ")}
+                                      >
+                                        <Box
+                                          sx={{
+                                            display: "flex",
+                                            flexWrap: "wrap",
+                                            gap: 0.5,
+                                            maxHeight: 70,
+                                            overflowY: "auto",
+                                            width: "100%",
+                                          }}
+                                        >
+                                          {selectedItems.map((item) => (
+                                            <Chip
+                                              key={item.Id}
+                                              label={item.Phone}
+                                              size="small"
+                                              color="primary"
+                                              sx={{
+                                                width: "48%",
+                                              }}
+                                            />
+                                          ))}
+                                        </Box>
+                                      </Tooltip>
+                                    );
+                                  }}
+                                >
+                                  <MenuItem value="all">
                                     <Checkbox
-                                      checked={field.value?.includes(option.Id)}
+                                      checked={isAllSelected}
+                                      indeterminate={
+                                        field.value?.length > 0 &&
+                                        field.value?.length < allIds.length
+                                      }
                                     />
                                     <ListItemText
-                                      primary={option.Name}
-                                      secondary={option.Phone}
+                                      primary={`Select All (${allIds.length})`}
                                     />
                                   </MenuItem>
-                                ))}
-                              </Select>
 
-                              {fieldState.error && (
-                                <FormHelperText>
-                                  {fieldState.error.message}
-                                </FormHelperText>
-                              )}
-                            </FormControl>
-                          );
+                                  <Divider />
+
+                                  {activeMobileRows.map((option) => (
+                                    <MenuItem key={option.Id} value={option.Id}>
+                                      <Checkbox
+                                        checked={field.value?.includes(
+                                          option.Id,
+                                        )}
+                                      />
+                                      <ListItemText
+                                        primary={option.Name}
+                                        secondary={option.Phone}
+                                      />
+                                    </MenuItem>
+                                  ))}
+                                </Select>
+
+                                {fieldState.error && (
+                                  <FormHelperText>
+                                    {fieldState.error.message}
+                                  </FormHelperText>
+                                )}
+                              </FormControl>
+                            );
+                          }}
+                        />
+                      </Box>
+                      <IconButton
+                        size="small"
+                        color="primary"
+                        onClick={() => {
+                          setOpenMobileModal(true);
+                          setNewName("");
+                          setNewMobile("");
+                          setIsEdit("SAVE");
+                          HandlegetMobileLIst({ page: 0, search: "" });
                         }}
-                      />
+                        sx={{
+                          animation: "pulse 1.5s infinite",
+                          border: "1px solid #1976d2",
+                        }}
+                      >
+                        <AddIcon />
+                      </IconButton>
                     </Box>
-                    <IconButton
-                      size="small"
-                      color="primary"
-                      onClick={() => {
-                        setOpenMobileModal(true);
-                        setNewName("");
-                        setNewMobile("");
-                        setIsEdit("SAVE");
-                        HandlegetMobileLIst({ page: 0, search: "" });
-                      }}
-                      sx={{
-                        animation: "pulse 1.5s infinite",
-                        border: "1px solid #1976d2",
-                      }}
-                    >
-                      <AddIcon />
-                    </IconButton>
-                  </Box>
-                </Grid>
+                  </Grid>
 
-                <Grid item md={4} sm={4} xs={12}>
-                  <Controller
-                    name="CustomNo"
-                    control={control}
-                    defaultValue={[]}
-                    render={({ field, fieldState: { error } }) => {
-                      const handleAddNumber = (number) => {
-                        if (!/^\d{10}$/.test(number)) return;
-                        if (!field.value.includes(number)) {
-                          field.onChange([...field.value, number]);
-                        }
-                      };
+                  <Grid item md={4} sm={4} xs={12} marginBottom={2}>
+                    <Controller
+                      name="CustomNo"
+                      control={control}
+                      defaultValue={[]}
+                      render={({ field, fieldState: { error } }) => {
+                        const handleAddNumber = (number) => {
+                          if (!/^\d{10}$/.test(number)) return;
+                          if (!field.value.includes(number)) {
+                            field.onChange([...field.value, number]);
+                          }
+                        };
 
-                      return (
+                        return (
+                          <Tooltip
+                            arrow
+                            placement="top"
+                            title={
+                              field.value?.length
+                                ? field.value.join(", ")
+                                : "Enter 10 digit mobile number and press Enter"
+                            }
+                          >
+                            <Autocomplete
+                              multiple
+                              freeSolo
+                              options={[]}
+                              value={field.value || []}
+                              inputValue={inputValue}
+                              onChange={(e, newValue) =>
+                                field.onChange(newValue)
+                              }
+                              onInputChange={(e, newInputValue) => {
+                                const numericValue = newInputValue.replace(
+                                  /\D/g,
+                                  "",
+                                );
+                                if (numericValue.length <= 10) {
+                                  setInputValue(numericValue);
+                                }
+                              }}
+                              onKeyDown={(e) => {
+                                if (e.key === "Enter") {
+                                  e.preventDefault();
+                                  handleAddNumber(inputValue);
+                                  setInputValue("");
+                                }
+                              }}
+                              renderTags={(value, getTagProps) => (
+                                <Box
+                                  sx={{
+                                    display: "flex",
+                                    flexWrap: "wrap",
+                                    gap: "4px",
+                                    maxHeight: "60px",
+                                    overflowY: "auto",
+                                    width: "100%",
+                                  }}
+                                >
+                                  {value.map((option, index) => (
+                                    <Chip
+                                      {...getTagProps({ index })}
+                                      label={option}
+                                      size="small"
+                                      color="primary"
+                                      sx={{ maxWidth: "48%" }}
+                                    />
+                                  ))}
+                                </Box>
+                              )}
+                              renderInput={(params) => (
+                                <TextField
+                                  {...params}
+                                  label="ENTER CUSTOM NO."
+                                  error={!!error}
+                                  helperText={
+                                    error?.message ||
+                                    "Only 10 digit mobile numbers allowed"
+                                  }
+                                  inputProps={{
+                                    ...params.inputProps,
+                                    maxLength: 10,
+                                    inputMode: "numeric",
+                                  }}
+                                />
+                              )}
+                              sx={{
+                                "& .MuiOutlinedInput-root": {
+                                  minHeight: "75px",
+                                  alignItems: "flex-start",
+                                },
+                              }}
+                            />
+                          </Tooltip>
+                        );
+                      }}
+                    />
+                  </Grid>
+                  {/* --------------------------------- */}
+
+                  {/* ROW 2 */}
+                  <Grid item md={4} sm={6} xs={12} marginBottom={2}>
+                    <Controller
+                      name="Type"
+                      control={control}
+                      render={({ field }) => {
+                        const options = [
+                          { Name: "DOCUMENT" },
+                          { Name: "IMG" },
+                          { Name: "TEXT" },
+                        ];
+
+                        const selected =
+                          options.find((o) => o.Name === field.value) || null;
+
+                        return (
+                          <Autocomplete
+                            options={options}
+                            getOptionLabel={(o) => o.Name}
+                            value={selected}
+                            isOptionEqualToValue={(o, v) => o?.Name === v?.Name}
+                            onChange={(_, v) => {
+                              const value = v ? v.Name : null;
+                              field.onChange(value);
+                              handleTypeChange(value);
+                              if (value === "TEXT") {
+                                setValue("FileName", null);
+                              }
+                            }}
+                            slotProps={{
+                              paper: {
+                                sx: {
+                                  maxHeight: 250,
+                                },
+                              },
+                            }}
+                            renderInput={(params) => (
+                              <TextField
+                                {...params}
+                                label="SELECT TYPE"
+                                size="small"
+                                fullWidth
+                              />
+                            )}
+                          />
+                        );
+                      }}
+                    />
+                  </Grid>
+
+                  <Grid item md={4} sm={6} xs={12} marginBottom={2}>
+                    <Controller
+                      name="template"
+                      control={control}
+                      defaultValue={null}
+                      render={({ field }) => {
+                        const options = filteredTemplates.map((t) => ({
+                          Name: t.name,
+                          template: t,
+                        }));
+
+                        const selected =
+                          options.find((o) => o.Name === field.value) || null;
+
+                        return (
+                          <Autocomplete
+                            options={options}
+                            getOptionLabel={(o) => o.Name}
+                            value={selected}
+                            isOptionEqualToValue={(o, v) => o?.Name === v?.Name}
+                            onChange={(_, v) => {
+                              //  set template name in form
+                              field.onChange(v ? v.Name : null);
+                              setParamValues({});
+                              //  BODY text → MESSAGE
+                              if (v?.template?.components) {
+                                const bodyComponent =
+                                  v.template.components.find(
+                                    (c) => c.type === "BODY",
+                                  );
+
+                                setValue("Message", bodyComponent?.text || "", {
+                                  shouldDirty: true,
+                                  shouldTouch: true,
+                                  shouldValidate: true,
+                                });
+                                console.log("Message", bodyComponent?.text);
+                              } else {
+                                setValue("Message", "", {
+                                  shouldDirty: true,
+                                  shouldTouch: true,
+                                });
+                              }
+                            }}
+                            slotProps={{
+                              paper: {
+                                sx: {
+                                  maxHeight: 250,
+                                },
+                              },
+                            }}
+                            renderInput={(params) => (
+                              <TextField
+                                {...params}
+                                label="SELECT TEMPLATE"
+                                size="small"
+                                fullWidth
+                              />
+                            )}
+                          />
+                        );
+                      }}
+                    />
+                  </Grid>
+                  {/* {(selectedType === "DOCUMENT" || selectedType === "IMG") && ( */}
+                  <Grid item md={4} sm={6} xs={12} marginBottom={2}>
+                    <Controller
+                      name="FileName"
+                      control={control}
+                      defaultValue={null}
+                      rules={{
+                        required: isAttachmentEnabled
+                          ? "File is required"
+                          : false,
+                        // required: "File is required",
+                        validate: (file) => {
+                          if (!file) return true;
+
+                          const allowedTypes = [
+                            "application/pdf",
+                            "image/jpeg",
+                            "image/png",
+                            "image/jpg",
+                            "image/gif",
+                            "image/bmp",
+                            "image/webp",
+                          ];
+
+                          return (
+                            allowedTypes.includes(file.type) ||
+                            "Only PDF or Image files are allowed"
+                          );
+                        },
+                      }}
+                      render={({ field, fieldState }) => (
                         <Tooltip
                           arrow
                           placement="top"
                           title={
-                            field.value?.length
-                              ? field.value.join(", ")
-                              : "Enter 10 digit mobile number and press Enter"
+                            !isAttachmentEnabled
+                              ? "Attachment allowed only for DOCUMENT or IMG type"
+                              : ""
                           }
                         >
-                          <Autocomplete
-                            multiple
-                            freeSolo
-                            options={[]}
-                            value={field.value || []}
-                            inputValue={inputValue}
-                            onChange={(e, newValue) => field.onChange(newValue)}
-                            onInputChange={(e, newInputValue) => {
-                              const numericValue = newInputValue.replace(
-                                /\D/g,
-                                "",
-                              );
-                              if (numericValue.length <= 10) {
-                                setInputValue(numericValue);
-                              }
-                            }}
-                            onKeyDown={(e) => {
-                              if (e.key === "Enter") {
-                                e.preventDefault();
-                                handleAddNumber(inputValue);
-                                setInputValue("");
-                              }
-                            }}
-                            renderTags={(value, getTagProps) => (
-                              <Box
-                                sx={{
-                                  display: "flex",
-                                  flexWrap: "wrap",
-                                  gap: "4px",
-                                  maxHeight: "60px",
-                                  overflowY: "auto",
-                                  width: "100%",
-                                }}
-                              >
-                                {value.map((option, index) => (
-                                  <Chip
-                                    {...getTagProps({ index })}
-                                    label={option}
+                          <span>
+                            <TextField
+                              fullWidth
+                              size="small"
+                              label="ATTACH FILE"
+                              value={field.value?.name || ""}
+                              placeholder="Choose file"
+                              error={!!fieldState.error}
+                              helperText={fieldState.error?.message}
+                              disabled={!isAttachmentEnabled}
+                              InputLabelProps={{
+                                shrink: true,
+                              }}
+                              InputProps={{
+                                readOnly: true,
+                                endAdornment: (
+                                  <Button
+                                    component="label"
+                                    variant="outlined"
                                     size="small"
-                                    color="primary"
-                                    sx={{ maxWidth: "48%" }}
-                                  />
-                                ))}
-                              </Box>
-                            )}
-                            renderInput={(params) => (
-                              <TextField
-                                {...params}
-                                label="ENTER CUSTOM NO."
-                                error={!!error}
-                                helperText={
-                                  error?.message ||
-                                  "Only 10 digit mobile numbers allowed"
-                                }
-                                inputProps={{
-                                  ...params.inputProps,
-                                  maxLength: 10,
-                                  inputMode: "numeric",
-                                }}
-                              />
-                            )}
-                            sx={{
-                              "& .MuiOutlinedInput-root": {
-                                minHeight: "75px",
-                                alignItems: "flex-start",
-                              },
+                                    disabled={!isAttachmentEnabled}
+                                    sx={{ ml: 1, textTransform: "none" }}
+                                  >
+                                    Upload
+                                    <input
+                                      type="file"
+                                      hidden
+                                      accept=".pdf,image/*"
+                                      disabled={!isAttachmentEnabled}
+                                      onChange={(e) => {
+                                        const file = e.target.files?.[0];
+
+                                        if (!file) {
+                                          field.onChange(null);
+                                          return;
+                                        }
+
+                                        const allowedTypes = [
+                                          "application/pdf",
+                                          "image/jpeg",
+                                          "image/png",
+                                          "image/jpg",
+                                          "image/gif",
+                                          "image/bmp",
+                                          "image/webp",
+                                        ];
+
+                                        if (!allowedTypes.includes(file.type)) {
+                                          Swal.fire({
+                                            icon: "warning",
+                                            title: "Invalid File",
+                                            text: "Please upload only PDF or Image files.",
+                                            toast: true,
+                                            position: "center",
+                                            timer: 3000,
+                                            showConfirmButton: false,
+                                          });
+                                          e.target.value = "";
+                                          field.onChange(null);
+                                          return;
+                                        }
+
+                                        field.onChange(file);
+                                      }}
+                                    />
+                                  </Button>
+                                ),
+                              }}
+                            />
+                          </span>
+                        </Tooltip>
+                      )}
+                    />
+                  </Grid>
+                  {/* )} */}
+
+                  {/* MESSAGE */}
+                  <Grid item xs={12}>
+                    <Controller
+                      name="Message"
+                      control={control}
+                      defaultValue=""
+                      render={({ field, fieldState: { error } }) => (
+                        <Tooltip
+                          title={getPreviewMessage() || "No message entered"}
+                          placement="bottom-start"
+                          arrow
+                        >
+                          <TextField
+                            {...field}
+                            value={getPreviewMessage()}
+                            label="MESSAGE"
+                            size="small"
+                            multiline
+                            rows={6}
+                            fullWidth
+                            error={!!error}
+                            helperText={error?.message}
+                            InputProps={{
+                              readOnly: true,
                             }}
                           />
                         </Tooltip>
-                      );
-                    }}
-                  />
-                </Grid>
-                {/* --------------------------------- */}
-                {/* <Divider
-                sx={{
-                  borderBottom: "0.5px solid #111111",
-                  width: "100%",
-                  position: "relative",
-                  mt: 2,
-                }}
-              /> */}
-                {/* ROW 2 */}
-                <Grid item md={4} sm={6} xs={12}>
-                  <Controller
-                    name="Type"
-                    control={control}
-                    defaultValue={"DOCUMENT"}
-                    render={({ field }) => {
-                      const options = [
-                        { Name: "DOCUMENT" },
-                        { Name: "IMG" },
-                        { Name: "TEXT" },
-                      ];
-
-                      const selected =
-                        options.find((o) => o.Name === field.value) || null;
-
-                      return (
-                        <Autocomplete
-                          options={options}
-                          getOptionLabel={(o) => o.Name}
-                          value={selected}
-                          isOptionEqualToValue={(o, v) => o?.Name === v?.Name}
-                          onChange={(_, v) => {
-                            const value = v ? v.Name : null;
-                            field.onChange(value);
-                            handleTypeChange(value);
-                            if (value === "TEXT") {
-                              setValue("FileName", null);
-                            }
-                          }}
-                          slotProps={{
-                            paper: {
-                              sx: {
-                                maxHeight: 250,
-                              },
-                            },
-                          }}
-                          renderInput={(params) => (
-                            <TextField
-                              {...params}
-                              label="SELECT TYPE"
-                              size="small"
-                              fullWidth
-                            />
-                          )}
-                        />
-                      );
-                    }}
-                  />
-                </Grid>
-
-                <Grid item md={4} sm={6} xs={12}>
-                  <Controller
-                    name="template"
-                    control={control}
-                    defaultValue={null}
-                    render={({ field }) => {
-                      const options = filteredTemplates.map((t) => ({
-                        Name: t.name,
-                        template: t,
-                      }));
-
-                      const selected =
-                        options.find((o) => o.Name === field.value) || null;
-
-                      return (
-                        <Autocomplete
-                          options={options}
-                          getOptionLabel={(o) => o.Name}
-                          value={selected}
-                          isOptionEqualToValue={(o, v) => o?.Name === v?.Name}
-                          onChange={(_, v) => {
-                            //  set template name in form
-                            field.onChange(v ? v.Name : null);
-                            setParamValues({});
-                            //  BODY text → MESSAGE
-                            if (v?.template?.components) {
-                              const bodyComponent = v.template.components.find(
-                                (c) => c.type === "BODY",
-                              );
-
-                              setValue("Message", bodyComponent?.text || "", {
-                                shouldDirty: true,
-                                shouldTouch: true,
-                                shouldValidate: true,
-                              });
-                              console.log("Message", bodyComponent?.text);
-                            } else {
-                              setValue("Message", "", {
-                                shouldDirty: true,
-                                shouldTouch: true,
-                              });
-                            }
-                          }}
-                          slotProps={{
-                            paper: {
-                              sx: {
-                                maxHeight: 250,
-                              },
-                            },
-                          }}
-                          renderInput={(params) => (
-                            <TextField
-                              {...params}
-                              label="SELECT TEMPLATE"
-                              size="small"
-                              fullWidth
-                            />
-                          )}
-                        />
-                      );
-                    }}
-                  />
-                </Grid>
-                {/* {(selectedType === "DOCUMENT" || selectedType === "IMG") && ( */}
-                <Grid item md={4} sm={6} xs={12}>
-                  <Controller
-                    name="FileName"
-                    control={control}
-                    defaultValue={null}
-                    rules={{
-                      required: isAttachmentEnabled
-                        ? "File is required"
-                        : false,
-                      // required: "File is required",
-                      validate: (file) => {
-                        if (!file) return true;
-
-                        const allowedTypes = [
-                          "application/pdf",
-                          "image/jpeg",
-                          "image/png",
-                          "image/jpg",
-                          "image/gif",
-                          "image/bmp",
-                          "image/webp",
-                        ];
+                      )}
+                    />
+                  </Grid>
+                  {uniqueParams.length > 0 && (
+                    <Grid container spacing={2} sx={{ mt: 1 }}>
+                      {uniqueParams.map((param) => {
+                        const key = param.replace(/[{}]/g, "");
 
                         return (
-                          allowedTypes.includes(file.type) ||
-                          "Only PDF or Image files are allowed"
+                          <Grid item xs={12} sm={4} key={key}>
+                            <TextField
+                              size="small"
+                              label={`Enter value for ${param}`}
+                              value={paramValues[key] || ""}
+                              onChange={(e) =>
+                                setParamValues({
+                                  ...paramValues,
+                                  [key]: e.target.value,
+                                })
+                              }
+                            />
+                          </Grid>
                         );
-                      },
-                    }}
-                    render={({ field, fieldState }) => (
-                      <Tooltip
-                        arrow
-                        placement="top"
-                        title={
-                          !isAttachmentEnabled
-                            ? "Attachment allowed only for DOCUMENT or IMG type"
-                            : ""
-                        }
-                      >
-                        <span>
-                          <TextField
-                            fullWidth
-                            size="small"
-                            label="ATTACH FILE"
-                            value={field.value?.name || ""}
-                            placeholder="Choose file"
-                            error={!!fieldState.error}
-                            helperText={fieldState.error?.message}
-                            disabled={!isAttachmentEnabled}
-                            InputLabelProps={{
-                              shrink: true,
-                            }}
-                            InputProps={{
-                              readOnly: true,
-                              endAdornment: (
-                                <Button
-                                  component="label"
-                                  variant="outlined"
-                                  size="small"
-                                  disabled={!isAttachmentEnabled}
-                                  sx={{ ml: 1, textTransform: "none" }}
-                                >
-                                  Upload
-                                  <input
-                                    type="file"
-                                    hidden
-                                    accept=".pdf,image/*"
-                                    disabled={!isAttachmentEnabled}
-                                    onChange={(e) => {
-                                      const file = e.target.files?.[0];
-
-                                      if (!file) {
-                                        field.onChange(null);
-                                        return;
-                                      }
-
-                                      const allowedTypes = [
-                                        "application/pdf",
-                                        "image/jpeg",
-                                        "image/png",
-                                        "image/jpg",
-                                        "image/gif",
-                                        "image/bmp",
-                                        "image/webp",
-                                      ];
-
-                                      if (!allowedTypes.includes(file.type)) {
-                                        Swal.fire({
-                                          icon: "warning",
-                                          title: "Invalid File",
-                                          text: "Please upload only PDF or Image files.",
-                                          toast: true,
-                                          position: "center",
-                                          timer: 3000,
-                                          showConfirmButton: false,
-                                        });
-                                        e.target.value = "";
-                                        field.onChange(null);
-                                        return;
-                                      }
-
-                                      field.onChange(file);
-                                    }}
-                                  />
-                                </Button>
-                              ),
-                            }}
-                          />
-                        </span>
-                      </Tooltip>
-                    )}
-                  />
-                </Grid>
-                {/* )} */}
-
-                {/* MESSAGE */}
-                {/* <Grid item xs={12}>
-                <Controller
-                  name="Message"
-                  control={control}
-                  defaultValue=""
-                  render={({ field, fieldState: { error } }) => (
-                    <Tooltip
-                      title={field.value || "No message entered"}
-                      placement="bottom-start"
-                      arrow
-                    >
-                      <TextField
-                        {...field}
-                        label="MESSAGE"
-                        size="small"
-                        multiline
-                        rows={6}
-                        fullWidth
-                        error={!!error}
-                        helperText={error?.message}
-                        InputProps={{
-                          readOnly: true,
-                        }}
-                      />
-                    </Tooltip>
+                      })}
+                    </Grid>
                   )}
-                />
-              </Grid> */}
-                <Grid item xs={12}>
-                  <Controller
-                    name="Message"
-                    control={control}
-                    defaultValue=""
-                    render={({ field, fieldState: { error } }) => (
-                      <Tooltip
-                        title={getPreviewMessage() || "No message entered"}
-                        placement="bottom-start"
-                        arrow
-                      >
-                        <TextField
-                          {...field}
-                          value={getPreviewMessage()} // ✅ Show live replaced message
-                          label="MESSAGE"
-                          size="small"
-                          multiline
-                          rows={6}
-                          fullWidth
-                          error={!!error}
-                          helperText={error?.message}
-                          InputProps={{
-                            readOnly: true,
-                          }}
-                        />
-                      </Tooltip>
-                    )}
-                  />
                 </Grid>
-                {uniqueParams.length > 0 && (
-                  <Grid container spacing={2} sx={{ mt: 1 }}>
-                    {uniqueParams.map((param) => {
-                      const key = param.replace(/[{}]/g, "");
 
-                      return (
-                        <Grid item xs={12} sm={4} key={key}>
-                          <TextField
-                            size="small"
-                            label={`Enter value for ${param}`}
-                            value={paramValues[key] || ""}
-                            onChange={(e) =>
-                              setParamValues({
-                                ...paramValues,
-                                [key]: e.target.value,
-                              })
-                            }
-                          />
-                        </Grid>
-                      );
-                    })}
-                  </Grid>
-                )}
-              </Grid>
-
-              <Divider sx={{ my: 2 }} />
-
-              {/* FOOTER */}
-              <Box
+                {/* FOOTER */}
+              </CardContent>
+              <CardActions
                 sx={{
                   display: "flex",
                   justifyContent: "space-between",
+                  height: "2vh",
+                  pl: 3,
+                  pr: 3,
                 }}
               >
                 <Button
@@ -1973,12 +1827,10 @@ console.log("object=====", newData)
                 >
                   Save
                 </Button>
-              </Box>
-            </Box>
-          </Paper>
-          {/* </Box> */}
+              </CardActions>
+            </Card>
+          </Grid>
         </Grid>
-      </Grid>
       </Box>
     </>
   );

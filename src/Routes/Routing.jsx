@@ -20,13 +20,10 @@ import EmailSetup from "../pages/EmailSetup";
 import UploadDocument from "../pages/Upload-Document";
 import GazettedMaster from "../pages/Gazetted-Master";
 import ManageDocumentsPage from "../pages/ManageDocPage";
-import Report from "../pages/Report";
-import RoleCreation from "../pages/RoleCreation";
-
+ import RoleCreation from "../pages/RoleCreation";
 import SanjayGandhi from "../pages/SanjavGandhi/SanjayGandhi";
 import Rehabilitation from "../pages/Rehabilitation/Rehabilitation";
 import SendNotification from "../pages/SendNotificaion";
-
 import { useThemeMode } from "../Dashboard/Theme";
 import ProtectedRoute from "./ProtectedRoute";
 import SJYGandhiDashboard from "../Dashboard/SJYGandhi-Dashboard";

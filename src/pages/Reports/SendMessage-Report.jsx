@@ -1,69 +1,65 @@
 import DateRangeIcon from "@mui/icons-material/DateRange";
+import EditNoteIcon from "@mui/icons-material/EditNote";
 import FormatListNumberedIcon from "@mui/icons-material/FormatListNumbered";
-import PhoneIcon from "@mui/icons-material/Phone";
+import TagIcon from "@mui/icons-material/Tag";
 import { Chip, Divider, Grid, Paper, Typography } from "@mui/material";
 import { DataGrid } from "@mui/x-data-grid";
 import axios from "axios";
 import dayjs from "dayjs";
-import React, { useEffect, useState } from "react";
+import React, { useEffect, useRef, useState } from "react";
 import CustomToolbar from "../../components/CustomToolbar";
 import CustomMuiRangePicker from "../../components/DateRangePickerField";
 import { BASE_URL } from "../../Constant";
-import TagIcon from "@mui/icons-material/Tag";
-          import FontDownloadIcon from '@mui/icons-material/FontDownload';
-import EditNoteIcon from '@mui/icons-material/EditNote';
+import ChecklistIcon from "@mui/icons-material/Checklist";
+
 export default function SendMessageReport() {
   const [fromDate, setFromDate] = useState(dayjs().startOf("month"));
   const [toDate, setToDate] = useState(dayjs());
-  const [DocMissingCount, setDocMissingCount] = React.useState(0);
   const [DocReadyCount, setDocReadyCount] = React.useState(0);
-  const [docMissingRows, setDocMissingRows] = React.useState([]);
   const [docReadyRows, setDocReadyRows] = React.useState([]);
+  const fetchingRef = useRef(false);
   const fetchReport = async (selectedFrom, selectedTo) => {
     try {
+      const token = sessionStorage.getItem("BearerTokan");
+      if (!token) {
+        fetchingRef.current = false;
+        return;
+      }
+
       const params = {
         FromDate: dayjs(fromDate).format("YYYY-MM-DD"),
         ToDate: dayjs(toDate).format("YYYY-MM-DD"),
       };
 
-      const response = await axios.get(`${BASE_URL}Reports/LandAcqu`, {
+      const response = await axios.get(`${BASE_URL}Campaign/Reports`, {
         params,
+        headers: {
+          Authorization: token.startsWith("Bearer ")
+            ? token
+            : `Bearer ${token}`,
+        },
       });
 
+      console.log("dfgfg", response);
       if (!response || !response.data) {
-        setDocMissingRows([]);
         setDocReadyRows([]);
         return;
       }
+ 
+      const groups = response.data.values ?? [];
+      const Totalcount = groups.reduce((total, item) => {
+  const sent = item?.MsgSentCnt ?? 0;
+  const failed = item?.MsgFailedCnt ?? 0;
 
-      const groups = Array.isArray(response.data.values)
-        ? response.data.values
-        : [];
+  return total + sent + failed;
+}, 0);
 
-      // -- DocMissing
-      const missingGroup = groups.find((g) => g.TransType === "DocMissing");
-      const docMissingRows =
-        missingGroup?.Values?.map((item, idx) => ({
-          ...item,
-          id: item.Id ?? `DocMissing-${idx + 1}`,
-        })) || [];
+console.log("Totalcount", Totalcount);
+      setDocReadyCount(Totalcount?? 0);
 
-      setDocMissingCount(missingGroup?.Count ?? 0);
-
-      // -- DocReady
-      const readyGroup = groups.find((g) => g.TransType === "DocReady");
-      const docReadyRows =
-        readyGroup?.Values?.map((item, idx) => ({
-          ...item,
-          id: item.Id ?? `DocReady-${idx + 1}`,
-        })) || [];
-      setDocReadyCount(readyGroup?.Count ?? 0);
-
-      setDocMissingRows(docMissingRows);
-      setDocReadyRows(docReadyRows);
+      setDocReadyRows(groups);
     } catch (error) {
       console.error("Error fetching data:", error);
-      setDocMissingRows([]);
       setDocReadyRows([]);
     } finally {
     }
@@ -75,19 +71,18 @@ export default function SendMessageReport() {
   }, [fromDate, toDate]);
 
   const officerColumns = [
-    
     {
       field: "srNo",
       headerName: "SR NO",
-      minWidth: 90,
-      maxWidth: 100,
-      flex: 0.2,
+      minWidth: 60,
+      maxWidth: 65,
+      flex: 0.1,
       sortable: false,
       headerAlign: "center",
       align: "center",
 
       renderHeader: () => (
-        <span style={{ display: "flex", alignItems: "center", gap: 4 }}>
+        <span style={{ display: "flex", alignItems: "center", gap: 2 }}>
           <TagIcon fontSize="small" />
           SR NO
         </span>
@@ -97,62 +92,59 @@ export default function SendMessageReport() {
         params.api.getSortedRowIds().indexOf(params.id) + 1,
     },
     {
-      field: "SentDate",
-      headerName: "SEND DATE",
-      minWidth: 120,
-      maxWidth: 180,
+      field: "Title",
+      headerName: "Title",
       flex: 1,
       headerAlign: "center",
       align: "center",
-
       renderHeader: () => (
         <span style={{ display: "flex", alignItems: "center", gap: "5px" }}>
-          <DateRangeIcon fontSize="small" />
-          SEND DATE
+          <EditNoteIcon fontSize="small" />
+          Title
         </span>
       ),
-
-      valueGetter: (params) => {
-        if (!params.row.SentDate) return "";
-        const d = new Date(params.row.SentDate);
-        return d
-          .toLocaleDateString("en-GB", {
-            day: "2-digit",
-            month: "short",
-            year: "numeric",
-          })
-          .replace(/ /g, "-");
-      },
+      renderCell: (params) => <span>{params.value}</span>,
     },
-
-    
-
     {
-      field: "Name",
-      headerName: "NAME",
+      field: "Type",
+      headerName: "Type",
+      flex: 1,
+      headerAlign: "center",
+      align: "center",
+      renderHeader: () => (
+        <span style={{ display: "flex", alignItems: "center", gap: "5px" }}>
+          <ChecklistIcon fontSize="small" />
+          Type
+        </span>
+      ),
+      renderCell: (params) => <span>{params.value}</span>,
+    },
+    {
+      field: "Templete",
+      headerName: "Templete",
       flex: 1.2,
       headerAlign: "center",
       align: "center",
       renderHeader: () => (
         <span style={{ display: "flex", alignItems: "center", gap: "5px" }}>
           <EditNoteIcon fontSize="small" />
-         OFFICER NAME
+          Templete
         </span>
       ),
       renderCell: (params) => <span>{params.value}</span>,
     },
 
     {
-      field: "MsgCnt",
-      headerName: "COUNT",
-      flex: 0.7,
+      field: "MsgFailedCnt",
+      headerName: "Msg Failed Cnt Count",
+      flex: 0.8,
       align: "center",
       headerAlign: "center",
 
       renderHeader: () => (
         <span style={{ display: "flex", alignItems: "center", gap: "5px" }}>
           <FormatListNumberedIcon fontSize="small" />
-          COUNT
+           Msg Failed Cnt Count
         </span>
       ),
 
@@ -163,6 +155,35 @@ export default function SendMessageReport() {
             padding: "3px 10px",
             borderRadius: "6px",
             fontWeight: 600,
+            color: "#F2401B",
+          }}
+        >
+          {params.value}
+        </span>
+      ),
+    },
+    {
+      field: "MsgSentCnt",
+      headerName: "Msg Sent Cnt Count",
+      flex: 0.8,
+      align: "center",
+      headerAlign: "center",
+
+      renderHeader: () => (
+        <span style={{ display: "flex", alignItems: "center", gap: "5px" }}>
+          <FormatListNumberedIcon fontSize="small" />
+          Msg Sent Cnt Count
+        </span>
+      ),
+
+      renderCell: (params) => (
+        <span
+          style={{
+            display: "inline-block",
+            padding: "3px 10px",
+            borderRadius: "6px",
+            fontWeight: 600,
+            color: "#00A300",
           }}
         >
           {params.value}
@@ -199,9 +220,7 @@ export default function SendMessageReport() {
           padding={1}
           noWrap
         >
-         Send Message Report
-
-
+          Send Notification Report
         </Typography>
       </Grid>
       <Grid container justifyContent="flex-end" item xs={12} sm={12}>
@@ -229,7 +248,7 @@ export default function SendMessageReport() {
         </Paper>
       </Grid>
 
-      <Grid container spacing={2} sx={{ mt: 3 }}>
+      <Grid container spacing={2} sx={{ mt: 1 }}>
         <Grid item xs={12} sm={12} md={12} lg={12}>
           <Paper elevation={1} sx={{ borderRadius: 3, p: 2 }}>
             <h3
@@ -240,7 +259,7 @@ export default function SendMessageReport() {
                 justifyContent: "center",
               }}
             >
-              Sended Message
+              Send Notification
               <Chip
                 label={DocReadyCount}
                 size="small"
@@ -257,12 +276,13 @@ export default function SendMessageReport() {
                   borderBottomWidth: "0.6px",
                   backgroundColor: "#ccc",
                   boxShadow: "0px 1px 2px rgba(0,0,0,0.2)",
-                  mx: -2,
+                  // mx: -2,
+                
                 }}
               />
             </Grid>
 
-            <div style={{ height: 400, width: "100%", marginTop: 4 }}>
+            <div style={{ height: 520, width: "100%", }}>
               <DataGrid
                 className="datagrid-style"
                 sx={{
@@ -278,7 +298,8 @@ export default function SendMessageReport() {
                 }}
                 rows={docReadyRows}
                 columns={officerColumns}
-                pageSize={5}
+                getRowId={(row) => row.Id}
+                pageSize={10}
                 disableSelectionOnClick
                 hideFooter={true}
                 slots={{
@@ -288,62 +309,6 @@ export default function SendMessageReport() {
             </div>
           </Paper>
         </Grid>
-
-        {/* DataGrid */}
-        {/* <Grid item xs={12} sm={12} md={12} lg={6}>
-          <Paper elevation={1} sx={{ borderRadius: 3, p: 2 }}>
-            <h3
-              style={{
-                display: "flex",
-                alignItems: "center",
-                gap: "10px",
-                justifyContent: "center",
-              }}
-            >
-              Missing Uploaded Document
-              <Chip
-                label={DocMissingCount}
-                size="small"
-                color="error"
-                sx={{ fontWeight: "bold" }}
-              />
-            </h3>
-            <Grid item xs={12}>
-              <Divider
-                sx={{
-                  borderBottomWidth: "0.6px",
-                  backgroundColor: "#ccc",
-                  boxShadow: "0px 1px 2px rgba(0,0,0,0.2)",
-                  mx: -2,
-                }}
-              />
-            </Grid>
-            <div style={{ height: 400, width: "100%", marginTop: 5 }}>
-              <DataGrid
-                className="datagrid-style"
-                sx={{
-                  height: "100%",
-                  minHeight: "250px",
-                  "& .MuiDataGrid-columnHeaders": {
-                    backgroundColor: (theme) =>
-                      theme.palette.custome.datagridcolor,
-                  },
-                  "& .MuiDataGrid-row:hover": {
-                    boxShadow: "0px 4px 20px rgba(0,0,0,.2)",
-                  },
-                }}
-                rows={docMissingRows}
-                columns={officerColumns}
-                pageSize={5}
-                disableSelectionOnClick
-                hideFooter={true}
-                slots={{
-                  toolbar: CustomToolbar,
-                }}
-              />
-            </div>
-          </Paper>
-        </Grid> */}
       </Grid>
     </>
   );
