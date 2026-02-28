@@ -367,6 +367,12 @@ export default function Dashboard() {
           path: "SJYGandhiReport",
           menuId: 16,
         },
+        {
+          label: "Send Message",
+          icon: <LocalPrintshopOutlinedIcon />,
+          path: "SendMessageReport",
+          menuId: 16,
+        },
       ],
     },
   ];

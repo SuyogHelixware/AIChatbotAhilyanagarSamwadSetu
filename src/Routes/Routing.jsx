@@ -20,13 +20,10 @@ import EmailSetup from "../pages/EmailSetup";
 import UploadDocument from "../pages/Upload-Document";
 import GazettedMaster from "../pages/Gazetted-Master";
 import ManageDocumentsPage from "../pages/ManageDocPage";
-import Report from "../pages/Report";
-import RoleCreation from "../pages/RoleCreation";
-
+ import RoleCreation from "../pages/RoleCreation";
 import SanjayGandhi from "../pages/SanjavGandhi/SanjayGandhi";
 import Rehabilitation from "../pages/Rehabilitation/Rehabilitation";
 import SendNotification from "../pages/SendNotificaion";
-
 import { useThemeMode } from "../Dashboard/Theme";
 import ProtectedRoute from "./ProtectedRoute";
 import SJYGandhiDashboard from "../Dashboard/SJYGandhi-Dashboard";
@@ -34,6 +31,7 @@ import LandAcquistionReport from "../pages/Reports/LandAcquistion-Report";
 import SJYGandhiReport from "../pages/Reports/SJYGandhi-Report";
 import LandAcquisition from "../Dashboard/LandAcquisition-Dashboard";
 import ManageDocPage from "../pages/ManageDocPage";
+import SendMessageReport from "../pages/Reports/SendMessage-Report";
 
 export default function Routing() {
   const { roleAccess } = useThemeMode();
@@ -190,6 +188,14 @@ export default function Routing() {
               element={
                 <ProtectedRoute menuId={16} roleAccess={roleAccess}>
                   <SJYGandhiReport />
+                </ProtectedRoute>
+              }
+            />
+            <Route
+              path="SendMessageReport"
+              element={
+                <ProtectedRoute menuId={16} roleAccess={roleAccess}>
+                  <SendMessageReport />
                 </ProtectedRoute>
               }
             />
