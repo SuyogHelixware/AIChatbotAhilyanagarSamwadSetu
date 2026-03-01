@@ -32,7 +32,7 @@ import {
   Typography,
 } from "@mui/material";
 import { useTheme } from "@mui/styles";
-import { DataGrid } from "@mui/x-data-grid";
+import { DataGrid, GridToolbar, GridToolbarContainer, GridToolbarQuickFilter } from "@mui/x-data-grid";
 import axios from "axios";
 import dayjs from "dayjs";
 import { useEffect, useRef, useState } from "react";
@@ -60,12 +60,18 @@ export default function UserCreation() {
   const [searchText, setSearchText] = useState("");
   const [searchTextList, setSearchTextList] = useState("");
 
-  // --------Sidebar -----------------------------------
+  // --------Sidebar -------------------------------------
   const [listData, setListData] = useState([]);
   const [page, setPage] = useState(0);
   const [hasMore, setHasMore] = useState(true);
   const [loading, setLoading] = useState(false);
-  // --------------------------------------------------
+  // -------------------select mobile no dropdown------------
+  const [mobilePage, setMobilePage] = useState(0);
+  const [mobileLoading, setMobileLoading] = useState(false);
+  const [mobileHasMore, setMobileHasMore] = useState(true);
+  // ------------------------------------------------------
+ 
+ 
 
   const handleEditNumber = async (Id) => {
     setIsEdit("UPDATE");
@@ -134,7 +140,8 @@ export default function UserCreation() {
         timer: 1000,
         showConfirmButton: false,
       });
-
+setNewName("");
+      setNewMobile("");
       HandlegetMobileLIst({ page: 0, search: "" });
     } catch (error) {
       Swal.fire({
@@ -541,13 +548,17 @@ export default function UserCreation() {
 
   const HandlegetMobileLIst = async ({ page = 0, search = "" } = {}) => {
     const token = sessionStorage.getItem("BearerTokan");
-    if (!token) {
-      console.error("No token found! Please login first.");
-      return;
-    }
+    if (!token || mobileLoading) return;
+
+    setMobileLoading(true);
+
     try {
       const { data } = await axios.get(`${BASE_URL}LawyerSetup`, {
-        params: { SearchText: search },
+        params: {
+          SearchText: search,
+          Page: page,
+          Limit: 20,
+        },
         headers: {
           Authorization: token.startsWith("Bearer ")
             ? token
@@ -555,21 +566,24 @@ export default function UserCreation() {
         },
       });
 
-      const newData = data?.values || [];
+      const newData = data?.values || []; 
+        setMobileRows((prev) => (page === 0 ? newData : [...prev, ...newData]));
 
-      setMobileRows((prev) => (page === 0 ? newData : [...prev, ...newData]));
+      // If returned records < 20 → no more data
+      setMobileHasMore(newData.length === 20);
     } catch (err) {
-      console.error("Error fetching Gazette list:", err);
+      console.error("Error fetching mobile list:", err);
+    } finally {
+      setMobileLoading(false);
     }
   };
-
+ 
+  
   useEffect(() => {
-    const delayDebounce = setTimeout(() => {
-      HandlegetMobileLIst({ page: 0, search: searchText });
-    }, 500);
-
-    return () => clearTimeout(delayDebounce);
-  }, [searchText]);
+    setMobilePage(0);
+    HandlegetMobileLIst({ page: 0 });
+  }, []);
+ 
 
   const HandleMobileCsvDownload = () => {
     // CSV Template Content
@@ -876,7 +890,9 @@ export default function UserCreation() {
 
   //   return () => clearTimeout(delayDebounce);
   // }, [searchTextList]);
-
+  <GridToolbarContainer>
+      <GridToolbarQuickFilter debounceMs={500} />
+    </GridToolbarContainer>
   return (
     <>
       {loaderOpen && <Loader open={loaderOpen} />}
@@ -967,11 +983,18 @@ export default function UserCreation() {
               getRowId={(row) => row.Id}
               disableColumnFilter
               paginationMode="server"
-              hideFooter
-              keepNonExistentRowsSelected
+               keepNonExistentRowsSelected
               disableColumnSelector
+               pageSizeOptions={[]} 
               disableRowSelectionOnClick
               disableDensitySelector
+              slots={{ toolbar: GridToolbar }}
+                          slotProps={{
+                            toolbar: {
+                              showQuickFilter: true,
+                              quickFilterProps: { debounceMs: 500 },
+                            },
+                          }}
               sx={{
                 border: "none",
                 "& .MuiDataGrid-columnHeaders": {
@@ -987,6 +1010,7 @@ export default function UserCreation() {
                 },
               }}
             />
+            
           </Grid>
         </DialogContent>
         <DialogActions sx={{ justifyContent: "space-between", px: 2 }}>
@@ -1268,7 +1292,6 @@ export default function UserCreation() {
                                 error={!!fieldState.error}
                               >
                                 <InputLabel>SELECT MOBILE NO</InputLabel>
-
                                 <Select
                                   {...field}
                                   multiple
@@ -1298,14 +1321,38 @@ export default function UserCreation() {
                                     },
                                   }}
                                   MenuProps={{
-                                    autoFocus: false,
-                                    disableAutoFocusItem: true,
                                     PaperProps: {
                                       sx: {
                                         maxHeight: 250,
+                                        overflowY: "auto",
+                                      },
+                                      onScroll: (event) => {
+                                        const {
+                                          scrollTop,
+                                          scrollHeight,
+                                          clientHeight,
+                                        } = event.target;
+
+                                        if (
+                                          scrollHeight - scrollTop <=
+                                            clientHeight + 5 &&
+                                          mobileHasMore &&
+                                          !mobileLoading
+                                        ) {
+                                          const nextPage = mobilePage + 1;
+                                          setMobilePage(nextPage);
+                                          HandlegetMobileLIst({
+                                            page: nextPage,
+                                          });
+                                        }
                                       },
                                     },
                                   }}
+                                  // {mobileLoading && (
+                                  //   <MenuItem disabled>
+                                  //     <ListItemText primary="Loading more..." />
+                                  //   </MenuItem>
+                                  // )}
                                   renderValue={(selected) => {
                                     const selectedItems =
                                       activeMobileRows.filter(
