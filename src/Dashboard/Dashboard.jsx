@@ -13,7 +13,7 @@ import ModeNightIcon from "@mui/icons-material/ModeNight";
 import SettingsIcon from "@mui/icons-material/Settings";
 import logoDarkTheme from "../assets/darkThemeLogo.png";
 // import SmartphoneIcon from "@mui/icons-material/Smartphone";
-// import EmailIcon from "@mui/icons-material/Email";
+import EmailIcon from "@mui/icons-material/Email";
 // import BusinessIcon from "@mui/icons-material/Business";
 import DescriptionIcon from "@mui/icons-material/Description";
 // import MiscellaneousServicesIcon from "@mui/icons-material/MiscellaneousServices";
@@ -70,6 +70,7 @@ import DescriptionOutlinedIcon from "@mui/icons-material/DescriptionOutlined";
 import MarkChatReadOutlinedIcon from "@mui/icons-material/MarkChatReadOutlined";
 import LocalPrintshopOutlinedIcon from "@mui/icons-material/LocalPrintshopOutlined";
 import HomeOutlinedIcon from "@mui/icons-material/HomeOutlined";
+import ContactPhoneIcon from '@mui/icons-material/ContactPhone';
 
 const drawerWidth = 220;
 const openedMixin = (theme) => ({
@@ -215,18 +216,6 @@ export default function Dashboard() {
     //   path: "home",
     //   menuId: 1,
     // },
-    // {
-    //   label: "Sampadan Dashboard",
-    //   icon: <DashboardIcon />,
-    //   path: "BhusampadanDashboard",
-    //   menuId: 1,
-    // },
-    // {
-    //   label: "SJYGandhi Dashboard",
-    //   icon: <DashboardIcon />,
-    //   path: "SJYGandhiDashboard",
-    //   menuId: 1,
-    // },
     {
       label: "Dashboards",
       icon: <HomeOutlinedIcon />,
@@ -236,7 +225,6 @@ export default function Dashboard() {
           label: "Admin",
           icon: <DehazeIcon />,
           path: "home",
-
           menuId: 1,
         },
         {
@@ -295,24 +283,20 @@ export default function Dashboard() {
     //   path: "OfflineServices",
     //    menuId: 7,
     // },
-    //  {
-    //   label: "Email Configuration",
-    //   icon: <EmailIcon />,
-    //   path: "EmailSetup",
-    //   menuId: 2,
-    // },
+     {
+      label: "Email Configuration",
+      icon: <EmailIcon />,
+      path: "EmailSetup",
+      menuId: 2,
+    },
     {
       label: "Documents Master",
       icon: <DescriptionOutlinedIcon />,
       path: "ManageDocPage",
       menuId: 5,
     },
-    // {
-    //   label: "Documents Master",
-    //   icon: <DescriptionIcon />,
-    //   path: "DocumentMaster",
-    //   menuId: 5,
-    // },
+   
+    
     {
       label: "Gazetted Master",
       icon: <ChecklistIcon />,
@@ -339,7 +323,7 @@ export default function Dashboard() {
     },
     {
       label: "Send Notification",
-      icon: <CorporateFareIcon />,
+      icon: <ContactPhoneIcon />,
       path: "SendNotification",
       menuId: 11,
     },

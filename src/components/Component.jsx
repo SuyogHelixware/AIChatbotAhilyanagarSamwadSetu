@@ -374,7 +374,7 @@ export class InputPasswordFieldmd extends React.Component {
               <InputAdornment position="end">
                 <IconButton
                   edge="end"
-                  sx={{ color: "rgba(0, 90, 91, 0.9)" }}
+                  sx={{ color: "#2196F3" }}
                   onClick={this.props.onClick}
                   onMouseDown={this.props.onMouseDown}
                 >

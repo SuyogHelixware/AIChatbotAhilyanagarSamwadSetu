@@ -32,7 +32,12 @@ import {
   Typography,
 } from "@mui/material";
 import { useTheme } from "@mui/styles";
-import { DataGrid, GridToolbar, GridToolbarContainer, GridToolbarQuickFilter } from "@mui/x-data-grid";
+import {
+  DataGrid,
+  GridToolbar,
+  GridToolbarContainer,
+  GridToolbarQuickFilter,
+} from "@mui/x-data-grid";
 import axios from "axios";
 import dayjs from "dayjs";
 import { useEffect, useRef, useState } from "react";
@@ -41,6 +46,8 @@ import Swal from "sweetalert2";
 import { InputTextFieldTitle } from "../components/Component";
 import Loader from "../components/Loader";
 import { BASE_URL } from "../Constant";
+import { InputAdornment } from "@mui/material";
+import SearchIcon from "@mui/icons-material/Search";
 
 export default function UserCreation() {
   const theme = useTheme();
@@ -59,6 +66,7 @@ export default function UserCreation() {
   const [PrevDocEntry, setPrevDocEntry] = useState("");
   const [searchText, setSearchText] = useState("");
   const [searchTextList, setSearchTextList] = useState("");
+  const [debouncedSearch, setDebouncedSearch] = useState("");
 
   // --------Sidebar -------------------------------------
   const [listData, setListData] = useState([]);
@@ -70,8 +78,13 @@ export default function UserCreation() {
   const [mobileLoading, setMobileLoading] = useState(false);
   const [mobileHasMore, setMobileHasMore] = useState(true);
   // ------------------------------------------------------
- 
- 
+  useEffect(() => {
+    const timer = setTimeout(() => {
+      setDebouncedSearch(searchTextList.trim());
+    }, 400);
+
+    return () => clearTimeout(timer);
+  }, [searchTextList]);
 
   const handleEditNumber = async (Id) => {
     setIsEdit("UPDATE");
@@ -140,7 +153,7 @@ export default function UserCreation() {
         timer: 1000,
         showConfirmButton: false,
       });
-setNewName("");
+      setNewName("");
       setNewMobile("");
       HandlegetMobileLIst({ page: 0, search: "" });
     } catch (error) {
@@ -411,18 +424,27 @@ setNewName("");
         },
       });
 
-      console.log("POST", response);
+      // console.log("POST", response);
       setLoaderOpen(false);
       reset();
       fetchListData();
+      // Swal.fire({
+      //   icon: "success",
+      //   title: "Success",
+      //   text: "Send successfully...",
+      //   toast: true,
+      //   position: "center",
+      //   timer: 2000,
+      //   showConfirmButton: false,
+      // });
       Swal.fire({
-        icon: "success",
-        title: "Success",
-        text: "Send successfully...",
-        toast: true,
-        position: "center",
-        timer: 2000,
-        showConfirmButton: false,
+        title: "Processing...",
+        html: "Message sending process started",
+        allowOutsideClick: false,
+        didOpen: () => {
+          Swal.showLoading();
+        },
+        timer: 3000,
       });
     } catch (error) {
       console.log("ERROR", error);
@@ -566,8 +588,8 @@ setNewName("");
         },
       });
 
-      const newData = data?.values || []; 
-        setMobileRows((prev) => (page === 0 ? newData : [...prev, ...newData]));
+      const newData = data?.values || [];
+      setMobileRows((prev) => (page === 0 ? newData : [...prev, ...newData]));
 
       // If returned records < 20 → no more data
       setMobileHasMore(newData.length === 20);
@@ -577,37 +599,54 @@ setNewName("");
       setMobileLoading(false);
     }
   };
- 
-  
+
   useEffect(() => {
     setMobilePage(0);
     HandlegetMobileLIst({ page: 0 });
   }, []);
- 
 
+  //   const HandleMobileCsvDownload = () => {
+  //     // CSV Template Content
+  //     const csvTemplate = "MobileNumber\n0000000000";
+
+  //     // Create Blob
+  //     const blob = new Blob([csvTemplate], {
+  //       type: "text/csv;charset=utf-8;",
+  //     });
+
+  //     const url = URL.createObjectURL(blob);
+
+  //     // Create temporary link
+  //     const link = document.createElement("a");
+  //     link.href = url;
+  //     link.setAttribute("download", "MobileNo_Template.csv");
+  //     document.body.appendChild(link);
+  //     link.click();
+
+  //     // Cleanup
+  //     document.body.removeChild(link);
+  //     URL.revokeObjectURL(url);
+
+  //     // Info Popup
+  //     Swal.fire({
+  //       icon: "info",
+  //       title: "Mobile Number CSV Format",
+  //       html: `
+  //       <div style="text-align:left">
+  //         <p><b>Required Column:</b></p>
+  //         <ul>
+  //           <li><b>MobileNumber</b> (10 digit mandatory)</li>
+  //         </ul>
+  //         <p>Only <b>.csv</b> file allowed.</p>
+  //         <p>Example format:</p>
+  //         <pre>MobileNumber
+  // 9876543210</pre>
+  //       </div>
+  //     `,
+  //       confirmButtonText: "OK",
+  //     });
+  //   };
   const HandleMobileCsvDownload = () => {
-    // CSV Template Content
-    const csvTemplate = "MobileNumber\n0000000000";
-
-    // Create Blob
-    const blob = new Blob([csvTemplate], {
-      type: "text/csv;charset=utf-8;",
-    });
-
-    const url = URL.createObjectURL(blob);
-
-    // Create temporary link
-    const link = document.createElement("a");
-    link.href = url;
-    link.setAttribute("download", "MobileNo_Template.csv");
-    document.body.appendChild(link);
-    link.click();
-
-    // Cleanup
-    document.body.removeChild(link);
-    URL.revokeObjectURL(url);
-
-    // Info Popup
     Swal.fire({
       icon: "info",
       title: "Mobile Number CSV Format",
@@ -623,7 +662,39 @@ setNewName("");
 9876543210</pre>
       </div>
     `,
-      confirmButtonText: "OK",
+      showCancelButton: true,
+      confirmButtonText: "Download Template",
+      cancelButtonText: "Close",
+      confirmButtonColor: "#1976d2",
+    }).then((result) => {
+      if (result.isConfirmed) {
+        // CSV Template Content
+        const csvTemplate = "MobileNumber\n0000000000";
+
+        const blob = new Blob([csvTemplate], {
+          type: "text/csv;charset=utf-8;",
+        });
+
+        const url = URL.createObjectURL(blob);
+
+        const link = document.createElement("a");
+        link.href = url;
+        link.setAttribute("download", "MobileNo_Template.csv");
+        document.body.appendChild(link);
+        link.click();
+
+        document.body.removeChild(link);
+        URL.revokeObjectURL(url);
+
+        // Optional Success Toast
+        Swal.fire({
+          icon: "success",
+          title: "Downloaded",
+          text: "CSV Template downloaded successfully.",
+          timer: 1500,
+          showConfirmButton: false,
+        });
+      }
     });
   };
   // --------------------------------------------------
@@ -684,6 +755,45 @@ setNewName("");
     onChange={(e) => setSearchTextList(e.target.value)}
  
   /> */}
+      <TextField
+        size="small"
+        // fullWidth
+        placeholder="Search here..."
+        value={searchTextList}
+        onChange={(e) => setSearchTextList(e.target.value)}
+        variant="outlined"
+        sx={{
+          mb: 2,
+          "& .MuiOutlinedInput-root": {
+            // borderRadius: 3,
+            backgroundColor: (theme) =>
+              theme.palette.mode === "light" ? "#F5F6FA" : "#1e1e2f",
+          },
+        }}
+        InputProps={{
+          startAdornment: (
+            <InputAdornment position="start">
+              <SearchIcon color="action" />
+            </InputAdornment>
+          ),
+          endAdornment: searchTextList && (
+            <InputAdornment position="end">
+              <IconButton
+                size="small"
+                onClick={() => {
+                  setSearchTextList("");
+                  setPage(0);
+                  setHasMore(true);
+                  setListData([]);
+                }}
+                edge="end"
+              >
+                <CloseIcon fontSize="small" />
+              </IconButton>
+            </InputAdornment>
+          ),
+        }}
+      />
       {/* SCROLL AREA */}
       <Box
         id="ListScroll"
@@ -726,14 +836,14 @@ setNewName("");
       >
         {listData.map((item, index) => (
           <Card
-            elevation={3}
+            elevation={4}
             key={item.id || index}
             sx={{
-              mb: 1,
+              mb: 1.5,
               p: 2,
               borderRadius: 2,
               position: "relative",
-              minHeight: 80,
+              minHeight: 70,
               transition: "all 0.3s ease",
 
               "&:hover": {
@@ -764,7 +874,7 @@ setNewName("");
               sx={{
                 position: "absolute",
                 top: 8,
-                right: 12,
+                right: 25,
                 fontSize: 15,
                 fontWeight: 600,
                 color: "text.secondary",
@@ -844,7 +954,7 @@ setNewName("");
         params: {
           Page: page,
           Limit: 20,
-          SearchText: searchTextList,
+          SearchText: debouncedSearch || "",
         },
         headers: {
           Authorization: token.startsWith("Bearer ")
@@ -856,10 +966,20 @@ setNewName("");
       const newData = response.data.values;
       setLoaderOpen(false);
 
+      // if (newData.length === 0) {
+      //   setHasMore(false);
+      // } else {
+      //   setListData((prev) => [...prev, ...newData]);
+      // }
+
       if (newData.length === 0) {
         setHasMore(false);
       } else {
-        setListData((prev) => [...prev, ...newData]);
+        if (page === 0) {
+          setListData(newData); // replace on new search
+        } else {
+          setListData((prev) => [...prev, ...newData]); // append on scroll
+        }
       }
     } catch (error) {
       console.error(error);
@@ -877,22 +997,30 @@ setNewName("");
     setHasMore(true);
   }, []);
 
-  useEffect(() => {
-    fetchListData();
-  }, [page]);
+  // useEffect(() => {
+  //   fetchListData();
+  // }, [page]);
 
   //    useEffect(() => {
-  //   const delayDebounce = setTimeout(() => {
-  //     fetchingRef.current = false;
-  //     setHasMore(true);
-  //     setPage(1);
-  //   }, 500);
-
-  //   return () => clearTimeout(delayDebounce);
+  //    setPage(0);
+  //   setHasMore(true);
+  //   setListData([]);
   // }, [searchTextList]);
-  <GridToolbarContainer>
-      <GridToolbarQuickFilter debounceMs={500} />
-    </GridToolbarContainer>
+
+  // useEffect(() => {
+  //   fetchListData();
+  // }, [page, searchTextList]);
+
+  useEffect(() => {
+    setPage(0);
+    setHasMore(true);
+    setListData([]);
+  }, [debouncedSearch]);
+
+  useEffect(() => {
+    fetchListData();
+  }, [page, debouncedSearch]);
+
   return (
     <>
       {loaderOpen && <Loader open={loaderOpen} />}
@@ -905,6 +1033,9 @@ setNewName("");
             justifyContent: "space-between",
             alignItems: "center",
             pb: 1,
+            borderBottom: "1px solid #90caf9",
+            background: theme.palette.DHeaderbg.background,
+            color: theme.palette.DHeaderColor.color,
           }}
         >
           Add Mobile Numbers
@@ -974,7 +1105,7 @@ setNewName("");
               />
             </Grid>
           </Grid>
-          <Grid sx={{ height: 280, width: "100%" }}>
+          <Grid sx={{ height: 440, width: "100%" }}>
             <DataGrid
               className="datagrid-style"
               rows={mobileRows}
@@ -983,18 +1114,18 @@ setNewName("");
               getRowId={(row) => row.Id}
               disableColumnFilter
               paginationMode="server"
-               keepNonExistentRowsSelected
+              keepNonExistentRowsSelected
               disableColumnSelector
-               pageSizeOptions={[]} 
+              pageSizeOptions={[]}
               disableRowSelectionOnClick
               disableDensitySelector
               slots={{ toolbar: GridToolbar }}
-                          slotProps={{
-                            toolbar: {
-                              showQuickFilter: true,
-                              quickFilterProps: { debounceMs: 500 },
-                            },
-                          }}
+              slotProps={{
+                toolbar: {
+                  showQuickFilter: true,
+                  quickFilterProps: { debounceMs: 500 },
+                },
+              }}
               sx={{
                 border: "none",
                 "& .MuiDataGrid-columnHeaders": {
@@ -1010,10 +1141,15 @@ setNewName("");
                 },
               }}
             />
-            
           </Grid>
         </DialogContent>
-        <DialogActions sx={{ justifyContent: "space-between", px: 2 }}>
+        <DialogActions
+          sx={{
+            justifyContent: "space-between",
+            px: 2,
+            borderTop: "1px solid #90caf9",
+          }}
+        >
           <Button
             size="small"
             onClick={() => {
@@ -1348,11 +1484,6 @@ setNewName("");
                                       },
                                     },
                                   }}
-                                  // {mobileLoading && (
-                                  //   <MenuItem disabled>
-                                  //     <ListItemText primary="Loading more..." />
-                                  //   </MenuItem>
-                                  // )}
                                   renderValue={(selected) => {
                                     const selectedItems =
                                       activeMobileRows.filter(

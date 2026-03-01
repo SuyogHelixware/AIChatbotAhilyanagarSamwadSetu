@@ -52,7 +52,7 @@ export default function Home() {
                 Total Registered Users
               </Box>
               <h2>
-                <CountUp start={0} end={150} duration={2.75} separator="," />
+                <CountUp start={0} end={90} duration={2.75} separator="," />
               </h2>{" "}
             </Paper>
           </Grid>
@@ -76,7 +76,7 @@ export default function Home() {
               Total Gazetted Officers
               </Box>
               <h2>
-                <CountUp start={0} end={80} duration={2.75} separator="," />
+                <CountUp start={0} end={30} duration={2.75} separator="," />
               </h2>{" "}
             </Paper>
           </Grid>
@@ -123,7 +123,7 @@ export default function Home() {
               Total Department
               </Box>
               <h2>
-                <CountUp start={0} end={3} duration={2.75} separator="," />
+                <CountUp start={0} end={4} duration={2.75} separator="," />
               </h2>{" "}
             </Paper>
           </Grid>

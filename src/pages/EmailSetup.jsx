@@ -22,9 +22,11 @@ import {
 } from "../components/Component";
 import { Controller, useForm } from "react-hook-form"; // Importing React Hook Form
 import dayjs from "dayjs";
+import { useTheme } from "@mui/styles";
 
 const EmailSetup = () => {
   const [on, setOn] = React.useState(false);
+  const theme = useTheme();
   const [SaveUpdateButton, setSaveUpdateButton] = React.useState("SAVE");
   const [ClearUpdateButton, setClearUpdateButton] = React.useState("CLEAR");
   const [showPassword, setShowPassword] = React.useState(false);
@@ -91,11 +93,11 @@ const EmailSetup = () => {
     () => {
       handleUpdate(); // Pass `obj` in the function call
     }, // eslint-disable-next-line react-hooks/exhaustive-deps
-    []
+    [],
   );
   const handleSubmitForm = async (formData) => {
     console.log("Form Submitted:", formData);
-  
+
     if (SaveUpdateButton === "UPDATE") {
       const result = await Swal.fire({
         text: "Do you want to Update...?",
@@ -105,10 +107,10 @@ const EmailSetup = () => {
         cancelButtonColor: "#d33",
         confirmButtonText: "Yes, Update it!",
       });
-  
+
       if (!result.isConfirmed) return;
     }
-  
+
     const payload = {
       Id: formData.Id || null,
       Status: "1",
@@ -122,9 +124,9 @@ const EmailSetup = () => {
       MailPort: parseInt(formData.MailPort || ""),
       MailEncry: parseInt(formData.MailEncry || ""),
       MailUsername: formData.MailUsername || "",
-      MailPassword: formData.MailPassword || ""
+      MailPassword: formData.MailPassword || "",
     };
-  
+
     // if (SaveUpdateButton === "UPDATE") {
     //   payload.MailPassword =
     //     formData.MailPassword && formData.MailPassword.trim() !== ""
@@ -135,28 +137,31 @@ const EmailSetup = () => {
     //     payload.MailPassword = formData.MailPassword;
     //   }
     // }
-  
+
     try {
       let response;
       setLoading(true);
-  
+
       if (SaveUpdateButton === "UPDATE") {
-        response = await axios.put(`${BASE_URL}EmailSetup/${formData.Id}`, payload);
+        response = await axios.put(
+          `${BASE_URL}EmailSetup/${formData.Id}`,
+          payload,
+        );
       } else {
         response = await axios.post(`${BASE_URL}EmailSetup`, payload);
       }
-  
+
       setLoading(false);
-  
+
       const { success, message, values } = response.data;
-  
+
       if (success) {
         // if (values?.length > 0) {
         //   setExistingMailPassword(values[0].MailPassword);
         // }
-  
+
         // setValue("MailPassword", "");
-  
+
         Swal.fire({
           title: "Success!",
           text:
@@ -186,7 +191,6 @@ const EmailSetup = () => {
       });
     }
   };
-  
 
   const handleUpdate = async (rowData) => {
     setSaveUpdateButton("UPDATE");
@@ -202,7 +206,7 @@ const EmailSetup = () => {
         const emailSetup = response.data.values[0];
 
         originalDataRef.current = emailSetup;
-        setExistingMailPassword(emailSetup.MailPassword); 
+        setExistingMailPassword(emailSetup.MailPassword);
 
         setValue("Id", emailSetup.Id);
         setStoreId(emailSetup.Id);
@@ -214,9 +218,8 @@ const EmailSetup = () => {
         setValue("MailPort", emailSetup.MailPort);
         setValue("MailEncry", emailSetup.MailEncry);
         setValue("MailUsername", emailSetup.MailUsername);
-        setValue("MailPassword", emailSetup.MailPassword)
+        setValue("MailPassword", emailSetup.MailPassword);
         setValue("Status", emailSetup.Status);
-
       }
     } catch (error) {
       console.error("Error fetching email setup data:", error);
@@ -263,214 +266,214 @@ const EmailSetup = () => {
         item
         lg={12}
         spacing={2}
-        sx={{ height: "77vh", width: "100%", justifyContent:"center" }}
+        sx={{ height: "77vh", width: "100%", justifyContent: "center" }}
         onSubmit={handleSubmit(handleSubmitForm)}
         component={"form"}
       >
         <Grid
-        container
-        md={12}
-        lg={12}
-        component={Paper}
-        textAlign={"center"}
-        sx={{
-          width: "100%",
-          px: 5,
-          display: "flex",
-          flexDirection: "row",
-          alignItems: "center",
-          justifyContent: "space-between",
-          mb: 2,
-          mt: 2,
-          ml:3
-        }}
-        spacing={2}
-        elevation={4}
-      >
-        <Grid item md={4} xs={12} textAlign={"center"}>
-          <Controller
-            name="MailFromName"
-            control={control}
-            rules={{
-              required: "Mail from name is required",
-            }}
-            render={({ field, fieldState: { error } }) => (
-              <InputTextFieldmd
-                label="MAIL FROM NAME"
-                type="text"
-                // inputProps={{ maxLength: 254 }}
-                {...field}
-                error={!!error}
-                helperText={error ? error.message : null}
-              />
-            )}
-          />
-        </Grid>
-        <Grid item md={4} xs={12} textAlign={"center"}>
-          <Controller
-            name="MailFromEmail"
-            control={control}
-            rules={{
-              required: "Mail from Email is required", // Field is required
-            }}
-            render={({ field, fieldState: { error } }) => (
-              <InputTextFieldmd
-                label="MAIL FROM EMAIL"
-                type="text"
-                {...field}
-                // inputProps={{ maxLength: 8 }}
-                error={!!error}
-                helperText={error ? error.message : null}
-              />
-            )}
-          />
-        </Grid>
-        <Grid item md={4} xs={12}>
-          <Controller
-            name="EnableQueue"
-            control={control}
-            render={({ field }) => (
-              <TextField
-                select
-                label="Enable Email Queue"
-                fullWidth
-                size="small"
-                sx={{ maxWidth: 350, height: 40 }} // Matching InputTextField
-                {...field}
-              >
-                <MenuItem value="Y">Yes</MenuItem>
-                <MenuItem value="N">No</MenuItem>
-              </TextField>
-            )}
-          />
-        </Grid>
-        <Grid item md={4} xs={12}>
-          <Controller
-            name="MailDriver"
-            control={control}
-            render={({ field }) => (
-              <TextField
-                select
-                label="Mail Driver"
-                fullWidth
-                size="small"
-                sx={{ maxWidth: 350, height: 40 }} // Matching InputTextField
-                {...field}
-              >
-                <MenuItem value="Mail">Mail</MenuItem>
-                <MenuItem value="SMTP">SMTP</MenuItem>
-              </TextField>
-            )}
-          />
-        </Grid>
+          container
+          md={12}
+          lg={12}
+          component={Paper}
+          textAlign={"center"}
+          sx={{
+            width: "100%",
+            height:"100%",
+            px: 5,
+            display: "flex",
+            flexDirection: "row",
+            alignItems: "center",
+            justifyContent: "space-between",
+            mb: 2,
+            mt: 2,
+            ml: 3,
+          }}
+          spacing={2}
+          elevation={4}
+        >
+          <Grid item md={4} xs={12} textAlign={"center"}>
+            <Controller
+              name="MailFromName"
+              control={control}
+              rules={{
+                required: "Mail from name is required",
+              }}
+              render={({ field, fieldState: { error } }) => (
+                <InputTextFieldmd
+                  label="MAIL FROM NAME"
+                  type="text"
+                  // inputProps={{ maxLength: 254 }}
+                  {...field}
+                  error={!!error}
+                  helperText={error ? error.message : null}
+                />
+              )}
+            />
+          </Grid>
+          <Grid item md={4} xs={12} textAlign={"center"}>
+            <Controller
+              name="MailFromEmail"
+              control={control}
+              rules={{
+                required: "Mail from Email is required", // Field is required
+              }}
+              render={({ field, fieldState: { error } }) => (
+                <InputTextFieldmd
+                  label="MAIL FROM EMAIL"
+                  type="text"
+                  {...field}
+                  // inputProps={{ maxLength: 8 }}
+                  error={!!error}
+                  helperText={error ? error.message : null}
+                />
+              )}
+            />
+          </Grid>
+          <Grid item md={4} xs={12}>
+            <Controller
+              name="EnableQueue"
+              control={control}
+              render={({ field }) => (
+                <TextField
+                  select
+                  label="Enable Email Queue"
+                  fullWidth
+                  size="small"
+                  sx={{ maxWidth: 350, height: 40 }} // Matching InputTextField
+                  {...field}
+                >
+                  <MenuItem value="Y">Yes</MenuItem>
+                  <MenuItem value="N">No</MenuItem>
+                </TextField>
+              )}
+            />
+          </Grid>
+          <Grid item md={4} xs={12}>
+            <Controller
+              name="MailDriver"
+              control={control}
+              render={({ field }) => (
+                <TextField
+                  select
+                  label="Mail Driver"
+                  fullWidth
+                  size="small"
+                  sx={{ maxWidth: 350, height: 40 }} // Matching InputTextField
+                  {...field}
+                >
+                  <MenuItem value="Mail">Mail</MenuItem>
+                  <MenuItem value="SMTP">SMTP</MenuItem>
+                </TextField>
+              )}
+            />
+          </Grid>
 
-        <Grid item md={4} xs={12} textAlign={"center"}>
-          <Controller
-            name="MailHost"
-            control={control}
-            rules={{
-              required: "Mail Host is required", // Field is required
-            }}
-            render={({ field, fieldState: { error } }) => (
-              <InputTextFieldmd
-                label="Mail Host"
-                type="text"
-                {...field}
-                // inputProps={{ maxLength: 8 }}
-                error={!!error}
-                helperText={error ? error.message : null}
-              />
-            )}
-          />
-        </Grid>
-        <Grid item md={4} xs={12} textAlign={"center"}>
-          <Controller
-            name="MailPort"
-            control={control}
-            rules={{
-              required: "Mail Port is required", // Field is required
-            }}
-            render={({ field, fieldState: { error } }) => (
-              <InputTextFieldmd
-                label="Mail Port"
-                type="number"
-                {...field}
-                // inputProps={{ maxLength: 8 }}
-                error={!!error}
-                helperText={error ? error.message : null}
-              />
-            )}
-          />
-        </Grid>
-        <Grid item md={4} xs={12}>
-          <Controller
-            name="MailEncry"
-            control={control}
-            render={({ field }) => (
-              <TextField
-                select
-                label="Mail Encryption"
-                fullWidth
-                size="small"
-                sx={{ maxWidth: 350, height: 40 }} // Matching InputTextField
-                {...field}
-              >
-                <MenuItem value="0">None </MenuItem>
-                <MenuItem value="1">Auto</MenuItem>
-                <MenuItem value="2">SSL On Connect</MenuItem>
-                <MenuItem value="3">Start TLS</MenuItem>
-                <MenuItem value="4">Start TLS When Available</MenuItem>
-              </TextField>
-            )}
-          />
-        </Grid>
-        <Grid item md={4} xs={12} textAlign={"center"}>
-          <Controller
-            name="MailUsername"
-            control={control}
-            rules={{
-              required: "Mail Username is required",
-            }}
-            render={({ field, fieldState: { error } }) => (
-              <InputTextFieldmd
-                label="Mail Username"
-                type="text"
-                {...field}
-                // inputProps={{ maxLength: 8 }}
-                error={!!error}
-                helperText={error ? error.message : null}
-              />
-            )}
-          />
-        </Grid>
-        <Grid item md={4} xs={12} textAlign={"center"}>
-          <Controller
-            name="MailPassword"
-            control={control}
-            // rules={{
-            //   required: "Mail from Email is required", // Field is required
-            // }}
-            render={({ field, fieldState: { error } }) => (
-              <InputPasswordFieldmd
-                label="Mail Password"
-                type={showPassword ? "text" : "Password"}
-                showPassword={showPassword}
-                onClick={handleClickShowPassword}
-                {...field}
-                // inputProps={{ maxLength: 8 }}
-                error={!!error}
-                helperText={error ? error.message : null}
-              />
-            )}
-          />
-          {/* {SaveUpdateButton === "UPDATE" && (
+          <Grid item md={4} xs={12} textAlign={"center"}>
+            <Controller
+              name="MailHost"
+              control={control}
+              rules={{
+                required: "Mail Host is required", // Field is required
+              }}
+              render={({ field, fieldState: { error } }) => (
+                <InputTextFieldmd
+                  label="Mail Host"
+                  type="text"
+                  {...field}
+                  // inputProps={{ maxLength: 8 }}
+                  error={!!error}
+                  helperText={error ? error.message : null}
+                />
+              )}
+            />
+          </Grid>
+          <Grid item md={4} xs={12} textAlign={"center"}>
+            <Controller
+              name="MailPort"
+              control={control}
+              rules={{
+                required: "Mail Port is required", // Field is required
+              }}
+              render={({ field, fieldState: { error } }) => (
+                <InputTextFieldmd
+                  label="Mail Port"
+                  type="number"
+                  {...field}
+                  // inputProps={{ maxLength: 8 }}
+                  error={!!error}
+                  helperText={error ? error.message : null}
+                />
+              )}
+            />
+          </Grid>
+          <Grid item md={4} xs={12}>
+            <Controller
+              name="MailEncry"
+              control={control}
+              render={({ field }) => (
+                <TextField
+                  select
+                  label="Mail Encryption"
+                  fullWidth
+                  size="small"
+                  sx={{ maxWidth: 350, height: 40 }} // Matching InputTextField
+                  {...field}
+                >
+                  <MenuItem value="0">None </MenuItem>
+                  <MenuItem value="1">Auto</MenuItem>
+                  <MenuItem value="2">SSL On Connect</MenuItem>
+                  <MenuItem value="3">Start TLS</MenuItem>
+                  <MenuItem value="4">Start TLS When Available</MenuItem>
+                </TextField>
+              )}
+            />
+          </Grid>
+          <Grid item md={4} xs={12} textAlign={"center"}>
+            <Controller
+              name="MailUsername"
+              control={control}
+              rules={{
+                required: "Mail Username is required",
+              }}
+              render={({ field, fieldState: { error } }) => (
+                <InputTextFieldmd
+                  label="Mail Username"
+                  type="text"
+                  {...field}
+                  // inputProps={{ maxLength: 8 }}
+                  error={!!error}
+                  helperText={error ? error.message : null}
+                />
+              )}
+            />
+          </Grid>
+          <Grid item md={4} xs={12} textAlign={"center"}>
+            <Controller
+              name="MailPassword"
+              control={control}
+              // rules={{
+              //   required: "Mail from Email is required", // Field is required
+              // }}
+              render={({ field, fieldState: { error } }) => (
+                <InputPasswordFieldmd
+                  label="Mail Password"
+                  type={showPassword ? "text" : "Password"}
+                  showPassword={showPassword}
+                  onClick={handleClickShowPassword}
+                  {...field}
+                  // inputProps={{ maxLength: 8 }}
+                  error={!!error}
+                  helperText={error ? error.message : null}
+                />
+              )}
+            />
+            {/* {SaveUpdateButton === "UPDATE" && (
             <Typography fontSize={"small"} color={"red"}>
               Leave blank here to keep current Password
             </Typography>
           )} */}
-        </Grid>
-        </Grid>
-        <Grid
+          </Grid>
+           <Grid
           item
           px={1}
           // md={12}
@@ -485,19 +488,11 @@ const EmailSetup = () => {
           }}
         >
           <Button
-            variant="contained"
             sx={{
-              p: 1,
               width: 80,
-              color: "rgb(0, 90, 91)",
-              background: "transparent",
-              border: "1px solid rgb(0, 90, 91)",
+              color: "#2196F3",
+              border: "1px solid #2196F3",
               borderRadius: "8px",
-              transition: "all 0.2s ease-in-out",
-              "&:hover": {
-                background: "rgba(0, 90, 91, 0.1)",
-                transform: "translateY(2px)",
-              },
             }}
             onClick={clearFormData}
           >
@@ -507,22 +502,19 @@ const EmailSetup = () => {
             variant="contained"
             type="submit"
             sx={{
-              marginTop: 1,
-              p: 1,
               width: 80,
-              color: "white",
-              background:
-                "linear-gradient(to right, rgb(0, 90, 91), rgb(22, 149, 153))",
-              boxShadow: 5,
+              color: "#fff",
+              backgroundColor: theme.palette.Button.background,
               "&:hover": {
-                transform: "translateY(2px)",
-                boxShadow: "0 2px 4px rgba(0, 90, 91, 0.2)",
+                backgroundColor: theme.palette.Button.background,
               },
             }}
           >
             {SaveUpdateButton}
           </Button>
         </Grid>
+        </Grid>
+       
       </Grid>
     </>
   );
