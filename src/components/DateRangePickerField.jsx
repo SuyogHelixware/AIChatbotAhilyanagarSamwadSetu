@@ -1,55 +1,3 @@
-// import React from "react";
-// import { Grid, TextField } from "@mui/material";
-// import { DatePicker, LocalizationProvider } from "@mui/x-date-pickers";
-// import { AdapterDayjs } from "@mui/x-date-pickers/AdapterDayjs";
-// import dayjs from "dayjs";
-
-// export default function DateRangePickerField({
-//   fromDate,
-//   toDate,
-//   setFromDate,
-//   setToDate,
-// }) {
-//   const handleChangeFrom = (newValue) => {
-//     setFromDate(newValue);
-
-//     // If ToDate < FromDate -> Auto Fix
-//     if (dayjs(toDate).isBefore(newValue)) {
-//       setToDate(newValue);
-//     }
-//   };
-
-//   const handleChangeTo = (newValue) => {
-//     setToDate(newValue);
-//   };
-
-//   return (
-//     <LocalizationProvider dateAdapter={AdapterDayjs}>
-//       <Grid container spacing={2}>
-//         <Grid item xs={12} sm={6}>
-//           <DatePicker
-//             label="FROM DATE"
-//             value={fromDate}
-//             format="YYYY-MM-DD" 
-//             onChange={handleChangeFrom}
-//             slotProps={{ textField: { fullWidth: false, size: "small" } }}
-//           />
-//         </Grid>
-
-//         <Grid item xs={12} sm={6}>
-//           <DatePicker
-//             label="TO DATE"
-//             format="YYYY-MM-DD"  
-//             value={toDate}
-//             minDate={fromDate}
-//             onChange={handleChangeTo}
-//             slotProps={{ textField: { fullWidth: false, size: "small" } }}
-//           />
-//         </Grid>
-//       </Grid>
-//     </LocalizationProvider>
-//   );
-// }
 import React from "react";
 import PropTypes from "prop-types";
 import {
@@ -67,25 +15,10 @@ import {
 } from "@mui/material";
 import ArrowBackIosNewIcon from "@mui/icons-material/ArrowBackIosNew";
 import ArrowForwardIosIcon from "@mui/icons-material/ArrowForwardIos";
-import ClearIcon from "@mui/icons-material/Clear";
+// import ClearIcon from "@mui/icons-material/Clear";
 import CalendarTodayIcon from "@mui/icons-material/CalendarToday";
 import dayjs from "dayjs";
 
-/**
- * CustomMuiRangePicker
- * - Only uses @mui/material + dayjs
- * - Displays a single-month calendar popup
- * - Start -> End selection, hover preview, apply/clear/cancel
- *
- * Props:
- * - fromDate (dayjs|null)
- * - toDate (dayjs|null)
- * - setFromDate(fn) required
- * - setToDate(fn) required
- * - minDate (dayjs|null) optional
- * - maxDate (dayjs|null) optional
- * - locale (string) optional - for weekday labels (not changing dayjs locale here)
- */
 export default function CustomMuiRangePicker({
   fromDate,
   toDate,
@@ -172,16 +105,7 @@ export default function CustomMuiRangePicker({
       setHoverDate(null);
     }
   };
- 
-// const handleApply = () => {
-//   setFromDate(workStart ?? null);
-//   setToDate(workEnd ?? null);
 
-//   if (onApply) {
-//     onApply(workStart, workEnd);  
-//   }
-//   closePopup();
-// };
 
 const handleApply = () => {
   setFromDate(workStart ?? null);
@@ -195,18 +119,17 @@ const handleApply = () => {
 };
 
 
-  const handleClear = () => {
-    setWorkStart(null);
-    setWorkEnd(null);
-    setFromDate(null);
-    setToDate(null);
-    closePopup();
-  };
+  // const handleClear = () => {
+  //   setWorkStart(null);
+  //   setWorkEnd(null);
+  //   setFromDate(null);
+  //   setToDate(null);
+  //   closePopup();
+  // };
 
  
   // helpers for rendering month grid
   const startOfMonth = visibleMonth.startOf("month");
-  const daysInMonth = visibleMonth.daysInMonth();
   const startWeekday = startOfMonth.day(); // 0 (Sun) - 6 (Sat)
 
   // Build an array of dayjs for the grid (6 rows x 7 cols to cover any month)
@@ -266,7 +189,7 @@ const handleApply = () => {
           readOnly: true,
           endAdornment: (
             <Box sx={{ display: "flex", alignItems: "center", gap: 0.5 }}>
-              { (fromDate || toDate) ? (
+              {/* { (fromDate || toDate) ? (
                 <IconButton
                   size="small"
                   onClick={(e) => {
@@ -277,7 +200,7 @@ const handleApply = () => {
                 >
                   <ClearIcon fontSize="small" />
                 </IconButton>
-              ) : null }
+              ) : null } */}
               <IconButton
                 size="small"
                 onClick={(e) => {

@@ -712,15 +712,24 @@ export default function UserCreation() {
       >
         {listData.map((item, index) => (
           <Card
+            elevation={3}
             key={item.id || index}
             sx={{
               mb: 1,
               p: 2,
               borderRadius: 2,
-              cursor: "pointer",
-              boxShadow: 2,
               position: "relative",
               minHeight: 80,
+              transition: "all 0.3s ease",
+
+              "&:hover": {
+                backgroundColor: (theme) =>
+                  theme.palette.mode === "light"
+                    ? theme.palette.grey[100]
+                    : theme.palette.grey[800],
+                boxShadow: 6,
+                transform: "translateY(-2px)",
+              },
             }}
           >
             {/* Top Left */}
@@ -1061,6 +1070,7 @@ export default function UserCreation() {
           {/* <Box> */}
           <Grid item xs={12} md={9} lg={9} sx={{ height: "79.5vh" }}>
             <Card
+              elevation={3}
               component="form"
               onSubmit={handleSubmit(handleSubmitForm)}
               sx={{
