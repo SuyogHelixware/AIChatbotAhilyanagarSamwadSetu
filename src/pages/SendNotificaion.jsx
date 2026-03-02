@@ -277,6 +277,20 @@ export default function UserCreation() {
     try {
       const formData = new FormData();
       let finalFile;
+     
+           if (!data.Title || data.Title.trim() === "") {
+      Swal.fire({
+        icon: "warning",
+        title: "Validation Error",
+        text: "Title is required",
+        toast: true,
+        position: "center",
+        showConfirmButton: false,
+        timer: 2500,
+        timerProgressBar: true,
+      });
+      return;
+    }
 
       // Dropdown IDs → mobile numbers
       const selectedNumbers = mobileRows
@@ -1280,6 +1294,7 @@ export default function UserCreation() {
                       render={({ field, fieldState: { error } }) => (
                         <InputTextFieldTitle
                           {...field}
+                          // fullWidth
                           inputRef={field.ref}
                           label="ENTER TITLE"
                           id="Title"

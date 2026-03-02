@@ -325,7 +325,7 @@ export default function Dashboard() {
       label: "Send Notification",
       icon: <ContactPhoneIcon />,
       path: "SendNotification",
-      menuId: 11,
+      menuId: 10,
     },
   
     
