@@ -2,6 +2,7 @@ import {
   Checkbox,
   FormControl,
   FormControlLabel,
+  FormHelperText,
   Grid,
   IconButton,
   InputAdornment,
@@ -11,6 +12,7 @@ import {
   Paper,
   Select,
   TextField,
+  Tooltip,
 } from "@mui/material";
 // import { DatePicker, LocalizationProvider } from "@mui/x-date-pickers";
 // import { AdapterDayjs } from "@mui/x-date-pickers/AdapterDayjs";
@@ -19,7 +21,7 @@ import Autocomplete from "@mui/material/Autocomplete";
 import axios from "axios";
 import { DatePicker, LocalizationProvider } from "@mui/x-date-pickers";
 import { AdapterDayjs } from "@mui/x-date-pickers/AdapterDayjs";
-import React from "react";
+import React, { forwardRef, useMemo } from "react";
 import { Visibility, VisibilityOff } from "@mui/icons-material";
 
 export class DatePickerField extends React.Component {
@@ -110,7 +112,171 @@ export default class InputTextField extends React.Component {
     );
   }
 }
+export const InputSelectTextField = forwardRef(
+  (
+    {
+      label,
+      error,
+      data,
+      helperText,
+      value,
+      name,
+      onChange,
+      disabled,
+      readOnly,
+      usedLevels = [],
+      ...props
+    },
+    ref
+  ) => {
+    const menuProps = {
+      PaperProps: {
+        sx: {
+          maxWidth: 220,
+        },
+      },
+      MenuListProps: {
+        sx: {
+          maxHeight: 200,
+        },
+      },
+    };
 
+    return (
+      <FormControl
+        sx={{ width: "100%", maxWidth: 220, m: 1 }}
+        size="small"
+        error={error}
+        ref={ref}
+        disabled={disabled}
+        {...props}
+      >
+        <InputLabel>{label}</InputLabel>
+        <Select
+          label={label}
+          name={name}
+          value={value}
+          onChange={onChange}
+          size="small"
+          error={error}
+          disabled={disabled}
+          readOnly={readOnly}
+          MenuProps={menuProps}
+        >
+          {data.map((item) => (
+            <MenuItem
+              key={item.key}
+              value={item.key}
+              label={item.label}
+              disabled={usedLevels.includes(item.key)}
+            >
+              <Tooltip title={item.value} placement="right" arrow>
+                <span>{item.value}</span>
+              </Tooltip>
+              {item.label} &nbsp;&nbsp;&nbsp; {item.label}
+            </MenuItem>
+          ))}
+        </Select>
+        {helperText && <FormHelperText>{helperText}</FormHelperText>}
+      </FormControl>
+    );
+  }
+);
+
+export const InputSearchSelectTextField = forwardRef(
+  (
+    {
+      label,
+      error,
+      data = [],
+      helperText,
+      value,
+      name,
+      onChange,
+      disabled,
+      readOnly,
+      usedLevels = [],
+      ...props
+    },
+    ref
+  ) => {
+    // 🔹 resolve selected option (NO null allowed)
+   const selectedOption = useMemo(() => {
+  return data.find(
+    (item) => String(item.key) === String(value)
+  ) ?? null;
+}, [data, value]);
+
+
+    return (
+      <Autocomplete
+        ref={ref}
+        options={data}
+        value={selectedOption}
+        disabled={disabled}
+        disableClearable // 🚫 prevents deselect
+        readOnly={readOnly}
+        isOptionEqualToValue={(opt, val) => opt?.key === val?.key}
+        getOptionLabel={(option) => option?.value || option?.label || ""}
+        onChange={(e, newValue) => {
+          // 🚫 block null (Esc / Backspace clear)
+          if (!newValue) return;
+          onChange({
+            target: { name, value: newValue.key },
+          });
+        }}
+        renderInput={(params) => (
+          <TextField
+            {...params}
+            label={label}
+            size="small"
+            error={error}
+            helperText={helperText}
+            sx={{ width: "100%", maxWidth: 220, m: 1 }}
+          />
+        )}
+        renderOption={(props, option) => {
+          const disabledOption = usedLevels.includes(option.key);
+
+          return (
+            <li
+              {...props}
+              key={option.key}
+              // aria-disabled={disabledOption}
+              style={{
+                opacity: disabledOption ? 0.5 : 1,
+                pointerEvents: disabledOption ? "none" : "auto",
+              }}
+            >
+              {option.value?.length > 20 ? (
+                <Tooltip title={option.value} arrow>
+                  <span>{option.value}</span>
+                </Tooltip>
+              ) : (
+                <span>{option.value}</span>
+              )}
+              &nbsp;&nbsp;{option.label}
+            </li>
+          );
+        }}
+        slotProps={{
+          popper: {
+            sx: {
+              "& .MuiAutocomplete-listbox": {
+                maxHeight: 240,
+                overflowY: "auto",
+              },
+              "& .MuiAutocomplete-paper": {
+                overflow: "hidden", // safety
+              },
+            },
+          },
+        }}
+        {...props}
+      />
+    );
+  }
+);
 
 
 export   class InputTextFieldTitle extends React.Component {

@@ -263,6 +263,12 @@ export default function Dashboard() {
       path: "RoleCreation",
       menuId: 12,
     },
+      {
+      label: "Email Setup",
+      icon: <ManageAccountsOutlinedIcon />,
+      path: "EmailSetup",
+      menuId: 12,
+    },
     //   {
     //   label: "Department",
     //   icon: <BusinessIcon />,
