@@ -259,8 +259,15 @@ export default function Dashboard() {
       path: "RoleCreation",
       menuId: 12,
     },
+    
+        {
+      label: "Email Configuration",
+      icon: <EmailIcon />,
+      path: "EmailConfiguration",
+      menuId: 13,
+    },
       {
-      label: "Email Setup",
+      label: "Send Email",
       icon: <ManageAccountsOutlinedIcon />,
       path: "EmailSetup",
       menuId: 12,
@@ -289,18 +296,8 @@ export default function Dashboard() {
     //   path: "OfflineServices",
     //    menuId: 7,
     // },
-     {
-      label: "Email Configuration",
-      icon: <EmailIcon />,
-      path: "EmailSetup",
-      menuId: 2,
-    },
-    {
-      label: "Email Configuration1",
-      icon: <EmailIcon />,
-      path: "EmailConfiguration",
-      menuId: 2,
-    },
+ 
+ 
     {
       label: "Documents Master",
       icon: <DescriptionOutlinedIcon />,
