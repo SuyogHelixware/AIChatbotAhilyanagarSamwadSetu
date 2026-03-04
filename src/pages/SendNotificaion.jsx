@@ -3,6 +3,7 @@ import CloseIcon from "@mui/icons-material/Close";
 import DeleteOutlineOutlinedIcon from "@mui/icons-material/DeleteOutlineOutlined";
 import EditOutlinedIcon from "@mui/icons-material/EditOutlined";
 import InfoIcon from "@mui/icons-material/Info";
+import SearchIcon from "@mui/icons-material/Search";
 import {
   Autocomplete,
   Box,
@@ -22,6 +23,7 @@ import {
   FormHelperText,
   Grid,
   IconButton,
+  InputAdornment,
   InputLabel,
   ListItemText,
   MenuItem,
@@ -32,12 +34,7 @@ import {
   Typography,
 } from "@mui/material";
 import { useTheme } from "@mui/styles";
-import {
-  DataGrid,
-  GridToolbar,
-  GridToolbarContainer,
-  GridToolbarQuickFilter,
-} from "@mui/x-data-grid";
+import { DataGrid, GridToolbar } from "@mui/x-data-grid";
 import axios from "axios";
 import dayjs from "dayjs";
 import { useEffect, useRef, useState } from "react";
@@ -46,8 +43,6 @@ import Swal from "sweetalert2";
 import { InputTextFieldTitle } from "../components/Component";
 import Loader from "../components/Loader";
 import { BASE_URL } from "../Constant";
-import { InputAdornment } from "@mui/material";
-import SearchIcon from "@mui/icons-material/Search";
 
 export default function UserCreation() {
   const theme = useTheme();
@@ -64,7 +59,7 @@ export default function UserCreation() {
   const [inputValue, setInputValue] = useState("");
   const [paramValues, setParamValues] = useState({});
   const [PrevDocEntry, setPrevDocEntry] = useState("");
-  const [searchText, setSearchText] = useState("");
+  // const [searchText, setSearchText] = useState("");
   const [searchTextList, setSearchTextList] = useState("");
   const [debouncedSearch, setDebouncedSearch] = useState("");
 
@@ -210,7 +205,7 @@ export default function UserCreation() {
     FileName: "",
     CampaignDataFile: null,
   };
-  const { handleSubmit, control, reset, watch, setValue, getValues } = useForm({
+  const { handleSubmit, control, reset, watch, setValue } = useForm({
     defaultValues: initial,
   });
   const getMessageTemplates = async () => {
@@ -277,20 +272,20 @@ export default function UserCreation() {
     try {
       const formData = new FormData();
       let finalFile;
-     
-           if (!data.Title || data.Title.trim() === "") {
-      Swal.fire({
-        icon: "warning",
-        title: "Validation Error",
-        text: "Title is required",
-        toast: true,
-        position: "center",
-        showConfirmButton: false,
-        timer: 2500,
-        timerProgressBar: true,
-      });
-      return;
-    }
+
+      if (!data.Title || data.Title.trim() === "") {
+        Swal.fire({
+          icon: "warning",
+          title: "Validation Error",
+          text: "Title is required",
+          toast: true,
+          position: "center",
+          showConfirmButton: false,
+          timer: 2500,
+          timerProgressBar: true,
+        });
+        return;
+      }
 
       // Dropdown IDs → mobile numbers
       const selectedNumbers = mobileRows
@@ -430,27 +425,17 @@ export default function UserCreation() {
         : `Bearer ${token}`;
 
       setLoaderOpen(true);
-      // API Call
       let response = await axios.post(`${BASE_URL}Campaign`, formData, {
         headers: {
           Authorization: formattedToken,
-          "Content-Type": "multipart/form-data", // important for formData
+          "Content-Type": "multipart/form-data",
         },
       });
 
-      // console.log("POST", response);
+      console.log("Campaign POST", response);
       setLoaderOpen(false);
       reset();
       fetchListData();
-      // Swal.fire({
-      //   icon: "success",
-      //   title: "Success",
-      //   text: "Send successfully...",
-      //   toast: true,
-      //   position: "center",
-      //   timer: 2000,
-      //   showConfirmButton: false,
-      // });
       Swal.fire({
         title: "Processing...",
         html: "Message sending process started",
@@ -619,47 +604,6 @@ export default function UserCreation() {
     HandlegetMobileLIst({ page: 0 });
   }, []);
 
-  //   const HandleMobileCsvDownload = () => {
-  //     // CSV Template Content
-  //     const csvTemplate = "MobileNumber\n0000000000";
-
-  //     // Create Blob
-  //     const blob = new Blob([csvTemplate], {
-  //       type: "text/csv;charset=utf-8;",
-  //     });
-
-  //     const url = URL.createObjectURL(blob);
-
-  //     // Create temporary link
-  //     const link = document.createElement("a");
-  //     link.href = url;
-  //     link.setAttribute("download", "MobileNo_Template.csv");
-  //     document.body.appendChild(link);
-  //     link.click();
-
-  //     // Cleanup
-  //     document.body.removeChild(link);
-  //     URL.revokeObjectURL(url);
-
-  //     // Info Popup
-  //     Swal.fire({
-  //       icon: "info",
-  //       title: "Mobile Number CSV Format",
-  //       html: `
-  //       <div style="text-align:left">
-  //         <p><b>Required Column:</b></p>
-  //         <ul>
-  //           <li><b>MobileNumber</b> (10 digit mandatory)</li>
-  //         </ul>
-  //         <p>Only <b>.csv</b> file allowed.</p>
-  //         <p>Example format:</p>
-  //         <pre>MobileNumber
-  // 9876543210</pre>
-  //       </div>
-  //     `,
-  //       confirmButtonText: "OK",
-  //     });
-  //   };
   const HandleMobileCsvDownload = () => {
     Swal.fire({
       icon: "info",
@@ -1821,7 +1765,6 @@ export default function UserCreation() {
                       }}
                     />
                   </Grid>
-                  {/* {(selectedType === "DOCUMENT" || selectedType === "IMG") && ( */}
                   <Grid item md={4} sm={6} xs={12} marginBottom={2}>
                     <Controller
                       name="FileName"
@@ -1831,7 +1774,6 @@ export default function UserCreation() {
                         required: isAttachmentEnabled
                           ? "File is required"
                           : false,
-                        // required: "File is required",
                         validate: (file) => {
                           if (!file) return true;
 
