@@ -49,6 +49,8 @@ import SearchIcon from "@mui/icons-material/Search";
 import DeleteOutlineOutlinedIcon from "@mui/icons-material/DeleteOutlineOutlined";
 import EditOutlinedIcon from "@mui/icons-material/EditOutlined";
 import { useTheme } from "@mui/styles";
+                    import DriveFolderUploadIcon from '@mui/icons-material/DriveFolderUpload';
+
 
 const UploadDocument = () => {
   const [loaderOpen, setLoaderOpen] = React.useState(false);
@@ -1660,6 +1662,9 @@ const UploadDocument = () => {
             justifyContent: "space-between",
             alignItems: "center",
             pb: 1,
+             borderBottom: "1px solid #90caf9",
+    background: theme.palette.DHeaderbg.background,
+    color : theme.palette.DHeaderColor.color,
           }}
         >
           UPLOAD DOCUMENT
@@ -1848,7 +1853,7 @@ const UploadDocument = () => {
                   size="small"
                   component={isAddMissing ? undefined : "label"}
                   sx={{
-                    width: 130,
+                    width: 145,
                     height: 40,
                     color: "white",
                     backgroundColor: theme.palette.Button.background,
@@ -1868,6 +1873,7 @@ const UploadDocument = () => {
                     </>
                   ) : (
                     <>
+                      <DriveFolderUploadIcon sx={{ mr: 0.5 }} />
                       Upload File
                       <input
                         type="file"
@@ -1946,6 +1952,8 @@ const UploadDocument = () => {
               justifyContent: "space-between",
               px: 3,
               pb: 2,
+                          borderTop: "1px solid #90caf9",
+
             }}
           >
             <Button
@@ -2008,13 +2016,20 @@ const UploadDocument = () => {
             borderBottom: "1px solid #eee",
             px: 2,
             py: 1.5,
+            
           }}
         >
           <Grid
             container
             alignItems="center"
             justifyContent="center"
-            sx={{ position: "relative" }}
+            sx={{ position: "relative",
+ borderBottom: "1px solid #90caf9",
+    // background: theme.palette.DHeaderbg.background,
+    color : theme.palette.DHeaderColor.color,
+
+             }}
+
           >
             <Typography
               fontWeight="600"
@@ -2148,7 +2163,9 @@ const UploadDocument = () => {
         <DialogActions
           sx={{
             p: 2,
-            borderTop: "1px solid #eee",
+            // borderTop: "1px solid #eee",
+                        borderTop: "1px solid #90caf9",
+
           }}
         >
           <Button
@@ -2218,7 +2235,7 @@ const UploadDocument = () => {
                 backgroundColor: theme.palette.Button.background,
                 borderRadius: "8px",
                 transition: "all 0.2s ease-in-out",
-                boxShadow: "0 2px 4px Solid black",
+                // boxShadow: "0 2px 4px Solid black",
                 "&:hover": {
                   transform: "translateY(2px)",
                   backgroundColor: theme.palette.Button.background,
@@ -2230,7 +2247,8 @@ const UploadDocument = () => {
                 "& .MuiSvgIcon-root": {
                   marginRight: "10px",
                 },
-              }}
+               }}
+              
             >
               <AddIcon />
               Upload Document

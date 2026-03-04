@@ -24,7 +24,7 @@ import { Controller, useForm } from "react-hook-form"; // Importing React Hook F
 import dayjs from "dayjs";
 import { useTheme } from "@mui/styles";
 
-const EmailSetup = () => {
+const EmailConfiguration = () => {
   const [on, setOn] = React.useState(false);
   const theme = useTheme();
   const [SaveUpdateButton, setSaveUpdateButton] = React.useState("SAVE");
@@ -520,4 +520,4 @@ const EmailSetup = () => {
   );
 };
 
-export default EmailSetup;
+export default EmailConfiguration;

@@ -20,13 +20,10 @@ import EmailSetup from "../pages/EmailSetup";
 import UploadDocument from "../pages/Upload-Document";
 import GazettedMaster from "../pages/Gazetted-Master";
 import ManageDocumentsPage from "../pages/ManageDocPage";
-import Report from "../pages/Report";
-import RoleCreation from "../pages/RoleCreation";
-
+ import RoleCreation from "../pages/RoleCreation";
 import SanjayGandhi from "../pages/SanjavGandhi/SanjayGandhi";
 import Rehabilitation from "../pages/Rehabilitation/Rehabilitation";
 import SendNotification from "../pages/SendNotificaion";
-
 import { useThemeMode } from "../Dashboard/Theme";
 import ProtectedRoute from "./ProtectedRoute";
 import SJYGandhiDashboard from "../Dashboard/SJYGandhi-Dashboard";
@@ -35,6 +32,8 @@ import SJYGandhiReport from "../pages/Reports/SJYGandhi-Report";
 import LandAcquisition from "../Dashboard/LandAcquisition-Dashboard";
 import ManageDocPage from "../pages/ManageDocPage";
 import SendMessageReport from "../pages/Reports/SendMessage-Report";
+import SendNotificationDashboard from "../Dashboard/SendNotification-Dashboard";
+import EmailConfiguration from "../pages/EmailConfiguration";
 
 export default function Routing() {
   const { roleAccess } = useThemeMode();
@@ -68,6 +67,14 @@ export default function Routing() {
               element={
                 <ProtectedRoute menuId={14} roleAccess={roleAccess}>
                   <SJYGandhiDashboard />
+                </ProtectedRoute>
+              }
+            />
+             <Route
+              path="SendNotificationDashboard"
+              element={
+                <ProtectedRoute menuId={14} roleAccess={roleAccess}>
+                  <SendNotificationDashboard />
                 </ProtectedRoute>
               }
             />
@@ -133,6 +140,14 @@ export default function Routing() {
               element={
                 <ProtectedRoute menuId={2} roleAccess={roleAccess}>
                   <EmailSetup />
+                </ProtectedRoute>
+              }
+            />
+             <Route
+              path="EmailConfiguration"
+              element={
+                <ProtectedRoute menuId={2} roleAccess={roleAccess}>
+                  <EmailConfiguration />
                 </ProtectedRoute>
               }
             />

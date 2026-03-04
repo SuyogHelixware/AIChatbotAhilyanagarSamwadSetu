@@ -936,6 +936,9 @@ const DocumentMaster = () => {
             justifyContent: "space-between",
             alignItems: "center",
             pb: 1,
+             borderBottom: "1px solid #90caf9",
+    background: theme.palette.DHeaderbg.background,
+    color : theme.palette.DHeaderColor.color,
           }}
         >
            MAIN DOCUMENT
@@ -1223,6 +1226,8 @@ const DocumentMaster = () => {
             justifyContent: "space-between",
             px: 3,
             pb: 2,
+                        borderTop: "1px solid #90caf9",
+
           }}
         >
           <Button
@@ -1315,6 +1320,9 @@ const DocumentMaster = () => {
             justifyContent: "space-between",
             alignItems: "center",
             pb: 1,
+             borderBottom: "1px solid #90caf9",
+    background: theme.palette.DHeaderbg.background,
+    color : theme.palette.DHeaderColor.color,
           }}
         >
           SUB DOCUMENT
@@ -1409,7 +1417,9 @@ const DocumentMaster = () => {
               display: "flex",
               justifyContent: "space-between",
               px: 3,
-              pb: 2,
+              pb: 1,
+                          borderTop: "1px solid #90caf9",
+
             }}
           >
             <Button

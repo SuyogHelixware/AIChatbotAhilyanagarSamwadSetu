@@ -13,7 +13,7 @@ import ModeNightIcon from "@mui/icons-material/ModeNight";
 import SettingsIcon from "@mui/icons-material/Settings";
 import logoDarkTheme from "../assets/darkThemeLogo.png";
 // import SmartphoneIcon from "@mui/icons-material/Smartphone";
-// import EmailIcon from "@mui/icons-material/Email";
+import EmailIcon from "@mui/icons-material/Email";
 // import BusinessIcon from "@mui/icons-material/Business";
 import DescriptionIcon from "@mui/icons-material/Description";
 // import MiscellaneousServicesIcon from "@mui/icons-material/MiscellaneousServices";
@@ -27,6 +27,7 @@ import profile from "../assets/avtar.png";
 import {
   Avatar,
   Button,
+  CircularProgress,
   Collapse,
   Grid,
   MenuItem,
@@ -69,6 +70,7 @@ import DescriptionOutlinedIcon from "@mui/icons-material/DescriptionOutlined";
 import MarkChatReadOutlinedIcon from "@mui/icons-material/MarkChatReadOutlined";
 import LocalPrintshopOutlinedIcon from "@mui/icons-material/LocalPrintshopOutlined";
 import HomeOutlinedIcon from "@mui/icons-material/HomeOutlined";
+import ContactPhoneIcon from '@mui/icons-material/ContactPhone';
 
 const drawerWidth = 220;
 const openedMixin = (theme) => ({
@@ -191,6 +193,7 @@ export default function Dashboard() {
     React.useState(false);
   const [userType, setUserType] = useState(null);
   const { roleAccess } = useThemeMode();
+  const [loggingOut, setLoggingOut] = useState(false);
 
   // const [drawerOpen, setDrawerOpen] = React.useState(false);
   const [userData, setUserData] = React.useState({
@@ -213,18 +216,6 @@ export default function Dashboard() {
     //   path: "home",
     //   menuId: 1,
     // },
-    // {
-    //   label: "Sampadan Dashboard",
-    //   icon: <DashboardIcon />,
-    //   path: "BhusampadanDashboard",
-    //   menuId: 1,
-    // },
-    // {
-    //   label: "SJYGandhi Dashboard",
-    //   icon: <DashboardIcon />,
-    //   path: "SJYGandhiDashboard",
-    //   menuId: 1,
-    // },
     {
       label: "Dashboards",
       icon: <HomeOutlinedIcon />,
@@ -234,7 +225,6 @@ export default function Dashboard() {
           label: "Admin",
           icon: <DehazeIcon />,
           path: "home",
-
           menuId: 1,
         },
         {
@@ -247,6 +237,12 @@ export default function Dashboard() {
           label: "Sanjay Gandhi",
           icon: <DehazeIcon />,
           path: "SJYGandhiDashboard",
+          menuId: 14,
+        },
+        {
+          label: "Send Notification",
+          icon: <DehazeIcon />,
+          path: "SendNotificationDashboard",
           menuId: 14,
         },
       ],
@@ -293,24 +289,26 @@ export default function Dashboard() {
     //   path: "OfflineServices",
     //    menuId: 7,
     // },
-    //  {
-    //   label: "Email Configuration",
-    //   icon: <EmailIcon />,
-    //   path: "EmailSetup",
-    //   menuId: 2,
-    // },
+     {
+      label: "Email Configuration",
+      icon: <EmailIcon />,
+      path: "EmailSetup",
+      menuId: 2,
+    },
+    {
+      label: "Email Configuration1",
+      icon: <EmailIcon />,
+      path: "EmailConfiguration",
+      menuId: 2,
+    },
     {
       label: "Documents Master",
       icon: <DescriptionOutlinedIcon />,
       path: "ManageDocPage",
       menuId: 5,
     },
-    // {
-    //   label: "Documents Master",
-    //   icon: <DescriptionIcon />,
-    //   path: "DocumentMaster",
-    //   menuId: 5,
-    // },
+   
+    
     {
       label: "Gazetted Master",
       icon: <ChecklistIcon />,
@@ -335,24 +333,14 @@ export default function Dashboard() {
       path: "Rehabilitation",
       menuId: 11,
     },
-     {
-      label: "Send Message",
-      icon: <CorporateFareIcon />,
+    {
+      label: "Send Notification",
+      icon: <ContactPhoneIcon />,
       path: "SendNotification",
-      menuId: 11,
+      menuId: 10,
     },
-    //  {
-    //   label: "LandAcquistion Report",
-    //   icon: <DriveFolderUploadIcon />,
-    //   path: "LandAcquistionReport",
-    //   menuId: 9,
-    // },
-    //   {
-    //   label: "SJY Gandhi Report",
-    //   icon: <DriveFolderUploadIcon />,
-    //   path: "SJYGandhiReport",
-    //   menuId: 9,
-    // },
+  
+    
 
     {
       label: "Reports",
@@ -372,7 +360,7 @@ export default function Dashboard() {
           menuId: 16,
         },
         {
-          label: "Send Message",
+          label: "Send Notification",
           icon: <LocalPrintshopOutlinedIcon />,
           path: "SendMessageReport",
           menuId: 16,
@@ -525,7 +513,7 @@ export default function Dashboard() {
       .map((menu) => {
         if (menu.children) {
           const visibleChildren = menu.children.filter((child) =>
-            allowedMenuIds.includes(child.menuId)
+            allowedMenuIds.includes(child.menuId),
           );
           if (visibleChildren.length > 0)
             return { ...menu, children: visibleChildren };
@@ -566,7 +554,7 @@ export default function Dashboard() {
     const active = visibleMenus.find(
       (menu) =>
         Array.isArray(menu.children) &&
-        menu.children.some((c) => location.pathname === `/dashboard/${c.path}`)
+        menu.children.some((c) => location.pathname === `/dashboard/${c.path}`),
     );
     if (active) {
       setOpenCollapse(active.label);
@@ -674,7 +662,7 @@ export default function Dashboard() {
                       </MenuItem>
                     </Grid>
 
-                    <Grid
+                    {/* <Grid
                       display={"flex"}
                       flexDirection={"column"}
                       alignItems={"center"}
@@ -702,6 +690,44 @@ export default function Dashboard() {
                         }}
                       >
                         Log Out
+                      </Button>
+                    </Grid> */}
+                    <Grid
+                      display="flex"
+                      flexDirection="column"
+                      alignItems="center"
+                      paddingBottom={2}
+                    >
+                      <Button
+                        onClick={() => {
+                          setLoggingOut(true);
+
+                          setTimeout(() => {
+                            sessionStorage.clear();
+                            Navigate("/");
+                          }, 1000);
+                        }}
+                        disabled={loggingOut}
+                        sx={{
+                          boxShadow: 4,
+                          borderRadius: 2,
+                          background: "#2196F3",
+                          color: "white",
+                          fontSize: 11,
+                          fontWeight: "bold",
+                          minWidth: 100,
+                          transition: "all 0.3s ease",
+
+                          "&:hover": {
+                            background: "#1976d2",
+                          },
+                        }}
+                      >
+                        {loggingOut ? (
+                          <CircularProgress size={18} sx={{ color: "white" }} />
+                        ) : (
+                          "Log Out"
+                        )}
                       </Button>
                     </Grid>
                   </Paper>
