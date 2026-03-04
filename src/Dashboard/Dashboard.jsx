@@ -290,6 +290,12 @@ export default function Dashboard() {
       menuId: 2,
     },
     {
+      label: "Email Configuration1",
+      icon: <EmailIcon />,
+      path: "EmailConfiguration",
+      menuId: 2,
+    },
+    {
       label: "Documents Master",
       icon: <DescriptionOutlinedIcon />,
       path: "ManageDocPage",

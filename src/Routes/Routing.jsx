@@ -33,6 +33,7 @@ import LandAcquisition from "../Dashboard/LandAcquisition-Dashboard";
 import ManageDocPage from "../pages/ManageDocPage";
 import SendMessageReport from "../pages/Reports/SendMessage-Report";
 import SendNotificationDashboard from "../Dashboard/SendNotification-Dashboard";
+import EmailConfiguration from "../pages/EmailConfiguration";
 
 export default function Routing() {
   const { roleAccess } = useThemeMode();
@@ -139,6 +140,14 @@ export default function Routing() {
               element={
                 <ProtectedRoute menuId={2} roleAccess={roleAccess}>
                   <EmailSetup />
+                </ProtectedRoute>
+              }
+            />
+             <Route
+              path="EmailConfiguration"
+              element={
+                <ProtectedRoute menuId={2} roleAccess={roleAccess}>
+                  <EmailConfiguration />
                 </ProtectedRoute>
               }
             />
