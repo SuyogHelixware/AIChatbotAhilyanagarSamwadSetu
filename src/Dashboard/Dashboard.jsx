@@ -71,6 +71,7 @@ import MarkChatReadOutlinedIcon from "@mui/icons-material/MarkChatReadOutlined";
 import LocalPrintshopOutlinedIcon from "@mui/icons-material/LocalPrintshopOutlined";
 import HomeOutlinedIcon from "@mui/icons-material/HomeOutlined";
 import ContactPhoneIcon from '@mui/icons-material/ContactPhone';
+    import MarkEmailUnreadIcon from '@mui/icons-material/MarkEmailUnread';
 
 const drawerWidth = 220;
 const openedMixin = (theme) => ({
@@ -261,17 +262,12 @@ export default function Dashboard() {
     },
     
         {
-      label: "Email Configuration",
+      label: "E-Mail Configuration",
       icon: <EmailIcon />,
       path: "EmailConfiguration",
       menuId: 13,
     },
-      {
-      label: "Send Email",
-      icon: <ManageAccountsOutlinedIcon />,
-      path: "EmailSetup",
-      menuId: 12,
-    },
+    
     //   {
     //   label: "Department",
     //   icon: <BusinessIcon />,
@@ -336,9 +332,12 @@ export default function Dashboard() {
       path: "SendNotification",
       menuId: 10,
     },
-  
-    
-
+      {
+      label: "E-Mail Send",
+      icon: <MarkEmailUnreadIcon />,
+      path: "EmailSetup",
+      menuId: 12,
+    },
     {
       label: "Reports",
       icon: <LocalPrintshopOutlinedIcon />,
@@ -702,7 +701,7 @@ export default function Dashboard() {
                           setTimeout(() => {
                             sessionStorage.clear();
                             Navigate("/");
-                          }, 1000);
+                          }, 500);
                         }}
                         disabled={loggingOut}
                         sx={{

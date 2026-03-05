@@ -706,14 +706,6 @@ export default function UserCreation() {
         </Typography>
       </Box>
       {/* <TextField
-    size="small"
-    fullWidth
-    placeholder="Search..."
-    value={searchTextList}
-    onChange={(e) => setSearchTextList(e.target.value)}
- 
-  /> */}
-      <TextField
         size="small"
         // fullWidth
         placeholder="Search here..."
@@ -751,7 +743,7 @@ export default function UserCreation() {
             </InputAdornment>
           ),
         }}
-      />
+      /> */}
       {/* SCROLL AREA */}
       <Box
         id="ListScroll"

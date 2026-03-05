@@ -10,15 +10,19 @@ import {
   AccordionSummary,
   Box,
   Button,
+  Card,
+  CircularProgress,
   Divider,
   Grid,
   IconButton,
+  InputAdornment,
   Paper,
   TextField,
+  Tooltip,
   Typography,
   useTheme,
 } from "@mui/material";
-import { useState } from "react";
+import { useEffect, useRef, useState } from "react";
 import { Controller, useForm } from "react-hook-form";
 import Loader from "../components/Loader";
 import StarterKit from "@tiptap/starter-kit";
@@ -33,21 +37,108 @@ import EmailChipInput from "../components/EmailChipInput";
 import Swal from "sweetalert2";
 import { BASE_URL } from "../Constant";
 import axios from "axios";
+import SearchIcon from "@mui/icons-material/Search";
 
 export default function EmailSetup() {
   const theme = useTheme();
   const [drawerOpen, setDrawerOpen] = useState(false);
-  const [SaveUpdateName, setSaveUpdateName] = useState("SAVE");
+  const [loaderOpen, setLoaderOpen] = useState(false);
+
   //=====================================open List State====================================
 
   const [loading, setLoading] = useState(false);
   const [previewHtml, setPreviewHtml] = useState("");
 
+  // --------Sidebar -------------------------------------
+  const [listData, setListData] = useState([]);
+  const [page, setPage] = useState(0);
+  const [hasMore, setHasMore] = useState(true);
+  const fetchingRef = useRef(false);
+  // ----------------------------------------------------
+  const [attachmentLines, setAttachmentLines] = useState([]);
+  const [fileName, setFileName] = useState("");
+  const [editorKey, setEditorKey] = useState(0);
+  const [DocEntry, setDocEntry] = useState("");
+  const [searchTextList, setSearchTextList] = useState("");
+  const [debouncedSearch, setDebouncedSearch] = useState("");
+
+  const fetchListData = async () => {
+    if (fetchingRef.current || !hasMore) return;
+    fetchingRef.current = true;
+    setLoading(true);
+    const token = sessionStorage.getItem("BearerTokan");
+    if (!token) {
+      setLoading(false);
+      fetchingRef.current = false;
+      return;
+    }
+
+    try {
+      setLoaderOpen(true);
+      const response = await axios.get(`${BASE_URL}Email`, {
+        params: {
+          Page: page,
+          Limit: 20,
+          SearchText: debouncedSearch || "",
+        },
+        headers: {
+          Authorization: token.startsWith("Bearer ")
+            ? token
+            : `Bearer ${token}`,
+        },
+      });
+
+      const newData = response.data.values;
+      setLoaderOpen(false);
+
+      if (newData.length === 0) {
+        setHasMore(false);
+      } else {
+        // if (page === 0) {
+        //   setListData(newData);
+        // } else {
+        //   setListData((prev) => [...prev, ...newData]);
+
+        // }
+        setListData((prev) => (page === 0 ? newData : [...prev, ...newData]));
+      }
+    } catch (error) {
+      console.error(error);
+      setLoaderOpen(false);
+    }
+    setLoaderOpen(false);
+
+    setLoading(false);
+    fetchingRef.current = false;
+  };
+  useEffect(() => {
+    const timer = setTimeout(() => {
+      setDebouncedSearch(searchTextList.trim());
+    }, 400);
+
+    return () => clearTimeout(timer);
+  }, [searchTextList]);
+
+  useEffect(() => {
+    setPage(0);
+    setHasMore(true);
+    setListData([]);
+  }, [debouncedSearch]);
+
+  useEffect(() => {
+    fetchListData();
+  }, [page]);
+
+  useEffect(() => {
+    setListData([]);
+    setPage(0);
+    setHasMore(true);
+  }, []);
+
   const initial = {
     Subject: "",
-    Body: "",
     IsHtmlBody: "",
-    BodyTemplate:"",
+    BodyTemplate: "",
     AttcLines: [],
     To: [],
     CC: [],
@@ -62,37 +153,79 @@ export default function EmailSetup() {
     defaultValues: initial,
   });
 
-  const convertToBase64 = (file) => {
-    return new Promise((resolve, reject) => {
-      const reader = new FileReader();
-      reader.readAsDataURL(file);
-      reader.onload = () => {
-        const base64 = reader.result.split(",")[1]; // remove data prefix
-        resolve(base64);
+  const handleFileUpload = (event) => {
+    const file = event.target.files[0];
+    if (!file) return;
+    setFileName(file.name); // show name in UI
+
+    const reader = new FileReader();
+
+    reader.onload = () => {
+      const base64String = reader.result.split(",")[1];
+
+      const newAttachment = {
+        FileName: file.name,
+        ContentType: file.type,
+        Content: base64String,
       };
-      reader.onerror = (error) => reject(error);
-    });
+
+      // setAttachmentLines((prev) => [...prev, newAttachment]);
+      setAttachmentLines([newAttachment]);
+    };
+
+    reader.readAsDataURL(file);
   };
 
   const handleSubmitForm = async (data) => {
-  
+    // Validate To
+    if (!data.To || data.To.length === 0) {
+      Swal.fire({
+        icon: "warning",
+        title: "Validation Error",
+        text: "Please enter To Recipient Email.",
+      });
+      return;
+    }
+
+    // Validate Subject
+    if (!data.Subject || data.Subject.trim() === "") {
+      Swal.fire({
+        icon: "warning",
+        title: "Validation Error",
+        text: "Email Subject is required.",
+      });
+      return;
+    }
+
+    // Validate BodyTemplate (remove HTML tags check)
+    const tempDiv = document.createElement("div");
+    tempDiv.innerHTML = data.BodyTemplate || "";
+    const plainText = tempDiv.textContent || tempDiv.innerText || "";
+
+    if (!plainText.trim()) {
+      Swal.fire({
+        icon: "warning",
+        title: "Validation Error",
+        text: "Email body is required.",
+      });
+      return;
+    }
+
     const payload = {
-       CreatedDate: new Date().toISOString(),
-       CreatedBy: sessionStorage.getItem("userId"),
-      ToMail: data.To,
-      CcMail: data.CC || "",
-      BccMail: data.BCC || "",
+      CreatedDate: new Date().toISOString(),
+      CreatedBy: sessionStorage.getItem("userId"),
+      ToMail: String(data.To),
+      CcMail: String(data.CC || ""),
+      BccMail: String(data.BCC || ""),
       Subject: data.Subject,
       Body: data.BodyTemplate,
       IsHtmlBody: true,
-      // AttcLines: attachmentLines,
-     
+      AttcLines: attachmentLines,
       IsSent: true,
-      // AttachCnt: attachmentLines.length || [0],
     };
 
     console.log("Final Payload:", payload);
-
+    // return;
     try {
       const token = sessionStorage.getItem("BearerTokan");
       const formattedToken = token;
@@ -101,7 +234,7 @@ export default function EmailSetup() {
       let response = await axios.post(`${BASE_URL}Email/Send`, payload, {
         headers: {
           Authorization: formattedToken,
-  "Content-Type": "application/json",
+          "Content-Type": "application/json",
         },
       });
 
@@ -109,12 +242,24 @@ export default function EmailSetup() {
       setLoading(false);
       if (response.data.success) {
         Swal.fire({
-          title: "Success!",
-          text: "Email sent successfully",
-          icon: "success",
-          confirmButtonText: "Ok",
-          timer: 1000,
+          title: "Processing...",
+          html: "E-Mail sending process started",
+          allowOutsideClick: false,
+          didOpen: () => {
+            Swal.showLoading();
+          },
+          timer: 3000,
         });
+
+        reset(initial);
+        setAttachmentLines([]);
+        setFileName("");
+        setPreviewHtml("");
+        setEditorKey((prev) => prev + 1);
+        setPage(0);
+        setHasMore(true);
+        setListData([]);
+        fetchListData(0);
       } else {
         Swal.fire({
           title: "Error!",
@@ -136,31 +281,28 @@ export default function EmailSetup() {
   };
 
   const sidebarContent = (
-    <>
-      <Grid
-        item
-        width={"100%"}
-        py={0.5}
-        alignItems={"center"}
+    <Box
+      sx={{
+        height: "90vh",
+        display: "flex",
+        flexDirection: "column",
+        backgroundColor: theme.palette.mode === "light" ? "#F5F6FA" : "#080D2B",
+      }}
+    >
+      {/* Header */}
+      <Box
+        py={0.6}
         border={"1px solid silver"}
         borderBottom={"none"}
         position={"relative"}
-        sx={{
-          backgroundColor:
-            theme.palette.mode === "light" ? "#F5F6FA" : "#080D2B",
-        }}
       >
-        <Typography
-          textAlign={"center"}
-          alignContent={"center"}
-          height={"100%"}
-        >
-          Email Notification List
+        <Typography textAlign="center" fontWeight={600}>
+          Send Email List
         </Typography>
+
         <IconButton
           edge="end"
           color="inherit"
-          aria-label="close"
           onClick={() => setDrawerOpen(false)}
           sx={{
             position: "absolute",
@@ -171,83 +313,236 @@ export default function EmailSetup() {
         >
           <CloseIcon />
         </IconButton>
-      </Grid>
-
-      <Grid
-        container
-        item
-        width={"100%"}
-        height={"100%"}
-        border={"1px silver solid"}
+      </Box>
+      {/* -------------------------- */}
+      {/* <TextField
+        disabled
+        size="small"
+        placeholder="Search here..."
+        value={searchTextList}
+        onChange={(e) => setSearchTextList(e.target.value)}
+        variant="outlined"
         sx={{
-          backgroundColor:
-            theme.palette.mode === "light" ? "#F5F6FA" : "#080D2B",
+          elevation: 3,
+          "& .MuiOutlinedInput-root": {
+            backgroundColor: (theme) =>
+              theme.palette.mode === "light" ? "#F5F6FA" : "#1e1e2f",
+          },
+        }}
+        InputProps={{
+          startAdornment: (
+            <InputAdornment position="start">
+              <SearchIcon color="action" />
+            </InputAdornment>
+          ),
+          endAdornment: searchTextList && (
+            <InputAdornment position="end">
+              <IconButton
+                size="small"
+                onClick={() => {
+                  setSearchTextList("");
+                  setPage(0);
+                  setHasMore(true);
+                  setListData([]);
+                }}
+                edge="end"
+              >
+                <CloseIcon fontSize="small" />
+              </IconButton>
+            </InputAdornment>
+          ),
+        }}
+      /> */}
+
+      {/* -------------------------- */}
+      {/* Scrollable List */}
+      <Box
+        id="ListScroll"
+        sx={{
+          flex: 1,
+          overflowY: "auto",
+          px: 1,
+          border: "1px solid silver",
+          pt: 2,
+          scrollBehavior: "smooth",
+
+          scrollbarWidth: "thin",
+          scrollbarColor: "#888 transparent",
+
+          "&::-webkit-scrollbar": {
+            width: "6px",
+          },
+          "&::-webkit-scrollbar-track": {
+            background: "transparent",
+          },
+          "&::-webkit-scrollbar-thumb": {
+            backgroundColor: "#888",
+            borderRadius: "10px",
+          },
+          "&::-webkit-scrollbar-thumb:hover": {
+            backgroundColor: "#555",
+          },
+        }}
+        onScroll={(e) => {
+          const { scrollTop, scrollHeight, clientHeight } = e.target;
+
+          if (
+            scrollHeight - scrollTop - clientHeight < 5 &&
+            hasMore &&
+            !fetchingRef.current
+          ) {
+            setPage((prev) => prev + 1);
+          }
         }}
       >
-        <Grid item md={12} sm={12} width={"100%"} height={`100%`}>
-          <Box
+        {listData.map((item, index) => (
+          <Card
+            elevation={2}
+            key={item.id || index}
             sx={{
-              width: "100%",
-              height: "100%",
-              px: 1,
-              overflow: "scroll",
-              overflowX: "hidden",
-              typography: "body1",
+              mb: 1.5,
+              p: 2,
+              borderRadius: 2,
+              position: "relative",
+              minHeight: 70,
+              transition: "all 0.3s ease",
+
+              "&:hover": {
+                backgroundColor: (theme) =>
+                  theme.palette.mode === "light"
+                    ? theme.palette.grey[100]
+                    : theme.palette.grey[800],
+                boxShadow: 6,
+                transform: "translateY(-2px)",
+              },
             }}
-            id="ListScroll"
+            onClick={() => setOldOData(item.Id)}
           >
-            <Grid
-              item
-              padding={1}
-              md={12}
-              sm={12}
-              width={"100%"}
+            {/* Title */}
+            <Tooltip title={item.ToMail} arrow>
+              <Typography
+                sx={{
+                  position: "absolute",
+                  top: 8,
+                  left: 12,
+                  fontWeight: 600,
+                  fontSize: 17,
+                }}
+              >
+                {item.ToMail}
+              </Typography>
+            </Tooltip>
+            {/* Total Count */}
+            {/* Created Date */}
+            <Typography
               sx={{
-                position: "sticky",
-                top: "0",
-                backgroundColor:
-                  theme.palette.mode === "light" ? "#F5F6FA" : "#080D2B",
+                position: "absolute",
+                bottom: 8,
+                left: 12,
+                fontSize: 15,
+                color: "primary.main",
               }}
             >
-              {/* <SearchInputField
-                onChange={(e) => handleOpenListSearch(e.target.value)}
-                value={openListquery}
-                onClickClear={handleOpenListClear}
-              /> */}
-            </Grid>
-            {/* <InfiniteScroll
-              style={{ textAlign: "center", justifyContent: "center" }}
-              // dataLength={openListData.length}
-              // hasMore={hasMoreOpen}
-              // next={fetchMoreOpenListData}
-              // loader={
-              //   <BeatLoader 
-              //     color={theme.palette.mode === "light" ? "black" : "white"}
-              //   />
-              // }
-              scrollableTarget="ListScroll"
-              endMessage={<Typography>No More Records</Typography>}
-            > */}
-            {/* {openListData.map((item, i) => (
-                <CardComponent
-                  key={i}
-                  title={item.TemplateName}
-                  subtitle={item.Email}
-                  isSelected={selectedData === item.DocEntry}
-                  searchResult={openListquery}
-                />
-              ))} */}
-            {/* </InfiniteScroll> */}
+              {item.CreatedDate
+                ? new Date(item.CreatedDate).toLocaleDateString("en-GB")
+                : ""}
+            </Typography>
+
+            {/* Failed / Sent */}
+            {/* <Typography
+              sx={{
+                position: "absolute",
+                bottom: 8,
+                right: 12,
+                fontSize: 15,
+                fontWeight: 500,
+              }}
+            >
+              <Box component="span" sx={{ color: "error.main" }}>
+              {item?.MsgFailedCnt ?? 0}
+            </Box>
+             || 
+              <Box component="span" sx={{ color: "success.main" }}>
+                {item?.IsSent ?? 0}
+              </Box>
+            </Typography> */}
+          </Card>
+        ))}
+
+        {/* Loader */}
+        {loading && (
+          <Box textAlign="center" py={2}>
+            <CircularProgress size={22} />
           </Box>
-        </Grid>
-      </Grid>
-    </>
+        )}
+
+        {/* No More Data */}
+        {!hasMore && (
+          <Typography textAlign="center" py={2}>
+            No More Data
+          </Typography>
+        )}
+      </Box>
+    </Box>
   );
   // ==============================
-
   const handlePreview = () => {
-    const html = getValues("BodyTemplate"); // get current editor HTML
-    setPreviewHtml(html);
+    const subject = getValues("Subject");
+    const body = getValues("BodyTemplate");
+
+    const previewTemplate = `
+    <div style="font-family: Arial, sans-serif;">
+      
+      <div style="
+        border-bottom:1px solid #ddd;
+        padding-bottom:8px;
+        margin-bottom:12px;
+      ">
+        <strong>Subject:</strong> ${subject || "(No Subject)"}
+      </div>
+
+      <div>
+        ${body || "<p>No email body</p>"}
+      </div>
+
+    </div>
+  `;
+
+    setPreviewHtml(previewTemplate);
+  };
+
+  const setOldOData = async (Id) => {
+    if (!Id) {
+      return;
+    }
+    setPreviewHtml("");
+    try {
+      const token = sessionStorage.getItem("BearerTokan");
+      const response = await axios.get(`${BASE_URL}Email?Id=${Id}`, {
+        headers: {
+          Authorization: token,
+        },
+      });
+
+      const data = response.data.values;
+      toggleDrawer();
+      reset({
+        ...data,
+        BodyTemplate: data.Body || "",
+        To: data.ToMail ? data.ToMail.split(",") : [],
+        CC: data.CcMail ? data.CcMail.split(",") : [],
+        BCC: data.BccMail ? data.BccMail.split(",") : [],
+      });
+      setEditorKey((prev) => prev + 1);
+      setDocEntry(Id);
+    } catch (error) {
+      console.error("Error fetching data:", error);
+      Swal.fire({
+        text: "Your login session expired. Please login in again.",
+        icon: "error",
+        confirmButtonText: "Ok",
+      });
+    }
   };
 
   return (
@@ -255,12 +550,13 @@ export default function EmailSetup() {
       {/* ========================== */}
 
       {loading && <Loader open={loading} />}
+      {loaderOpen && <Loader open={loaderOpen} />}
 
       {/* <Spinner open={loading} /> */}
       <Grid
         container
         width={"100%"}
-        height="calc(100vh - 110px)"
+        height="calc(98.5vh - 108px)"
         position={"relative"}
         component={"form"}
         onSubmit={handleSubmit(handleSubmitForm)}
@@ -270,6 +566,8 @@ export default function EmailSetup() {
           }
         }}
       >
+
+        
         <Grid
           container
           item
@@ -290,7 +588,7 @@ export default function EmailSetup() {
           {sidebarContent}
         </Grid>
         {/* User Creation Form Grid */}
-
+ 
         <Grid
           container
           item
@@ -347,8 +645,9 @@ export default function EmailSetup() {
               textAlign={"center"}
               alignContent={"center"}
               height={"100%"}
+              fontWeight={600}
             >
-              Email Notification
+              Send Email
             </Typography>
           </Grid>
 
@@ -378,16 +677,14 @@ export default function EmailSetup() {
                 noValidate
                 autoComplete="off"
               >
-                <Box sx={{ height: "80vh", p: 2 }}>
+                <Box sx={{ height: "75vh", p: 1 }}>
                   {/* Compressed Accordion for Recipients */}
                   <Accordion
                     defaultExpanded={false}
                     sx={{
-                      // mb: 2,
                       borderRadius: 2,
                       boxShadow: "0 4px 12px rgba(0,0,0,0.1)",
                       "&:before": { display: "none" },
-                      backgroundColor: theme.palette.background.paper,
                     }}
                   >
                     <AccordionSummary
@@ -395,7 +692,6 @@ export default function EmailSetup() {
                         <ExpandMoreIcon sx={{ color: "primary.main" }} />
                       }
                       sx={{
-                        backgroundColor: theme.palette.grey[50],
                         borderRadius: 2,
                         "& .MuiAccordionSummary-content": {
                           alignItems: "center",
@@ -474,7 +770,7 @@ export default function EmailSetup() {
                       <Paper
                         elevation={3}
                         sx={{
-                          height: "55vh",
+                          height: "54vh",
                           borderRadius: 2,
                           display: "flex",
                           flexDirection: "column",
@@ -513,6 +809,7 @@ export default function EmailSetup() {
                             defaultValue=""
                             render={({ field }) => (
                               <RichTextEditor
+                                key={editorKey}
                                 extensions={[StarterKit]}
                                 content={field.value}
                                 onUpdate={({ editor }) => {
@@ -528,7 +825,7 @@ export default function EmailSetup() {
                                 editorProps={{
                                   attributes: {
                                     style: `
-                                   height: 300px;
+                                   height: 230px;
                                     overflow-y: auto;
                                      padding: 16px;
                                        `,
@@ -538,6 +835,25 @@ export default function EmailSetup() {
                             )}
                           />
                         </Box>
+
+                        <Box
+                          display="flex"
+                          alignItems="center"
+                          gap={2}
+                          sx={{ p: 2 }}
+                        >
+                          <Button variant="outlined" component="label">
+                            Attachment File
+                            <input
+                              type="file"
+                              hidden
+                              onChange={handleFileUpload}
+                            />
+                          </Button>
+                          <Typography variant="body2">
+                            {fileName ? `${fileName}` : "Attachment file"}
+                          </Typography>
+                        </Box>
                       </Paper>
                     </Grid>
 
@@ -546,7 +862,7 @@ export default function EmailSetup() {
                       <Paper
                         elevation={3}
                         sx={{
-                          height: "55vh",
+                          height: "54vh",
                           p: 2,
                           borderRadius: 2,
                           display: "flex",
@@ -590,33 +906,49 @@ export default function EmailSetup() {
               px={2}
               sx={{
                 display: "flex",
-                justifyContent: "end",
+                justifyContent: "space-between",
                 alignItems: "center",
                 position: "sticky",
                 bottom: 0,
               }}
             >
-              <Box sx={{ display: "flex", gap: 2 }}>
-                <Button
-                  variant="contained"
-                  color="success"
-                  type="submit"
-                  sx={{
-                    p: 1,
-                    width: 80,
-                    color: "white",
+              <Button
+                size="small"
+                onClick={() => {
+                  reset(initial);
+                  setAttachmentLines([]);
+                  setFileName("");
+                  setPreviewHtml("");
+                  setEditorKey((prev) => prev + 1);
+                  setDocEntry("");
+                }}
+                sx={{
+                  width: 80,
+                  color: "#2196F3",
+                  border: "1px solid #2196F3",
+                  borderRadius: "8px",
+                }}
+              >
+                Clear
+              </Button>
+              <Button
+                variant="contained"
+                color="success"
+                type="submit"
+                sx={{
+                  p: 1,
+                  width: 80,
+                  color: "white",
+                  backgroundColor: theme.palette.Button.background,
+                  "&:hover": {
+                    transform: "translateY(2px)",
                     backgroundColor: theme.palette.Button.background,
-                    "&:hover": {
-                      transform: "translateY(2px)",
-                      backgroundColor: theme.palette.Button.background,
-                    },
-                  }}
-                >
-                  {SaveUpdateName}
-                </Button>
-
-                {/* <Button variant="contained">SEND</Button> */}
-              </Box>
+                  },
+                }}
+                disabled={DocEntry}
+              >
+                SAVE
+              </Button>
             </Grid>
           </Grid>
         </Grid>
