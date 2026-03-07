@@ -551,7 +551,6 @@ export default function EmailSetup() {
 
       {loading && <Loader open={loading} />}
       {loaderOpen && <Loader open={loaderOpen} />}
-
       {/* <Spinner open={loading} /> */}
       <Grid
         container
@@ -566,8 +565,6 @@ export default function EmailSetup() {
           }
         }}
       >
-
-        
         <Grid
           container
           item
@@ -588,7 +585,6 @@ export default function EmailSetup() {
           {sidebarContent}
         </Grid>
         {/* User Creation Form Grid */}
- 
         <Grid
           container
           item
@@ -611,7 +607,6 @@ export default function EmailSetup() {
                 lg: "none",
               }, 
               position: "absolute",
-               left: "10px",
             }}
           >
             <MenuIcon />
@@ -639,6 +634,10 @@ export default function EmailSetup() {
             alignItems={"center"}
             border={"1px solid silver"}
             borderBottom={"none"}
+            sx={{
+              backgroundColor:
+                theme.palette.mode === "light" ? "#F5F6FA" : "#080D2B",
+            }}
           >
             <Typography
               textAlign={"center"}
@@ -908,7 +907,7 @@ export default function EmailSetup() {
                 justifyContent: "space-between",
                 alignItems: "center",
                 position: "sticky",
-                bottom: 0,
+                bottom: 3,
               }}
             >
               <Button
@@ -940,7 +939,7 @@ export default function EmailSetup() {
                   color: "white",
                   backgroundColor: theme.palette.Button.background,
                   "&:hover": {
-                    transform: "translateY(2px)",
+                    // transform: "translateY(2px)",
                     backgroundColor: theme.palette.Button.background,
                   },
                 }}
