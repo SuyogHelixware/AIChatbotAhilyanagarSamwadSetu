@@ -609,10 +609,9 @@ export default function EmailSetup() {
             sx={{
               display: {
                 lg: "none",
-              }, // Show only on smaller screens
+              }, 
               position: "absolute",
-              // top: "10px",
-              left: "10px",
+               left: "10px",
             }}
           >
             <MenuIcon />

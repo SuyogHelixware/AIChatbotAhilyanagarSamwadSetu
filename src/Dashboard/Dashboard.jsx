@@ -246,6 +246,12 @@ export default function Dashboard() {
           path: "SendNotificationDashboard",
           menuId: 14,
         },
+         {
+          label: "EMail Send",
+          icon: <DehazeIcon />,
+          path: "SendEmailDashboard",
+          menuId: 14,
+        },
       ],
     },
     {
@@ -262,7 +268,7 @@ export default function Dashboard() {
     },
     
         {
-      label: "E-Mail Configuration",
+      label: "EMail Configuration",
       icon: <EmailIcon />,
       path: "EmailConfiguration",
       menuId: 13,
@@ -333,7 +339,7 @@ export default function Dashboard() {
       menuId: 10,
     },
       {
-      label: "E-Mail Send",
+      label: "EMail Send",
       icon: <MarkEmailUnreadIcon />,
       path: "EmailSetup",
       menuId: 12,
@@ -359,6 +365,12 @@ export default function Dashboard() {
           label: "Send Notification",
           icon: <LocalPrintshopOutlinedIcon />,
           path: "SendMessageReport",
+          menuId: 16,
+        },
+         {
+          label: "Send EMail",
+          icon: <LocalPrintshopOutlinedIcon />,
+          path: "EMailSendReport",
           menuId: 16,
         },
       ],

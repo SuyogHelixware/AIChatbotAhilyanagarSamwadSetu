@@ -256,6 +256,8 @@ export default function LandAcquistionReport() {
                   backgroundColor: "#ccc",
                   boxShadow: "0px 1px 2px rgba(0,0,0,0.2)",
                   mx: -2,
+                                                  borderBottom: "1px solid #90caf9",
+
                 }}
               />
             </Grid>
@@ -311,6 +313,8 @@ export default function LandAcquistionReport() {
                   backgroundColor: "#ccc",
                   boxShadow: "0px 1px 2px rgba(0,0,0,0.2)",
                   mx: -2,
+                                                  borderBottom: "1px solid #90caf9",
+
                 }}
               />
             </Grid>

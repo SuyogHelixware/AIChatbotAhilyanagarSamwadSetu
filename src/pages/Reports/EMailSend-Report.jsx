@@ -1,4 +1,4 @@
-import ChecklistIcon from "@mui/icons-material/Checklist";
+import DateRangeIcon from "@mui/icons-material/DateRange";
 import EditNoteIcon from "@mui/icons-material/EditNote";
 import FormatListNumberedIcon from "@mui/icons-material/FormatListNumbered";
 import TagIcon from "@mui/icons-material/Tag";
@@ -10,15 +10,17 @@ import React, { useEffect, useRef, useState } from "react";
 import CustomToolbar from "../../components/CustomToolbar";
 import CustomMuiRangePicker from "../../components/DateRangePickerField";
 import { BASE_URL } from "../../Constant";
+import ChecklistIcon from "@mui/icons-material/Checklist";
 import { useTheme } from "@mui/styles";
 
-export default function SendMessageReport() {
+export default function EMailSendReport() {
   const [fromDate, setFromDate] = useState(dayjs().startOf("month"));
   const [toDate, setToDate] = useState(dayjs());
   const [DocReadyCount, setDocReadyCount] = React.useState(0);
   const [docReadyRows, setDocReadyRows] = React.useState([]);
-     const theme = useTheme();
   const fetchingRef = useRef(false);
+     const theme = useTheme();
+
   const fetchReport = async (selectedFrom, selectedTo) => {
     try {
       const token = sessionStorage.getItem("BearerTokan");
@@ -32,7 +34,7 @@ export default function SendMessageReport() {
         ToDate: dayjs(toDate).format("YYYY-MM-DD"),
       };
 
-      const response = await axios.get(`${BASE_URL}Campaign/Reports`, {
+      const response = await axios.get(`${BASE_URL}Email/Report`, {
         params,
         headers: {
           Authorization: token.startsWith("Bearer ")
@@ -49,8 +51,8 @@ export default function SendMessageReport() {
  
       const groups = response.data.values ?? [];
       const Totalcount = groups.reduce((total, item) => {
-  const sent = item?.MsgSentCnt ?? 0;
-  const failed = item?.MsgFailedCnt ?? 0;
+  const sent = item?.Success ?? 0;
+  const failed = item?.Failed ?? 0;
 
   return total + sent + failed;
 }, 0);
@@ -71,12 +73,17 @@ console.log("Totalcount", Totalcount);
     }
   }, [fromDate, toDate]);
 
+  const rowsWithId = docReadyRows.map((row, index) => ({
+  Id: index + 1,
+  ...row
+}));
+
   const officerColumns = [
     {
       field: "srNo",
       headerName: "SR NO",
-      minWidth: 60,
-      maxWidth: 65,
+      minWidth: 80,
+      maxWidth: 95,
       flex: 0.1,
       sortable: false,
       headerAlign: "center",
@@ -93,51 +100,37 @@ console.log("Totalcount", Totalcount);
         params.api.getSortedRowIds().indexOf(params.id) + 1,
     },
     {
-      field: "Title",
-      headerName: "Title",
-      flex: 1,
-      headerAlign: "center",
-      align: "center",
-      renderHeader: () => (
-        <span style={{ display: "flex", alignItems: "center", gap: "5px" }}>
-          <EditNoteIcon fontSize="small" />
-          Title
-        </span>
-      ),
-      renderCell: (params) => <span>{params.value}</span>,
-    },
+          field: "Date",
+          headerName: "SEND DATE",
+          minWidth: 120,
+          maxWidth: 180,
+          flex: 1,
+          headerAlign: "center",
+          align: "center",
+    
+          renderHeader: () => (
+            <span style={{ display: "flex", alignItems: "center", gap: "5px" }}>
+              <DateRangeIcon fontSize="small" />
+              SEND DATE
+            </span>
+          ),
+    
+          valueGetter: (params) => {
+            if (!params.row.Date) return "";
+            const d = new Date(params.row.Date);
+            return d
+              .toLocaleDateString("en-GB", {
+                day: "2-digit",
+                month: "short",
+                year: "numeric",
+              })
+              .replace(/ /g, "-");
+          },
+        },
+   
     {
-      field: "Type",
-      headerName: "Type",
-      flex: 1,
-      headerAlign: "center",
-      align: "center",
-      renderHeader: () => (
-        <span style={{ display: "flex", alignItems: "center", gap: "5px" }}>
-          <ChecklistIcon fontSize="small" />
-          Type
-        </span>
-      ),
-      renderCell: (params) => <span>{params.value}</span>,
-    },
-    {
-      field: "Templete",
-      headerName: "Templete",
-      flex: 1.2,
-      headerAlign: "center",
-      align: "center",
-      renderHeader: () => (
-        <span style={{ display: "flex", alignItems: "center", gap: "5px" }}>
-          <EditNoteIcon fontSize="small" />
-          Templete
-        </span>
-      ),
-      renderCell: (params) => <span>{params.value}</span>,
-    },
-
-    {
-      field: "MsgFailedCnt",
-      headerName: "Msg Failed Cnt Count",
+      field: "Success",
+      headerName:"Sent EMail Count",
       flex: 0.8,
       align: "center",
       headerAlign: "center",
@@ -145,35 +138,7 @@ console.log("Totalcount", Totalcount);
       renderHeader: () => (
         <span style={{ display: "flex", alignItems: "center", gap: "5px" }}>
           <FormatListNumberedIcon fontSize="small" />
-           Msg Failed Cnt Count
-        </span>
-      ),
-
-      renderCell: (params) => (
-        <span
-          style={{
-            display: "inline-block",
-            padding: "3px 10px",
-            borderRadius: "6px",
-            fontWeight: 600,
-            color: "#F2401B",
-          }}
-        >
-          {params.value}
-        </span>
-      ),
-    },
-    {
-      field: "MsgSentCnt",
-      headerName: "Msg Sent Cnt Count",
-      flex: 0.8,
-      align: "center",
-      headerAlign: "center",
-
-      renderHeader: () => (
-        <span style={{ display: "flex", alignItems: "center", gap: "5px" }}>
-          <FormatListNumberedIcon fontSize="small" />
-          Msg Sent Cnt Count
+          Sent EMail Count
         </span>
       ),
 
@@ -185,6 +150,34 @@ console.log("Totalcount", Totalcount);
             borderRadius: "6px",
             fontWeight: 600,
             color: "#00A300",
+          }}
+        >
+          {params.value}
+        </span>
+      ),
+    },
+     {
+      field: "Failed",
+      headerName: "Failed EMail Count",
+      flex: 0.8,
+      align: "center",
+      headerAlign: "center",
+
+      renderHeader: () => (
+        <span style={{ display: "flex", alignItems: "center", gap: "5px" }}>
+          <FormatListNumberedIcon fontSize="small" />
+           Failed EMail Count
+        </span>
+      ),
+
+      renderCell: (params) => (
+        <span
+          style={{
+            display: "inline-block",
+            padding: "3px 10px",
+            borderRadius: "6px",
+            fontWeight: 600,
+            color: "#F2401B",
           }}
         >
           {params.value}
@@ -221,7 +214,7 @@ console.log("Totalcount", Totalcount);
           padding={1}
           noWrap
         >
-          Send Notification Report
+          Send EMail Report
         </Typography>
       </Grid>
       <Grid container justifyContent="flex-end" item xs={12} sm={12}>
@@ -251,7 +244,7 @@ console.log("Totalcount", Totalcount);
 
       <Grid container spacing={2} sx={{ mt: 1 }}>
         <Grid item xs={12} sm={12} md={12} lg={12}>
-          <Paper elevation={1} sx={{ borderRadius: 3, p: 2, color : theme.palette.DHeaderColor.color, }}>
+          <Paper elevation={1} sx={{ borderRadius: 3, p: 2 , color : theme.palette.DHeaderColor.color, }}>
             <h3
               style={{
                 display: "flex",
@@ -260,7 +253,7 @@ console.log("Totalcount", Totalcount);
                 justifyContent: "center",
               }}
             >
-              Send Notification
+              Send EMail
               <Chip
                 label={DocReadyCount}
                 size="small"
@@ -299,7 +292,7 @@ console.log("Totalcount", Totalcount);
                     boxShadow: "0px 4px 20px rgba(0,0,0,.2)",
                   },
                 }}
-                rows={docReadyRows}
+                rows={rowsWithId}
                 columns={officerColumns}
                 getRowId={(row) => row.Id}
                 pageSize={10}

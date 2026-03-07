@@ -34,6 +34,8 @@ import ManageDocPage from "../pages/ManageDocPage";
 import SendMessageReport from "../pages/Reports/SendMessage-Report";
 import SendNotificationDashboard from "../Dashboard/SendNotification-Dashboard";
 import EmailConfiguration from "../pages/EmailConfiguration";
+import SendEmailDashboard from "../Dashboard/SendEmail-Dashboard";
+import EMailSendReport from "../pages/Reports/EMailSend-Report";
 
 export default function Routing() {
   const { roleAccess } = useThemeMode();
@@ -75,6 +77,14 @@ export default function Routing() {
               element={
                 <ProtectedRoute menuId={14} roleAccess={roleAccess}>
                   <SendNotificationDashboard />
+                </ProtectedRoute>
+              }
+            />
+            <Route
+              path="SendEmailDashboard"
+              element={
+                <ProtectedRoute menuId={14} roleAccess={roleAccess}>
+                  <SendEmailDashboard />
                 </ProtectedRoute>
               }
             />
@@ -214,6 +224,14 @@ export default function Routing() {
               element={
                 <ProtectedRoute menuId={16} roleAccess={roleAccess}>
                   <SendMessageReport />
+                </ProtectedRoute>
+              }
+            />
+             <Route
+              path="EMailSendReport"
+              element={
+                <ProtectedRoute menuId={16} roleAccess={roleAccess}>
+                  <EMailSendReport />
                 </ProtectedRoute>
               }
             />
